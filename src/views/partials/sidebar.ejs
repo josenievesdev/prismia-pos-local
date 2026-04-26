@@ -1,0 +1,73 @@
+<aside class="app-sidebar">
+    <div class="sidebar-brand">
+        <div class="sidebar-logo" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+        <div>
+            <strong>
+                <%= empresa.software.nombreCorto %>
+            </strong>
+            <small>
+                <%= empresa.producto.tipo %>
+            </small>
+        </div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <a href="/dashboard" class="sidebar-link <%= rutaActual.startsWith('/dashboard') ? 'active' : '' %>">
+            <span class="sidebar-icon">⌂</span>
+            <span>Dashboard</span>
+        </a>
+
+        <a href="#" class="sidebar-link disabled">
+            <span class="sidebar-icon">◉</span>
+            <span>POS</span>
+        </a>
+
+        <a href="/productos" class="sidebar-link <%= rutaActual.startsWith('/productos') ? 'active' : '' %>">
+            <span class="sidebar-icon">▣</span>
+            <span>Productos</span>
+        </a>
+
+        <a href="/categorias-productos"
+            class="sidebar-link <%= rutaActual.startsWith('/categorias-productos') ? 'active' : '' %>">
+            <span class="sidebar-icon">◇</span>
+            <span>Categorías</span>
+        </a>
+
+        <a href="/inventario" class="sidebar-link <%= rutaActual.startsWith('/inventario') ? 'active' : '' %>">
+            <span class="sidebar-icon">⇄</span>
+            <span>Inventario</span>
+        </a>
+
+        <a href="#" class="sidebar-link disabled">
+            <span class="sidebar-icon">$</span>
+            <span>Caja</span>
+        </a>
+
+        <a href="#" class="sidebar-link disabled">
+            <span class="sidebar-icon">◆</span>
+            <span>Gastos</span>
+        </a>
+
+        <a href="#" class="sidebar-link disabled">
+            <span class="sidebar-icon">▤</span>
+            <span>Reportes</span>
+        </a>
+
+        <a href="/configuracion" class="sidebar-link <%= rutaActual.startsWith('/configuracion') ? 'active' : '' %>">
+            <span class="sidebar-icon">⚙</span>
+            <span>Configuración</span>
+        </a>
+    </nav>
+
+    <div class="sidebar-footer">
+        <small>Versión <%= empresa.software.version %></small>
+        <small>
+            <%= empresa.software.desarrollador %>
+        </small>
+    </div>
+</aside>

@@ -1,0 +1,208 @@
+<section class="module-page inventario-page">
+    <div class="module-header module-header-actions">
+        <div>
+            <p class="eyebrow">Reporte de diferencias</p>
+            <h2>
+                <%= conteo.numero_conteo %>
+            </h2>
+            <p>
+                Resumen de sobrantes, faltantes e impacto estimado del conteo físico.
+            </p>
+        </div>
+
+        <div class="module-actions">
+            <a href="/inventario/conteos/<%= conteo.id_conteo_inventario %>/exportar-diferencias" class="btn-primary">
+                Exportar Excel
+            </a>
+
+            <a href="/inventario/conteos/<%= conteo.id_conteo_inventario %>" class="btn-secondary">
+                Volver al conteo
+            </a>
+
+            <a href="/inventario/conteos" class="btn-secondary">
+                Ver conteos
+            </a>
+        </div>
+    </div>
+
+    <div class="inventory-count-summary inventory-report-summary">
+        <article class="module-card count-summary-card">
+            <span>Productos</span>
+            <strong>
+                <%= resumen.total_productos %>
+            </strong>
+        </article>
+
+        <article class="module-card count-summary-card">
+            <span>Sobrantes</span>
+            <strong>
+                <%= resumen.total_sobrantes %>
+            </strong>
+        </article>
+
+        <article class="module-card count-summary-card">
+            <span>Faltantes</span>
+            <strong>
+                <%= resumen.total_faltantes %>
+            </strong>
+        </article>
+
+        <article class="module-card count-summary-card">
+            <span>Sin diferencia</span>
+            <strong>
+                <%= resumen.total_sin_diferencia %>
+            </strong>
+        </article>
+    </div>
+
+    <div class="inventory-count-summary inventory-report-summary">
+        <article class="module-card count-summary-card positive">
+            <span>Valor sobrantes</span>
+            <strong>
+                <%= formatearPesos(resumen.valor_sobrantes) %>
+            </strong>
+        </article>
+
+        <article class="module-card count-summary-card negative">
+            <span>Valor faltantes</span>
+            <strong>
+                <%= formatearPesos(resumen.valor_faltantes) %>
+            </strong>
+        </article>
+
+        <article class="module-card count-summary-card <%= resumen.impacto_neto < 0 ? 'negative' : 'positive' %>">
+            <span>Impacto neto</span>
+            <strong>
+                <%= formatearPesos(resumen.impacto_neto) %>
+            </strong>
+        </article>
+
+        <article class="module-card count-summary-card">
+            <span>Estado</span>
+            <strong>
+                <%= conteo.estado_texto %>
+            </strong>
+        </article>
+    </div>
+
+    <div class="module-card report-note-card">
+        <h3>Lectura del reporte</h3>
+
+        <p>
+            Los sobrantes representan productos encontrados por encima del stock registrado.
+            Los faltantes representan productos encontrados por debajo del stock registrado.
+            Estos valores son estimaciones usando el costo promedio del producto.
+        </p>
+    </div>
+
+    <div class="module-card">
+        <div class="table-summary">
+            <span>
+                Productos con diferencia:
+                <strong>
+                    <%= resumen.total_diferencias %>
+                </strong>
+            </span>
+
+            <span>
+                Conteo:
+                <strong>
+                    <%= conteo.numero_conteo %>
+                </strong>
+            </span>
+        </div>
+
+        <% if (!diferencias || diferencias.length===0) { %>
+            <div class="empty-state">
+                <h3>No hay diferencias en este conteo</h3>
+                <p>
+                    El stock contado coincide con el stock registrado en el sistema.
+                </p>
+            </div>
+            <% } else { %>
+                <div class="table-wrapper">
+                    <table class="data-table inventory-table count-difference-table">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Producto</th>
+                                <th>Stock sistema</th>
+                                <th>Stock contado</th>
+                                <th>Diferencia</th>
+                                <th>Valor estimado</th>
+                                <th>Tipo</th>
+                                <th>Observación</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <% diferencias.forEach((detalle)=> { %>
+                                <tr>
+                                    <td>
+                                        <strong>
+                                            <%= detalle.codigo_interno %>
+                                        </strong>
+                                        <% if (detalle.codigo_barras) { %>
+                                            <span class="table-subtext">
+                                                Barras: <%= detalle.codigo_barras %>
+                                            </span>
+                                            <% } %>
+                                    </td>
+
+                                    <td>
+                                        <strong>
+                                            <%= detalle.nombre_producto %>
+                                        </strong>
+                                    </td>
+
+                                    <td>
+                                        <span class="text-muted">
+                                            <%= detalle.stock_sistema_texto %>
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <strong>
+                                            <%= detalle.stock_contado_texto %>
+                                        </strong>
+                                    </td>
+
+                                    <td>
+                                        <% if (detalle.tipo_diferencia==='faltante' ) { %>
+                                            <span class="badge badge-danger">
+                                                <%= detalle.diferencia_texto %>
+                                            </span>
+                                            <% } else { %>
+                                                <span class="badge badge-warning">
+                                                    +<%= detalle.diferencia_texto %>
+                                                </span>
+                                                <% } %>
+                                    </td>
+
+                                    <td>
+                                        <strong>
+                                            <%= formatearPesos(detalle.valor_diferencia_absoluto) %>
+                                        </strong>
+                                    </td>
+
+                                    <td>
+                                        <% if (detalle.tipo_diferencia==='faltante' ) { %>
+                                            <span class="badge badge-danger">Faltante</span>
+                                            <% } else { %>
+                                                <span class="badge badge-warning">Sobrante</span>
+                                                <% } %>
+                                    </td>
+
+                                    <td>
+                                        <span class="text-muted">
+                                            <%= detalle.observaciones || 'Sin observación' %>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+                <% } %>
+    </div>
+</section>

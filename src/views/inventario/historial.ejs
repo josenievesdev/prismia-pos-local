@@ -1,0 +1,182 @@
+<section class="module-page inventario-page">
+    <div class="module-header module-header-actions">
+        <div>
+            <p class="eyebrow">Trazabilidad</p>
+            <h2>Historial de inventario</h2>
+            <p>
+                Consulta entradas, salidas, ajustes y movimientos generados por el sistema.
+            </p>
+        </div>
+
+        <a href="/inventario" class="btn-secondary">
+            Volver al inventario
+        </a>
+    </div>
+
+    <form class="module-card inventory-filters" method="GET" action="/inventario/historial">
+        <div class="filter-search">
+            <label for="busqueda">Buscar producto</label>
+            <input type="text" id="busqueda" name="busqueda" value="<%= filtros?.busqueda || '' %>"
+                placeholder="Nombre, código interno o código de barras">
+        </div>
+
+        <div class="filter-grid">
+            <div class="form-group">
+                <label for="tipo">Tipo de movimiento</label>
+                <select id="tipo" name="tipo">
+                    <option value="">Todos</option>
+                    <option value="entrada_inicial" <%=filtros?.tipoMovimiento==='entrada_inicial' ? 'selected' : '' %>
+                        >Entrada inicial</option>
+                    <option value="ajuste_positivo" <%=filtros?.tipoMovimiento==='ajuste_positivo' ? 'selected' : '' %>
+                        >Ajuste positivo</option>
+                    <option value="ajuste_negativo" <%=filtros?.tipoMovimiento==='ajuste_negativo' ? 'selected' : '' %>
+                        >Ajuste negativo</option>
+                    <option value="venta" <%=filtros?.tipoMovimiento==='venta' ? 'selected' : '' %>>Venta</option>
+                    <option value="devolucion" <%=filtros?.tipoMovimiento==='devolucion' ? 'selected' : '' %>>Devolución
+                    </option>
+                    <option value="compra" <%=filtros?.tipoMovimiento==='compra' ? 'selected' : '' %>>Compra</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="limite">Mostrar</label>
+                <select id="limite" name="limite">
+                    <option value="10" <%=Number(paginacion?.limite)===10 ? 'selected' : '' %>>10</option>
+                    <option value="25" <%=Number(paginacion?.limite)===25 ? 'selected' : '' %>>25</option>
+                    <option value="50" <%=Number(paginacion?.limite)===50 ? 'selected' : '' %>>50</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="filter-actions">
+            <button type="submit" class="btn-primary">Aplicar filtros</button>
+            <a href="/inventario/historial" class="btn-secondary">Limpiar</a>
+        </div>
+    </form>
+
+    <div class="module-card">
+        <div class="table-summary">
+            <span>Total movimientos: <strong>
+                    <%= paginacion?.totalRegistros || 0 %>
+                </strong></span>
+            <span>Página <strong>
+                    <%= paginacion?.paginaActual || 1 %>
+                </strong> de <strong>
+                    <%= paginacion?.totalPaginas || 1 %>
+                </strong></span>
+        </div>
+
+        <% if (!movimientos || movimientos.length===0) { %>
+            <div class="empty-state">
+                <h3>No hay movimientos para mostrar</h3>
+                <p>Ajusta los filtros o registra movimientos de inventario.</p>
+            </div>
+            <% } else { %>
+                <div class="table-wrapper">
+                    <table class="data-table inventory-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Producto</th>
+                                <th>Tipo</th>
+                                <th>Cantidad</th>
+                                <th>Stock anterior</th>
+                                <th>Stock nuevo</th>
+                                <th>Usuario</th>
+                                <th>Motivo</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <% movimientos.forEach((movimiento)=> { %>
+                                <tr>
+                                    <td>
+                                        <span class="text-muted">
+                                            <%= movimiento.creado_en %>
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <strong>
+                                            <%= movimiento.producto_nombre %>
+                                        </strong>
+                                        <span class="table-subtext">
+                                            <%= movimiento.codigo_interno %>
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span
+                                            class="badge <%= movimiento.tipo_movimiento === 'ajuste_negativo' ? 'badge-warning' : 'badge-success' %>">
+                                            <%= movimiento.tipo_movimiento_texto %>
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <strong>
+                                            <%= movimiento.cantidad_texto %>
+                                        </strong>
+                                    </td>
+
+                                    <td>
+                                        <span class="text-muted">
+                                            <%= movimiento.stock_anterior_texto %>
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <strong>
+                                            <%= movimiento.stock_nuevo_texto %>
+                                        </strong>
+                                    </td>
+
+                                    <td>
+                                        <span class="text-muted">
+                                            <%= movimiento.usuario_nombre || 'Sistema' %>
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="text-muted">
+                                            <%= movimiento.motivo || 'Sin motivo' %>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+
+                <% if (paginacion && paginacion.totalPaginas> 1) { %>
+                    <nav class="pagination">
+                        <% if (paginacion.tieneAnterior) { %>
+                            <a href="<%= crearUrlPagina(paginacion.paginaActual - 1) %>"
+                                class="btn-secondary btn-small">
+                                Anterior
+                            </a>
+                            <% } else { %>
+                                <span class="btn-secondary btn-small disabled-button">Anterior</span>
+                                <% } %>
+
+                                    <span class="pagination-info">
+                                        Página <strong>
+                                            <%= paginacion.paginaActual %>
+                                        </strong>
+                                        de <strong>
+                                            <%= paginacion.totalPaginas %>
+                                        </strong>
+                                    </span>
+
+                                    <% if (paginacion.tieneSiguiente) { %>
+                                        <a href="<%= crearUrlPagina(paginacion.paginaActual + 1) %>"
+                                            class="btn-secondary btn-small">
+                                            Siguiente
+                                        </a>
+                                        <% } else { %>
+                                            <span class="btn-secondary btn-small disabled-button">Siguiente</span>
+                                            <% } %>
+                    </nav>
+                    <% } %>
+                        <% } %>
+    </div>
+</section>

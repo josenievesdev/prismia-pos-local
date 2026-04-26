@@ -1,0 +1,34 @@
+node_modules/
+
+# Variables de entorno
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+
+# Builds / distribución
+dist/
+build/
+coverage/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Uploads futuros
+public/uploads/*
+!public/uploads/.gitkeep
+
+src/public/uploads/*
+!src/public/uploads/.gitkeep
+
+# Base de datos local SQLite
+src/database/data/*.sqlite
+src/database/data/*.sqlite-shm
+src/database/data/*.sqlite-wal
+src/database/data/*.db
+src/database/data/*.db-shm
+src/database/data/*.db-wal

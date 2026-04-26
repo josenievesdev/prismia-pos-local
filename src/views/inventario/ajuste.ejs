@@ -1,0 +1,98 @@
+<section class="module-page inventario-page">
+    <div class="module-header">
+        <div>
+            <p class="eyebrow">Ajuste manual</p>
+            <h2>Ajustar inventario</h2>
+            <p>
+                Registra una entrada o salida manual con motivo obligatorio.
+            </p>
+        </div>
+    </div>
+
+    <% if (error) { %>
+        <div class="alert alert-error">
+            <%= error %>
+        </div>
+        <% } %>
+
+            <div class="inventory-detail-grid">
+                <article class="module-card inventory-product-card">
+                    <h3>
+                        <%= producto.nombre %>
+                    </h3>
+
+                    <div class="inventory-product-meta">
+                        <span><strong>Código:</strong>
+                            <%= producto.codigo_interno %>
+                        </span>
+                        <span><strong>Categoría:</strong>
+                            <%= producto.categoria_nombre || 'Sin categoría' %>
+                        </span>
+                        <span><strong>Unidad:</strong>
+                            <%= producto.unidad_nombre || 'Unidad' %> (<%= producto.unidad_abreviatura || 'und' %>)
+                        </span>
+                    </div>
+
+                    <div class="inventory-stock-box">
+                        <span>Stock actual</span>
+                        <strong>
+                            <%= producto.stock_actual_texto %>
+                        </strong>
+                    </div>
+
+                    <div class="inventory-stock-box muted">
+                        <span>Stock mínimo</span>
+                        <strong>
+                            <%= producto.stock_minimo_texto %>
+                        </strong>
+                    </div>
+                </article>
+
+                <form class="module-card form-panel inventory-adjust-form" method="POST"
+                    action="/inventario/<%= producto.id_producto %>/ajuste">
+                    <div class="form-section">
+                        <h3>Datos del ajuste</h3>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="tipo_ajuste">Tipo de ajuste *</label>
+                                <select id="tipo_ajuste" name="tipo_ajuste" required>
+                                    <option value="entrada" <%=valores.tipo_ajuste==='entrada' ? 'selected' : '' %>>
+                                        Entrada manual
+                                    </option>
+                                    <option value="salida" <%=valores.tipo_ajuste==='salida' ? 'selected' : '' %>>
+                                        Salida manual
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="cantidad">Cantidad *</label>
+                                <input type="number" id="cantidad" name="cantidad" min="0" step="0.001"
+                                    value="<%= valores.cantidad || '' %>" placeholder="Ej: 10, 2.5, 1000" required>
+                                <small class="field-help">
+                                    Usa la unidad del producto: <%= producto.unidad_abreviatura || 'und' %>.
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="motivo">Motivo *</label>
+                            <textarea id="motivo" name="motivo" rows="4"
+                                placeholder="Ej: ajuste por conteo físico, merma, corrección de inventario..."
+                                required><%= valores.motivo || '' %></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">
+                            Registrar ajuste
+                        </button>
+
+                        <a href="/inventario" class="btn-secondary">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+</section>

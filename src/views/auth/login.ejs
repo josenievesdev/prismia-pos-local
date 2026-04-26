@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        <%= titulo %> | <%= empresa.software.nombre %>
+    </title>
+
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+
+<body>
+    <main class="auth-screen">
+        <section class="auth-brand-panel">
+            <div class="brand-system">
+                <div class="prism-mark" aria-hidden="true">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+
+                <div>
+                    <p class="brand-kicker">Sistema POS local</p>
+
+                    <h1>
+                        <%= empresa.software.nombre %>
+                    </h1>
+
+                    <p class="brand-description">
+                        Ventas, caja, inventario y reportes para negocios que quieren operar con orden desde el primer
+                        día.
+                    </p>
+                </div>
+            </div>
+
+            <div class="auth-brand-footer">
+                <span>Versión <%= empresa.software.version %></span>
+                <span>
+                    <%= empresa.software.desarrollador %>
+                </span>
+            </div>
+        </section>
+
+        <section class="auth-form-panel">
+            <div class="auth-card">
+                <div class="auth-card-header">
+                    <p class="eyebrow">Acceso al sistema</p>
+                    <h2>Iniciar sesión</h2>
+                    <p>Ingresa con tu usuario autorizado.</p>
+                </div>
+
+                <% if (error) { %>
+                    <div class="alert alert-error">
+                        <%= error %>
+                    </div>
+                    <% } %>
+
+                        <form class="form-card" method="POST" action="/auth/login">
+                            <div class="form-group">
+                                <label for="correo">Correo</label>
+                                <input type="email" id="correo" name="correo" placeholder="admin@prismia.local"
+                                    autocomplete="email" value="<%= valores?.correo || '' %>" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="contrasena">Contraseña</label>
+                                <input type="password" id="contrasena" name="contrasena" placeholder="••••••••"
+                                    autocomplete="current-password" required>
+                            </div>
+
+                            <button type="submit" class="btn-primary full-width">
+                                Entrar al POS
+                            </button>
+                        </form>
+
+                        <p class="auth-note">
+                            Plataforma local en desarrollo · Entorno controlado
+                        </p>
+            </div>
+        </section>
+    </main>
+</body>
+
+</html>

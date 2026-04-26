@@ -1,0 +1,69 @@
+<section class="module-page inventario-page">
+    <div class="module-header">
+        <div>
+            <p class="eyebrow">Conteo físico</p>
+            <h2>Nuevo conteo</h2>
+            <p>
+                Genera un conteo congelando el stock actual del sistema para compararlo contra el stock físico.
+            </p>
+        </div>
+    </div>
+
+    <% if (error) { %>
+        <div class="alert alert-error">
+            <%= error %>
+        </div>
+        <% } %>
+
+            <form class="module-card form-panel inventory-adjust-form" method="POST" action="/inventario/conteos/nuevo">
+                <div class="form-section">
+                    <h3>Datos del conteo</h3>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="tipo_conteo">Tipo de conteo *</label>
+                            <select id="tipo_conteo" name="tipo_conteo" required>
+                                <option value="total" <%=valores.tipo_conteo==='total' ? 'selected' : '' %>>
+                                    Total
+                                </option>
+                                <option value="categoria" <%=valores.tipo_conteo==='categoria' ? 'selected' : '' %>>
+                                    Por categoría
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_categoria_producto">Categoría</label>
+                            <select id="id_categoria_producto" name="id_categoria_producto">
+                                <option value="">Solo si el conteo es por categoría</option>
+
+                                <% categorias.forEach((categoria)=> { %>
+                                    <option value="<%= categoria.id_categoria_producto %>"
+                                        <%=Number(valores.id_categoria_producto)===Number(categoria.id_categoria_producto)
+                                        ? 'selected' : '' %>
+                                        >
+                                        <%= categoria.nombre %>
+                                    </option>
+                                    <% }) %>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="observaciones">Observaciones</label>
+                        <textarea id="observaciones" name="observaciones" rows="4"
+                            placeholder="Ej: conteo general de cierre de mes, revisión de cables, inventario inicial..."><%= valores.observaciones || '' %></textarea>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">
+                        Crear conteo
+                    </button>
+
+                    <a href="/inventario/conteos" class="btn-secondary">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+</section>

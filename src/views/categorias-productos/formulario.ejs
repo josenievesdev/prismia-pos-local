@@ -1,0 +1,55 @@
+<section class="module-page">
+    <div class="module-header">
+        <div>
+            <p class="eyebrow">Productos</p>
+
+            <% if (modo==='crear' ) { %>
+                <h2>Nueva categoría</h2>
+                <p>Crea una categoría para organizar los productos del negocio.</p>
+                <% } else { %>
+                    <h2>Editar categoría</h2>
+                    <p>Actualiza la información de la categoría seleccionada.</p>
+                    <% } %>
+        </div>
+    </div>
+
+    <% if (error) { %>
+        <div class="alert alert-error">
+            <%= error %>
+        </div>
+        <% } %>
+
+            <form class="module-card form-panel" method="POST" action="<%= modo === 'crear'
+            ? '/categorias-productos/nueva'
+            : '/categorias-productos/' + categoria.id_categoria_producto + '/editar'
+        %>">
+                <div class="form-section">
+                    <h3>Información de la categoría</h3>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="nombre">Nombre *</label>
+                            <input type="text" id="nombre" name="nombre" value="<%= categoria.nombre || '' %>"
+                                placeholder="Ej: Bebidas" maxlength="80" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="descripcion">Descripción</label>
+                            <input type="text" id="descripcion" name="descripcion"
+                                value="<%= categoria.descripcion || '' %>"
+                                placeholder="Ej: Productos líquidos, gaseosas, jugos...">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">
+                        <%= modo==='crear' ? 'Crear categoría' : 'Guardar cambios' %>
+                    </button>
+
+                    <a href="/categorias-productos" class="btn-secondary">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+</section>

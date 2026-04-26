@@ -1,0 +1,413 @@
+<section class="module-page inventario-page">
+    <div class="module-header module-header-actions">
+        <div>
+            <p class="eyebrow">Conteo físico</p>
+            <h2>
+                <%= conteo.numero_conteo %>
+            </h2>
+            <p>
+                Registra el stock contado, revisa diferencias y aplica el ajuste cuando el conteo esté completo.
+            </p>
+        </div>
+
+        <div class="module-actions">
+            <a href="/inventario/conteos/<%= conteo.id_conteo_inventario %>/exportar-plantilla" class="btn-secondary">
+                Exportar plantilla
+            </a>
+
+            <a href="/inventario/conteos/<%= conteo.id_conteo_inventario %>/exportar-diferencias" class="btn-secondary">
+                Exportar reporte
+            </a>
+
+            <a href="/inventario/conteos/<%= conteo.id_conteo_inventario %>/diferencias" class="btn-secondary">
+                Ver diferencias
+            </a>
+
+            <a href="/inventario/conteos" class="btn-secondary">
+                Volver a conteos
+            </a>
+        </div>
+    </div>
+
+    <% if (mensajeExito) { %>
+        <div class="alert alert-success">
+            <%= mensajeExito %>
+        </div>
+        <% } %>
+
+            <% if (error) { %>
+                <div class="alert alert-error">
+                    <%= error %>
+                </div>
+                <% } %>
+
+                    <div class="inventory-count-summary">
+                        <article class="module-card count-summary-card">
+                            <span>Estado</span>
+                            <strong>
+                                <%= conteo.estado_texto %>
+                            </strong>
+                        </article>
+
+                        <article class="module-card count-summary-card">
+                            <span>Productos</span>
+                            <strong>
+                                <%= resumen?.total_productos || conteo.total_productos || 0 %>
+                            </strong>
+                        </article>
+
+                        <article class="module-card count-summary-card">
+                            <span>Contados</span>
+                            <strong>
+                                <%= resumen?.total_contados || 0 %>
+                            </strong>
+                        </article>
+
+                        <article class="module-card count-summary-card">
+                            <span>Pendientes</span>
+                            <strong>
+                                <%= resumen?.total_pendientes || 0 %>
+                            </strong>
+                        </article>
+                    </div>
+
+                    <div class="inventory-count-summary">
+                        <article class="module-card count-summary-card">
+                            <span>Diferencias</span>
+                            <strong>
+                                <%= resumen?.total_con_diferencia || conteo.total_diferencias || 0 %>
+                            </strong>
+                        </article>
+
+                        <article class="module-card count-summary-card">
+                            <span>Valor diferencia</span>
+                            <strong>
+                                <%= formatearPesos(resumen?.valor_diferencia_total || conteo.valor_diferencia_total ||
+                                    0) %>
+                            </strong>
+                        </article>
+
+                        <article class="module-card count-summary-card">
+                            <span>Tipo</span>
+                            <strong>
+                                <%= conteo.tipo_conteo %>
+                            </strong>
+                        </article>
+
+                        <article class="module-card count-summary-card">
+                            <span>Origen</span>
+                            <strong>
+                                <%= conteo.origen %>
+                            </strong>
+                        </article>
+                    </div>
+
+                    <% if (resumen && resumen.puede_importar_plantilla) { %>
+                        <form class="module-card import-count-card" method="POST"
+                            action="/inventario/conteos/<%= conteo.id_conteo_inventario %>/importar-plantilla"
+                            enctype="multipart/form-data">
+                            <div>
+                                <h3>Importar plantilla diligenciada</h3>
+                                <p>
+                                    Sube el Excel exportado desde este conteo. El sistema leerá la hoja Conteo y
+                                    guardará las cantidades contadas.
+                                </p>
+                            </div>
+
+                            <div class="import-count-actions">
+                                <input type="file" name="archivo_conteo" accept=".xlsx" required>
+
+                                <button type="submit" class="btn-primary">
+                                    Importar Excel
+                                </button>
+                            </div>
+                        </form>
+                        <% } %>
+
+                            <form class="module-card count-form" method="POST"
+                                action="/inventario/conteos/<%= conteo.id_conteo_inventario %>/guardar">
+                                <% const conteoEditable=resumen && resumen.puede_guardar_cantidades; %>
+
+                                    <% if (!detalles || detalles.length===0) { %>
+                                        <div class="empty-state">
+                                            <h3>El conteo no tiene productos</h3>
+                                            <p>Este conteo no generó detalles de productos.</p>
+                                        </div>
+                                        <% } else { %>
+                                            <div class="count-form-header">
+                                                <div>
+                                                    <h3>Productos del conteo</h3>
+                                                    <p>
+                                                        Escribe la cantidad física encontrada o importa la plantilla
+                                                        diligenciada.
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div class="table-wrapper">
+                                                <table class="data-table inventory-table count-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Código</th>
+                                                            <th>Producto</th>
+                                                            <th>Stock sistema</th>
+                                                            <th>Stock contado</th>
+                                                            <th>Diferencia</th>
+                                                            <th>Observación</th>
+                                                            <th>Estado</th>
+                                                        </tr>
+                                                    </thead>
+
+                                                    <tbody>
+                                                        <% detalles.forEach((detalle)=> { %>
+                                                            <tr>
+                                                                <td>
+                                                                    <strong>
+                                                                        <%= detalle.codigo_interno %>
+                                                                    </strong>
+
+                                                                    <% if (detalle.codigo_barras) { %>
+                                                                        <span class="table-subtext">
+                                                                            Barras: <%= detalle.codigo_barras %>
+                                                                        </span>
+                                                                        <% } %>
+                                                                </td>
+
+                                                                <td>
+                                                                    <strong>
+                                                                        <%= detalle.nombre_producto %>
+                                                                    </strong>
+                                                                </td>
+
+                                                                <td>
+                                                                    <strong>
+                                                                        <%= detalle.stock_sistema_texto %>
+                                                                    </strong>
+                                                                </td>
+
+                                                                <td>
+                                                                    <% if (conteoEditable) { %>
+                                                                        <input type="hidden" name="id_detalle"
+                                                                            value="<%= detalle.id_detalle_conteo_inventario %>">
+
+                                                                        <input class="count-input" type="number"
+                                                                            name="stock_contado" min="0" step="0.001"
+                                                                            value="<%= detalle.stock_contado !== null && typeof detalle.stock_contado !== 'undefined' ? detalle.stock_contado : '' %>"
+                                                                            placeholder="Cantidad" required>
+
+                                                                        <span class="table-subtext">
+                                                                            Unidad: <%= detalle.unidad_abreviatura
+                                                                                || 'und' %>
+                                                                        </span>
+                                                                        <% } else { %>
+                                                                            <strong>
+                                                                                <%= detalle.stock_contado_texto %>
+                                                                            </strong>
+                                                                            <% } %>
+                                                                </td>
+
+                                                                <td>
+                                                                    <% if (Number(detalle.diferencia || 0) < 0) { %>
+                                                                        <span class="badge badge-danger">
+                                                                            <%= detalle.diferencia_texto %>
+                                                                        </span>
+                                                                        <% } else if (Number(detalle.diferencia || 0)>
+                                                                            0) { %>
+                                                                            <span class="badge badge-warning">
+                                                                                +<%= detalle.diferencia_texto %>
+                                                                            </span>
+                                                                            <% } else { %>
+                                                                                <span class="text-muted">
+                                                                                    <%= detalle.diferencia_texto %>
+                                                                                </span>
+                                                                                <% } %>
+
+                                                                                    <% if
+                                                                                        (Number(detalle.valor_diferencia
+                                                                                        || 0) !==0) { %>
+                                                                                        <span class="table-subtext">
+                                                                                            Valor: <%=
+                                                                                                formatearPesos(detalle.valor_diferencia)
+                                                                                                %>
+                                                                                        </span>
+                                                                                        <% } %>
+                                                                </td>
+
+                                                                <td>
+                                                                    <% if (conteoEditable) { %>
+                                                                        <input class="count-note" type="text"
+                                                                            name="observaciones"
+                                                                            value="<%= detalle.observaciones || '' %>"
+                                                                            placeholder="Opcional">
+                                                                        <% } else { %>
+                                                                            <span class="text-muted">
+                                                                                <%= detalle.observaciones
+                                                                                    || 'Sin observación' %>
+                                                                            </span>
+                                                                            <% } %>
+                                                                </td>
+
+                                                                <td>
+                                                                    <% if (detalle.estado==='pendiente' ) { %>
+                                                                        <span
+                                                                            class="badge badge-warning">Pendiente</span>
+                                                                        <% } else if (detalle.estado==='contado' ) { %>
+                                                                            <span
+                                                                                class="badge badge-success">Contado</span>
+                                                                            <% } else if (detalle.estado==='ajustado' )
+                                                                                { %>
+                                                                                <span
+                                                                                    class="badge badge-success">Ajustado</span>
+                                                                                <% } else { %>
+                                                                                    <span class="badge badge-muted">
+                                                                                        <%= detalle.estado %>
+                                                                                    </span>
+                                                                                    <% } %>
+                                                                </td>
+                                                            </tr>
+                                                            <% }) %>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            <div class="count-form-footer">
+                                                <% if (conteoEditable) { %>
+                                                    <button type="submit" class="btn-primary">
+                                                        Guardar cantidades
+                                                    </button>
+                                                    <% } %>
+
+                                                        <a href="/inventario/conteos" class="btn-secondary">
+                                                            Volver
+                                                        </a>
+                                            </div>
+                                            <% } %>
+                            </form>
+
+                            <% if (conteo.estado==='en_revision' ) { %>
+                                <% if (resumen && resumen.puede_aplicar) { %>
+                                    <div class="module-card apply-count-card">
+                                        <div>
+                                            <h3>Aplicar conteo físico</h3>
+                                            <p>
+                                                Esta acción actualizará el stock real de los productos y generará
+                                                movimientos de inventario.
+                                            </p>
+                                        </div>
+
+                                        <button type="button" class="btn-primary" id="openApplyCountModal">
+                                            Aplicar conteo
+                                        </button>
+                                    </div>
+
+                                    <div class="custom-modal hidden" id="applyCountModal" aria-hidden="true">
+                                        <div class="custom-modal-backdrop" data-close-apply-modal></div>
+
+                                        <div class="custom-modal-dialog" role="dialog" aria-modal="true"
+                                            aria-labelledby="applyCountModalTitle">
+                                            <div class="custom-modal-header">
+                                                <h3 id="applyCountModalTitle">
+                                                    Confirmar aplicación del conteo
+                                                </h3>
+
+                                                <button type="button" class="modal-close-btn" data-close-apply-modal
+                                                    aria-label="Cerrar">
+                                                    ×
+                                                </button>
+                                            </div>
+
+                                            <div class="custom-modal-body">
+                                                <p>
+                                                    Vas a aplicar el conteo
+                                                    <strong>
+                                                        <%= conteo.numero_conteo %>
+                                                    </strong>.
+                                                </p>
+
+                                                <p>
+                                                    El sistema actualizará el stock real de los productos, generará
+                                                    movimientos de inventario
+                                                    y este conteo ya no podrá editarse después.
+                                                </p>
+                                            </div>
+
+                                            <div class="custom-modal-actions">
+                                                <button type="button" class="btn-secondary" data-close-apply-modal>
+                                                    Cancelar
+                                                </button>
+
+                                                <form method="POST"
+                                                    action="/inventario/conteos/<%= conteo.id_conteo_inventario %>/aplicar">
+                                                    <button type="submit" class="btn-primary">
+                                                        Sí, aplicar conteo
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <% } else { %>
+                                        <div class="module-card apply-count-card blocked">
+                                            <div>
+                                                <h3>Conteo no listo para aplicar</h3>
+                                                <p>
+                                                    Todos los productos deben tener cantidad contada antes de aplicar el
+                                                    conteo.
+                                                </p>
+                                            </div>
+
+                                            <span class="badge badge-warning">
+                                                Pendiente
+                                            </span>
+                                        </div>
+                                        <% } %>
+                                            <% } %>
+
+                                                <% if (conteo.estado==='aplicado' ) { %>
+                                                    <div class="module-card apply-count-card applied">
+                                                        <div>
+                                                            <h3>Conteo aplicado</h3>
+                                                            <p>
+                                                                El inventario real ya fue actualizado con las cantidades
+                                                                contadas.
+                                                            </p>
+                                                        </div>
+
+                                                        <span class="badge badge-success">Aplicado</span>
+                                                    </div>
+                                                    <% } %>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const openButton = document.getElementById('openApplyCountModal');
+        const modal = document.getElementById('applyCountModal');
+
+        if (!openButton || !modal) return;
+
+        const closeElements = modal.querySelectorAll('[data-close-apply-modal]');
+
+        const openModal = () => {
+            modal.classList.remove('hidden');
+            document.body.classList.add('modal-open');
+            modal.setAttribute('aria-hidden', 'false');
+        };
+
+        const closeModal = () => {
+            modal.classList.add('hidden');
+            document.body.classList.remove('modal-open');
+            modal.setAttribute('aria-hidden', 'true');
+        };
+
+        openButton.addEventListener('click', openModal);
+
+        closeElements.forEach((element) => {
+            element.addEventListener('click', closeModal);
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && !modal.classList.contains('hidden')) {
+                closeModal();
+            }
+        });
+    });
+</script>

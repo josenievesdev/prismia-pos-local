@@ -1,0 +1,316 @@
+<section class="module-page productos-page">
+    <div class="module-header module-header-actions">
+        <div>
+            <p class="eyebrow">Inventario comercial</p>
+            <h2>Productos</h2>
+            <p>
+                Gestiona productos, unidades de medida, precios, costos, stock e impuestos.
+            </p>
+        </div>
+
+        <a href="/productos/nuevo" class="btn-primary">
+            Nuevo producto
+        </a>
+    </div>
+
+    <form class="module-card products-filters" method="GET" action="/productos">
+        <div class="filter-search">
+            <label for="busqueda">Buscar producto</label>
+            <input type="text" id="busqueda" name="busqueda" value="<%= filtros?.busqueda || '' %>"
+                placeholder="Nombre, código interno o código de barras">
+        </div>
+
+        <div class="filter-grid">
+            <div class="form-group">
+                <label for="categoria">Categoría</label>
+                <select id="categoria" name="categoria">
+                    <option value="">Todas</option>
+
+                    <% categorias.forEach((categoria)=> { %>
+                        <option value="<%= categoria.id_categoria_producto %>"
+                            <%=Number(filtros?.idCategoriaProducto)===Number(categoria.id_categoria_producto)
+                            ? 'selected' : '' %>
+                            >
+                            <%= categoria.nombre %>
+                        </option>
+                        <% }) %>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="estado">Estado</label>
+                <select id="estado" name="estado">
+                    <option value="">Todos</option>
+                    <option value="activo" <%=filtros?.estado==='activo' ? 'selected' : '' %>>Activos</option>
+                    <option value="inactivo" <%=filtros?.estado==='inactivo' ? 'selected' : '' %>>Inactivos</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="stock">Stock</label>
+                <select id="stock" name="stock">
+                    <option value="">Todos</option>
+                    <option value="bajo" <%=filtros?.stock==='bajo' ? 'selected' : '' %>>Bajo stock</option>
+                    <option value="sin_stock" <%=filtros?.stock==='sin_stock' ? 'selected' : '' %>>Sin stock</option>
+                    <option value="sin_control" <%=filtros?.stock==='sin_control' ? 'selected' : '' %>>Sin control
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="limite">Mostrar</label>
+                <select id="limite" name="limite">
+                    <option value="10" <%=Number(paginacion?.limite)===10 ? 'selected' : '' %>>10</option>
+                    <option value="25" <%=Number(paginacion?.limite)===25 ? 'selected' : '' %>>25</option>
+                    <option value="50" <%=Number(paginacion?.limite)===50 ? 'selected' : '' %>>50</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="filter-actions">
+            <button type="submit" class="btn-primary">
+                Aplicar filtros
+            </button>
+
+            <a href="/productos" class="btn-secondary">
+                Limpiar
+            </a>
+        </div>
+    </form>
+
+    <% if (mensajeExito) { %>
+        <div class="alert alert-success">
+            <%= mensajeExito %>
+        </div>
+        <% } %>
+
+            <% if (error) { %>
+                <div class="alert alert-error">
+                    <%= error %>
+                </div>
+                <% } %>
+
+                    <div class="module-card">
+                        <div class="table-summary">
+                            <span>
+                                Total encontrados:
+                                <strong>
+                                    <%= paginacion?.totalRegistros || 0 %>
+                                </strong>
+                            </span>
+
+                            <span>
+                                Página
+                                <strong>
+                                    <%= paginacion?.paginaActual || 1 %>
+                                </strong>
+                                de
+                                <strong>
+                                    <%= paginacion?.totalPaginas || 1 %>
+                                </strong>
+                            </span>
+                        </div>
+
+                        <% if (!productos || productos.length===0) { %>
+                            <div class="empty-state">
+                                <h3>No hay productos para mostrar</h3>
+                                <p>
+                                    Ajusta los filtros o crea un nuevo producto.
+                                </p>
+
+                                <a href="/productos/nuevo" class="btn-primary">
+                                    Crear producto
+                                </a>
+                            </div>
+                            <% } else { %>
+                                <div class="table-wrapper">
+                                    <table class="data-table products-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Código</th>
+                                                <th>Producto</th>
+                                                <th>Medida</th>
+                                                <th>Precio / costo</th>
+                                                <th>Ganancia</th>
+                                                <th>Stock</th>
+                                                <th>Estado</th>
+                                                <th class="text-right">Acciones</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            <% productos.forEach((producto)=> { %>
+                                                <tr>
+                                                    <td>
+                                                        <strong>
+                                                            <%= producto.codigo_interno %>
+                                                        </strong>
+
+                                                        <% if (producto.codigo_barras) { %>
+                                                            <span class="table-subtext">
+                                                                Barras: <%= producto.codigo_barras %>
+                                                            </span>
+                                                            <% } %>
+                                                    </td>
+
+                                                    <td>
+                                                        <strong>
+                                                            <%= producto.nombre %>
+                                                        </strong>
+
+                                                        <span class="table-subtext">
+                                                            <%= producto.categoria_nombre || 'Sin categoría' %>
+                                                        </span>
+
+                                                        <% if (producto.descripcion) { %>
+                                                            <span class="table-subtext">
+                                                                <%= producto.descripcion %>
+                                                            </span>
+                                                            <% } %>
+                                                    </td>
+
+                                                    <td>
+                                                        <strong>
+                                                            <%= producto.unidad_nombre || 'Unidad' %>
+                                                        </strong>
+                                                        <span class="table-subtext">
+                                                            <%= producto.unidad_abreviatura || 'und' %>
+                                                                · <%= Number(producto.permite_cantidad_decimal)===1
+                                                                    ? 'Permite decimales' : 'Enteros' %>
+                                                        </span>
+                                                    </td>
+
+                                                    <td>
+                                                        <strong>
+                                                            <%= formatearPesos(producto.precio_venta) %>
+                                                        </strong>
+                                                        <span class="table-subtext">
+                                                            Costo prom.: <%= formatearPesos(producto.costo_referencia)
+                                                                %>
+                                                        </span>
+
+                                                        <% if (Number(producto.maneja_iva)===1) { %>
+                                                            <span class="table-subtext">
+                                                                IVA: <%= (Number(producto.porcentaje_iva || 0) /
+                                                                    100).toFixed(2) %>%
+                                                                    <%= Number(producto.precio_incluye_iva)===1
+                                                                        ? 'incluido' : 'no incluido' %>
+                                                            </span>
+                                                            <% } else { %>
+                                                                <span class="table-subtext">
+                                                                    Sin IVA
+                                                                </span>
+                                                                <% } %>
+                                                    </td>
+
+                                                    <td>
+                                                        <strong>
+                                                            <%= formatearPesos(producto.ganancia_bruta_unitaria) %>
+                                                        </strong>
+                                                        <span class="table-subtext">
+                                                            Margen: <%= producto.margen_bruto_texto %>
+                                                        </span>
+                                                        <span class="table-subtext">
+                                                            Markup: <%= producto.markup_texto %>
+                                                        </span>
+                                                    </td>
+
+                                                    <td>
+                                                        <% if (producto.controla_inventario===1) { %>
+                                                            <% if (Number(producto.stock_actual)
+                                                                <=Number(producto.stock_minimo)) { %>
+                                                                <span class="badge badge-warning">
+                                                                    <%= producto.stock_actual_texto %>
+                                                                </span>
+                                                                <% } else { %>
+                                                                    <span class="badge badge-success">
+                                                                        <%= producto.stock_actual_texto %>
+                                                                    </span>
+                                                                    <% } %>
+
+                                                                        <span class="table-subtext">
+                                                                            Mínimo: <%= producto.stock_minimo_texto %>
+                                                                        </span>
+                                                                        <% } else { %>
+                                                                            <span class="badge badge-muted">Sin
+                                                                                control</span>
+                                                                            <% } %>
+                                                    </td>
+
+                                                    <td>
+                                                        <% if (producto.estado==='activo' ) { %>
+                                                            <span class="badge badge-success">Activo</span>
+                                                            <% } else { %>
+                                                                <span class="badge badge-muted">Inactivo</span>
+                                                                <% } %>
+                                                    </td>
+
+                                                    <td>
+                                                        <div class="table-actions">
+                                                            <a href="/productos/<%= producto.id_producto %>/editar"
+                                                                class="btn-secondary btn-small">
+                                                                Editar
+                                                            </a>
+
+                                                            <% if (producto.estado==='activo' ) { %>
+                                                                <form method="POST"
+                                                                    action="/productos/<%= producto.id_producto %>/desactivar">
+                                                                    <button type="submit"
+                                                                        class="btn-secondary btn-small">
+                                                                        Desactivar
+                                                                    </button>
+                                                                </form>
+                                                                <% } else { %>
+                                                                    <form method="POST"
+                                                                        action="/productos/<%= producto.id_producto %>/activar">
+                                                                        <button type="submit"
+                                                                            class="btn-secondary btn-small">
+                                                                            Activar
+                                                                        </button>
+                                                                    </form>
+                                                                    <% } %>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <% }) %>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <% if (paginacion && paginacion.totalPaginas> 1) { %>
+                                    <nav class="pagination">
+                                        <% if (paginacion.tieneAnterior) { %>
+                                            <a href="<%= crearUrlPagina(paginacion.paginaActual - 1) %>"
+                                                class="btn-secondary btn-small">
+                                                Anterior
+                                            </a>
+                                            <% } else { %>
+                                                <span class="btn-secondary btn-small disabled-button">
+                                                    Anterior
+                                                </span>
+                                                <% } %>
+
+                                                    <span class="pagination-info">
+                                                        Página <strong>
+                                                            <%= paginacion.paginaActual %>
+                                                        </strong>
+                                                        de <strong>
+                                                            <%= paginacion.totalPaginas %>
+                                                        </strong>
+                                                    </span>
+
+                                                    <% if (paginacion.tieneSiguiente) { %>
+                                                        <a href="<%= crearUrlPagina(paginacion.paginaActual + 1) %>"
+                                                            class="btn-secondary btn-small">
+                                                            Siguiente
+                                                        </a>
+                                                        <% } else { %>
+                                                            <span class="btn-secondary btn-small disabled-button">
+                                                                Siguiente
+                                                            </span>
+                                                            <% } %>
+                                    </nav>
+                                    <% } %>
+                                        <% } %>
+                    </div>
+</section>

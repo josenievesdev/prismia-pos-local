@@ -1,0 +1,229 @@
+<section class="module-page inventario-page">
+    <div class="module-header module-header-actions">
+        <div>
+            <p class="eyebrow">Control operativo</p>
+            <h2>Inventario</h2>
+            <p>
+                Consulta stock, detecta productos críticos y registra ajustes manuales con historial.
+            </p>
+        </div>
+
+        <div class="module-actions">
+            <a href="/inventario/conteos" class="btn-secondary">
+                Conteos físicos
+            </a>
+
+            <a href="/inventario/historial" class="btn-secondary">
+                Ver historial
+            </a>
+        </div>
+    </div>
+
+    <form class="module-card inventory-filters" method="GET" action="/inventario">
+        <div class="filter-search">
+            <label for="busqueda">Buscar producto</label>
+            <input type="text" id="busqueda" name="busqueda" value="<%= filtros?.busqueda || '' %>"
+                placeholder="Nombre, código interno o código de barras">
+        </div>
+
+        <div class="filter-grid">
+            <div class="form-group">
+                <label for="categoria">Categoría</label>
+                <select id="categoria" name="categoria">
+                    <option value="">Todas</option>
+
+                    <% categorias.forEach((categoria)=> { %>
+                        <option value="<%= categoria.id_categoria_producto %>"
+                            <%=Number(filtros?.idCategoriaProducto)===Number(categoria.id_categoria_producto)
+                            ? 'selected' : '' %>
+                            >
+                            <%= categoria.nombre %>
+                        </option>
+                        <% }) %>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="estado_stock">Estado de stock</label>
+                <select id="estado_stock" name="estado_stock">
+                    <option value="">Todos</option>
+                    <option value="ok" <%=filtros?.estadoStock==='ok' ? 'selected' : '' %>>Stock suficiente</option>
+                    <option value="bajo" <%=filtros?.estadoStock==='bajo' ? 'selected' : '' %>>Bajo stock</option>
+                    <option value="sin_stock" <%=filtros?.estadoStock==='sin_stock' ? 'selected' : '' %>>Sin stock
+                    </option>
+                    <option value="sin_control" <%=filtros?.estadoStock==='sin_control' ? 'selected' : '' %>>Sin control
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="limite">Mostrar</label>
+                <select id="limite" name="limite">
+                    <option value="10" <%=Number(paginacion?.limite)===10 ? 'selected' : '' %>>10</option>
+                    <option value="25" <%=Number(paginacion?.limite)===25 ? 'selected' : '' %>>25</option>
+                    <option value="50" <%=Number(paginacion?.limite)===50 ? 'selected' : '' %>>50</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="filter-actions">
+            <button type="submit" class="btn-primary">Aplicar filtros</button>
+            <a href="/inventario" class="btn-secondary">Limpiar</a>
+        </div>
+    </form>
+
+    <% if (mensajeExito) { %>
+        <div class="alert alert-success">
+            <%= mensajeExito %>
+        </div>
+        <% } %>
+
+            <% if (error) { %>
+                <div class="alert alert-error">
+                    <%= error %>
+                </div>
+                <% } %>
+
+                    <div class="module-card">
+                        <div class="table-summary">
+                            <span>Total encontrados: <strong>
+                                    <%= paginacion?.totalRegistros || 0 %>
+                                </strong></span>
+                            <span>Página <strong>
+                                    <%= paginacion?.paginaActual || 1 %>
+                                </strong> de <strong>
+                                    <%= paginacion?.totalPaginas || 1 %>
+                                </strong></span>
+                        </div>
+
+                        <% if (!productos || productos.length===0) { %>
+                            <div class="empty-state">
+                                <h3>No hay productos para mostrar</h3>
+                                <p>Ajusta los filtros o registra productos primero.</p>
+                                <a href="/productos/nuevo" class="btn-primary">Crear producto</a>
+                            </div>
+                            <% } else { %>
+                                <div class="table-wrapper">
+                                    <table class="data-table inventory-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Producto</th>
+                                                <th>Categoría</th>
+                                                <th>Unidad</th>
+                                                <th>Stock actual</th>
+                                                <th>Stock mínimo</th>
+                                                <th>Estado</th>
+                                                <th class="text-right">Acciones</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            <% productos.forEach((producto)=> { %>
+                                                <tr>
+                                                    <td>
+                                                        <strong>
+                                                            <%= producto.nombre %>
+                                                        </strong>
+                                                        <span class="table-subtext">
+                                                            <%= producto.codigo_interno %>
+                                                                <% if (producto.codigo_barras) { %>
+                                                                    · Barras: <%= producto.codigo_barras %>
+                                                                        <% } %>
+                                                        </span>
+                                                    </td>
+
+                                                    <td>
+                                                        <span class="text-muted">
+                                                            <%= producto.categoria_nombre || 'Sin categoría' %>
+                                                        </span>
+                                                    </td>
+
+                                                    <td>
+                                                        <strong>
+                                                            <%= producto.unidad_nombre || 'Unidad' %>
+                                                        </strong>
+                                                        <span class="table-subtext">
+                                                            <%= producto.unidad_abreviatura || 'und' %>
+                                                        </span>
+                                                    </td>
+
+                                                    <td>
+                                                        <strong>
+                                                            <%= producto.stock_actual_texto %>
+                                                        </strong>
+                                                    </td>
+
+                                                    <td>
+                                                        <span class="text-muted">
+                                                            <%= producto.stock_minimo_texto %>
+                                                        </span>
+                                                    </td>
+
+                                                    <td>
+                                                        <% if (producto.estado_stock==='ok' ) { %>
+                                                            <span class="badge badge-success">Suficiente</span>
+                                                            <% } else if (producto.estado_stock==='bajo' ) { %>
+                                                                <span class="badge badge-warning">Bajo stock</span>
+                                                                <% } else if (producto.estado_stock==='sin_stock' ) { %>
+                                                                    <span class="badge badge-danger">Sin stock</span>
+                                                                    <% } else { %>
+                                                                        <span class="badge badge-muted">Sin
+                                                                            control</span>
+                                                                        <% } %>
+                                                    </td>
+
+                                                    <td>
+                                                        <div class="table-actions">
+                                                            <% if (Number(producto.controla_inventario)===1) { %>
+                                                                <a href="/inventario/<%= producto.id_producto %>/ajuste"
+                                                                    class="btn-secondary btn-small">
+                                                                    Ajustar
+                                                                </a>
+                                                                <% } else { %>
+                                                                    <span
+                                                                        class="btn-secondary btn-small disabled-button">
+                                                                        Ajustar
+                                                                    </span>
+                                                                    <% } %>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <% }) %>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <% if (paginacion && paginacion.totalPaginas> 1) { %>
+                                    <nav class="pagination">
+                                        <% if (paginacion.tieneAnterior) { %>
+                                            <a href="<%= crearUrlPagina(paginacion.paginaActual - 1) %>"
+                                                class="btn-secondary btn-small">
+                                                Anterior
+                                            </a>
+                                            <% } else { %>
+                                                <span class="btn-secondary btn-small disabled-button">Anterior</span>
+                                                <% } %>
+
+                                                    <span class="pagination-info">
+                                                        Página <strong>
+                                                            <%= paginacion.paginaActual %>
+                                                        </strong>
+                                                        de <strong>
+                                                            <%= paginacion.totalPaginas %>
+                                                        </strong>
+                                                    </span>
+
+                                                    <% if (paginacion.tieneSiguiente) { %>
+                                                        <a href="<%= crearUrlPagina(paginacion.paginaActual + 1) %>"
+                                                            class="btn-secondary btn-small">
+                                                            Siguiente
+                                                        </a>
+                                                        <% } else { %>
+                                                            <span
+                                                                class="btn-secondary btn-small disabled-button">Siguiente</span>
+                                                            <% } %>
+                                    </nav>
+                                    <% } %>
+                                        <% } %>
+                    </div>
+</section>

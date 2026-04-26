@@ -1,0 +1,117 @@
+<section class="module-page inventario-page">
+    <div class="module-header module-header-actions">
+        <div>
+            <p class="eyebrow">Conteo físico</p>
+            <h2>Conteos de inventario</h2>
+            <p>
+                Crea conteos físicos para comparar el stock del sistema contra el stock contado.
+            </p>
+        </div>
+
+        <a href="/inventario/conteos/nuevo" class="btn-primary">
+            Nuevo conteo
+        </a>
+    </div>
+
+    <% if (mensajeExito) { %>
+        <div class="alert alert-success">
+            <%= mensajeExito %>
+        </div>
+        <% } %>
+
+            <% if (error) { %>
+                <div class="alert alert-error">
+                    <%= error %>
+                </div>
+                <% } %>
+
+                    <div class="module-card">
+                        <% if (!conteos || conteos.length===0) { %>
+                            <div class="empty-state">
+                                <h3>No hay conteos físicos registrados</h3>
+                                <p>Crea el primer conteo para iniciar control físico del inventario.</p>
+                                <a href="/inventario/conteos/nuevo" class="btn-primary">Crear conteo</a>
+                            </div>
+                            <% } else { %>
+                                <div class="table-wrapper">
+                                    <table class="data-table inventory-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Número</th>
+                                                <th>Tipo</th>
+                                                <th>Origen</th>
+                                                <th>Estado</th>
+                                                <th>Productos</th>
+                                                <th>Fecha</th>
+                                                <th>Usuario</th>
+                                                <th class="text-right">Acciones</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            <% conteos.forEach((conteo)=> { %>
+                                                <tr>
+                                                    <td>
+                                                        <strong>
+                                                            <%= conteo.numero_conteo %>
+                                                        </strong>
+                                                    </td>
+
+                                                    <td>
+                                                        <span class="text-muted">
+                                                            <%= conteo.tipo_conteo %>
+                                                        </span>
+                                                    </td>
+
+                                                    <td>
+                                                        <span class="text-muted">
+                                                            <%= conteo.origen %>
+                                                        </span>
+                                                    </td>
+
+                                                    <td>
+                                                        <% if (conteo.estado==='borrador' ) { %>
+                                                            <span class="badge badge-warning">Borrador</span>
+                                                            <% } else if (conteo.estado==='aplicado' ) { %>
+                                                                <span class="badge badge-success">Aplicado</span>
+                                                                <% } else { %>
+                                                                    <span class="badge badge-muted">
+                                                                        <%= conteo.estado_texto %>
+                                                                    </span>
+                                                                    <% } %>
+                                                    </td>
+
+                                                    <td>
+                                                        <strong>
+                                                            <%= conteo.total_productos %>
+                                                        </strong>
+                                                    </td>
+
+                                                    <td>
+                                                        <span class="text-muted">
+                                                            <%= conteo.fecha_inicio %>
+                                                        </span>
+                                                    </td>
+
+                                                    <td>
+                                                        <span class="text-muted">
+                                                            <%= conteo.usuario_creacion_nombre || 'Sistema' %>
+                                                        </span>
+                                                    </td>
+
+                                                    <td>
+                                                        <div class="table-actions">
+                                                            <a href="/inventario/conteos/<%= conteo.id_conteo_inventario %>"
+                                                                class="btn-secondary btn-small">
+                                                                Ver
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <% }) %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <% } %>
+                    </div>
+</section>

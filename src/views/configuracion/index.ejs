@@ -1,0 +1,137 @@
+<section class="module-page">
+    <div class="module-header">
+        <div>
+            <p class="eyebrow">Administración</p>
+            <h2>Configuración del negocio</h2>
+            <p>
+                Define la información principal que usará el sistema en recibos, reportes y módulos futuros.
+            </p>
+        </div>
+    </div>
+
+    <% if (mensajeExito) { %>
+        <div class="alert alert-success">
+            <%= mensajeExito %>
+        </div>
+        <% } %>
+
+            <% if (error) { %>
+                <div class="alert alert-error">
+                    <%= error %>
+                </div>
+                <% } %>
+
+                    <% if (!configuracion) { %>
+                        <div class="module-card">
+                            <h3>No hay configuración activa</h3>
+                            <p class="text-muted">
+                                No se encontró la configuración inicial del negocio.
+                            </p>
+                        </div>
+                        <% } else { %>
+                            <form class="module-card form-panel" method="POST" action="/configuracion">
+                                <div class="form-section">
+                                    <h3>Datos principales</h3>
+
+                                    <div class="form-grid">
+                                        <div class="form-group">
+                                            <label for="nombre_negocio">Nombre del negocio *</label>
+                                            <input type="text" id="nombre_negocio" name="nombre_negocio"
+                                                value="<%= configuracion.nombre_negocio || '' %>" required>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="nombre_comercial">Nombre comercial</label>
+                                            <input type="text" id="nombre_comercial" name="nombre_comercial"
+                                                value="<%= configuracion.nombre_comercial || '' %>">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="tipo_documento">Tipo de documento</label>
+                                            <select id="tipo_documento" name="tipo_documento">
+                                                <option value="NIT" <%=configuracion.tipo_documento==='NIT' ? 'selected'
+                                                    : '' %>>NIT</option>
+                                                <option value="CC" <%=configuracion.tipo_documento==='CC' ? 'selected'
+                                                    : '' %>>Cédula</option>
+                                                <option value="CE" <%=configuracion.tipo_documento==='CE' ? 'selected'
+                                                    : '' %>>Cédula de extranjería</option>
+                                                <option value="PAS" <%=configuracion.tipo_documento==='PAS' ? 'selected'
+                                                    : '' %>>Pasaporte</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="documento">Documento</label>
+                                            <input type="text" id="documento" name="documento"
+                                                value="<%= configuracion.documento || '' %>">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-section">
+                                    <h3>Contacto</h3>
+
+                                    <div class="form-grid">
+                                        <div class="form-group">
+                                            <label for="direccion">Dirección</label>
+                                            <input type="text" id="direccion" name="direccion"
+                                                value="<%= configuracion.direccion || '' %>">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="telefono">Teléfono</label>
+                                            <input type="text" id="telefono" name="telefono"
+                                                value="<%= configuracion.telefono || '' %>">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="correo">Correo</label>
+                                            <input type="email" id="correo" name="correo"
+                                                value="<%= configuracion.correo || '' %>">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-section">
+                                    <h3>Parámetros del sistema</h3>
+
+                                    <div class="form-grid">
+                                        <div class="form-group">
+                                            <label for="moneda">Moneda</label>
+                                            <select id="moneda" name="moneda">
+                                                <option value="COP" <%=configuracion.moneda==='COP' ? 'selected' : '' %>
+                                                    >COP - Peso colombiano</option>
+                                                <option value="USD" <%=configuracion.moneda==='USD' ? 'selected' : '' %>
+                                                    >USD - Dólar</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="impuesto_por_defecto">Impuesto por defecto</label>
+                                            <input type="number" id="impuesto_por_defecto" name="impuesto_por_defecto"
+                                                min="0" step="1" value="<%= configuracion.impuesto_por_defecto || 0 %>">
+                                            <small class="field-help">
+                                                Guarda el valor como centésimas de porcentaje. Ejemplo: 1900 = 19%.
+                                            </small>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="mensaje_recibo">Mensaje del recibo</label>
+                                        <textarea id="mensaje_recibo" name="mensaje_recibo"
+                                            rows="3"><%= configuracion.mensaje_recibo || '' %></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="submit" class="btn-primary">
+                                        Guardar configuración
+                                    </button>
+
+                                    <a href="/dashboard" class="btn-secondary">
+                                        Volver
+                                    </a>
+                                </div>
+                            </form>
+                            <% } %>
+</section>

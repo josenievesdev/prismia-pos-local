@@ -1,0 +1,33 @@
+<header class="app-header">
+    <div>
+        <p class="header-kicker">Panel administrativo</p>
+        <h1>
+            <%= titulo || 'Panel' %>
+        </h1>
+    </div>
+
+    <div class="header-user">
+        <% if (usuario) { %>
+            <div class="user-pill">
+                <div class="user-avatar">
+                    <%= usuario.nombre ? usuario.nombre.charAt(0).toUpperCase() : 'U' %>
+                </div>
+
+                <div>
+                    <strong>
+                        <%= usuario.nombre %>
+                    </strong>
+                    <small>
+                        <%= usuario.rol_principal || 'sin rol' %>
+                    </small>
+                </div>
+            </div>
+            <% } %>
+
+                <form method="POST" action="/auth/logout">
+                    <button type="submit" class="btn-secondary btn-small">
+                        Salir
+                    </button>
+                </form>
+    </div>
+</header>

@@ -1,0 +1,81 @@
+<section class="module-page">
+    <div class="module-header">
+        <div>
+            <p class="eyebrow">Sprint 0</p>
+            <h2>Estado inicial del sistema</h2>
+            <p>
+                La base principal de <strong>
+                    <%= empresa.software.nombre %>
+                </strong> está funcionando correctamente.
+            </p>
+        </div>
+    </div>
+
+    <% if (usuario) { %>
+        <div class="info-strip">
+            <span>Sesión activa</span>
+            <strong>
+                <%= usuario.nombre %>
+            </strong>
+            <span>Rol principal: <strong>
+                    <%= usuario.rol_principal || 'sin rol' %>
+                </strong></span>
+        </div>
+        <% } %>
+
+            <div class="status-grid">
+                <article class="status-card">
+                    <span class="status-dot success"></span>
+                    <div>
+                        <h2>Servidor</h2>
+                        <p>Express está levantado.</p>
+                    </div>
+                </article>
+
+                <article class="status-card">
+                    <span class="status-dot success"></span>
+                    <div>
+                        <h2>Base de datos</h2>
+                        <p>SQLite está configurado.</p>
+                    </div>
+                </article>
+
+                <article class="status-card">
+                    <span class="status-dot success"></span>
+                    <div>
+                        <h2>Autenticación</h2>
+                        <p>Login real conectado.</p>
+                    </div>
+                </article>
+            </div>
+
+            <div class="module-card">
+                <h3>Próximos módulos</h3>
+
+                <div class="module-list">
+                    <div>
+                        <strong>Configuración del negocio</strong>
+                        <span>Datos comerciales, recibo, moneda y ajustes base.</span>
+                    </div>
+
+                    <div>
+                        <strong>Productos y categorías</strong>
+                        <span>Creación de productos, precios, stock inicial y estados.</span>
+                    </div>
+
+                    <div>
+                        <strong>Inventario</strong>
+                        <span>Movimientos, ajustes, historial y control de stock.</span>
+                    </div>
+
+                    <div>
+                        <strong>Caja y POS</strong>
+                        <span>Apertura, ventas, pagos, cierre y reportes diarios.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="actions">
+                <a href="/salud" class="btn-secondary">Ver salud del sistema</a>
+            </div>
+</section>

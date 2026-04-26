@@ -1,0 +1,303 @@
+<section class="module-page productos-page producto-form-page">
+    <div class="module-header module-header-compact">
+        <div>
+            <p class="eyebrow">Inventario comercial</p>
+
+            <% if (modo==='crear' ) { %>
+                <h2>Nuevo producto</h2>
+                <p>
+                    Registra la información base del producto, su unidad de medida, precio y control de inventario.
+                </p>
+                <% } else { %>
+                    <h2>Editar producto</h2>
+                    <p>
+                        Actualiza la información comercial del producto seleccionado.
+                    </p>
+                    <% } %>
+        </div>
+    </div>
+
+    <% if (error) { %>
+        <div class="alert alert-error">
+            <%= error %>
+        </div>
+        <% } %>
+
+            <form class="module-card form-panel product-form" method="POST" action="<%= modo === 'crear'
+            ? '/productos/nuevo'
+            : '/productos/' + producto.id_producto + '/editar'
+        %>">
+                <input type="hidden" name="imagen_url" value="<%= producto.imagen_url || '' %>">
+
+                <div class="form-section product-section">
+                    <div class="section-title-row">
+                        <div>
+                            <h3>Identificación</h3>
+                            <p>Datos básicos para buscar y reconocer el producto.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="codigo_interno">Código interno *</label>
+                            <input type="text" id="codigo_interno" name="codigo_interno"
+                                value="<%= producto.codigo_interno || '' %>" placeholder="PRD-0001" required>
+                            <small class="field-help">
+                                Código visible en búsquedas, reportes y recibos.
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="codigo_barras">Código de barras / SKU</label>
+                            <input type="text" id="codigo_barras" name="codigo_barras"
+                                value="<%= producto.codigo_barras || '' %>" placeholder="Opcional">
+                            <small class="field-help">
+                                Útil para lector de barras o escaneo móvil futuro.
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="nombre">Nombre *</label>
+                            <input type="text" id="nombre" name="nombre" value="<%= producto.nombre || '' %>"
+                                placeholder="Ej: Alambre calibre 12" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_categoria_producto">Categoría *</label>
+                            <select id="id_categoria_producto" name="id_categoria_producto" required>
+                                <option value="">Selecciona una categoría</option>
+
+                                <% categorias.forEach((categoria)=> { %>
+                                    <option value="<%= categoria.id_categoria_producto %>"
+                                        <%=Number(producto.id_categoria_producto)===Number(categoria.id_categoria_producto)
+                                        ? 'selected' : '' %>
+                                        >
+                                        <%= categoria.nombre %>
+                                            <%= categoria.estado==='inactivo' ? ' (inactiva)' : '' %>
+                                    </option>
+                                    <% }) %>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="descripcion">Descripción</label>
+                        <textarea id="descripcion" name="descripcion" rows="3"
+                            placeholder="Descripción corta del producto"><%= producto.descripcion || '' %></textarea>
+                    </div>
+                </div>
+
+                <div class="form-section product-section">
+                    <div class="section-title-row">
+                        <div>
+                            <h3>Unidad de medida</h3>
+                            <p>Define cómo se vende y cómo se descuenta del inventario.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="id_unidad_medida">Unidad de venta / inventario *</label>
+                            <select id="id_unidad_medida" name="id_unidad_medida" required>
+                                <option value="">Selecciona una unidad</option>
+
+                                <% unidades.forEach((unidad)=> { %>
+                                    <option value="<%= unidad.id_unidad_medida %>"
+                                        <%=Number(producto.id_unidad_medida)===Number(unidad.id_unidad_medida)
+                                        ? 'selected' : '' %>
+                                        >
+                                        <%= unidad.nombre %> (<%= unidad.abreviatura %>)
+                                                <%= Number(unidad.permite_decimales)===1 ? ' · permite decimales' : ''
+                                                    %>
+                                    </option>
+                                    <% }) %>
+                            </select>
+
+                            <small class="field-help">
+                                Ejemplos: Unidad para productos normales, Metro para cable o alambre.
+                            </small>
+                        </div>
+
+                        <div class="module-hint">
+                            <strong>Compra y venta pueden ser distintas</strong>
+                            <span>
+                                Más adelante, compras permitirá registrar entradas como rollos, cajas o paquetes y
+                                convertirlas a la unidad de inventario.
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section product-section">
+                    <div class="section-title-row">
+                        <div>
+                            <h3>Precios y costos</h3>
+                            <p>Estos valores serán la base para margen, utilidad y reportes.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="precio_costo">Costo unitario inicial</label>
+                            <input type="number" id="precio_costo" name="precio_costo" min="0" step="1"
+                                value="<%= producto.precio_costo || 0 %>">
+                            <small class="field-help">
+                                Costo por unidad de medida.
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="precio_venta">Precio de venta *</label>
+                            <input type="number" id="precio_venta" name="precio_venta" min="0" step="1"
+                                value="<%= producto.precio_venta || 0 %>" required>
+                            <small class="field-help">
+                                Precio al cliente por unidad de medida.
+                            </small>
+                        </div>
+                    </div>
+
+                    <% if (modo==='editar' ) { %>
+                        <div class="info-strip product-profit-preview">
+                            <span>Costo promedio:</span>
+                            <strong>
+                                <%= formatearPesos(producto.costo_referencia || producto.precio_costo || 0) %>
+                            </strong>
+
+                            <span>Ganancia estimada:</span>
+                            <strong>
+                                <%= formatearPesos(producto.ganancia_bruta_unitaria || 0) %>
+                            </strong>
+
+                            <span>Margen:</span>
+                            <strong>
+                                <%= producto.margen_bruto_texto || '0.0%' %>
+                            </strong>
+                        </div>
+                        <% } %>
+                </div>
+
+                <div class="form-section product-section">
+                    <div class="section-title-row">
+                        <div>
+                            <h3>Inventario</h3>
+                            <p>Controla stock inicial, stock mínimo y reglas de venta.</p>
+                        </div>
+                    </div>
+
+                    <div class="checkbox-grid product-checkbox-grid">
+                        <label class="check-option">
+                            <input type="checkbox" name="controla_inventario" value="1"
+                                <%=Number(producto.controla_inventario)===1 ? 'checked' : '' %>
+                            >
+                            <span>
+                                <strong>Controlar inventario</strong>
+                                <small>Descuenta stock al vender.</small>
+                            </span>
+                        </label>
+
+                        <label class="check-option">
+                            <input type="checkbox" name="permite_venta_sin_stock" value="1"
+                                <%=Number(producto.permite_venta_sin_stock)===1 ? 'checked' : '' %>
+                            >
+                            <span>
+                                <strong>Permitir venta sin stock</strong>
+                                <small>Úsalo solo si el negocio lo permite.</small>
+                            </span>
+                        </label>
+                    </div>
+
+                    <div class="form-grid">
+                        <% if (modo==='crear' ) { %>
+                            <div class="form-group">
+                                <label for="stock_inicial">Stock inicial</label>
+                                <input type="number" id="stock_inicial" name="stock_inicial" min="0" step="0.001"
+                                    value="<%= producto.stock_inicial || 0 %>">
+                                <small class="field-help">
+                                    Ejemplo: 100 unidades, 1000 metros o 12.5 kilos.
+                                </small>
+                            </div>
+                            <% } else { %>
+                                <div class="form-group">
+                                    <label>Stock actual</label>
+                                    <input type="text"
+                                        value="<%= producto.stock_actual_texto || producto.stock_actual || 0 %>"
+                                        disabled>
+                                    <small class="field-help">
+                                        El stock se ajustará desde el módulo de inventario.
+                                    </small>
+                                </div>
+                                <% } %>
+
+                                    <div class="form-group">
+                                        <label for="stock_minimo">Stock mínimo</label>
+                                        <input type="number" id="stock_minimo" name="stock_minimo" min="0" step="0.001"
+                                            value="<%= producto.stock_minimo || 0 %>">
+                                        <small class="field-help">
+                                            Se usará para alertas de bajo stock.
+                                        </small>
+                                    </div>
+                    </div>
+                </div>
+
+                <div class="form-section product-section">
+                    <div class="section-title-row">
+                        <div>
+                            <h3>Impuestos</h3>
+                            <p>Configura IVA solo cuando el negocio lo requiera.</p>
+                        </div>
+                    </div>
+
+                    <div class="checkbox-grid product-checkbox-grid">
+                        <label class="check-option">
+                            <input type="checkbox" name="maneja_iva" value="1" <%=Number(producto.maneja_iva)===1
+                                ? 'checked' : '' %>
+                            >
+                            <span>
+                                <strong>Producto con IVA</strong>
+                                <small>Activa cálculo de impuesto para este producto.</small>
+                            </span>
+                        </label>
+
+                        <label class="check-option">
+                            <input type="checkbox" name="precio_incluye_iva" value="1"
+                                <%=Number(producto.precio_incluye_iva)===1 ? 'checked' : '' %>
+                            >
+                            <span>
+                                <strong>Precio incluye IVA</strong>
+                                <small>Se separará el impuesto en reportes futuros.</small>
+                            </span>
+                        </label>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="porcentaje_iva_visual">IVA (%)</label>
+                            <input type="number" id="porcentaje_iva_visual" name="porcentaje_iva_visual" min="0"
+                                step="0.01"
+                                value="<%= typeof producto.porcentaje_iva_visual !== 'undefined' ? producto.porcentaje_iva_visual : ((producto.porcentaje_iva || 0) / 100) %>">
+                            <small class="field-help">
+                                Ejemplo: 19 para IVA del 19%. Si no aplica, deja 0.
+                            </small>
+                        </div>
+
+                        <div class="module-hint">
+                            <strong>Valor fiscal</strong>
+                            <span>
+                                El IVA no se trata como ganancia. Cuando aplique, el sistema separará venta neta e
+                                impuesto.
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions product-actions">
+                    <button type="submit" class="btn-primary">
+                        <%= modo==='crear' ? 'Crear producto' : 'Guardar cambios' %>
+                    </button>
+
+                    <a href="/productos" class="btn-secondary">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+</section>
