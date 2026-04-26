@@ -859,6 +859,298 @@ function aplicarConteoInventario({ conteo, detalles, usuario, ip, userAgent }) {
     return transaccion();
 }
 
+function obtenerResumenOperativoInventario() {
+    return db
+        .prepare(`
+      WITH productos_valorizados AS (
+        SELECT
+          p.id_producto,
+          p.controla_inventario,
+          p.stock_actual,
+          p.stock_minimo,
+          p.precio_costo,
+          p.costo_promedio,
+          p.precio_venta,
+          p.maneja_iva,
+          p.porcentaje_iva,
+          p.precio_incluye_iva,
+
+          CASE
+            WHEN COALESCE(p.costo_promedio, 0) > 0
+            THEN COALESCE(p.costo_promedio, 0)
+            ELSE COALESCE(p.precio_costo, 0)
+          END AS costo_referencia,
+
+          CASE
+            WHEN COALESCE(p.maneja_iva, 0) = 1
+            THEN COALESCE(p.porcentaje_iva, 0) / 10000.0
+            ELSE 0
+          END AS tasa_iva_decimal
+
+        FROM productos p
+        WHERE p.eliminado_en IS NULL
+          AND p.estado = 'activo'
+      ),
+
+      calculos AS (
+        SELECT
+          pv.*,
+
+          CASE
+            WHEN pv.controla_inventario = 1
+            THEN pv.stock_actual * pv.costo_referencia
+            ELSE 0
+          END AS valor_al_costo,
+
+          CASE
+            WHEN pv.controla_inventario = 1
+            THEN pv.stock_actual * COALESCE(pv.precio_venta, 0)
+            ELSE 0
+          END AS valor_venta_base,
+
+          CASE
+            WHEN pv.controla_inventario = 1
+             AND pv.maneja_iva = 1
+             AND pv.precio_incluye_iva = 1
+             AND pv.tasa_iva_decimal > 0
+            THEN
+              (pv.stock_actual * COALESCE(pv.precio_venta, 0))
+              / (1 + pv.tasa_iva_decimal)
+
+            WHEN pv.controla_inventario = 1
+            THEN
+              pv.stock_actual * COALESCE(pv.precio_venta, 0)
+
+            ELSE 0
+          END AS valor_venta_neto,
+
+          CASE
+            WHEN pv.controla_inventario = 1
+             AND pv.maneja_iva = 1
+             AND pv.precio_incluye_iva = 1
+             AND pv.tasa_iva_decimal > 0
+            THEN
+              (pv.stock_actual * COALESCE(pv.precio_venta, 0))
+              - (
+                (pv.stock_actual * COALESCE(pv.precio_venta, 0))
+                / (1 + pv.tasa_iva_decimal)
+              )
+
+            WHEN pv.controla_inventario = 1
+             AND pv.maneja_iva = 1
+             AND pv.precio_incluye_iva = 0
+             AND pv.tasa_iva_decimal > 0
+            THEN
+              (pv.stock_actual * COALESCE(pv.precio_venta, 0))
+              * pv.tasa_iva_decimal
+
+            ELSE 0
+          END AS iva_estimado,
+
+          CASE
+            WHEN pv.controla_inventario = 1
+             AND pv.maneja_iva = 1
+             AND pv.precio_incluye_iva = 0
+             AND pv.tasa_iva_decimal > 0
+            THEN
+              (pv.stock_actual * COALESCE(pv.precio_venta, 0))
+              * (1 + pv.tasa_iva_decimal)
+
+            WHEN pv.controla_inventario = 1
+            THEN
+              pv.stock_actual * COALESCE(pv.precio_venta, 0)
+
+            ELSE 0
+          END AS valor_venta_bruto
+
+        FROM productos_valorizados pv
+      )
+
+      SELECT
+        COUNT(*) AS total_productos_activos,
+
+        SUM(
+          CASE
+            WHEN controla_inventario = 1
+             AND stock_actual > stock_minimo
+            THEN 1 ELSE 0
+          END
+        ) AS total_stock_suficiente,
+
+        SUM(
+          CASE
+            WHEN controla_inventario = 1
+             AND stock_actual > 0
+             AND stock_actual <= stock_minimo
+            THEN 1 ELSE 0
+          END
+        ) AS total_bajo_stock,
+
+        SUM(
+          CASE
+            WHEN controla_inventario = 1
+             AND stock_actual <= 0
+            THEN 1 ELSE 0
+          END
+        ) AS total_sin_stock,
+
+        SUM(
+          CASE
+            WHEN controla_inventario = 0
+            THEN 1 ELSE 0
+          END
+        ) AS total_sin_control,
+
+        SUM(
+          CASE
+            WHEN controla_inventario = 1
+             AND maneja_iva = 1
+            THEN 1 ELSE 0
+          END
+        ) AS total_productos_con_iva,
+
+        SUM(valor_al_costo) AS valor_estimado_inventario,
+        SUM(valor_venta_bruto) AS valor_venta_bruto,
+        SUM(valor_venta_neto) AS valor_venta_neto,
+        SUM(iva_estimado) AS iva_estimado,
+        SUM(valor_venta_neto - valor_al_costo) AS utilidad_bruta_estimada
+
+      FROM calculos
+    `)
+        .get();
+}
+
+function listarAlertasStock(limite = 10) {
+    return db
+        .prepare(`
+      SELECT
+        p.id_producto,
+        p.codigo_interno,
+        p.codigo_barras,
+        p.nombre,
+        p.stock_actual,
+        p.stock_minimo,
+        p.controla_inventario,
+        p.permite_cantidad_decimal,
+        p.costo_promedio,
+        p.precio_costo,
+        c.nombre AS categoria_nombre,
+        u.nombre AS unidad_nombre,
+        u.abreviatura AS unidad_abreviatura,
+        u.permite_decimales AS unidad_permite_decimales
+      FROM productos p
+      LEFT JOIN categorias_productos c
+        ON c.id_categoria_producto = p.id_categoria_producto
+      LEFT JOIN unidades_medida u
+        ON u.id_unidad_medida = p.id_unidad_medida
+      WHERE p.eliminado_en IS NULL
+        AND p.estado = 'activo'
+        AND p.controla_inventario = 1
+        AND p.stock_actual <= p.stock_minimo
+      ORDER BY
+        CASE
+          WHEN p.stock_actual <= 0 THEN 1
+          ELSE 2
+        END ASC,
+        p.stock_actual ASC,
+        p.nombre ASC
+      LIMIT ?
+    `)
+        .all(limite);
+}
+
+function listarProductosMayorValorInventario(limite = 10) {
+    return db
+        .prepare(`
+      SELECT
+        p.id_producto,
+        p.codigo_interno,
+        p.codigo_barras,
+        p.nombre,
+        p.stock_actual,
+        p.stock_minimo,
+        p.controla_inventario,
+        p.permite_cantidad_decimal,
+        p.costo_promedio,
+        p.precio_costo,
+        c.nombre AS categoria_nombre,
+        u.nombre AS unidad_nombre,
+        u.abreviatura AS unidad_abreviatura,
+        u.permite_decimales AS unidad_permite_decimales,
+
+        (
+          p.stock_actual *
+          CASE
+            WHEN COALESCE(p.costo_promedio, 0) > 0
+            THEN p.costo_promedio
+            ELSE COALESCE(p.precio_costo, 0)
+          END
+        ) AS valor_estimado
+
+      FROM productos p
+      LEFT JOIN categorias_productos c
+        ON c.id_categoria_producto = p.id_categoria_producto
+      LEFT JOIN unidades_medida u
+        ON u.id_unidad_medida = p.id_unidad_medida
+      WHERE p.eliminado_en IS NULL
+        AND p.estado = 'activo'
+        AND p.controla_inventario = 1
+      ORDER BY valor_estimado DESC, p.nombre ASC
+      LIMIT ?
+    `)
+        .all(limite);
+}
+
+function listarResumenMovimientosInventario30Dias() {
+    return db
+        .prepare(`
+      SELECT
+        mi.tipo_movimiento,
+        COUNT(*) AS total_movimientos,
+
+        SUM(
+          ABS(mi.cantidad) *
+          CASE
+            WHEN COALESCE(p.costo_promedio, 0) > 0
+            THEN p.costo_promedio
+            ELSE COALESCE(p.precio_costo, 0)
+          END
+        ) AS valor_estimado
+
+      FROM movimientos_inventario mi
+      INNER JOIN productos p
+        ON p.id_producto = mi.id_producto
+      WHERE mi.creado_en >= datetime('now', '-30 days')
+      GROUP BY mi.tipo_movimiento
+      ORDER BY total_movimientos DESC
+    `)
+        .all();
+}
+
+function listarConteosInventarioRecientes(limite = 5) {
+    return db
+        .prepare(`
+      SELECT
+        ci.id_conteo_inventario,
+        ci.numero_conteo,
+        ci.tipo_conteo,
+        ci.origen,
+        ci.estado,
+        ci.fecha_inicio,
+        ci.fecha_aplicacion,
+        ci.total_productos,
+        ci.total_diferencias,
+        ci.valor_diferencia_total,
+        u.nombre AS usuario_creacion_nombre
+      FROM conteos_inventario ci
+      LEFT JOIN usuarios u
+        ON u.id_usuario = ci.id_usuario_creacion
+      ORDER BY ci.fecha_inicio DESC, ci.id_conteo_inventario DESC
+      LIMIT ?
+    `)
+        .all(limite);
+}
+
 module.exports = {
     listarResumenStock,
     contarResumenStock,
@@ -877,4 +1169,10 @@ module.exports = {
     guardarCantidadesConteo,
     listarDetalleConteoParaAplicar,
     aplicarConteoInventario,
+
+    obtenerResumenOperativoInventario,
+    listarAlertasStock,
+    listarProductosMayorValorInventario,
+    listarResumenMovimientosInventario30Dias,
+    listarConteosInventarioRecientes,
 };

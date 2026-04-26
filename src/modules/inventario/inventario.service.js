@@ -1090,6 +1090,337 @@ function importarPlantillaConteo({
     };
 }
 
+function normalizarNumero(valor) {
+    const numero = Number(valor || 0);
+
+    if (Number.isNaN(numero)) {
+        return 0;
+    }
+
+    return numero;
+}
+
+function enriquecerProductoReporte(producto) {
+    const permiteDecimales = Number(producto.unidad_permite_decimales) === 1;
+
+    const costoReferencia =
+        Number(producto.costo_promedio || 0) > 0
+            ? Number(producto.costo_promedio || 0)
+            : Number(producto.precio_costo || 0);
+
+    const valorEstimado =
+        typeof producto.valor_estimado !== 'undefined'
+            ? Number(producto.valor_estimado || 0)
+            : Number(producto.stock_actual || 0) * costoReferencia;
+
+    let estadoStock = 'suficiente';
+    let estadoStockTexto = 'Suficiente';
+
+    if (Number(producto.stock_actual || 0) <= 0) {
+        estadoStock = 'sin_stock';
+        estadoStockTexto = 'Sin stock';
+    } else if (
+        Number(producto.stock_actual || 0) <= Number(producto.stock_minimo || 0)
+    ) {
+        estadoStock = 'bajo';
+        estadoStockTexto = 'Bajo stock';
+    }
+
+    return {
+        ...producto,
+        costo_referencia: costoReferencia,
+        valor_estimado: Math.round(valorEstimado),
+        estado_stock: estadoStock,
+        estado_stock_texto: estadoStockTexto,
+        stock_actual_texto: formatearCantidad(
+            producto.stock_actual,
+            producto.unidad_abreviatura,
+            permiteDecimales
+        ),
+        stock_minimo_texto: formatearCantidad(
+            producto.stock_minimo,
+            producto.unidad_abreviatura,
+            permiteDecimales
+        ),
+    };
+}
+
+function obtenerReporteOperativoInventario() {
+    const resumenBase =
+        inventarioRepository.obtenerResumenOperativoInventario() || {};
+
+    const valorEstimadoInventario = Math.round(
+        normalizarNumero(resumenBase.valor_estimado_inventario)
+    );
+
+    const valorVentaBruto = Math.round(
+        normalizarNumero(resumenBase.valor_venta_bruto)
+    );
+
+    const valorVentaNeto = Math.round(
+        normalizarNumero(resumenBase.valor_venta_neto)
+    );
+
+    const ivaEstimado = Math.round(
+        normalizarNumero(resumenBase.iva_estimado)
+    );
+
+    const utilidadBrutaEstimada = Math.round(
+        normalizarNumero(resumenBase.utilidad_bruta_estimada)
+    );
+
+    const margenBrutoEstimado =
+        valorVentaNeto > 0
+            ? Math.round((utilidadBrutaEstimada / valorVentaNeto) * 10000) / 100
+            : 0;
+
+    const resumen = {
+        total_productos_activos: normalizarNumero(
+            resumenBase.total_productos_activos
+        ),
+        total_stock_suficiente: normalizarNumero(
+            resumenBase.total_stock_suficiente
+        ),
+        total_bajo_stock: normalizarNumero(resumenBase.total_bajo_stock),
+        total_sin_stock: normalizarNumero(resumenBase.total_sin_stock),
+        total_sin_control: normalizarNumero(resumenBase.total_sin_control),
+        total_productos_con_iva: normalizarNumero(
+            resumenBase.total_productos_con_iva
+        ),
+
+        valor_estimado_inventario: valorEstimadoInventario,
+        valor_venta_bruto: valorVentaBruto,
+        valor_venta_neto: valorVentaNeto,
+        iva_estimado: ivaEstimado,
+        utilidad_bruta_estimada: utilidadBrutaEstimada,
+        margen_bruto_estimado: margenBrutoEstimado,
+    };
+
+    const alertasStock = inventarioRepository
+        .listarAlertasStock(10)
+        .map(enriquecerProductoReporte);
+
+    const productosMayorValor = inventarioRepository
+        .listarProductosMayorValorInventario(10)
+        .map(enriquecerProductoReporte);
+
+    const movimientos30Dias = inventarioRepository
+        .listarResumenMovimientosInventario30Dias()
+        .map((movimiento) => ({
+            ...movimiento,
+            tipo_movimiento_texto: traducirTipoMovimiento(
+                movimiento.tipo_movimiento
+            ),
+            total_movimientos: normalizarNumero(movimiento.total_movimientos),
+            valor_estimado: Math.round(normalizarNumero(movimiento.valor_estimado)),
+        }));
+
+    const conteosRecientes = inventarioRepository
+        .listarConteosInventarioRecientes(5)
+        .map((conteo) => ({
+            ...conteo,
+            estado_texto: traducirEstadoConteo(conteo.estado),
+            valor_diferencia_total: Math.round(
+                normalizarNumero(conteo.valor_diferencia_total)
+            ),
+        }));
+
+    return {
+        resumen,
+        alertasStock,
+        productosMayorValor,
+        movimientos30Dias,
+        conteosRecientes,
+    };
+}
+
+function generarExcelReporteOperativoInventario() {
+    const reporte = obtenerReporteOperativoInventario();
+
+    const workbook = XLSX.utils.book_new();
+
+    const fechaGeneracion = new Date().toISOString().slice(0, 10);
+
+    const totalMovimientos30Dias = reporte.movimientos30Dias.reduce(
+        (total, item) => total + Number(item.total_movimientos || 0),
+        0
+    );
+
+    const hojaResumen = XLSX.utils.aoa_to_sheet([
+        ['Reporte operativo de inventario'],
+        [],
+        ['Fecha de generación', fechaGeneracion],
+        [],
+        ['Indicador', 'Valor'],
+        ['Productos activos', reporte.resumen.total_productos_activos],
+        ['Stock suficiente', reporte.resumen.total_stock_suficiente],
+        ['Bajo stock', reporte.resumen.total_bajo_stock],
+        ['Sin stock', reporte.resumen.total_sin_stock],
+        ['Sin control de inventario', reporte.resumen.total_sin_control],
+        ['Productos con IVA', reporte.resumen.total_productos_con_iva],
+        ['Movimientos últimos 30 días', totalMovimientos30Dias],
+        ['Conteos recientes', reporte.conteosRecientes.length],
+    ]);
+
+    hojaResumen['!cols'] = [
+        { wch: 32 },
+        { wch: 24 },
+    ];
+
+    XLSX.utils.book_append_sheet(workbook, hojaResumen, 'Resumen');
+
+    const hojaValoracion = XLSX.utils.aoa_to_sheet([
+        ['Valoración comercial del inventario'],
+        [],
+        ['Indicador', 'Valor', 'Descripción'],
+        [
+            'Valor al costo',
+            reporte.resumen.valor_estimado_inventario,
+            'Stock actual por costo promedio o costo inicial',
+        ],
+        [
+            'Valor venta bruto',
+            reporte.resumen.valor_venta_bruto,
+            'Venta estimada con IVA si aplica',
+        ],
+        [
+            'Valor venta neto',
+            reporte.resumen.valor_venta_neto,
+            'Venta estimada sin IVA',
+        ],
+        [
+            'IVA estimado',
+            reporte.resumen.iva_estimado,
+            'Impuesto separado, no utilidad',
+        ],
+        [
+            'Utilidad bruta estimada',
+            reporte.resumen.utilidad_bruta_estimada,
+            'Venta neta menos valor al costo',
+        ],
+        [
+            'Margen bruto estimado (%)',
+            reporte.resumen.margen_bruto_estimado,
+            'Utilidad bruta sobre venta neta',
+        ],
+    ]);
+
+    hojaValoracion['!cols'] = [
+        { wch: 30 },
+        { wch: 20 },
+        { wch: 48 },
+    ];
+
+    XLSX.utils.book_append_sheet(workbook, hojaValoracion, 'Valoracion');
+
+    const hojaAlertas = XLSX.utils.json_to_sheet(
+        reporte.alertasStock.map((producto) => ({
+            codigo_interno: producto.codigo_interno,
+            codigo_barras: producto.codigo_barras || '',
+            producto: producto.nombre,
+            categoria: producto.categoria_nombre || 'Sin categoría',
+            unidad: producto.unidad_abreviatura || '',
+            stock_actual: Number(producto.stock_actual || 0),
+            stock_minimo: Number(producto.stock_minimo || 0),
+            estado_stock: producto.estado_stock_texto,
+            costo_referencia: Number(producto.costo_referencia || 0),
+            valor_estimado: Number(producto.valor_estimado || 0),
+        }))
+    );
+
+    hojaAlertas['!cols'] = [
+        { wch: 16 },
+        { wch: 18 },
+        { wch: 36 },
+        { wch: 24 },
+        { wch: 10 },
+        { wch: 14 },
+        { wch: 14 },
+        { wch: 18 },
+        { wch: 18 },
+        { wch: 18 },
+    ];
+
+    XLSX.utils.book_append_sheet(workbook, hojaAlertas, 'Alertas stock');
+
+    const hojaMovimientos = XLSX.utils.json_to_sheet(
+        reporte.movimientos30Dias.map((movimiento) => ({
+            tipo_movimiento: movimiento.tipo_movimiento_texto,
+            total_movimientos: Number(movimiento.total_movimientos || 0),
+            valor_estimado: Number(movimiento.valor_estimado || 0),
+        }))
+    );
+
+    hojaMovimientos['!cols'] = [
+        { wch: 28 },
+        { wch: 20 },
+        { wch: 20 },
+    ];
+
+    XLSX.utils.book_append_sheet(workbook, hojaMovimientos, 'Movimientos 30 dias');
+
+    const hojaMayorValor = XLSX.utils.json_to_sheet(
+        reporte.productosMayorValor.map((producto) => ({
+            codigo_interno: producto.codigo_interno,
+            codigo_barras: producto.codigo_barras || '',
+            producto: producto.nombre,
+            categoria: producto.categoria_nombre || 'Sin categoría',
+            unidad: producto.unidad_abreviatura || '',
+            stock_actual: Number(producto.stock_actual || 0),
+            costo_referencia: Number(producto.costo_referencia || 0),
+            valor_estimado: Number(producto.valor_estimado || 0),
+        }))
+    );
+
+    hojaMayorValor['!cols'] = [
+        { wch: 16 },
+        { wch: 18 },
+        { wch: 36 },
+        { wch: 24 },
+        { wch: 10 },
+        { wch: 14 },
+        { wch: 18 },
+        { wch: 18 },
+    ];
+
+    XLSX.utils.book_append_sheet(workbook, hojaMayorValor, 'Mayor valor');
+
+    const hojaConteos = XLSX.utils.json_to_sheet(
+        reporte.conteosRecientes.map((conteo) => ({
+            numero_conteo: conteo.numero_conteo,
+            tipo_conteo: conteo.tipo_conteo,
+            origen: conteo.origen,
+            estado: conteo.estado_texto,
+            fecha_inicio: conteo.fecha_inicio || '',
+            fecha_aplicacion: conteo.fecha_aplicacion || '',
+            total_productos: Number(conteo.total_productos || 0),
+            total_diferencias: Number(conteo.total_diferencias || 0),
+            valor_diferencia_total: Number(conteo.valor_diferencia_total || 0),
+            usuario: conteo.usuario_creacion_nombre || 'Sistema',
+        }))
+    );
+
+    hojaConteos['!cols'] = [
+        { wch: 18 },
+        { wch: 16 },
+        { wch: 14 },
+        { wch: 16 },
+        { wch: 22 },
+        { wch: 22 },
+        { wch: 16 },
+        { wch: 18 },
+        { wch: 22 },
+        { wch: 22 },
+    ];
+
+    XLSX.utils.book_append_sheet(workbook, hojaConteos, 'Conteos recientes');
+
+    return {
+        nombreArchivo: `reporte_operativo_inventario_${fechaGeneracion}.xlsx`,
+        buffer: crearBufferExcel(workbook),
+    };
+}
+
 module.exports = {
     listarResumenInventario,
     listarCategoriasDisponibles,
@@ -1108,4 +1439,7 @@ module.exports = {
     generarExcelDiferenciasConteo,
     generarExcelPlantillaConteo,
     importarPlantillaConteo,
+
+    obtenerReporteOperativoInventario,
+    generarExcelReporteOperativoInventario,
 };

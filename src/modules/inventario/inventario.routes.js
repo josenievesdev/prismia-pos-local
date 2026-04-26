@@ -27,6 +27,8 @@ router.use(requiereAutenticacion);
 router.use(requiereRol('administrador', 'inventario'));
 
 router.get('/', inventarioController.mostrarInventario);
+router.get('/reportes/exportar', inventarioController.exportarReporteOperativoInventario);
+router.get('/reportes', inventarioController.mostrarReportesInventario);
 router.get('/historial', inventarioController.mostrarHistorial);
 
 router.get('/conteos', inventarioController.listarConteos);

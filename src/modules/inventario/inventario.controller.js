@@ -376,6 +376,30 @@ function importarPlantillaConteo(req, res) {
     );
 }
 
+function mostrarReportesInventario(req, res) {
+    const reporte = inventarioService.obtenerReporteOperativoInventario();
+
+    return res.render('inventario/reportes', {
+        titulo: 'Reportes de inventario',
+        reporte,
+        estilosModulo: estilosInventario,
+    });
+}
+
+function exportarReporteOperativoInventario(req, res) {
+    const archivo = inventarioService.generarExcelReporteOperativoInventario();
+
+    if (!archivo) {
+        return res.redirect(
+            `/inventario/reportes?error=${encodeURIComponent(
+                'No fue posible generar el reporte operativo de inventario.'
+            )}`
+        );
+    }
+
+    return enviarArchivoExcel(res, archivo);
+}
+
 module.exports = {
     mostrarInventario,
     mostrarFormularioAjuste,
@@ -392,4 +416,7 @@ module.exports = {
     exportarDiferenciasConteo,
     exportarPlantillaConteo,
     importarPlantillaConteo,
+
+    mostrarReportesInventario,
+    exportarReporteOperativoInventario,
 };

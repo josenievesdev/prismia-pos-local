@@ -1,0 +1,381 @@
+<section class="module-page inventario-page">
+    <div class="module-header module-header-actions">
+        <div>
+            <p class="eyebrow">Reporte operativo</p>
+            <h2>Reportes de inventario</h2>
+            <p>
+                Consulta el estado general del inventario, productos críticos, movimientos recientes y conteos físicos.
+            </p>
+        </div>
+
+        <div class="report-actions">
+            <a href="/inventario/reportes/exportar" class="btn-primary report-action-main">
+                Exportar Excel
+            </a>
+
+            <div class="report-action-secondary">
+                <a href="/inventario" class="btn-secondary">
+                    Inventario
+                </a>
+
+                <a href="/inventario/conteos" class="btn-secondary">
+                    Conteos
+                </a>
+
+                <a href="/inventario/historial" class="btn-secondary">
+                    Historial
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="inventory-count-summary inventory-report-summary">
+        <article class="module-card count-summary-card">
+            <span>Productos activos</span>
+            <strong>
+                <%= reporte.resumen.total_productos_activos %>
+            </strong>
+        </article>
+
+        <article class="module-card count-summary-card positive">
+            <span>Stock suficiente</span>
+            <strong>
+                <%= reporte.resumen.total_stock_suficiente %>
+            </strong>
+        </article>
+
+        <article class="module-card count-summary-card warning">
+            <span>Bajo stock</span>
+            <strong>
+                <%= reporte.resumen.total_bajo_stock %>
+            </strong>
+        </article>
+
+        <article class="module-card count-summary-card negative">
+            <span>Sin stock</span>
+            <strong>
+                <%= reporte.resumen.total_sin_stock %>
+            </strong>
+        </article>
+    </div>
+
+    <div class="inventory-count-summary inventory-report-summary">
+        <article class="module-card count-summary-card">
+            <span>Sin control</span>
+            <strong>
+                <%= reporte.resumen.total_sin_control %>
+            </strong>
+        </article>
+
+        <article class="module-card count-summary-card">
+            <span>Valor al costo</span>
+            <strong>
+                <%= formatearPesos(reporte.resumen.valor_estimado_inventario) %>
+            </strong>
+        </article>
+
+        <article class="module-card count-summary-card">
+            <span>Movimientos 30 días</span>
+            <strong>
+                <%= reporte.movimientos30Dias.reduce((total, item)=> total + Number(item.total_movimientos || 0), 0) %>
+            </strong>
+        </article>
+
+        <article class="module-card count-summary-card">
+            <span>Conteos recientes</span>
+            <strong>
+                <%= reporte.conteosRecientes.length %>
+            </strong>
+        </article>
+    </div>
+
+    <div class="module-card inventory-valuation-card">
+        <div class="report-section-header">
+            <div>
+                <h3>Valoración comercial del inventario</h3>
+                <p>
+                    Estimación del dinero invertido, valor potencial de venta, IVA separado y utilidad bruta.
+                </p>
+            </div>
+        </div>
+
+        <div class="valuation-grid">
+            <article class="valuation-item">
+                <span>Valor al costo</span>
+                <strong>
+                    <%= formatearPesos(reporte.resumen.valor_estimado_inventario) %>
+                </strong>
+                <small>Stock actual × costo promedio</small>
+            </article>
+
+            <article class="valuation-item">
+                <span>Valor venta bruto</span>
+                <strong>
+                    <%= formatearPesos(reporte.resumen.valor_venta_bruto) %>
+                </strong>
+                <small>Venta estimada con IVA si aplica</small>
+            </article>
+
+            <article class="valuation-item">
+                <span>Valor venta neto</span>
+                <strong>
+                    <%= formatearPesos(reporte.resumen.valor_venta_neto) %>
+                </strong>
+                <small>Venta estimada sin IVA</small>
+            </article>
+
+            <article class="valuation-item">
+                <span>IVA estimado</span>
+                <strong>
+                    <%= formatearPesos(reporte.resumen.iva_estimado) %>
+                </strong>
+                <small>Impuesto separado, no utilidad</small>
+            </article>
+
+            <article class="valuation-item strong">
+                <span>Utilidad bruta estimada</span>
+                <strong>
+                    <%= formatearPesos(reporte.resumen.utilidad_bruta_estimada) %>
+                </strong>
+                <small>Venta neta - valor al costo</small>
+            </article>
+
+            <article class="valuation-item strong">
+                <span>Margen bruto estimado</span>
+                <strong>
+                    <%= reporte.resumen.margen_bruto_estimado %>%
+                </strong>
+                <small>Utilidad sobre venta neta</small>
+            </article>
+        </div>
+    </div>
+
+    <div class="module-card report-note-card">
+        <h3>Lectura del reporte</h3>
+        <p>
+            El valor al costo representa el dinero aproximado invertido en inventario.
+            El valor de venta bruto estima cuánto se facturaría si se vendiera todo el stock.
+            La utilidad bruta estimada se calcula sobre la venta neta, separando el IVA cuando aplica.
+            Este reporte es operativo y no reemplaza un cierre contable definitivo.
+        </p>
+    </div>
+
+    <div class="inventory-report-grid">
+        <section class="module-card">
+            <div class="report-section-header">
+                <div>
+                    <h3>Alertas de stock</h3>
+                    <p>Productos que están en bajo stock o sin unidades disponibles.</p>
+                </div>
+
+                <a href="/inventario?estado_stock=bajo" class="btn-secondary btn-small">
+                    Ver inventario
+                </a>
+            </div>
+
+            <% if (!reporte.alertasStock || reporte.alertasStock.length===0) { %>
+                <div class="empty-state compact">
+                    <h3>Sin alertas</h3>
+                    <p>No hay productos críticos por ahora.</p>
+                </div>
+                <% } else { %>
+                    <div class="table-wrapper">
+                        <table class="data-table inventory-table report-table">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Stock</th>
+                                    <th>Mínimo</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <% reporte.alertasStock.forEach((producto)=> { %>
+                                    <tr>
+                                        <td>
+                                            <strong>
+                                                <%= producto.nombre %>
+                                            </strong>
+
+                                            <span class="table-subtext">
+                                                <%= producto.codigo_interno %> · <%= producto.categoria_nombre
+                                                        || 'Sin categoría' %>
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <strong>
+                                                <%= producto.stock_actual_texto %>
+                                            </strong>
+                                        </td>
+
+                                        <td>
+                                            <span class="text-muted">
+                                                <%= producto.stock_minimo_texto %>
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <% if (producto.estado_stock==='sin_stock' ) { %>
+                                                <span class="badge badge-danger">Sin stock</span>
+                                                <% } else { %>
+                                                    <span class="badge badge-warning">Bajo stock</span>
+                                                    <% } %>
+                                        </td>
+                                    </tr>
+                                    <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                    <% } %>
+        </section>
+
+        <section class="module-card">
+            <div class="report-section-header">
+                <div>
+                    <h3>Movimientos últimos 30 días</h3>
+                    <p>Resumen por tipo de movimiento registrado.</p>
+                </div>
+
+                <a href="/inventario/historial" class="btn-secondary btn-small">
+                    Ver historial
+                </a>
+            </div>
+
+            <% if (!reporte.movimientos30Dias || reporte.movimientos30Dias.length===0) { %>
+                <div class="empty-state compact">
+                    <h3>Sin movimientos</h3>
+                    <p>No hay movimientos recientes.</p>
+                </div>
+                <% } else { %>
+                    <div class="report-list">
+                        <% reporte.movimientos30Dias.forEach((movimiento)=> { %>
+                            <article class="report-list-item">
+                                <div>
+                                    <strong>
+                                        <%= movimiento.tipo_movimiento_texto %>
+                                    </strong>
+
+                                    <span>
+                                        <%= movimiento.total_movimientos %> movimientos
+                                    </span>
+                                </div>
+
+                                <strong>
+                                    <%= formatearPesos(movimiento.valor_estimado) %>
+                                </strong>
+                            </article>
+                            <% }) %>
+                    </div>
+                    <% } %>
+        </section>
+    </div>
+
+    <div class="inventory-report-grid">
+        <section class="module-card">
+            <div class="report-section-header">
+                <div>
+                    <h3>Mayor valor en inventario</h3>
+                    <p>Productos con más dinero estimado en stock.</p>
+                </div>
+            </div>
+
+            <% if (!reporte.productosMayorValor || reporte.productosMayorValor.length===0) { %>
+                <div class="empty-state compact">
+                    <h3>Sin productos</h3>
+                    <p>No hay productos con valor estimado.</p>
+                </div>
+                <% } else { %>
+                    <div class="table-wrapper">
+                        <table class="data-table inventory-table report-table">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Stock</th>
+                                    <th>Costo</th>
+                                    <th>Valor</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <% reporte.productosMayorValor.forEach((producto)=> { %>
+                                    <tr>
+                                        <td>
+                                            <strong>
+                                                <%= producto.nombre %>
+                                            </strong>
+
+                                            <span class="table-subtext">
+                                                <%= producto.codigo_interno %> · <%= producto.categoria_nombre
+                                                        || 'Sin categoría' %>
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <strong>
+                                                <%= producto.stock_actual_texto %>
+                                            </strong>
+                                        </td>
+
+                                        <td>
+                                            <span class="text-muted">
+                                                <%= formatearPesos(producto.costo_referencia) %>
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <strong>
+                                                <%= formatearPesos(producto.valor_estimado) %>
+                                            </strong>
+                                        </td>
+                                    </tr>
+                                    <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                    <% } %>
+        </section>
+
+        <section class="module-card">
+            <div class="report-section-header">
+                <div>
+                    <h3>Conteos físicos recientes</h3>
+                    <p>Últimos conteos creados o aplicados.</p>
+                </div>
+
+                <a href="/inventario/conteos" class="btn-secondary btn-small">
+                    Ver conteos
+                </a>
+            </div>
+
+            <% if (!reporte.conteosRecientes || reporte.conteosRecientes.length===0) { %>
+                <div class="empty-state compact">
+                    <h3>Sin conteos</h3>
+                    <p>No hay conteos físicos registrados.</p>
+                </div>
+                <% } else { %>
+                    <div class="report-list">
+                        <% reporte.conteosRecientes.forEach((conteo)=> { %>
+                            <a href="/inventario/conteos/<%= conteo.id_conteo_inventario %>"
+                                class="report-list-item report-list-link">
+                                <div>
+                                    <strong>
+                                        <%= conteo.numero_conteo %>
+                                    </strong>
+
+                                    <span>
+                                        <%= conteo.estado_texto %> · <%= conteo.total_productos %> productos
+                                    </span>
+                                </div>
+
+                                <strong>
+                                    <%= formatearPesos(conteo.valor_diferencia_total || 0) %>
+                                </strong>
+                            </a>
+                            <% }) %>
+                    </div>
+                    <% } %>
+        </section>
+    </div>
+</section>
