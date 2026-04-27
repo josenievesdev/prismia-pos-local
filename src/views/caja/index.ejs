@@ -1,0 +1,322 @@
+<section class="module-page caja-page">
+    <% 
+        const gruposMediosPago = mediosPagoAgrupados || {
+            efectivo: [],
+            transferencias: [],
+            tarjetas: [],
+            otros: []
+        };
+
+        const totalMediosPago = mediosPago ? mediosPago.length : 0;
+    %>
+
+    <div class="module-header module-header-actions">
+        <div>
+            <p class="eyebrow">Control de efectivo</p>
+            <h2>Caja</h2>
+            <p>
+                Administra la apertura del turno, la base inicial y el control operativo del dinero.
+            </p>
+        </div>
+
+        <% if (!turnoAbierto) { %>
+            <a href="/caja/abrir" class="btn-primary">Abrir caja</a>
+        <% } else { %>
+            <div class="module-actions">
+                <span class="badge badge-success">Caja abierta</span>
+                <a href="#" class="btn-secondary disabled-button">Movimiento</a>
+                <a href="#" class="btn-secondary disabled-button">Cerrar caja</a>
+            </div>
+        <% } %>
+    </div>
+
+    <% if (mensajeExito) { %>
+        <div class="alert alert-success">
+            <%= mensajeExito %>
+        </div>
+    <% } %>
+
+    <% if (error) { %>
+        <div class="alert alert-error">
+            <%= error %>
+        </div>
+    <% } %>
+
+    <% if (!turnoAbierto) { %>
+        <article class="module-card caja-empty-card">
+            <div>
+                <p class="eyebrow">Sin turno activo</p>
+                <h3>No hay caja abierta</h3>
+                <p>
+                    Para vender o registrar movimientos de efectivo, primero debes abrir caja con una base inicial.
+                </p>
+            </div>
+
+            <a href="/caja/abrir" class="btn-primary">Abrir caja ahora</a>
+        </article>
+    <% } else { %>
+        <section class="caja-active-grid">
+            <article class="module-card caja-status-card">
+                <div class="caja-status-top">
+                    <div>
+                        <p class="eyebrow">Turno activo</p>
+                        <h3>Caja #<%= turnoAbierto.id_turno_caja %></h3>
+                    </div>
+
+                    <span class="badge badge-success">Abierta</span>
+                </div>
+
+                <div class="caja-meta-grid">
+                    <div>
+                        <span>Abierta por</span>
+                        <strong><%= turnoAbierto.usuario_apertura_nombre || 'Usuario' %></strong>
+                    </div>
+
+                    <div>
+                        <span>Fecha de apertura</span>
+                        <strong><%= formatearFecha(turnoAbierto.fecha_apertura) %></strong>
+                    </div>
+                </div>
+
+                <% if (turnoAbierto.observaciones_apertura) { %>
+                    <div class="caja-note">
+                        <span>Observación</span>
+                        <p><%= turnoAbierto.observaciones_apertura %></p>
+                    </div>
+                <% } %>
+            </article>
+
+            <article class="module-card caja-summary-card">
+                <p class="eyebrow">Resumen del efectivo</p>
+
+                <div class="caja-summary-grid">
+                    <div>
+                        <span>Base inicial</span>
+                        <strong><%= formatearPesos(turnoAbierto.monto_inicial) %></strong>
+                    </div>
+
+                    <div>
+                        <span>Ventas en efectivo</span>
+                        <strong><%= formatearPesos(turnoAbierto.total_efectivo) %></strong>
+                    </div>
+
+                    <div>
+                        <span>Ingresos manuales</span>
+                        <strong><%= formatearPesos(turnoAbierto.total_ingresos_manuales) %></strong>
+                    </div>
+
+                    <div>
+                        <span>Egresos manuales</span>
+                        <strong><%= formatearPesos(turnoAbierto.total_egresos_manuales) %></strong>
+                    </div>
+                </div>
+
+                <div class="caja-expected-box">
+                    <span>Efectivo esperado actual</span>
+                    <strong><%= formatearPesos(turnoAbierto.monto_esperado_calculado) %></strong>
+                </div>
+            </article>
+        </section>
+
+        <article class="module-card caja-medios-card">
+            <div class="caja-medios-header">
+                <div>
+                    <p class="eyebrow">Medios de pago</p>
+                    <h3>Medios configurados para el turno</h3>
+                    <p>
+                        Estos medios se usarán después para movimientos, ventas, gastos y cuadre de caja.
+                    </p>
+                </div>
+
+                <span class="badge badge-muted">
+                    <%= totalMediosPago %> activos
+                </span>
+            </div>
+
+            <div class="caja-medios-grid">
+                <div class="caja-medio-group">
+                    <span class="caja-medio-title">Efectivo</span>
+
+                    <% if (gruposMediosPago.efectivo.length === 0) { %>
+                        <p class="caja-medio-empty">Sin medios configurados</p>
+                    <% } else { %>
+                        <div class="caja-medio-list">
+                            <% gruposMediosPago.efectivo.forEach((medio) => { %>
+                                <span class="caja-medio-pill"><%= medio.nombre %></span>
+                            <% }) %>
+                        </div>
+                    <% } %>
+                </div>
+
+                <div class="caja-medio-group">
+                    <span class="caja-medio-title">Transferencias</span>
+
+                    <% if (gruposMediosPago.transferencias.length === 0) { %>
+                        <p class="caja-medio-empty">Sin medios configurados</p>
+                    <% } else { %>
+                        <div class="caja-medio-list">
+                            <% gruposMediosPago.transferencias.forEach((medio) => { %>
+                                <span class="caja-medio-pill"><%= medio.nombre %></span>
+                            <% }) %>
+                        </div>
+                    <% } %>
+                </div>
+
+                <div class="caja-medio-group">
+                    <span class="caja-medio-title">Tarjetas</span>
+
+                    <% if (gruposMediosPago.tarjetas.length === 0) { %>
+                        <p class="caja-medio-empty">Sin medios configurados</p>
+                    <% } else { %>
+                        <div class="caja-medio-list">
+                            <% gruposMediosPago.tarjetas.forEach((medio) => { %>
+                                <span class="caja-medio-pill"><%= medio.nombre %></span>
+                            <% }) %>
+                        </div>
+                    <% } %>
+                </div>
+
+                <div class="caja-medio-group">
+                    <span class="caja-medio-title">Otros</span>
+
+                    <% if (gruposMediosPago.otros.length === 0) { %>
+                        <p class="caja-medio-empty">Sin medios configurados</p>
+                    <% } else { %>
+                        <div class="caja-medio-list">
+                            <% gruposMediosPago.otros.forEach((medio) => { %>
+                                <span class="caja-medio-pill"><%= medio.nombre %></span>
+                            <% }) %>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </article>
+
+        <article class="module-card">
+            <div class="table-summary">
+                <span>Movimientos del turno</span>
+                <span>
+                    <strong><%= movimientos.length %></strong> registrados
+                </span>
+            </div>
+
+            <% if (!movimientos || movimientos.length === 0) { %>
+                <div class="empty-state">
+                    <h3>Sin movimientos todavía</h3>
+                    <p>
+                        Por ahora solo quedó activa la apertura. En la siguiente fase se agregan ingresos, egresos y gastos desde caja.
+                    </p>
+                </div>
+            <% } else { %>
+                <div class="table-wrapper">
+                    <table class="data-table caja-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Tipo</th>
+                                <th>Método</th>
+                                <th>Descripción</th>
+                                <th>Usuario</th>
+                                <th class="text-right">Monto</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <% movimientos.forEach((movimiento) => { %>
+                                <tr>
+                                    <td><%= formatearFecha(movimiento.creado_en) %></td>
+                                    <td>
+                                        <span class="badge badge-muted">
+                                            <%= movimiento.tipo_movimiento_texto %>
+                                        </span>
+                                    </td>
+                                    <td><%= movimiento.metodo_pago_texto %></td>
+                                    <td><%= movimiento.descripcion || 'Sin descripción' %></td>
+                                    <td><%= movimiento.usuario_nombre || 'Usuario' %></td>
+                                    <td class="text-right">
+                                        <strong><%= formatearPesos(movimiento.monto) %></strong>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            <% } %>
+        </article>
+    <% } %>
+
+    <article class="module-card">
+        <div class="table-summary">
+            <span>Historial reciente de turnos</span>
+            <span>
+                <strong><%= turnosRecientes.length %></strong> turnos
+            </span>
+        </div>
+
+        <% if (!turnosRecientes || turnosRecientes.length === 0) { %>
+            <div class="empty-state">
+                <h3>No hay turnos registrados</h3>
+                <p>
+                    Cuando abras y cierres caja, aparecerá aquí el historial operativo.
+                </p>
+            </div>
+        <% } else { %>
+            <div class="table-wrapper">
+                <table class="data-table caja-table">
+                    <thead>
+                        <tr>
+                            <th>Turno</th>
+                            <th>Estado</th>
+                            <th>Apertura</th>
+                            <th>Cierre</th>
+                            <th>Usuario</th>
+                            <th class="text-right">Esperado</th>
+                            <th class="text-right">Contado</th>
+                            <th class="text-right">Diferencia</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <% turnosRecientes.forEach((turno) => { %>
+                            <tr>
+                                <td>
+                                    <strong>#<%= turno.id_turno_caja %></strong>
+                                </td>
+
+                                <td>
+                                    <% if (turno.estado === 'abierto') { %>
+                                        <span class="badge badge-success">Abierto</span>
+                                    <% } else { %>
+                                        <span class="badge badge-muted">Cerrado</span>
+                                    <% } %>
+                                </td>
+
+                                <td><%= formatearFecha(turno.fecha_apertura) %></td>
+
+                                <td>
+                                    <%= turno.fecha_cierre ? formatearFecha(turno.fecha_cierre) : '—' %>
+                                </td>
+
+                                <td>
+                                    <%= turno.usuario_apertura_nombre || 'Usuario' %>
+                                </td>
+
+                                <td class="text-right">
+                                    <%= formatearPesos(turno.monto_esperado_calculado) %>
+                                </td>
+
+                                <td class="text-right">
+                                    <%= turno.monto_contado === null ? '—' : formatearPesos(turno.monto_contado) %>
+                                </td>
+
+                                <td class="text-right">
+                                    <%= turno.diferencia === null ? '—' : formatearPesos(turno.diferencia) %>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        <% } %>
+    </article>
+</section>

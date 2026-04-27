@@ -16,6 +16,7 @@ const configuracionRoutes = require('./modules/configuracion/configuracion.route
 const categoriasRoutes = require('./modules/categorias-productos/categorias.routes');
 const productosRoutes = require('./modules/productos/productos.routes');
 const inventarioRoutes = require('./modules/inventario/inventario.routes');
+const cajaRoutes = require('./modules/caja/caja.routes');
 
 const app = express();
 
@@ -97,6 +98,7 @@ app.use('/configuracion', configuracionRoutes);
 app.use('/categorias-productos', categoriasRoutes);
 app.use('/productos', productosRoutes);
 app.use('/inventario', inventarioRoutes);
+app.use('/caja', cajaRoutes);
 
 /**
  * Ruta 404
