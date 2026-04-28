@@ -166,7 +166,7 @@
     gap: 12px;
 }
 
-.caja-medios-header > div {
+.caja-medios-header>div {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -204,7 +204,7 @@
 }
 
 /* Separador visual entre grupos */
-.caja-medio-group + .caja-medio-group {
+.caja-medio-group+.caja-medio-group {
     padding-left: 14px;
     border-left: 1px solid var(--color-border);
 }
@@ -288,6 +288,7 @@
 ============================== */
 
 @media (max-width: 920px) {
+
     .caja-active-grid,
     .caja-empty-card {
         grid-template-columns: 1fr;
@@ -305,7 +306,7 @@
         gap: 8px;
     }
 
-    .caja-medios-header > div {
+    .caja-medios-header>div {
         flex-direction: column;
         align-items: flex-start;
         gap: 4px;
@@ -316,7 +317,7 @@
         gap: 10px;
     }
 
-    .caja-medio-group + .caja-medio-group {
+    .caja-medio-group+.caja-medio-group {
         padding-left: 0;
         border-left: none;
         padding-top: 10px;
@@ -325,8 +326,469 @@
 }
 
 @media (max-width: 640px) {
+
     .caja-meta-grid,
     .caja-summary-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+/* =========================================================
+   Caja · Resumen operativo por medios
+   ========================================================= */
+
+.caja-operativo-card {
+    display: grid;
+    gap: 16px;
+}
+
+.caja-operativo-totales {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.caja-operativo-total-box {
+    padding: 12px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-soft);
+}
+
+.caja-operativo-total-box span {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.caja-operativo-total-box strong {
+    display: block;
+    color: var(--color-text);
+    font-size: 17px;
+    letter-spacing: -0.02em;
+}
+
+.caja-operativo-groups {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.caja-operativo-group {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    overflow: hidden;
+}
+
+.caja-operativo-group-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+    padding: 11px 13px;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface-soft);
+}
+
+.caja-operativo-group-header strong {
+    font-size: 13px;
+}
+
+.caja-operativo-group-header span {
+    color: var(--color-muted);
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.caja-operativo-list {
+    display: grid;
+}
+
+.caja-operativo-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+    padding: 11px 13px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.caja-operativo-row:last-child {
+    border-bottom: 0;
+}
+
+.caja-operativo-row>div:first-child {
+    display: grid;
+    gap: 3px;
+}
+
+.caja-operativo-row>div:first-child strong {
+    font-size: 13px;
+}
+
+.caja-operativo-row>div:first-child span {
+    color: var(--color-muted);
+    font-size: 12px;
+}
+
+.caja-operativo-values {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    gap: 10px;
+    align-items: center;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.caja-operativo-values span {
+    color: var(--color-muted);
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.caja-operativo-values strong {
+    color: var(--color-text);
+    font-size: 13px;
+}
+
+@media (max-width: 1100px) {
+    .caja-operativo-totales {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .caja-operativo-groups {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 720px) {
+    .caja-operativo-totales {
+        grid-template-columns: 1fr;
+    }
+
+    .caja-operativo-group-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .caja-operativo-row {
+        grid-template-columns: 1fr;
+    }
+
+    .caja-operativo-values {
+        grid-template-columns: 1fr;
+        text-align: left;
+        gap: 4px;
+    }
+}
+
+/* =========================================================
+   Caja · Scroll interno para secciones operativas
+   Evita que la página crezca sin control cuando haya muchos
+   movimientos, ventas o turnos.
+   ========================================================= */
+
+.caja-page {
+    --caja-scroll-max-operativo: 430px;
+    --caja-scroll-max-tabla: 360px;
+    --caja-scroll-max-historial: 280px;
+}
+
+/* Resumen operativo por medios: mantiene totales visibles
+   y limita el crecimiento de los grupos por medio. */
+.caja-page .caja-operativo-groups {
+    max-height: var(--caja-scroll-max-operativo);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 4px;
+}
+
+/* Tablas de caja: movimientos e historial con scroll interno. */
+.caja-page .module-card>.table-wrapper {
+    max-height: var(--caja-scroll-max-tabla);
+    overflow: auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+}
+
+/* Evita doble borde visual cuando la tabla queda dentro del wrapper. */
+.caja-page .module-card>.table-wrapper .data-table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+/* Encabezados fijos dentro del scroll de tablas. */
+.caja-page .module-card>.table-wrapper .data-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--color-surface);
+    box-shadow: 0 1px 0 var(--color-border);
+}
+
+/* Historial reciente: suele ser menos consultado que movimientos,
+   por eso puede tener menos altura. */
+.caja-page .module-card:last-child>.table-wrapper {
+    max-height: var(--caja-scroll-max-historial);
+}
+
+/* Scrollbar sutil en navegadores Chromium/Edge. */
+.caja-page .caja-operativo-groups::-webkit-scrollbar,
+.caja-page .module-card>.table-wrapper::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.caja-page .caja-operativo-groups::-webkit-scrollbar-track,
+.caja-page .module-card>.table-wrapper::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.caja-page .caja-operativo-groups::-webkit-scrollbar-thumb,
+.caja-page .module-card>.table-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(100, 116, 139, 0.32);
+    border-radius: 999px;
+}
+
+.caja-page .caja-operativo-groups::-webkit-scrollbar-thumb:hover,
+.caja-page .module-card>.table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 116, 139, 0.5);
+}
+
+/* Ajuste responsive: en pantallas pequeñas no apretamos tanto,
+   pero seguimos evitando crecimiento infinito. */
+@media (max-width: 900px) {
+    .caja-page {
+        --caja-scroll-max-operativo: 520px;
+        --caja-scroll-max-tabla: 420px;
+        --caja-scroll-max-historial: 340px;
+    }
+}
+
+/* =========================================================
+   Caja · Scroll interno controlado por sección
+   ========================================================= */
+
+.caja-scroll-card {
+    overflow: hidden;
+}
+
+/* Resumen operativo: los totales quedan visibles y solo scrollean los grupos */
+.caja-operativo-card .caja-operativo-groups {
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 6px;
+}
+
+/* Movimientos: tabla con altura controlada */
+.caja-movimientos-card .table-wrapper {
+    max-height: 260px;
+    overflow: auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+}
+
+/* Historial: un poco más bajo porque es consulta secundaria */
+.caja-historial-card .table-wrapper {
+    max-height: 210px;
+    overflow: auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+}
+
+/* Encabezado fijo en tablas con scroll */
+.caja-movimientos-card .data-table thead th,
+.caja-historial-card .data-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--color-surface);
+    box-shadow: 0 1px 0 var(--color-border);
+}
+
+/* Evita que la tabla se vea pegada al borde del contenedor */
+.caja-movimientos-card .table-wrapper .data-table,
+.caja-historial-card .table-wrapper .data-table {
+    margin: 0;
+}
+
+/* Scrollbar sutil */
+.caja-operativo-card .caja-operativo-groups::-webkit-scrollbar,
+.caja-movimientos-card .table-wrapper::-webkit-scrollbar,
+.caja-historial-card .table-wrapper::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.caja-operativo-card .caja-operativo-groups::-webkit-scrollbar-track,
+.caja-movimientos-card .table-wrapper::-webkit-scrollbar-track,
+.caja-historial-card .table-wrapper::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.caja-operativo-card .caja-operativo-groups::-webkit-scrollbar-thumb,
+.caja-movimientos-card .table-wrapper::-webkit-scrollbar-thumb,
+.caja-historial-card .table-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(100, 116, 139, 0.35);
+    border-radius: 999px;
+}
+
+.caja-operativo-card .caja-operativo-groups::-webkit-scrollbar-thumb:hover,
+.caja-movimientos-card .table-wrapper::-webkit-scrollbar-thumb:hover,
+.caja-historial-card .table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 116, 139, 0.55);
+}
+
+@media (max-width: 900px) {
+    .caja-operativo-card .caja-operativo-groups {
+        max-height: 420px;
+    }
+
+    .caja-movimientos-card .table-wrapper {
+        max-height: 340px;
+    }
+
+    .caja-historial-card .table-wrapper {
+        max-height: 280px;
+    }
+}
+
+/* =========================================================
+   Caja · Scroll interno final sin comprimir la vista
+   Mantiene las cards como estaban y solo activa scroll
+   cuando las tablas crecen demasiado.
+   ========================================================= */
+
+/* Restaurar resumen operativo: no debe comprimirse */
+.caja-operativo-card .caja-operativo-groups {
+    max-height: none !important;
+    overflow: visible !important;
+    padding-right: 0 !important;
+}
+
+/* Restaurar grupos del resumen operativo */
+.caja-operativo-group {
+    min-height: auto;
+}
+
+/* Solo las tablas dinámicas deben tener scroll interno */
+.caja-movimientos-card .table-wrapper {
+    max-height: 360px;
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+}
+
+.caja-historial-card .table-wrapper {
+    max-height: 280px;
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+}
+
+/* Encabezados fijos dentro de las tablas */
+.caja-movimientos-card .data-table thead th,
+.caja-historial-card .data-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--color-surface);
+    box-shadow: 0 1px 0 var(--color-border);
+}
+
+/* Evita espacios raros dentro del wrapper */
+.caja-movimientos-card .table-wrapper .data-table,
+.caja-historial-card .table-wrapper .data-table {
+    margin: 0;
+    width: 100%;
+}
+
+/* Scrollbar suave */
+.caja-movimientos-card .table-wrapper::-webkit-scrollbar,
+.caja-historial-card .table-wrapper::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.caja-movimientos-card .table-wrapper::-webkit-scrollbar-track,
+.caja-historial-card .table-wrapper::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.caja-movimientos-card .table-wrapper::-webkit-scrollbar-thumb,
+.caja-historial-card .table-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(100, 116, 139, 0.35);
+    border-radius: 999px;
+}
+
+.caja-movimientos-card .table-wrapper::-webkit-scrollbar-thumb:hover,
+.caja-historial-card .table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 116, 139, 0.55);
+}
+
+/* =========================================================
+   Caja · Tabla de movimientos detallada
+   ========================================================= */
+
+.caja-movimientos-table td {
+    vertical-align: middle;
+}
+
+.caja-table-date {
+    white-space: nowrap;
+    color: var(--color-text-soft);
+    font-weight: 650;
+}
+
+.caja-payment-cell,
+.caja-description-cell {
+    display: grid;
+    gap: 3px;
+}
+
+.caja-payment-cell strong {
+    color: var(--color-text);
+    font-size: 13px;
+}
+
+.caja-payment-cell span {
+    color: var(--color-muted);
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.caja-description-cell {
+    max-width: 340px;
+    color: var(--color-text);
+    line-height: 1.35;
+}
+
+.monto-ingreso {
+    color: #047857;
+    white-space: nowrap;
+}
+
+.monto-egreso {
+    color: #b91c1c;
+    white-space: nowrap;
+}
+
+.badge-error-soft {
+    background: #fee2e2;
+    color: #991b1b;
+    border-color: #fecaca;
+}
+
+@media (max-width: 900px) {
+    .caja-description-cell {
+        max-width: 260px;
     }
 }

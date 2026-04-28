@@ -10,7 +10,11 @@ router.use(requiereAutenticacion);
 router.use(requiereRol('administrador', 'cajero'));
 
 router.get('/', cajaController.mostrarCaja);
+
 router.get('/abrir', cajaController.mostrarFormularioAbrir);
 router.post('/abrir', cajaController.abrirCaja);
+
+router.get('/movimiento', cajaController.mostrarFormularioMovimiento);
+router.post('/movimiento', cajaController.registrarMovimientoManual);
 
 module.exports = router;

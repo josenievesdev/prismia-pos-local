@@ -9,6 +9,9 @@ function mostrarCaja(req, res) {
         titulo: 'Caja',
         turnoAbierto: estadoCaja.turnoAbierto,
         movimientos: estadoCaja.movimientos,
+        resumenMediosPago: estadoCaja.resumenMediosPago,
+        resumenMediosPagoAgrupado: estadoCaja.resumenMediosPagoAgrupado,
+        totalesResumenMediosPago: estadoCaja.totalesResumenMediosPago,
         turnosRecientes: estadoCaja.turnosRecientes,
         mediosPago: estadoCaja.mediosPago,
         mediosPagoAgrupados: estadoCaja.mediosPagoAgrupados,
@@ -63,8 +66,57 @@ function abrirCaja(req, res) {
     return res.redirect(`/caja?exito=${encodeURIComponent(resultado.mensaje)}`);
 }
 
+function mostrarFormularioMovimiento(req, res) {
+    const datosFormulario = cajaService.obtenerDatosFormularioMovimiento();
+
+    if (!datosFormulario.turnoAbierto) {
+        return res.redirect(
+            `/caja?error=${encodeURIComponent(
+                'Debes abrir caja antes de registrar movimientos.'
+            )}`
+        );
+    }
+
+    return res.render('caja/movimiento', {
+        titulo: 'Registrar movimiento',
+        turnoAbierto: datosFormulario.turnoAbierto,
+        mediosPago: datosFormulario.mediosPago,
+        mediosPagoAgrupados: datosFormulario.mediosPagoAgrupados,
+        valores: datosFormulario.valores,
+        error: null,
+        estilosModulo: estilosCaja,
+    });
+}
+
+function registrarMovimientoManual(req, res) {
+    const resultado = cajaService.registrarMovimientoManual({
+        datosFormulario: req.body,
+        usuario: req.session?.usuario,
+        ip: req.ip,
+        userAgent: req.headers['user-agent'],
+    });
+
+    if (!resultado.ok) {
+        const datosFormulario = cajaService.obtenerDatosFormularioMovimiento();
+
+        return res.status(400).render('caja/movimiento', {
+            titulo: 'Registrar movimiento',
+            turnoAbierto: datosFormulario.turnoAbierto,
+            mediosPago: datosFormulario.mediosPago,
+            mediosPagoAgrupados: datosFormulario.mediosPagoAgrupados,
+            valores: resultado.valores,
+            error: resultado.mensaje,
+            estilosModulo: estilosCaja,
+        });
+    }
+
+    return res.redirect(`/caja?exito=${encodeURIComponent(resultado.mensaje)}`);
+}
+
 module.exports = {
     mostrarCaja,
     mostrarFormularioAbrir,
     abrirCaja,
+    mostrarFormularioMovimiento,
+    registrarMovimientoManual,
 };

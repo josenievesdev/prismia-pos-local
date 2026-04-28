@@ -1,0 +1,200 @@
+<section class="module-page caja-page">
+    <% const gruposMediosPago=mediosPagoAgrupados || { efectivo: [], transferencias: [], tarjetas: [], otros: [] };
+        const valorTipoMovimiento=valores?.tipo_movimiento || 'ingreso_manual' ; const
+        valorMedioPago=valores?.id_medio_pago || '' ; %>
+
+        <div class="module-header module-header-actions">
+            <div>
+                <p class="eyebrow">Movimiento de caja</p>
+                <h2>Registrar movimiento</h2>
+                <p>
+                    Registra ingresos o egresos manuales asociados al turno activo.
+                </p>
+            </div>
+
+            <a href="/caja" class="btn-secondary">Volver a caja</a>
+        </div>
+
+        <% if (error) { %>
+            <div class="alert alert-error">
+                <%= error %>
+            </div>
+            <% } %>
+
+                <section class="caja-active-grid">
+                    <article class="module-card caja-status-card">
+                        <div class="caja-status-top">
+                            <div>
+                                <p class="eyebrow">Turno activo</p>
+                                <h3>Caja #<%= turnoAbierto.id_turno_caja %>
+                                </h3>
+                            </div>
+
+                            <span class="badge badge-success">Abierta</span>
+                        </div>
+
+                        <div class="caja-meta-grid">
+                            <div>
+                                <span>Abierta por</span>
+                                <strong>
+                                    <%= turnoAbierto.usuario_apertura_nombre || 'Usuario' %>
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>Efectivo esperado</span>
+                                <strong>
+                                    <%= formatearPesos(turnoAbierto.monto_esperado_calculado) %>
+                                </strong>
+                            </div>
+                        </div>
+
+                        <div class="caja-note">
+                            <span>Regla importante</span>
+                            <p>
+                                Solo los movimientos en efectivo afectan el efectivo esperado físico de caja.
+                                Los demás medios quedan registrados para control y cuadre posterior.
+                            </p>
+                        </div>
+                    </article>
+
+                    <form class="module-card form-panel" method="POST" action="/caja/movimiento">
+                        <div class="form-section">
+                            <h3>Datos del movimiento</h3>
+
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="tipo_movimiento">Tipo de movimiento *</label>
+                                    <select id="tipo_movimiento" name="tipo_movimiento" required>
+                                        <option value="ingreso_manual" <%=valorTipoMovimiento==='ingreso_manual'
+                                            ? 'selected' : '' %>>
+                                            Ingreso manual
+                                        </option>
+                                        <option value="egreso_manual" <%=valorTipoMovimiento==='egreso_manual'
+                                            ? 'selected' : '' %>>
+                                            Egreso manual
+                                        </option>
+                                    </select>
+                                    <small class="field-help">
+                                        Usa ingreso para entradas de dinero y egreso para salidas manuales.
+                                    </small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="monto">Monto *</label>
+                                    <input type="number" id="monto" name="monto" min="1" step="1"
+                                        value="<%= valores?.monto || '' %>" placeholder="Ej: 50000" required>
+                                    <small class="field-help">
+                                        Registra el valor en pesos enteros, sin centavos.
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="id_medio_pago">Medio de pago *</label>
+                                <select id="id_medio_pago" name="id_medio_pago" required>
+                                    <option value="">Selecciona un medio de pago</option>
+
+                                    <% if (gruposMediosPago.efectivo.length> 0) { %>
+                                        <optgroup label="Efectivo">
+                                            <% gruposMediosPago.efectivo.forEach((medio)=> { %>
+                                                <option value="<%= medio.id_medio_pago %>"
+                                                    <%=String(valorMedioPago)===String(medio.id_medio_pago) ? 'selected'
+                                                    : '' %>
+                                                    >
+                                                    <%= medio.nombre %>
+                                                </option>
+                                                <% }) %>
+                                        </optgroup>
+                                        <% } %>
+
+                                            <% if (gruposMediosPago.transferencias.length> 0) { %>
+                                                <optgroup label="Transferencias">
+                                                    <% gruposMediosPago.transferencias.forEach((medio)=> { %>
+                                                        <option value="<%= medio.id_medio_pago %>"
+                                                            <%=String(valorMedioPago)===String(medio.id_medio_pago)
+                                                            ? 'selected' : '' %>
+                                                            >
+                                                            <%= medio.nombre %>
+                                                        </option>
+                                                        <% }) %>
+                                                </optgroup>
+                                                <% } %>
+
+                                                    <% if (gruposMediosPago.tarjetas.length> 0) { %>
+                                                        <optgroup label="Tarjetas">
+                                                            <% gruposMediosPago.tarjetas.forEach((medio)=> { %>
+                                                                <option value="<%= medio.id_medio_pago %>"
+                                                                    <%=String(valorMedioPago)===String(medio.id_medio_pago)
+                                                                    ? 'selected' : '' %>
+                                                                    >
+                                                                    <%= medio.nombre %>
+                                                                </option>
+                                                                <% }) %>
+                                                        </optgroup>
+                                                        <% } %>
+
+                                                            <% if (gruposMediosPago.otros.length> 0) { %>
+                                                                <optgroup label="Otros">
+                                                                    <% gruposMediosPago.otros.forEach((medio)=> { %>
+                                                                        <option value="<%= medio.id_medio_pago %>"
+                                                                            <%=String(valorMedioPago)===String(medio.id_medio_pago)
+                                                                            ? 'selected' : '' %>
+                                                                            >
+                                                                            <%= medio.nombre %>
+                                                                        </option>
+                                                                        <% }) %>
+                                                                </optgroup>
+                                                                <% } %>
+                                </select>
+                                <small class="field-help">
+                                    Nequi, Daviplata, Bre-B, Bancolombia y tarjetas quedan separados para facilitar el
+                                    cuadre.
+                                </small>
+                            </div>
+
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="referencia_pago">Referencia o comprobante</label>
+                                    <input type="text" id="referencia_pago" name="referencia_pago" maxlength="120"
+                                        value="<%= valores?.referencia_pago || '' %>"
+                                        placeholder="Ej: comprobante, aprobación, soporte">
+                                    <small class="field-help">
+                                        Obligatoria para transferencias y tarjetas.
+                                    </small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="entidad_pago">Entidad o cuenta</label>
+                                    <input type="text" id="entidad_pago" name="entidad_pago" maxlength="120"
+                                        value="<%= valores?.entidad_pago || '' %>"
+                                        placeholder="Ej: Nequi, Bancolombia, datáfono">
+                                    <small class="field-help">
+                                        Campo opcional para mayor claridad del movimiento.
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="descripcion">Descripción *</label>
+                                <textarea id="descripcion" name="descripcion" rows="3" maxlength="300"
+                                    placeholder="Ej: ingreso por cambio de sencillo, egreso para compra menor..."
+                                    required><%= valores?.descripcion || '' %></textarea>
+                                <small class="field-help">
+                                    Explica claramente por qué se registra este movimiento.
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">
+                                Registrar movimiento
+                            </button>
+
+                            <a href="/caja" class="btn-secondary">
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </section>
+</section>
