@@ -15,47 +15,45 @@
         <div class="alert alert-error">
             <%= error %>
         </div>
-        <% } %>
+    <% } %>
 
-            <div class="caja-form-grid">
-                <article class="module-card caja-help-card">
-                    <p class="eyebrow">Regla operativa</p>
-                    <h3>Una caja abierta a la vez</h3>
-                    <p>
-                        En esta versión local se maneja una sola caja activa para evitar cruces de efectivo entre
-                        turnos.
-                    </p>
+    <article class="module-card caja-help-card">
+        <p class="eyebrow">Regla operativa</p>
+        <h3>Una caja abierta a la vez</h3>
+        <p>
+            En esta versión local se maneja una sola caja activa para evitar cruces de efectivo entre
+            turnos.
+        </p>
 
-                    <div class="info-strip">
-                        <strong>Base inicial:</strong>
-                        <span>dinero físico con el que arranca el turno.</span>
-                    </div>
-                </article>
+        <div class="info-strip">
+            <strong>Base inicial:</strong>
+            <span>dinero físico con el que arranca el turno.</span>
+        </div>
+    </article>
 
-                <form class="module-card form-panel" method="POST" action="/caja/abrir">
-                    <div class="form-section">
-                        <h3>Datos de apertura</h3>
+    <form class="module-card form-panel" method="POST" action="/caja/abrir">
+        <div class="form-section">
+            <h3>Datos de apertura</h3>
 
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="monto_inicial">Base inicial *</label>
-                                <input type="number" id="monto_inicial" name="monto_inicial" min="0" step="1"
-                                    value="<%= valores.monto_inicial || 0 %>" placeholder="Ej: 50000" required>
-                                <small class="field-help">Valor en pesos colombianos, sin centavos.</small>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="observaciones_apertura">Observación de apertura</label>
-                            <textarea id="observaciones_apertura" name="observaciones_apertura" rows="4" maxlength="500"
-                                placeholder="Ej: caja inicia con sencillo completo, turno mañana..."><%= valores.observaciones_apertura || '' %></textarea>
-                        </div>
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="submit" class="btn-primary">Abrir caja</button>
-                        <a href="/caja" class="btn-secondary">Cancelar</a>
-                    </div>
-                </form>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="monto_inicial">Base inicial *</label>
+                    <input type="number" id="monto_inicial" name="monto_inicial" min="0" step="1"
+                        value="<%= valores.monto_inicial || 0 %>" placeholder="Ej: 50000" required>
+                    <small class="field-help">Valor en pesos colombianos, sin centavos.</small>
+                </div>
             </div>
+
+            <div class="form-group">
+                <label for="observaciones_apertura">Observación de apertura</label>
+                <textarea id="observaciones_apertura" name="observaciones_apertura" rows="3" maxlength="500"
+                    placeholder="Ej: caja inicia con sencillo completo, turno mañana..."><%= valores.observaciones_apertura || '' %></textarea>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">Abrir caja</button>
+            <a href="/caja" class="btn-secondary">Cancelar</a>
+        </div>
+    </form>
 </section>

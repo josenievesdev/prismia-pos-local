@@ -22,10 +22,10 @@
         <% if (!turnoAbierto) { %>
             <a href="/caja/abrir" class="btn-primary">Abrir caja</a>
         <% } else { %>
-            <div class="module-actions">
+        <div class="module-actions">
                 <span class="badge badge-success">Caja abierta</span>
-                <a href="#" class="btn-secondary disabled-button">Movimiento</a>
-                <a href="#" class="btn-secondary disabled-button">Cerrar caja</a>
+                <button type="button" class="btn-secondary disabled-button" disabled title="Disponible próximamente">Movimiento</button>
+                <button type="button" class="btn-secondary disabled-button" disabled title="Disponible próximamente">Cerrar caja</button>
             </div>
         <% } %>
     </div>
@@ -123,9 +123,6 @@
                 <div>
                     <p class="eyebrow">Medios de pago</p>
                     <h3>Medios configurados para el turno</h3>
-                    <p>
-                        Estos medios se usarán después para movimientos, ventas, gastos y cuadre de caja.
-                    </p>
                 </div>
 
                 <span class="badge badge-muted">

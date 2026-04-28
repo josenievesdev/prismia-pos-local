@@ -30,8 +30,8 @@
     --color-warning: #d97706;
     --color-danger: #b91c1c;
 
-    --shadow-card: 0 24px 60px rgba(15, 23, 42, 0.10);
-    --shadow-soft: 0 12px 28px rgba(15, 23, 42, 0.08);
+    --shadow-card: 0 16px 40px rgba(15, 23, 42, 0.08);
+    --shadow-soft: 0 6px 18px rgba(15, 23, 42, 0.06);
 
     --radius-xl: 28px;
     --radius-lg: 20px;
@@ -408,13 +408,13 @@ textarea {
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    min-height: 46px;
-    padding: 0 18px;
+    min-height: 42px;
+    padding: 0 16px;
     border-radius: var(--radius-md);
     border: none;
     font-weight: 700;
     cursor: pointer;
-    font-size: 15px;
+    font-size: 14px;
     letter-spacing: -0.01em;
     transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
 }
@@ -422,13 +422,13 @@ textarea {
 .btn-primary {
     background: var(--color-primary);
     color: white;
-    box-shadow: 0 12px 22px rgba(36, 79, 143, 0.18);
+    box-shadow: 0 6px 16px rgba(36, 79, 143, 0.14);
 }
 
 .btn-primary:hover {
     background: var(--color-primary-dark);
     transform: translateY(-1px);
-    box-shadow: 0 14px 26px rgba(36, 79, 143, 0.22);
+    box-shadow: 0 8px 20px rgba(36, 79, 143, 0.18);
 }
 
 .btn-secondary {
@@ -461,9 +461,9 @@ textarea {
 }
 
 .eyebrow {
-    margin: 0 0 8px !important;
+    margin: 0 0 4px !important;
     text-transform: uppercase;
-    letter-spacing: 0.13em;
+    letter-spacing: 0.1em;
     font-size: 11px;
     font-weight: 900;
     color: var(--color-primary) !important;
@@ -728,20 +728,20 @@ textarea {
 }
 
 .app-header {
-    min-height: 82px;
+    min-height: 60px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 18px;
-    padding: 18px 28px;
+    gap: 14px;
+    padding: 12px 24px;
     background: rgba(255, 255, 255, 0.84);
     border-bottom: 1px solid var(--color-border);
     backdrop-filter: blur(10px);
 }
 
 .header-kicker {
-    margin: 0 0 4px;
-    font-size: 12px;
+    margin: 0 0 2px;
+    font-size: 11px;
     font-weight: 750;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -750,8 +750,8 @@ textarea {
 
 .app-header h1 {
     margin: 0;
-    font-size: 25px;
-    letter-spacing: -0.035em;
+    font-size: 21px;
+    letter-spacing: -0.03em;
 }
 
 .header-user {
@@ -800,55 +800,56 @@ textarea {
 }
 
 .btn-small {
-    min-height: 38px;
-    padding: 0 14px;
-    font-size: 14px;
+    min-height: 32px;
+    padding: 0 12px;
+    font-size: 13px;
 }
 
 .app-content {
     width: 100%;
     max-width: var(--layout-max);
     margin: 0 auto;
-    padding: 28px;
+    padding: 22px 24px;
 }
 
 .module-page {
     display: grid;
-    gap: 22px;
+    gap: 16px;
 }
 
 .module-header,
 .module-card {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-xl);
+    border-radius: 20px;
     box-shadow: var(--shadow-soft);
-    padding: 26px;
+    padding: 20px 22px;
 }
 
 .module-header h2 {
     margin: 0;
-    font-size: 30px;
-    letter-spacing: -0.045em;
+    font-size: 22px;
+    letter-spacing: -0.03em;
 }
 
 .module-header p {
-    margin: 8px 0 0;
+    margin: 4px 0 0;
     color: var(--color-muted);
-    line-height: 1.55;
+    font-size: 14px;
+    line-height: 1.5;
 }
 
 .info-strip {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
     align-items: center;
-    padding: 14px 16px;
+    padding: 10px 14px;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
+    border-radius: 14px;
     background: var(--color-primary-soft);
     color: var(--color-primary-dark);
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .info-strip span {
@@ -856,9 +857,9 @@ textarea {
 }
 
 .module-card h3 {
-    margin: 0 0 18px;
-    font-size: 20px;
-    letter-spacing: -0.025em;
+    margin: 0 0 14px;
+    font-size: 17px;
+    letter-spacing: -0.02em;
 }
 
 .module-list {
@@ -934,24 +935,32 @@ textarea {
 
 .form-panel {
     display: grid;
-    gap: 26px;
+    gap: 20px;
 }
 
 .form-section {
     display: grid;
-    gap: 16px;
+    gap: 14px;
+}
+
+.form-section + .form-section {
+    padding-top: 20px;
+    border-top: 1px solid var(--color-border);
 }
 
 .form-section h3 {
     margin: 0;
-    font-size: 18px;
+    font-size: 17px;
+    font-weight: 700;
     letter-spacing: -0.02em;
+    color: var(--color-text);
 }
 
 .form-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 18px;
+    gap: 14px;
+    align-items: start;
 }
 
 .form-group select,
@@ -980,9 +989,16 @@ textarea {
 }
 
 .field-help {
+    display: block;
+    margin-top: 6px;
+    padding: 6px 10px;
     color: var(--color-muted);
     font-size: 12px;
     line-height: 1.4;
+    font-style: italic;
+    background: var(--color-surface-soft);
+    border-radius: 8px;
+    border-left: 3px solid var(--color-primary-soft);
 }
 
 .form-actions {
@@ -1012,7 +1028,7 @@ textarea {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 18px;
+    gap: 14px;
 }
 
 .table-wrapper {
@@ -1028,17 +1044,17 @@ textarea {
 
 .data-table th {
     text-align: left;
-    padding: 0 14px 12px;
+    padding: 0 12px 10px;
     color: var(--color-muted);
     font-size: 12px;
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     border-bottom: 1px solid var(--color-border);
 }
 
 .data-table td {
-    padding: 16px 14px;
+    padding: 10px 12px;
     border-bottom: 1px solid var(--color-border);
     vertical-align: middle;
 }
@@ -1062,13 +1078,119 @@ textarea {
     margin: 0;
 }
 
+/* ---- Shared: Filtros ---- */
+
+.filter-search {
+    display: grid;
+    gap: 6px;
+}
+
+.filter-search label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+.filter-search input {
+    width: 100%;
+    min-height: 42px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 10px 14px;
+    font-size: 14px;
+    color: var(--color-text);
+    background: var(--color-surface);
+    outline: none;
+    transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.filter-search input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(36, 79, 143, 0.10);
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding-top: 4px;
+}
+
+/* ---- Shared: Table summary ---- */
+
+.table-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 16px;
+    padding-bottom: 12px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--color-border);
+    font-size: 13px;
+    color: var(--color-muted);
+}
+
+.table-summary strong {
+    color: var(--color-text);
+}
+
+/* ---- Shared: Table subtext ---- */
+
+.table-subtext {
+    display: block;
+    margin-top: 2px;
+    color: var(--color-muted);
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.35;
+}
+
+/* ---- Shared: Pagination ---- */
+
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding-top: 16px;
+}
+
+.pagination-info {
+    font-size: 13px;
+    color: var(--color-muted);
+}
+
+.pagination-info strong {
+    color: var(--color-text);
+}
+
+/* ---- Shared: Disabled button ---- */
+
+.disabled-button {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* ---- Shared: Text muted ---- */
+
+.text-muted {
+    color: var(--color-muted);
+}
+
 .badge {
     display: inline-flex;
     align-items: center;
-    min-height: 26px;
-    padding: 0 10px;
+    min-height: 22px;
+    padding: 0 8px;
     border-radius: 999px;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 750;
 }
 
@@ -1146,8 +1268,8 @@ textarea {
 .check-option {
     display: flex;
     align-items: flex-start;
-    gap: 12px;
-    padding: 14px;
+    gap: 10px;
+    padding: 12px;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     background: var(--color-surface-soft);
@@ -1245,7 +1367,7 @@ textarea {
 }
 
 .product-form .check-option {
-    min-height: 78px;
+    min-height: auto;
 }
 
 @media (max-width: 980px) {
