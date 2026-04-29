@@ -238,6 +238,38 @@ function obtenerMedioPagoPorId(idMedioPago) {
         .get(idMedioPago);
 }
 
+function listarCategoriasGastoActivas() {
+    return db
+        .prepare(`
+            SELECT
+                id_categoria_gasto,
+                nombre,
+                descripcion,
+                estado
+            FROM categorias_gasto
+            WHERE estado = 'activo'
+              AND eliminado_en IS NULL
+            ORDER BY nombre ASC
+        `)
+        .all();
+}
+
+function obtenerCategoriaGastoPorId(idCategoriaGasto) {
+    return db
+        .prepare(`
+            SELECT
+                id_categoria_gasto,
+                nombre,
+                descripcion,
+                estado
+            FROM categorias_gasto
+            WHERE id_categoria_gasto = ?
+              AND eliminado_en IS NULL
+            LIMIT 1
+        `)
+        .get(idCategoriaGasto);
+}
+
 function actualizarTotalesTurnoPorMovimiento({ idTurnoCaja, tipoMovimiento, monto, medioPago }) {
     const afectaEfectivo = Number(medioPago.afecta_efectivo_caja || 0) === 1;
 
@@ -392,6 +424,167 @@ function crearMovimientoManual({
     return transaccion();
 }
 
+function crearGastoDesdeCaja({
+    turno,
+    usuario,
+    categoriaGasto,
+    medioPago,
+    monto,
+    descripcion,
+    referenciaPago,
+    entidadPago,
+    comprobanteUrl,
+    ip,
+    userAgent,
+}) {
+    const transaccion = db.transaction(() => {
+        const resultadoGasto = db
+            .prepare(`
+                INSERT INTO gastos (
+                    id_categoria_gasto,
+                    id_usuario,
+                    fecha_gasto,
+                    descripcion,
+                    monto,
+                    metodo_pago,
+                    comprobante_url,
+                    afecta_caja,
+                    id_turno_caja,
+                    estado,
+                    id_medio_pago,
+                    referencia_pago,
+                    entidad_pago
+                ) VALUES (
+                    @id_categoria_gasto,
+                    @id_usuario,
+                    CURRENT_TIMESTAMP,
+                    @descripcion,
+                    @monto,
+                    @metodo_pago,
+                    @comprobante_url,
+                    1,
+                    @id_turno_caja,
+                    'registrado',
+                    @id_medio_pago,
+                    @referencia_pago,
+                    @entidad_pago
+                )
+            `)
+            .run({
+                id_categoria_gasto: categoriaGasto.id_categoria_gasto,
+                id_usuario: usuario.id_usuario,
+                descripcion,
+                monto,
+                metodo_pago: medioPago.tipo,
+                comprobante_url: comprobanteUrl || null,
+                id_turno_caja: turno.id_turno_caja,
+                id_medio_pago: medioPago.id_medio_pago,
+                referencia_pago: referenciaPago || null,
+                entidad_pago: entidadPago || null,
+            });
+
+        const idGasto = resultadoGasto.lastInsertRowid;
+
+        const resultadoMovimiento = db
+            .prepare(`
+                INSERT INTO movimientos_caja (
+                    id_turno_caja,
+                    id_usuario,
+                    tipo_movimiento,
+                    metodo_pago,
+                    id_medio_pago,
+                    monto,
+                    descripcion,
+                    referencia_tipo,
+                    referencia_id,
+                    referencia_pago,
+                    entidad_pago
+                ) VALUES (
+                    @id_turno_caja,
+                    @id_usuario,
+                    'egreso_manual',
+                    @metodo_pago,
+                    @id_medio_pago,
+                    @monto,
+                    @descripcion,
+                    'gasto',
+                    @referencia_id,
+                    @referencia_pago,
+                    @entidad_pago
+                )
+            `)
+            .run({
+                id_turno_caja: turno.id_turno_caja,
+                id_usuario: usuario.id_usuario,
+                metodo_pago: medioPago.tipo,
+                id_medio_pago: medioPago.id_medio_pago,
+                monto,
+                descripcion: `Gasto: ${descripcion}`,
+                referencia_id: idGasto,
+                referencia_pago: referenciaPago || null,
+                entidad_pago: entidadPago || null,
+            });
+
+        const idMovimientoCaja = resultadoMovimiento.lastInsertRowid;
+
+        actualizarTotalesTurnoPorMovimiento({
+            idTurnoCaja: turno.id_turno_caja,
+            tipoMovimiento: 'egreso_manual',
+            monto,
+            medioPago,
+        });
+
+        db.prepare(`
+            INSERT INTO auditoria (
+                id_usuario,
+                accion,
+                tabla_afectada,
+                id_registro_afectado,
+                datos_anteriores,
+                datos_nuevos,
+                ip,
+                user_agent
+            ) VALUES (
+                @id_usuario,
+                'crear_gasto_desde_caja',
+                'gastos',
+                @id_registro_afectado,
+                NULL,
+                @datos_nuevos,
+                @ip,
+                @user_agent
+            )
+        `).run({
+            id_usuario: usuario.id_usuario,
+            id_registro_afectado: idGasto,
+            datos_nuevos: JSON.stringify({
+                id_gasto: idGasto,
+                id_movimiento_caja: idMovimientoCaja,
+                id_turno_caja: turno.id_turno_caja,
+                categoria: categoriaGasto.nombre,
+                metodo_pago: medioPago.tipo,
+                id_medio_pago: medioPago.id_medio_pago,
+                medio_pago: medioPago.nombre,
+                afecta_efectivo_caja: medioPago.afecta_efectivo_caja,
+                monto,
+                descripcion,
+                referencia_pago: referenciaPago || null,
+                entidad_pago: entidadPago || null,
+                comprobante_url: comprobanteUrl || null,
+            }),
+            ip: ip || 'local',
+            user_agent: userAgent || '',
+        });
+
+        return {
+            idGasto,
+            idMovimientoCaja,
+        };
+    });
+
+    return transaccion();
+}
+
 module.exports = {
     obtenerTurnoAbierto,
     obtenerTurnoPorId,
@@ -401,5 +594,8 @@ module.exports = {
     listarMediosPagoActivos,
     listarResumenMovimientosPorMedio,
     obtenerMedioPagoPorId,
+    listarCategoriasGastoActivas,
+    obtenerCategoriaGastoPorId,
     crearMovimientoManual,
+    crearGastoDesdeCaja,
 };

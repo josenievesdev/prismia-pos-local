@@ -73,11 +73,26 @@ function prepararTurno(turno) {
 }
 
 function prepararMedioPago(medioPago) {
+    if (!medioPago) {
+        return null;
+    }
+
     return {
         ...medioPago,
         requiere_referencia: Number(medioPago.requiere_referencia || 0),
         afecta_efectivo_caja: Number(medioPago.afecta_efectivo_caja || 0),
         activo: Number(medioPago.activo || 0),
+    };
+}
+
+function prepararCategoriaGasto(categoriaGasto) {
+    if (!categoriaGasto) {
+        return null;
+    }
+
+    return {
+        ...categoriaGasto,
+        estado: categoriaGasto.estado || 'inactivo',
     };
 }
 
@@ -311,6 +326,28 @@ function obtenerDatosFormularioMovimiento() {
     };
 }
 
+function obtenerDatosFormularioGasto() {
+    const turnoAbierto = prepararTurno(cajaRepository.obtenerTurnoAbierto());
+
+    const mediosPago = cajaRepository
+        .listarMediosPagoActivos()
+        .map(prepararMedioPago);
+
+    const mediosPagoAgrupados = agruparMediosPago(mediosPago);
+
+    const categoriasGasto = cajaRepository
+        .listarCategoriasGastoActivas()
+        .map(prepararCategoriaGasto);
+
+    return {
+        turnoAbierto,
+        mediosPago,
+        mediosPagoAgrupados,
+        categoriasGasto,
+        valores: obtenerValoresGastoPorDefecto(),
+    };
+}
+
 function obtenerValoresMovimientoPorDefecto() {
     return {
         tipo_movimiento: 'ingreso_manual',
@@ -322,6 +359,18 @@ function obtenerValoresMovimientoPorDefecto() {
     };
 }
 
+function obtenerValoresGastoPorDefecto() {
+    return {
+        id_categoria_gasto: '',
+        id_medio_pago: '',
+        monto: '',
+        descripcion: '',
+        referencia_pago: '',
+        entidad_pago: '',
+        comprobante_url: '',
+    };
+}
+
 function prepararValoresMovimiento(datosFormulario = {}) {
     return {
         tipo_movimiento: limpiarTexto(datosFormulario.tipo_movimiento || 'ingreso_manual'),
@@ -330,6 +379,18 @@ function prepararValoresMovimiento(datosFormulario = {}) {
         descripcion: limpiarTexto(datosFormulario.descripcion),
         referencia_pago: limpiarTexto(datosFormulario.referencia_pago),
         entidad_pago: limpiarTexto(datosFormulario.entidad_pago),
+    };
+}
+
+function prepararValoresGasto(datosFormulario = {}) {
+    return {
+        id_categoria_gasto: datosFormulario.id_categoria_gasto || '',
+        id_medio_pago: datosFormulario.id_medio_pago || '',
+        monto: datosFormulario.monto || '',
+        descripcion: limpiarTexto(datosFormulario.descripcion),
+        referencia_pago: limpiarTexto(datosFormulario.referencia_pago),
+        entidad_pago: limpiarTexto(datosFormulario.entidad_pago),
+        comprobante_url: limpiarTexto(datosFormulario.comprobante_url),
     };
 }
 
@@ -485,6 +546,90 @@ function validarMovimientoManual({
     return null;
 }
 
+function validarGastoDesdeCaja({
+    turnoAbierto,
+    usuario,
+    categoriaGasto,
+    medioPago,
+    monto,
+    descripcion,
+    referenciaPago,
+    entidadPago,
+    comprobanteUrl,
+}) {
+    if (!usuario?.id_usuario) {
+        return 'No hay un usuario válido en sesión.';
+    }
+
+    if (!turnoAbierto) {
+        return 'No hay una caja abierta. Debes abrir caja antes de registrar gastos.';
+    }
+
+    if (!categoriaGasto) {
+        return 'Debes seleccionar una categoría de gasto válida.';
+    }
+
+    if (categoriaGasto.estado !== 'activo') {
+        return 'La categoría de gasto seleccionada no está activa.';
+    }
+
+    if (!medioPago) {
+        return 'Debes seleccionar un medio de pago válido.';
+    }
+
+    if (Number(medioPago.activo || 0) !== 1) {
+        return 'El medio de pago seleccionado no está activo.';
+    }
+
+    if (monto === null) {
+        return 'El monto del gasto debe ser un número válido.';
+    }
+
+    if (!Number.isInteger(monto)) {
+        return 'El monto del gasto debe registrarse en pesos enteros.';
+    }
+
+    if (monto <= 0) {
+        return 'El monto del gasto debe ser mayor a cero.';
+    }
+
+    if (monto > 999999999) {
+        return 'El monto del gasto es demasiado alto. Revisa el valor ingresado.';
+    }
+
+    if (!descripcion || descripcion.length < 3) {
+        return 'La descripción del gasto es obligatoria.';
+    }
+
+    if (descripcion.length > 300) {
+        return 'La descripción del gasto no puede superar 300 caracteres.';
+    }
+
+    if (referenciaPago.length > 120) {
+        return 'La referencia de pago no puede superar 120 caracteres.';
+    }
+
+    if (entidadPago.length > 120) {
+        return 'La entidad de pago no puede superar 120 caracteres.';
+    }
+
+    if (comprobanteUrl.length > 300) {
+        return 'La URL o ruta del comprobante no puede superar 300 caracteres.';
+    }
+
+    if (Number(medioPago.requiere_referencia || 0) === 1 && !referenciaPago) {
+        return `El medio de pago ${medioPago.nombre} requiere una referencia o comprobante.`;
+    }
+
+    const afectaEfectivo = Number(medioPago.afecta_efectivo_caja || 0) === 1;
+
+    if (afectaEfectivo && monto > Number(turnoAbierto.monto_esperado_calculado || 0)) {
+        return 'No puedes registrar un gasto en efectivo mayor al efectivo esperado actual.';
+    }
+
+    return null;
+}
+
 function registrarMovimientoManual({ datosFormulario, usuario, ip, userAgent }) {
     const valores = prepararValoresMovimiento(datosFormulario);
 
@@ -536,13 +681,78 @@ function registrarMovimientoManual({ datosFormulario, usuario, ip, userAgent }) 
     };
 }
 
+function registrarGastoDesdeCaja({ datosFormulario, usuario, ip, userAgent }) {
+    const valores = prepararValoresGasto(datosFormulario);
+
+    const turnoAbierto = prepararTurno(cajaRepository.obtenerTurnoAbierto());
+
+    const idCategoriaGasto = normalizarIdEntero(valores.id_categoria_gasto);
+    const categoriaGasto = idCategoriaGasto
+        ? prepararCategoriaGasto(
+            cajaRepository.obtenerCategoriaGastoPorId(idCategoriaGasto)
+        )
+        : null;
+
+    const idMedioPago = normalizarIdEntero(valores.id_medio_pago);
+    const medioPago = idMedioPago
+        ? prepararMedioPago(cajaRepository.obtenerMedioPagoPorId(idMedioPago))
+        : null;
+
+    const monto = normalizarMontoEntero(valores.monto);
+
+    const errorValidacion = validarGastoDesdeCaja({
+        turnoAbierto,
+        usuario,
+        categoriaGasto,
+        medioPago,
+        monto,
+        descripcion: valores.descripcion,
+        referenciaPago: valores.referencia_pago,
+        entidadPago: valores.entidad_pago,
+        comprobanteUrl: valores.comprobante_url,
+    });
+
+    if (errorValidacion) {
+        return {
+            ok: false,
+            mensaje: errorValidacion,
+            valores,
+        };
+    }
+
+    const resultado = cajaRepository.crearGastoDesdeCaja({
+        turno: turnoAbierto,
+        usuario,
+        categoriaGasto,
+        medioPago,
+        monto,
+        descripcion: valores.descripcion,
+        referenciaPago: valores.referencia_pago,
+        entidadPago: valores.entidad_pago,
+        comprobanteUrl: valores.comprobante_url,
+        ip,
+        userAgent,
+    });
+
+    return {
+        ok: true,
+        idGasto: resultado.idGasto,
+        idMovimientoCaja: resultado.idMovimientoCaja,
+        mensaje: 'Gasto registrado desde caja correctamente.',
+    };
+}
+
 module.exports = {
     obtenerEstadoCaja,
     obtenerDatosFormularioMovimiento,
+    obtenerDatosFormularioGasto,
     obtenerValoresMovimientoPorDefecto,
+    obtenerValoresGastoPorDefecto,
     prepararValoresMovimiento,
+    prepararValoresGasto,
     abrirCaja,
     registrarMovimientoManual,
+    registrarGastoDesdeCaja,
     normalizarMontoEntero,
     traducirTipoMovimiento,
     traducirMetodoPago,

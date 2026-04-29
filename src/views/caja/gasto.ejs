@@ -1,0 +1,212 @@
+<section class="module-page caja-page">
+    <% const gruposMediosPago=mediosPagoAgrupados || { efectivo: [], transferencias: [], tarjetas: [], otros: [] };
+        const valorCategoriaGasto=valores?.id_categoria_gasto || '' ; const valorMedioPago=valores?.id_medio_pago || ''
+        ; %>
+
+        <div class="module-header module-header-actions">
+            <div>
+                <p class="eyebrow">Gasto desde caja</p>
+                <h2>Registrar gasto</h2>
+                <p>
+                    Registra gastos operativos asociados al turno activo y al medio de pago usado.
+                </p>
+            </div>
+
+            <a href="/caja" class="btn-secondary">Volver a caja</a>
+        </div>
+
+        <% if (error) { %>
+            <div class="alert alert-error">
+                <%= error %>
+            </div>
+            <% } %>
+
+                <section class="caja-active-grid">
+                    <article class="module-card caja-status-card">
+                        <div class="caja-status-top">
+                            <div>
+                                <p class="eyebrow">Turno activo</p>
+                                <h3>Caja #<%= turnoAbierto.id_turno_caja %>
+                                </h3>
+                            </div>
+
+                            <span class="badge badge-success">Abierta</span>
+                        </div>
+
+                        <div class="caja-meta-grid">
+                            <div>
+                                <span>Abierta por</span>
+                                <strong>
+                                    <%= turnoAbierto.usuario_apertura_nombre || 'Usuario' %>
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>Efectivo esperado</span>
+                                <strong>
+                                    <%= formatearPesos(turnoAbierto.monto_esperado_calculado) %>
+                                </strong>
+                            </div>
+                        </div>
+
+                        <div class="caja-note">
+                            <span>Regla importante</span>
+                            <p>
+                                Si el gasto se paga en efectivo, baja el efectivo esperado.
+                                Si se paga por Nequi, Daviplata, Bancolombia, tarjeta u otro medio,
+                                queda registrado sin afectar el efectivo físico.
+                            </p>
+                        </div>
+                    </article>
+
+                    <form class="module-card form-panel" method="POST" action="/caja/gasto">
+                        <div class="form-section">
+                            <h3>Datos del gasto</h3>
+
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="id_categoria_gasto">Categoría *</label>
+                                    <select id="id_categoria_gasto" name="id_categoria_gasto" required>
+                                        <option value="">Selecciona una categoría</option>
+
+                                        <% categoriasGasto.forEach((categoria)=> { %>
+                                            <option value="<%= categoria.id_categoria_gasto %>"
+                                                <%=String(valorCategoriaGasto)===String(categoria.id_categoria_gasto)
+                                                ? 'selected' : '' %>
+                                                >
+                                                <%= categoria.nombre %>
+                                            </option>
+                                            <% }) %>
+                                    </select>
+                                    <small class="field-help">
+                                        Clasifica el gasto para reportes y control operativo.
+                                    </small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="monto">Monto *</label>
+                                    <input type="number" id="monto" name="monto" min="1" step="1"
+                                        value="<%= valores?.monto || '' %>" placeholder="Ej: 25000" required>
+                                    <small class="field-help">
+                                        Registra el valor en pesos enteros, sin centavos.
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="id_medio_pago">Medio de pago *</label>
+                                <select id="id_medio_pago" name="id_medio_pago" required>
+                                    <option value="">Selecciona un medio de pago</option>
+
+                                    <% if (gruposMediosPago.efectivo.length> 0) { %>
+                                        <optgroup label="Efectivo">
+                                            <% gruposMediosPago.efectivo.forEach((medio)=> { %>
+                                                <option value="<%= medio.id_medio_pago %>"
+                                                    <%=String(valorMedioPago)===String(medio.id_medio_pago) ? 'selected'
+                                                    : '' %>
+                                                    >
+                                                    <%= medio.nombre %>
+                                                </option>
+                                                <% }) %>
+                                        </optgroup>
+                                        <% } %>
+
+                                            <% if (gruposMediosPago.transferencias.length> 0) { %>
+                                                <optgroup label="Transferencias">
+                                                    <% gruposMediosPago.transferencias.forEach((medio)=> { %>
+                                                        <option value="<%= medio.id_medio_pago %>"
+                                                            <%=String(valorMedioPago)===String(medio.id_medio_pago)
+                                                            ? 'selected' : '' %>
+                                                            >
+                                                            <%= medio.nombre %>
+                                                        </option>
+                                                        <% }) %>
+                                                </optgroup>
+                                                <% } %>
+
+                                                    <% if (gruposMediosPago.tarjetas.length> 0) { %>
+                                                        <optgroup label="Tarjetas">
+                                                            <% gruposMediosPago.tarjetas.forEach((medio)=> { %>
+                                                                <option value="<%= medio.id_medio_pago %>"
+                                                                    <%=String(valorMedioPago)===String(medio.id_medio_pago)
+                                                                    ? 'selected' : '' %>
+                                                                    >
+                                                                    <%= medio.nombre %>
+                                                                </option>
+                                                                <% }) %>
+                                                        </optgroup>
+                                                        <% } %>
+
+                                                            <% if (gruposMediosPago.otros.length> 0) { %>
+                                                                <optgroup label="Otros">
+                                                                    <% gruposMediosPago.otros.forEach((medio)=> { %>
+                                                                        <option value="<%= medio.id_medio_pago %>"
+                                                                            <%=String(valorMedioPago)===String(medio.id_medio_pago)
+                                                                            ? 'selected' : '' %>
+                                                                            >
+                                                                            <%= medio.nombre %>
+                                                                        </option>
+                                                                        <% }) %>
+                                                                </optgroup>
+                                                                <% } %>
+                                </select>
+                                <small class="field-help">
+                                    El medio define si el gasto afecta o no el efectivo físico.
+                                </small>
+                            </div>
+
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="referencia_pago">Referencia o comprobante</label>
+                                    <input type="text" id="referencia_pago" name="referencia_pago" maxlength="120"
+                                        value="<%= valores?.referencia_pago || '' %>"
+                                        placeholder="Ej: comprobante, aprobación, soporte">
+                                    <small class="field-help">
+                                        Obligatoria para transferencias y tarjetas.
+                                    </small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="entidad_pago">Entidad o cuenta</label>
+                                    <input type="text" id="entidad_pago" name="entidad_pago" maxlength="120"
+                                        value="<%= valores?.entidad_pago || '' %>"
+                                        placeholder="Ej: Nequi, Bancolombia, datáfono">
+                                    <small class="field-help">
+                                        Campo opcional para identificar mejor el pago.
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="comprobante_url">Comprobante</label>
+                                <input type="text" id="comprobante_url" name="comprobante_url" maxlength="300"
+                                    value="<%= valores?.comprobante_url || '' %>"
+                                    placeholder="Ej: ruta local, nombre de archivo o referencia interna">
+                                <small class="field-help">
+                                    Por ahora se guarda como texto. Más adelante puede conectarse a carga de archivo.
+                                </small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="descripcion">Descripción *</label>
+                                <textarea id="descripcion" name="descripcion" rows="3" maxlength="300"
+                                    placeholder="Ej: compra de almuerzos, transporte, papelería, mantenimiento..."
+                                    required><%= valores?.descripcion || '' %></textarea>
+                                <small class="field-help">
+                                    Explica claramente el motivo del gasto.
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">
+                                Registrar gasto
+                            </button>
+
+                            <a href="/caja" class="btn-secondary">
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </section>
+</section>

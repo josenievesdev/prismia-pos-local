@@ -17,4 +17,7 @@ router.post('/abrir', cajaController.abrirCaja);
 router.get('/movimiento', cajaController.mostrarFormularioMovimiento);
 router.post('/movimiento', cajaController.registrarMovimientoManual);
 
+router.get('/gasto', cajaController.mostrarFormularioGasto);
+router.post('/gasto', cajaController.registrarGastoDesdeCaja);
+
 module.exports = router;

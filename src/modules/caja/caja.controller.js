@@ -113,10 +113,61 @@ function registrarMovimientoManual(req, res) {
     return res.redirect(`/caja?exito=${encodeURIComponent(resultado.mensaje)}`);
 }
 
+function mostrarFormularioGasto(req, res) {
+    const datosFormulario = cajaService.obtenerDatosFormularioGasto();
+
+    if (!datosFormulario.turnoAbierto) {
+        return res.redirect(
+            `/caja?error=${encodeURIComponent(
+                'Debes abrir caja antes de registrar gastos.'
+            )}`
+        );
+    }
+
+    return res.render('caja/gasto', {
+        titulo: 'Registrar gasto',
+        turnoAbierto: datosFormulario.turnoAbierto,
+        mediosPago: datosFormulario.mediosPago,
+        mediosPagoAgrupados: datosFormulario.mediosPagoAgrupados,
+        categoriasGasto: datosFormulario.categoriasGasto,
+        valores: datosFormulario.valores,
+        error: null,
+        estilosModulo: estilosCaja,
+    });
+}
+
+function registrarGastoDesdeCaja(req, res) {
+    const resultado = cajaService.registrarGastoDesdeCaja({
+        datosFormulario: req.body,
+        usuario: req.session?.usuario,
+        ip: req.ip,
+        userAgent: req.headers['user-agent'],
+    });
+
+    if (!resultado.ok) {
+        const datosFormulario = cajaService.obtenerDatosFormularioGasto();
+
+        return res.status(400).render('caja/gasto', {
+            titulo: 'Registrar gasto',
+            turnoAbierto: datosFormulario.turnoAbierto,
+            mediosPago: datosFormulario.mediosPago,
+            mediosPagoAgrupados: datosFormulario.mediosPagoAgrupados,
+            categoriasGasto: datosFormulario.categoriasGasto,
+            valores: resultado.valores,
+            error: resultado.mensaje,
+            estilosModulo: estilosCaja,
+        });
+    }
+
+    return res.redirect(`/caja?exito=${encodeURIComponent(resultado.mensaje)}`);
+}
+
 module.exports = {
     mostrarCaja,
     mostrarFormularioAbrir,
     abrirCaja,
     mostrarFormularioMovimiento,
     registrarMovimientoManual,
+    mostrarFormularioGasto,
+    registrarGastoDesdeCaja,
 };
