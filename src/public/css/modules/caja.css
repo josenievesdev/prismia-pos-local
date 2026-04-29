@@ -616,3 +616,302 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ==============================
+   Cierre de caja
+============================== */
+
+.caja-cierre-form {
+    display: grid;
+    gap: 16px;
+}
+
+.caja-cierre-diferencia {
+    display: grid;
+    gap: 4px;
+    padding: 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-soft);
+}
+
+.caja-cierre-diferencia span {
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.caja-cierre-diferencia strong {
+    color: var(--color-text);
+    font-size: 22px;
+    letter-spacing: -0.03em;
+}
+
+.caja-cierre-diferencia small {
+    color: var(--color-muted);
+    font-size: 12px;
+}
+
+.caja-cierre-diferencia-ok {
+    border-color: rgba(4, 120, 87, 0.25);
+    background: rgba(4, 120, 87, 0.08);
+}
+
+.caja-cierre-diferencia-ok strong {
+    color: #047857;
+}
+
+.caja-cierre-diferencia-faltante {
+    border-color: rgba(185, 28, 28, 0.25);
+    background: rgba(185, 28, 28, 0.08);
+}
+
+.caja-cierre-diferencia-faltante strong {
+    color: #b91c1c;
+}
+
+.caja-cierre-diferencia-sobrante {
+    border-color: rgba(36, 79, 143, 0.25);
+    background: rgba(36, 79, 143, 0.08);
+}
+
+.caja-cierre-diferencia-sobrante strong {
+    color: var(--color-primary-dark);
+}
+
+.caja-cierre-alerta {
+    padding: 14px;
+    border: 1px solid rgba(180, 83, 9, 0.24);
+    border-radius: var(--radius-md);
+    background: rgba(245, 158, 11, 0.08);
+}
+
+.caja-cierre-alerta strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #92400e;
+    font-size: 13px;
+}
+
+.caja-cierre-alerta p {
+    margin: 0;
+    color: var(--color-text-soft);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.caja-cierre-help-list {
+    display: grid;
+    gap: 10px;
+}
+
+.caja-cierre-help-list div {
+    padding: 12px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-soft);
+}
+
+.caja-cierre-help-list span {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--color-text);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.caja-cierre-help-list p {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+/* ==============================
+   Arqueo detalle de turno
+============================== */
+
+.caja-arqueo-cierre-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.caja-arqueo-box {
+    padding: 12px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-soft);
+}
+
+.caja-arqueo-box span {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 750;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.caja-arqueo-box strong {
+    display: block;
+    font-size: 16px;
+    letter-spacing: -0.02em;
+}
+
+.caja-arqueo-diferencia {
+    background: var(--color-primary-soft);
+    border-color: rgba(36, 79, 143, 0.18);
+}
+
+.caja-arqueo-section {
+    display: grid;
+    gap: 16px;
+}
+
+.caja-arqueo-table-wrapper {
+    max-height: 360px;
+    overflow: auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+}
+
+.caja-arqueo-table-wrapper .data-table {
+    margin: 0;
+    width: 100%;
+}
+
+.caja-arqueo-table-wrapper .data-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--color-surface);
+    box-shadow: 0 1px 0 var(--color-border);
+}
+
+.caja-gastos-table td {
+    vertical-align: middle;
+}
+
+.caja-arqueo-pending {
+    padding: 16px;
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-soft);
+}
+
+.caja-arqueo-pending strong {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--color-text);
+    font-size: 14px;
+}
+
+.caja-arqueo-pending p {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.caja-arqueo-pending p+p {
+    margin-top: 8px;
+}
+
+@media (max-width: 900px) {
+    .caja-arqueo-cierre-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .caja-arqueo-table-wrapper {
+        max-height: 420px;
+    }
+}
+
+/* ==============================
+   Caja · Acciones en tablas
+============================== */
+
+.btn-table-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 28px;
+    padding: 4px 10px;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-primary-dark);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.btn-table-action:hover {
+    background: var(--color-primary-soft);
+    border-color: rgba(36, 79, 143, 0.24);
+}
+
+/* ==============================
+   Caja · Historial de turnos mejorado
+============================== */
+
+.caja-historial-wrapper {
+    overflow-x: auto;
+}
+
+.caja-historial-table th,
+.caja-historial-table td {
+    vertical-align: middle;
+}
+
+.caja-historial-table th:first-child,
+.caja-historial-table td:first-child {
+    min-width: 135px;
+}
+
+.caja-turno-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.caja-turno-cell strong {
+    color: var(--color-text);
+    font-size: 13px;
+}
+
+.btn-table-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 26px;
+    padding: 4px 9px;
+    border: 1px solid rgba(36, 79, 143, 0.22);
+    border-radius: 999px;
+    background: var(--color-primary-soft);
+    color: var(--color-primary-dark);
+    font-size: 11.5px;
+    font-weight: 800;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.btn-table-action:hover {
+    background: rgba(36, 79, 143, 0.14);
+    border-color: rgba(36, 79, 143, 0.35);
+}
+
+/* Evita que el historial se vea aplastado cuando tenga muchos datos */
+.caja-historial-card .table-wrapper {
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: auto;
+}

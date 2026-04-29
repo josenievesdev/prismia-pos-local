@@ -47,10 +47,9 @@
                             Gasto
                         </a>
 
-                        <button type="button" class="btn-secondary disabled-button" disabled
-                            title="Disponible cuando implementemos el cierre de caja">
+                        <a href="/caja/cerrar" class="btn-secondary">
                             Cerrar caja
-                        </button>
+                        </a>
                     </div>
                     <% } %>
         </div>
@@ -498,8 +497,8 @@
                                                 </p>
                                             </div>
                                             <% } else { %>
-                                                <div class="table-wrapper">
-                                                    <table class="data-table caja-table">
+                                                <div class="table-wrapper caja-historial-wrapper">
+                                                    <table class="data-table caja-table caja-historial-table">
                                                         <thead>
                                                             <tr>
                                                                 <th>Turno</th>
@@ -517,7 +516,14 @@
                                                             <% turnosRecientes.forEach((turno)=> { %>
                                                                 <tr>
                                                                     <td>
-                                                                        <strong>#<%= turno.id_turno_caja %></strong>
+                                                                        <div class="caja-turno-cell">
+                                                                            <strong>#<%= turno.id_turno_caja %></strong>
+
+                                                                            <a href="/caja/turnos/<%= turno.id_turno_caja %>"
+                                                                                class="btn-table-action">
+                                                                                Ver arqueo
+                                                                            </a>
+                                                                        </div>
                                                                     </td>
 
                                                                     <td>

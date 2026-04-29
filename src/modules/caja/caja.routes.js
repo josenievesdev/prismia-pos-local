@@ -20,4 +20,11 @@ router.post('/movimiento', cajaController.registrarMovimientoManual);
 router.get('/gasto', cajaController.mostrarFormularioGasto);
 router.post('/gasto', cajaController.registrarGastoDesdeCaja);
 
+router.get('/cerrar', cajaController.mostrarFormularioCerrar);
+router.post('/cerrar', cajaController.cerrarCaja);
+
+router.get('/turnos/:id/imprimir', cajaController.mostrarArqueoImprimible);
+router.get('/turnos/:id/excel', cajaController.descargarExcelArqueoTurno);
+router.get('/turnos/:id', cajaController.mostrarDetalleTurno);
+
 module.exports = router;

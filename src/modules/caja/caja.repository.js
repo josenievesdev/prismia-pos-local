@@ -123,6 +123,27 @@ function listarMovimientosPorTurno(idTurnoCaja, limite = 50) {
         .all(idTurnoCaja, limite);
 }
 
+function listarMovimientosCompletosPorTurno(idTurnoCaja) {
+    return db
+        .prepare(`
+            SELECT
+                m.*,
+                u.nombre AS usuario_nombre,
+                mp.codigo AS codigo_medio_pago,
+                mp.nombre AS nombre_medio_pago,
+                mp.tipo AS tipo_medio_pago,
+                mp.afecta_efectivo_caja
+            FROM movimientos_caja m
+            INNER JOIN usuarios u
+                ON u.id_usuario = m.id_usuario
+            LEFT JOIN medios_pago mp
+                ON mp.id_medio_pago = m.id_medio_pago
+            WHERE m.id_turno_caja = ?
+            ORDER BY m.creado_en ASC, m.id_movimiento_caja ASC
+        `)
+        .all(idTurnoCaja);
+}
+
 function listarTurnosRecientes(limite = 10) {
     return db
         .prepare(`
@@ -268,6 +289,51 @@ function obtenerCategoriaGastoPorId(idCategoriaGasto) {
             LIMIT 1
         `)
         .get(idCategoriaGasto);
+}
+
+function listarGastosPorTurno(idTurnoCaja) {
+    return db
+        .prepare(`
+            SELECT
+                g.id_gasto,
+                g.id_categoria_gasto,
+                cg.nombre AS categoria_nombre,
+                g.id_usuario,
+                u.nombre AS usuario_nombre,
+                g.fecha_gasto,
+                g.descripcion,
+                g.monto,
+                g.metodo_pago,
+                g.comprobante_url,
+                g.afecta_caja,
+                g.id_turno_caja,
+                g.estado,
+                g.id_medio_pago,
+                mp.codigo AS codigo_medio_pago,
+                mp.nombre AS nombre_medio_pago,
+                mp.tipo AS tipo_medio_pago,
+                mp.afecta_efectivo_caja,
+                g.referencia_pago,
+                g.entidad_pago,
+                g.creado_en,
+                g.actualizado_en,
+                g.anulado_en,
+                g.anulado_por,
+                ua.nombre AS usuario_anulacion_nombre,
+                g.motivo_anulacion
+            FROM gastos g
+            LEFT JOIN categorias_gasto cg
+                ON cg.id_categoria_gasto = g.id_categoria_gasto
+            LEFT JOIN usuarios u
+                ON u.id_usuario = g.id_usuario
+            LEFT JOIN usuarios ua
+                ON ua.id_usuario = g.anulado_por
+            LEFT JOIN medios_pago mp
+                ON mp.id_medio_pago = g.id_medio_pago
+            WHERE g.id_turno_caja = ?
+            ORDER BY g.fecha_gasto ASC, g.id_gasto ASC
+        `)
+        .all(idTurnoCaja);
 }
 
 function actualizarTotalesTurnoPorMovimiento({ idTurnoCaja, tipoMovimiento, monto, medioPago }) {
@@ -419,6 +485,85 @@ function crearMovimientoManual({
         });
 
         return idMovimientoCaja;
+    });
+
+    return transaccion();
+}
+
+function cerrarTurnoCaja({
+    turno,
+    usuario,
+    montoContado,
+    diferencia,
+    observacionesCierre,
+    ip,
+    userAgent,
+}) {
+    const transaccion = db.transaction(() => {
+        const turnoAnterior = obtenerTurnoPorId(turno.id_turno_caja);
+
+        if (!turnoAnterior || turnoAnterior.estado !== 'abierto') {
+            throw new Error('No existe un turno abierto válido para cerrar.');
+        }
+
+        const resultado = db
+            .prepare(`
+                UPDATE turnos_caja
+                SET
+                    id_usuario_cierre = @id_usuario_cierre,
+                    fecha_cierre = CURRENT_TIMESTAMP,
+                    monto_contado = @monto_contado,
+                    diferencia = @diferencia,
+                    observaciones_cierre = @observaciones_cierre,
+                    estado = 'cerrado',
+                    actualizado_en = CURRENT_TIMESTAMP
+                WHERE id_turno_caja = @id_turno_caja
+                  AND estado = 'abierto'
+            `)
+            .run({
+                id_turno_caja: turno.id_turno_caja,
+                id_usuario_cierre: usuario.id_usuario,
+                monto_contado: montoContado,
+                diferencia,
+                observaciones_cierre: observacionesCierre || null,
+            });
+
+        if (resultado.changes === 0) {
+            throw new Error('No se pudo cerrar el turno. Es posible que ya esté cerrado.');
+        }
+
+        const turnoCerrado = obtenerTurnoPorId(turno.id_turno_caja);
+
+        db.prepare(`
+            INSERT INTO auditoria (
+                id_usuario,
+                accion,
+                tabla_afectada,
+                id_registro_afectado,
+                datos_anteriores,
+                datos_nuevos,
+                ip,
+                user_agent
+            ) VALUES (
+                @id_usuario,
+                'cerrar_caja',
+                'turnos_caja',
+                @id_registro_afectado,
+                @datos_anteriores,
+                @datos_nuevos,
+                @ip,
+                @user_agent
+            )
+        `).run({
+            id_usuario: usuario.id_usuario,
+            id_registro_afectado: turno.id_turno_caja,
+            datos_anteriores: JSON.stringify(turnoAnterior),
+            datos_nuevos: JSON.stringify(turnoCerrado),
+            ip: ip || 'local',
+            user_agent: userAgent || '',
+        });
+
+        return turnoCerrado;
     });
 
     return transaccion();
@@ -590,12 +735,15 @@ module.exports = {
     obtenerTurnoPorId,
     crearTurnoCaja,
     listarMovimientosPorTurno,
+    listarMovimientosCompletosPorTurno,
     listarTurnosRecientes,
     listarMediosPagoActivos,
     listarResumenMovimientosPorMedio,
     obtenerMedioPagoPorId,
     listarCategoriasGastoActivas,
     obtenerCategoriaGastoPorId,
+    listarGastosPorTurno,
     crearMovimientoManual,
     crearGastoDesdeCaja,
+    cerrarTurnoCaja,
 };

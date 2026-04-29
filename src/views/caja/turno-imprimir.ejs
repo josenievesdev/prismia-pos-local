@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>
+        <%= titulo || 'Arqueo de caja' %>
+    </title>
+
+    <style>
+        :root {
+            --text: #111827;
+            --muted: #64748b;
+            --border: #d8e0ea;
+            --soft: #f8fafc;
+            --primary: #1e3a8a;
+            --success: #047857;
+            --danger: #b91c1c;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 24px;
+            background: #e5e7eb;
+            color: var(--text);
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 12px;
+            line-height: 1.35;
+        }
+
+        .print-page {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 28px;
+            background: #ffffff;
+            border-radius: 14px;
+            box-shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
+        }
+
+        .print-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 34px;
+            padding: 8px 14px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: #ffffff;
+            color: var(--primary);
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #ffffff;
+        }
+
+        .print-header {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 18px;
+            align-items: start;
+            padding-bottom: 18px;
+            border-bottom: 2px solid var(--text);
+        }
+
+        .brand {
+            display: grid;
+            gap: 4px;
+        }
+
+        .brand-small {
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        h1,
+        h2,
+        h3,
+        p {
+            margin: 0;
+        }
+
+        h1 {
+            font-size: 24px;
+            letter-spacing: -0.03em;
+        }
+
+        h2 {
+            margin-bottom: 10px;
+            font-size: 15px;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        h3 {
+            font-size: 13px;
+        }
+
+        .turno-box {
+            text-align: right;
+        }
+
+        .turno-box strong {
+            display: block;
+            font-size: 22px;
+        }
+
+        .turno-box span {
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .section {
+            margin-top: 22px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .info-card {
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--soft);
+        }
+
+        .info-card span {
+            display: block;
+            margin-bottom: 4px;
+            color: var(--muted);
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .info-card strong {
+            display: block;
+            font-size: 14px;
+        }
+
+        .money-main strong {
+            font-size: 18px;
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .positive {
+            color: var(--success);
+        }
+
+        .negative {
+            color: var(--danger);
+        }
+
+        .zero {
+            color: var(--text);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 20px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: #ffffff;
+            color: var(--text);
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+        }
+
+        .badge-success {
+            background: #dcfce7;
+            border-color: #bbf7d0;
+            color: #166534;
+        }
+
+        .badge-muted {
+            background: #f1f5f9;
+            border-color: #e2e8f0;
+            color: #475569;
+        }
+
+        .badge-danger {
+            background: #fee2e2;
+            border-color: #fecaca;
+            color: #991b1b;
+        }
+
+        .note {
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: #ffffff;
+        }
+
+        .note span {
+            display: block;
+            margin-bottom: 4px;
+            color: var(--muted);
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .note p {
+            color: var(--text);
+            font-size: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th,
+        td {
+            padding: 8px 9px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+            text-align: left;
+        }
+
+        th {
+            background: var(--soft);
+            color: #475569;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        td {
+            font-size: 11px;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .nowrap {
+            white-space: nowrap;
+        }
+
+        .cell-stack {
+            display: grid;
+            gap: 2px;
+        }
+
+        .cell-stack small {
+            color: var(--muted);
+            font-size: 10px;
+        }
+
+        .placeholder {
+            padding: 14px;
+            border: 1px dashed var(--border);
+            border-radius: 10px;
+            background: var(--soft);
+            color: var(--muted);
+        }
+
+        .placeholder strong {
+            display: block;
+            margin-bottom: 4px;
+            color: var(--text);
+        }
+
+        .signatures {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 48px;
+            margin-top: 42px;
+        }
+
+        .signature-line {
+            padding-top: 34px;
+            border-top: 1px solid var(--text);
+            text-align: center;
+        }
+
+        .signature-line strong {
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        .signature-line span {
+            color: var(--muted);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .footer {
+            margin-top: 22px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 10px;
+            text-align: center;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+                background: #ffffff;
+            }
+
+            .print-page {
+                max-width: none;
+                padding: 0;
+                border-radius: 0;
+                box-shadow: none;
+            }
+
+            .print-actions {
+                display: none;
+            }
+
+            .section {
+                break-inside: avoid;
+            }
+
+            table {
+                break-inside: auto;
+            }
+
+            tr {
+                break-inside: avoid;
+                break-after: auto;
+            }
+
+            thead {
+                display: table-header-group;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <% const gruposResumenMedios=resumenMediosPagoAgrupado || { efectivo: [], transferencias: [], tarjetas: [], otros:
+        [] }; const totalesResumen=totalesResumenMediosPago || { cantidad_operaciones: 0, total_ingresos: 0,
+        total_egresos: 0, saldo_neto: 0 }; const resumenMediosTabla=[ ...(gruposResumenMedios.efectivo ||
+        []).map((medio)=> ({
+        ...medio,
+        grupo: 'Efectivo'
+        })),
+        ...(gruposResumenMedios.transferencias || []).map((medio) => ({
+        ...medio,
+        grupo: 'Transferencias'
+        })),
+        ...(gruposResumenMedios.tarjetas || []).map((medio) => ({
+        ...medio,
+        grupo: 'Tarjetas'
+        })),
+        ...(gruposResumenMedios.otros || []).map((medio) => ({
+        ...medio,
+        grupo: 'Otros'
+        }))
+        ];
+
+        const diferenciaTurno = Number(turno.diferencia || 0);
+        const claseDiferencia =
+        diferenciaTurno > 0
+        ? 'positive'
+        : diferenciaTurno < 0 ? 'negative' : 'zero' ; const signoDiferencia=diferenciaTurno> 0 ? '+' : diferenciaTurno <
+                0 ? '-' : '' ; %>
+
+                <main class="print-page">
+                    <div class="print-actions">
+                        <a href="/caja/turnos/<%= turno.id_turno_caja %>" class="btn">
+                            Volver al arqueo
+                        </a>
+
+                        <button type="button" class="btn btn-primary" onclick="window.print()">
+                            Imprimir / Guardar PDF
+                        </button>
+                    </div>
+
+                    <header class="print-header">
+                        <div class="brand">
+                            <span class="brand-small">Prismia POS Local</span>
+                            <h1>Arqueo de caja</h1>
+                            <p class="muted">
+                                Resumen operativo del turno, movimientos, gastos y medios de pago.
+                            </p>
+                        </div>
+
+                        <div class="turno-box">
+                            <span>Turno</span>
+                            <strong>#<%= turno.id_turno_caja %></strong>
+
+                            <% if (turno.estado==='abierto' ) { %>
+                                <span class="badge badge-success">Abierto</span>
+                                <% } else { %>
+                                    <span class="badge badge-muted">Cerrado</span>
+                                    <% } %>
+                        </div>
+                    </header>
+
+                    <section class="section">
+                        <h2>1. Datos del turno</h2>
+
+                        <div class="grid-4">
+                            <div class="info-card">
+                                <span>Abierta por</span>
+                                <strong>
+                                    <%= turno.usuario_apertura_nombre || 'Usuario' %>
+                                </strong>
+                            </div>
+
+                            <div class="info-card">
+                                <span>Cerrada por</span>
+                                <strong>
+                                    <%= turno.usuario_cierre_nombre || '—' %>
+                                </strong>
+                            </div>
+
+                            <div class="info-card">
+                                <span>Fecha apertura</span>
+                                <strong>
+                                    <%= formatearFecha(turno.fecha_apertura) %>
+                                </strong>
+                            </div>
+
+                            <div class="info-card">
+                                <span>Fecha cierre</span>
+                                <strong>
+                                    <%= turno.fecha_cierre ? formatearFecha(turno.fecha_cierre) : '—' %>
+                                </strong>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="section">
+                        <h2>2. Resumen del efectivo</h2>
+
+                        <div class="grid-4">
+                            <div class="info-card">
+                                <span>Base inicial</span>
+                                <strong>
+                                    <%= formatearPesos(turno.monto_inicial) %>
+                                </strong>
+                            </div>
+
+                            <div class="info-card">
+                                <span>Ventas en efectivo</span>
+                                <strong>
+                                    <%= formatearPesos(turno.total_efectivo) %>
+                                </strong>
+                            </div>
+
+                            <div class="info-card">
+                                <span>Ingresos manuales</span>
+                                <strong>
+                                    <%= formatearPesos(turno.total_ingresos_manuales) %>
+                                </strong>
+                            </div>
+
+                            <div class="info-card">
+                                <span>Egresos manuales</span>
+                                <strong>
+                                    <%= formatearPesos(turno.total_egresos_manuales) %>
+                                </strong>
+                            </div>
+                        </div>
+
+                        <div class="grid-3" style="margin-top: 12px;">
+                            <div class="info-card money-main">
+                                <span>Efectivo esperado</span>
+                                <strong>
+                                    <%= formatearPesos(turno.monto_esperado_calculado) %>
+                                </strong>
+                            </div>
+
+                            <div class="info-card money-main">
+                                <span>Efectivo contado</span>
+                                <strong>
+                                    <%= turno.monto_contado===null ? '—' : formatearPesos(turno.monto_contado) %>
+                                </strong>
+                            </div>
+
+                            <div class="info-card money-main">
+                                <span>Diferencia</span>
+                                <strong class="<%= claseDiferencia %>">
+                                    <% if (turno.diferencia===null) { %>
+                                        —
+                                        <% } else { %>
+                                            <%= signoDiferencia %>
+                                                <%= formatearPesos(Math.abs(diferenciaTurno)) %>
+                                                    <% } %>
+                                </strong>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="section">
+                        <h2>3. Resumen operativo por medios</h2>
+
+                        <div class="grid-4" style="margin-bottom: 12px;">
+                            <div class="info-card">
+                                <span>Total ingresos</span>
+                                <strong>
+                                    <%= formatearPesos(totalesResumen.total_ingresos) %>
+                                </strong>
+                            </div>
+
+                            <div class="info-card">
+                                <span>Total egresos</span>
+                                <strong>
+                                    <%= formatearPesos(totalesResumen.total_egresos) %>
+                                </strong>
+                            </div>
+
+                            <div class="info-card">
+                                <span>Saldo neto operativo</span>
+                                <strong>
+                                    <%= formatearPesos(totalesResumen.saldo_neto) %>
+                                </strong>
+                            </div>
+
+                            <div class="info-card">
+                                <span>Operaciones</span>
+                                <strong>
+                                    <%= totalesResumen.cantidad_operaciones %>
+                                </strong>
+                            </div>
+                        </div>
+
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Grupo</th>
+                                    <th>Medio</th>
+                                    <th class="text-center">Ops.</th>
+                                    <th class="text-right">Ingresos</th>
+                                    <th class="text-right">Egresos</th>
+                                    <th class="text-right">Neto</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <% resumenMediosTabla.forEach((medio)=> { %>
+                                    <% const totalIngresos=Number(medio.total_ingresos || 0); const
+                                        totalEgresos=Number(medio.total_egresos || 0); const
+                                        saldoNeto=Number(medio.saldo_neto || 0); const claseNeto=saldoNeto> 0
+                                        ? 'positive'
+                                        : saldoNeto < 0 ? 'negative' : 'zero' ; const signoNeto=saldoNeto> 0 ? '+' :
+                                            saldoNeto < 0 ? '-' : '' ; %>
+
+                                                <tr>
+                                                    <td><span class="badge">
+                                                            <%= medio.grupo %>
+                                                        </span></td>
+                                                    <td>
+                                                        <div class="cell-stack">
+                                                            <strong>
+                                                                <%= medio.nombre %>
+                                                            </strong>
+                                                            <% if (Number(medio.afecta_efectivo_caja || 0)===1) { %>
+                                                                <small>Afecta efectivo físico</small>
+                                                                <% } else { %>
+                                                                    <small>No afecta efectivo físico</small>
+                                                                    <% } %>
+                                                        </div>
+                                                    </td>
+                                                    <td class="text-center"><strong>
+                                                            <%= medio.cantidad_operaciones %>
+                                                        </strong></td>
+                                                    <td class="text-right">
+                                                        <span class="<%= totalIngresos > 0 ? 'positive' : 'muted' %>">
+                                                            <%= totalIngresos> 0 ? '+ ' : '' %><%=
+                                                                    formatearPesos(totalIngresos) %>
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-right">
+                                                        <span class="<%= totalEgresos > 0 ? 'negative' : 'muted' %>">
+                                                            <%= totalEgresos> 0 ? '- ' : '' %><%=
+                                                                    formatearPesos(totalEgresos) %>
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-right">
+                                                        <strong class="<%= claseNeto %>">
+                                                            <%= signoNeto %>
+                                                                <%= formatearPesos(Math.abs(saldoNeto)) %>
+                                                        </strong>
+                                                    </td>
+                                                </tr>
+                                                <% }) %>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section class="section">
+                        <h2>4. Gastos asociados al turno</h2>
+
+                        <div class="grid-4" style="margin-bottom: 12px;">
+                            <div class="info-card">
+                                <span>Total gastos</span>
+                                <strong>
+                                    <%= formatearPesos(totalesGastos.total) %>
+                                </strong>
+                            </div>
+
+                            <div class="info-card">
+                                <span>Gastos en efectivo</span>
+                                <strong>
+                                    <%= formatearPesos(totalesGastos.efectivo) %>
+                                </strong>
+                            </div>
+
+                            <div class="info-card">
+                                <span>Otros medios</span>
+                                <strong>
+                                    <%= formatearPesos(totalesGastos.otros_medios) %>
+                                </strong>
+                            </div>
+
+                            <div class="info-card">
+                                <span>Anulados</span>
+                                <strong>
+                                    <%= formatearPesos(totalesGastos.anulados) %>
+                                </strong>
+                            </div>
+                        </div>
+
+                        <% if (!gastos || gastos.length===0) { %>
+                            <div class="placeholder">
+                                <strong>Sin gastos asociados</strong>
+                                Este turno no tiene gastos registrados desde caja.
+                            </div>
+                            <% } else { %>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Categoría</th>
+                                            <th>Descripción</th>
+                                            <th>Medio / soporte</th>
+                                            <th>Estado</th>
+                                            <th>Usuario</th>
+                                            <th class="text-right">Monto</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        <% gastos.forEach((gasto)=> { %>
+                                            <tr>
+                                                <td class="nowrap">
+                                                    <%= formatearFecha(gasto.fecha_gasto || gasto.creado_en) %>
+                                                </td>
+
+                                                <td>
+                                                    <strong>
+                                                        <%= gasto.categoria_nombre || 'Sin categoría' %>
+                                                    </strong>
+                                                </td>
+
+                                                <td>
+                                                    <%= gasto.descripcion || 'Sin descripción' %>
+                                                </td>
+
+                                                <td>
+                                                    <div class="cell-stack">
+                                                        <strong>
+                                                            <%= gasto.metodo_pago_texto %>
+                                                        </strong>
+
+                                                        <% if (gasto.referencia_pago || gasto.entidad_pago ||
+                                                            gasto.comprobante_url) { %>
+                                                            <small>
+                                                                <% if (gasto.entidad_pago) { %>
+                                                                    <%= gasto.entidad_pago %>
+                                                                        <% } %>
+
+                                                                            <% if (gasto.entidad_pago &&
+                                                                                gasto.referencia_pago) { %>
+                                                                                ·
+                                                                                <% } %>
+
+                                                                                    <% if (gasto.referencia_pago) { %>
+                                                                                        Ref. <%= gasto.referencia_pago
+                                                                                            %>
+                                                                                            <% } %>
+
+                                                                                                <% if
+                                                                                                    ((gasto.entidad_pago
+                                                                                                    ||
+                                                                                                    gasto.referencia_pago)
+                                                                                                    &&
+                                                                                                    gasto.comprobante_url)
+                                                                                                    { %>
+                                                                                                    ·
+                                                                                                    <% } %>
+
+                                                                                                        <% if
+                                                                                                            (gasto.comprobante_url)
+                                                                                                            { %>
+                                                                                                            Comp. <%=
+                                                                                                                gasto.comprobante_url
+                                                                                                                %>
+                                                                                                                <% } %>
+                                                            </small>
+                                                            <% } else { %>
+                                                                <small>Sin soporte</small>
+                                                                <% } %>
+                                                    </div>
+                                                </td>
+
+                                                <td>
+                                                    <% if (gasto.estado==='anulado' ) { %>
+                                                        <span class="badge badge-danger">Anulado</span>
+                                                        <% } else { %>
+                                                            <span class="badge badge-success">Registrado</span>
+                                                            <% } %>
+                                                </td>
+
+                                                <td>
+                                                    <%= gasto.usuario_nombre || 'Usuario' %>
+                                                </td>
+
+                                                <td class="text-right">
+                                                    <strong
+                                                        class="<%= gasto.estado === 'anulado' ? 'muted' : 'negative' %>">
+                                                        - <%= formatearPesos(gasto.monto) %>
+                                                    </strong>
+                                                </td>
+                                            </tr>
+                                            <% }) %>
+                                    </tbody>
+                                </table>
+                                <% } %>
+                    </section>
+
+                    <section class="section">
+                        <h2>5. Movimientos completos del turno</h2>
+
+                        <% if (!movimientos || movimientos.length===0) { %>
+                            <div class="placeholder">
+                                <strong>Sin movimientos</strong>
+                                Este turno no tiene movimientos de caja registrados.
+                            </div>
+                            <% } else { %>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Movimiento</th>
+                                            <th>Medio / soporte</th>
+                                            <th>Descripción</th>
+                                            <th>Usuario</th>
+                                            <th class="text-right">Monto</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        <% movimientos.forEach((movimiento)=> { %>
+                                            <% const esEgreso=[ 'egreso_manual' , 'devolucion' , 'anulacion'
+                                                ].includes(movimiento.tipo_movimiento); const claseMonto=esEgreso
+                                                ? 'negative' : 'positive' ; const signoMonto=esEgreso ? '-' : '+' ; %>
+
+                                                <tr>
+                                                    <td class="nowrap">
+                                                        <%= formatearFecha(movimiento.creado_en) %>
+                                                    </td>
+
+                                                    <td>
+                                                        <span
+                                                            class="badge <%= esEgreso ? 'badge-danger' : 'badge-success' %>">
+                                                            <%= movimiento.tipo_movimiento_texto %>
+                                                        </span>
+                                                    </td>
+
+                                                    <td>
+                                                        <div class="cell-stack">
+                                                            <strong>
+                                                                <%= movimiento.metodo_pago_texto %>
+                                                            </strong>
+
+                                                            <% if (movimiento.referencia_pago ||
+                                                                movimiento.entidad_pago) { %>
+                                                                <small>
+                                                                    <% if (movimiento.entidad_pago) { %>
+                                                                        <%= movimiento.entidad_pago %>
+                                                                            <% } %>
+
+                                                                                <% if (movimiento.entidad_pago &&
+                                                                                    movimiento.referencia_pago) { %>
+                                                                                    ·
+                                                                                    <% } %>
+
+                                                                                        <% if
+                                                                                            (movimiento.referencia_pago)
+                                                                                            { %>
+                                                                                            Ref. <%=
+                                                                                                movimiento.referencia_pago
+                                                                                                %>
+                                                                                                <% } %>
+                                                                </small>
+                                                                <% } else { %>
+                                                                    <small>Sin referencia</small>
+                                                                    <% } %>
+                                                        </div>
+                                                    </td>
+
+                                                    <td>
+                                                        <%= movimiento.descripcion || 'Sin descripción' %>
+                                                    </td>
+                                                    <td>
+                                                        <%= movimiento.usuario_nombre || 'Usuario' %>
+                                                    </td>
+
+                                                    <td class="text-right">
+                                                        <strong class="<%= claseMonto %>">
+                                                            <%= signoMonto %>
+                                                                <%= formatearPesos(movimiento.monto) %>
+                                                        </strong>
+                                                    </td>
+                                                </tr>
+                                                <% }) %>
+                                    </tbody>
+                                </table>
+                                <% } %>
+                    </section>
+
+                    <section class="section">
+                        <h2>6. Facturas / ventas del turno</h2>
+
+                        <% if (facturasPendientesDeIntegracion) { %>
+                            <div class="placeholder">
+                                <strong>Sección pendiente de integración POS/Ventas</strong>
+                                <p>
+                                    <%= mensajeFacturas %>
+                                </p>
+                                <p style="margin-top: 6px;">
+                                    Cuando el módulo POS/Ventas esté conectado, aquí se listarán las facturas del turno
+                                    con fecha, cajero, estado, medio de pago, total, pagado, pendiente, devoluciones y
+                                    anulaciones.
+                                </p>
+                            </div>
+                            <% } else if (!facturas || facturas.length===0) { %>
+                                <div class="placeholder">
+                                    <strong>Sin facturas</strong>
+                                    Este turno no tiene facturas asociadas.
+                                </div>
+                                <% } %>
+                    </section>
+
+                    <section class="section">
+                        <h2>7. Observaciones</h2>
+
+                        <div class="grid-2">
+                            <div class="note">
+                                <span>Observación apertura</span>
+                                <p>
+                                    <%= turno.observaciones_apertura || 'Sin observación de apertura.' %>
+                                </p>
+                            </div>
+
+                            <div class="note">
+                                <span>Observación cierre</span>
+                                <p>
+                                    <%= turno.observaciones_cierre || 'Sin observación de cierre.' %>
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="signatures">
+                        <div class="signature-line">
+                            <strong>
+                                <%= turno.usuario_cierre_nombre || 'Responsable cierre' %>
+                            </strong>
+                            <span>Responsable del cierre</span>
+                        </div>
+
+                        <div class="signature-line">
+                            <strong>Revisión / Administración</strong>
+                            <span>Firma de revisión</span>
+                        </div>
+                    </section>
+
+                    <footer class="footer">
+                        Prismia POS Local · Arqueo generado desde el sistema · Nieves Systems
+                    </footer>
+                </main>
+</body>
+
+</html>

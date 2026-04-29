@@ -162,6 +162,138 @@ function registrarGastoDesdeCaja(req, res) {
     return res.redirect(`/caja?exito=${encodeURIComponent(resultado.mensaje)}`);
 }
 
+function mostrarFormularioCerrar(req, res) {
+    const datosFormulario = cajaService.obtenerDatosFormularioCierre();
+
+    if (!datosFormulario.turnoAbierto) {
+        return res.redirect(
+            `/caja?error=${encodeURIComponent(
+                'No hay una caja abierta para cerrar.'
+            )}`
+        );
+    }
+
+    return res.render('caja/cerrar', {
+        titulo: 'Cerrar caja',
+        turnoAbierto: datosFormulario.turnoAbierto,
+        movimientos: datosFormulario.movimientos,
+        resumenMediosPago: datosFormulario.resumenMediosPago,
+        resumenMediosPagoAgrupado: datosFormulario.resumenMediosPagoAgrupado,
+        totalesResumenMediosPago: datosFormulario.totalesResumenMediosPago,
+        valores: datosFormulario.valores,
+        error: null,
+        estilosModulo: estilosCaja,
+    });
+}
+
+function cerrarCaja(req, res) {
+    const resultado = cajaService.cerrarCaja({
+        datosFormulario: req.body,
+        usuario: req.session?.usuario,
+        ip: req.ip,
+        userAgent: req.headers['user-agent'],
+    });
+
+    if (!resultado.ok) {
+        const datosFormulario = cajaService.obtenerDatosFormularioCierre();
+
+        return res.status(400).render('caja/cerrar', {
+            titulo: 'Cerrar caja',
+            turnoAbierto: datosFormulario.turnoAbierto,
+            movimientos: datosFormulario.movimientos,
+            resumenMediosPago: datosFormulario.resumenMediosPago,
+            resumenMediosPagoAgrupado: datosFormulario.resumenMediosPagoAgrupado,
+            totalesResumenMediosPago: datosFormulario.totalesResumenMediosPago,
+            valores: resultado.valores,
+            error: resultado.mensaje,
+            estilosModulo: estilosCaja,
+        });
+    }
+
+    return res.redirect(`/caja?exito=${encodeURIComponent(resultado.mensaje)}`);
+}
+
+function mostrarDetalleTurno(req, res) {
+    const resultado = cajaService.obtenerDetalleArqueoTurno(req.params.id);
+
+    if (!resultado.ok) {
+        return res.redirect(
+            `/caja?error=${encodeURIComponent(resultado.mensaje)}`
+        );
+    }
+
+    const { arqueo } = resultado;
+
+    return res.render('caja/turno-detalle', {
+        titulo: `Arqueo caja #${arqueo.turno.id_turno_caja}`,
+        arqueo,
+        turno: arqueo.turno,
+        movimientos: arqueo.movimientos,
+        resumenMediosPago: arqueo.resumenMediosPago,
+        resumenMediosPagoAgrupado: arqueo.resumenMediosPagoAgrupado,
+        totalesResumenMediosPago: arqueo.totalesResumenMediosPago,
+        gastos: arqueo.gastos,
+        totalesGastos: arqueo.totalesGastos,
+        facturas: arqueo.facturas,
+        facturasPendientesDeIntegracion: arqueo.facturasPendientesDeIntegracion,
+        mensajeFacturas: arqueo.mensajeFacturas,
+        error: null,
+        estilosModulo: estilosCaja,
+    });
+}
+
+function mostrarArqueoImprimible(req, res) {
+    const resultado = cajaService.obtenerDetalleArqueoTurno(req.params.id);
+
+    if (!resultado.ok) {
+        return res.redirect(
+            `/caja?error=${encodeURIComponent(resultado.mensaje)}`
+        );
+    }
+
+    const { arqueo } = resultado;
+
+    return res.render('caja/turno-imprimir', {
+        layout: false,
+        titulo: `Arqueo caja #${arqueo.turno.id_turno_caja}`,
+        arqueo,
+        turno: arqueo.turno,
+        movimientos: arqueo.movimientos,
+        resumenMediosPago: arqueo.resumenMediosPago,
+        resumenMediosPagoAgrupado: arqueo.resumenMediosPagoAgrupado,
+        totalesResumenMediosPago: arqueo.totalesResumenMediosPago,
+        gastos: arqueo.gastos,
+        totalesGastos: arqueo.totalesGastos,
+        facturas: arqueo.facturas,
+        facturasPendientesDeIntegracion: arqueo.facturasPendientesDeIntegracion,
+        mensajeFacturas: arqueo.mensajeFacturas,
+    });
+}
+
+function descargarExcelArqueoTurno(req, res) {
+    const resultado = cajaService.generarExcelArqueoTurno(req.params.id);
+
+    if (!resultado.ok) {
+        return res.redirect(
+            `/caja?error=${encodeURIComponent(resultado.mensaje)}`
+        );
+    }
+
+    res.setHeader(
+        'Content-Type',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
+
+    res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="${resultado.nombreArchivo}"`
+    );
+
+    res.setHeader('Content-Length', resultado.buffer.length);
+
+    return res.send(resultado.buffer);
+}
+
 module.exports = {
     mostrarCaja,
     mostrarFormularioAbrir,
@@ -170,4 +302,9 @@ module.exports = {
     registrarMovimientoManual,
     mostrarFormularioGasto,
     registrarGastoDesdeCaja,
+    mostrarFormularioCerrar,
+    cerrarCaja,
+    mostrarDetalleTurno,
+    mostrarArqueoImprimible,
+    descargarExcelArqueoTurno,
 };
