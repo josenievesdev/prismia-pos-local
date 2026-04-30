@@ -291,6 +291,8 @@ function obtenerCategoriaGastoPorId(idCategoriaGasto) {
         .get(idCategoriaGasto);
 }
 
+
+
 function listarGastosPorTurno(idTurnoCaja) {
     return db
         .prepare(`
@@ -569,6 +571,83 @@ function cerrarTurnoCaja({
     return transaccion();
 }
 
+function listarFacturasVentasPorTurno(idTurnoCaja) {
+    return db
+        .prepare(`
+            SELECT
+                v.id_venta,
+                v.id_cliente,
+                v.id_usuario,
+                v.id_turno_caja,
+                v.numero_venta,
+                v.fecha_venta,
+                v.subtotal,
+                v.descuento_total,
+                v.impuesto_total,
+                v.total,
+                v.estado,
+                v.total_pagado,
+                v.saldo_pendiente,
+                v.cambio_entregado,
+                v.origen,
+                v.tipo_venta,
+                v.creado_en,
+
+                c.nombre AS cliente_nombre,
+                c.tipo_documento AS cliente_tipo_documento,
+                c.documento AS cliente_documento,
+
+                u.nombre AS cajero_nombre,
+
+                comp.id_comprobante,
+                comp.numero AS comprobante_numero,
+                comp.estado AS comprobante_estado,
+                comp.fecha_emision AS comprobante_fecha_emision,
+
+                pagos.medios_pago_nombre,
+                pagos.medios_pago_tipo,
+                pagos.metodos_pago,
+                pagos.total_pagado_calculado,
+
+                detalle.cantidad_items,
+                detalle.total_unidades
+            FROM ventas v
+            LEFT JOIN clientes c
+                ON c.id_cliente = v.id_cliente
+            LEFT JOIN usuarios u
+                ON u.id_usuario = v.id_usuario
+            LEFT JOIN comprobantes comp
+                ON comp.id_venta = v.id_venta
+            LEFT JOIN (
+                SELECT
+                    pv.id_venta,
+                    GROUP_CONCAT(DISTINCT COALESCE(mp.nombre, pv.entidad, pv.metodo_pago)) AS medios_pago_nombre,
+                    GROUP_CONCAT(DISTINCT COALESCE(mp.tipo, pv.metodo_pago)) AS medios_pago_tipo,
+                    GROUP_CONCAT(DISTINCT pv.metodo_pago) AS metodos_pago,
+                    COALESCE(SUM(pv.monto), 0) AS total_pagado_calculado
+                FROM pagos_venta pv
+                LEFT JOIN medios_pago mp
+                    ON mp.id_medio_pago = pv.id_medio_pago
+                WHERE pv.estado = 'registrado'
+                  AND pv.anulado_en IS NULL
+                GROUP BY pv.id_venta
+            ) pagos
+                ON pagos.id_venta = v.id_venta
+            LEFT JOIN (
+                SELECT
+                    dv.id_venta,
+                    COUNT(*) AS cantidad_items,
+                    COALESCE(SUM(dv.cantidad), 0) AS total_unidades
+                FROM detalle_ventas dv
+                GROUP BY dv.id_venta
+            ) detalle
+                ON detalle.id_venta = v.id_venta
+            WHERE v.id_turno_caja = ?
+            ORDER BY datetime(v.fecha_venta) ASC, v.id_venta ASC
+        `)
+        .all(idTurnoCaja);
+}
+
 function crearGastoDesdeCaja({
     turno,
     usuario,
@@ -743,6 +822,7 @@ module.exports = {
     listarCategoriasGastoActivas,
     obtenerCategoriaGastoPorId,
     listarGastosPorTurno,
+    listarFacturasVentasPorTurno,
     crearMovimientoManual,
     crearGastoDesdeCaja,
     cerrarTurnoCaja,

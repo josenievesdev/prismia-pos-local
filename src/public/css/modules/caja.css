@@ -915,3 +915,224 @@
     overflow-y: auto;
     overflow-x: auto;
 }
+
+/* ===== Facturas reales en detalle de turno ===== */
+
+.caja-turno-facturas-section {
+    overflow: hidden;
+}
+
+.caja-facturas-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+    padding: 18px 20px;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.07);
+}
+
+.caja-facturas-header h3 {
+    margin: 4px 0 6px;
+    color: #0f172a;
+    font-size: 16px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+}
+
+.caja-facturas-header p {
+    margin: 0;
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.caja-facturas-resumen {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.caja-facturas-resumen div {
+    min-width: 112px;
+    padding: 10px 12px;
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    border-radius: 14px;
+    background: #f8fafc;
+}
+
+.caja-facturas-resumen span {
+    display: block;
+    margin-bottom: 4px;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.caja-facturas-resumen strong {
+    color: #0f172a;
+    font-size: 15px;
+    font-weight: 900;
+}
+
+.caja-facturas-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.caja-facturas-table {
+    min-width: 1080px;
+}
+
+.caja-facturas-table th {
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 850;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.caja-facturas-table td {
+    vertical-align: middle;
+    font-size: 12px;
+}
+
+.caja-facturas-table td small,
+.caja-facturas-table td span+small,
+.caja-facturas-table td strong+small {
+    display: block;
+    margin-top: 3px;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.caja-factura-numero {
+    color: #1f4d8e;
+    font-weight: 900;
+}
+
+.caja-factura-estado {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 78px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    background: #eef2f7;
+    color: #475569;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.caja-factura-estado.is-paid {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.caja-factura-estado.is-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.caja-factura-estado.is-cancelled {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.caja-factura-actions {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.caja-factura-actions .btn-secondary {
+    min-height: 32px;
+    padding: 0 10px;
+    font-size: 11px;
+}
+
+@media (max-width: 900px) {
+    .caja-facturas-header {
+        flex-direction: column;
+    }
+
+    .caja-facturas-resumen {
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
+
+/* ===== Cabeceras claras para tablas de caja ===== */
+
+.caja-section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+    padding-bottom: 14px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.caja-section-head h3 {
+    margin: 3px 0 5px;
+    color: #0f172a;
+    font-size: 15px;
+    font-weight: 900;
+    letter-spacing: -0.01em;
+}
+
+.caja-section-head p {
+    max-width: 720px;
+    margin: 0;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.45;
+}
+
+.caja-section-eyebrow {
+    display: inline-flex;
+    margin-bottom: 2px;
+    color: #1f4d8e;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.caja-section-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-width: max-content;
+    padding: 6px 10px;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    border-radius: 999px;
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.caja-section-count strong {
+    color: #0f172a;
+    font-weight: 900;
+}
+
+@media (max-width: 760px) {
+    .caja-section-head {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .caja-section-count {
+        width: fit-content;
+    }
+}

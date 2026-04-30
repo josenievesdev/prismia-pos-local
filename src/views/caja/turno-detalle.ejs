@@ -580,31 +580,156 @@
                                     <% } %>
                         </article>
 
-                        <article class="module-card caja-arqueo-section">
-                            <div class="table-summary">
-                                <span>Facturas / ventas del turno</span>
-                                <span>Pendiente integración POS</span>
-                            </div>
+                        <article class="module-card caja-arqueo-section caja-turno-facturas-section">
+                            <% const facturasTurno=Array.isArray(facturas) ? facturas : []; const
+                                totalesFacturasTurno=arqueo && arqueo.totalesFacturas ? arqueo.totalesFacturas : {
+                                cantidad: facturasTurno.length, total: 0, total_pagado: 0, impuesto_total: 0, pagadas: {
+                                cantidad: 0, total: 0 }, anuladas: { cantidad: 0, total: 0 }, otras: { cantidad: 0,
+                                total: 0 }, }; function claseEstadoFacturaCaja(estado) { if (estado==='pagada' )
+                                return 'is-paid' ; if (estado==='pendiente' ) return 'is-pending' ; if
+                                (estado==='anulada' ) return 'is-cancelled' ; return '' ; } %>
 
-                            <% if (facturasPendientesDeIntegracion) { %>
-                                <div class="caja-arqueo-pending">
-                                    <strong>Sección preparada para ventas</strong>
-                                    <p>
-                                        <%= mensajeFacturas %>
-                                    </p>
-                                    <p>
-                                        Cuando el módulo POS/Ventas esté conectado, aquí se mostrarán las facturas del
-                                        turno con fecha, cajero, estado, medio de pago, total, pagado, pendiente,
-                                        devoluciones y anulaciones.
-                                    </p>
-                                </div>
-                                <% } else if (!facturas || facturas.length===0) { %>
-                                    <div class="empty-state">
-                                        <h3>Sin facturas</h3>
+                                <div class="caja-facturas-header">
+                                    <div>
+                                        <span class="eyebrow">Ventas reales</span>
+                                        <h3>Facturas del turno</h3>
                                         <p>
-                                            Este turno no tiene facturas asociadas.
+                                            <%= facturasTurno.length %> factura(s) asociada(s) a este turno.
                                         </p>
                                     </div>
-                                    <% } %>
+
+                                    <div class="caja-facturas-resumen">
+                                        <div>
+                                            <span>Total vendido</span>
+                                            <strong>
+                                                <%= formatearPesos(totalesFacturasTurno.total) %>
+                                            </strong>
+                                        </div>
+
+                                        <div>
+                                            <span>Pagadas</span>
+                                            <strong>
+                                                <%= totalesFacturasTurno.pagadas.cantidad %>
+                                            </strong>
+                                        </div>
+
+                                        <div>
+                                            <span>Anuladas</span>
+                                            <strong>
+                                                <%= totalesFacturasTurno.anuladas.cantidad %>
+                                            </strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <% if (facturasPendientesDeIntegracion) { %>
+                                    <div class="caja-arqueo-pending">
+                                        <strong>Sección preparada para ventas</strong>
+                                        <p>
+                                            <%= mensajeFacturas %>
+                                        </p>
+                                    </div>
+                                    <% } else if (facturasTurno.length===0) { %>
+                                        <div class="empty-state">
+                                            <h3>Sin facturas</h3>
+                                            <p>
+                                                Este turno no tiene facturas asociadas.
+                                            </p>
+                                        </div>
+                                        <% } else { %>
+                                            <div class="table-responsive caja-facturas-table-wrap">
+                                                <table class="data-table caja-facturas-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Factura</th>
+                                                            <th>Fecha</th>
+                                                            <th>Cliente</th>
+                                                            <th>Cajero</th>
+                                                            <th>Medio de pago</th>
+                                                            <th class="text-center">Ítems</th>
+                                                            <th class="text-right">Total</th>
+                                                            <th class="text-center">Estado</th>
+                                                            <th class="text-center">Acciones</th>
+                                                        </tr>
+                                                    </thead>
+
+                                                    <tbody>
+                                                        <% facturasTurno.forEach((factura)=> { %>
+                                                            <tr>
+                                                                <td>
+                                                                    <strong class="caja-factura-numero">
+                                                                        <%= factura.numero_comprobante %>
+                                                                    </strong>
+                                                                    <small>ID venta: <%= factura.id_venta %></small>
+                                                                </td>
+
+                                                                <td>
+                                                                    <%= formatearFecha(factura.fecha_venta) %>
+                                                                </td>
+
+                                                                <td>
+                                                                    <strong>
+                                                                        <%= factura.cliente_nombre %>
+                                                                    </strong>
+                                                                    <small>
+                                                                        <%= factura.cliente_etiqueta %>
+                                                                    </small>
+                                                                </td>
+
+                                                                <td>
+                                                                    <%= factura.cajero_nombre %>
+                                                                </td>
+
+                                                                <td>
+                                                                    <span>
+                                                                        <%= factura.medio_pago_nombre %>
+                                                                    </span>
+                                                                    <small>
+                                                                        <%= factura.medio_pago_tipo %>
+                                                                    </small>
+                                                                </td>
+
+                                                                <td class="text-center">
+                                                                    <strong>
+                                                                        <%= factura.cantidad_items %>
+                                                                    </strong>
+                                                                    <small>
+                                                                        <%= factura.total_unidades %> unidad(es)
+                                                                    </small>
+                                                                </td>
+
+                                                                <td class="text-right">
+                                                                    <strong>
+                                                                        <%= formatearPesos(factura.total) %>
+                                                                    </strong>
+                                                                </td>
+
+                                                                <td class="text-center">
+                                                                    <span
+                                                                        class="caja-factura-estado <%= claseEstadoFacturaCaja(factura.estado) %>">
+                                                                        <%= factura.estado %>
+                                                                    </span>
+                                                                </td>
+
+                                                                <td class="text-center">
+                                                                    <div class="caja-factura-actions">
+                                                                        <a href="/ventas/<%= factura.id_venta %>"
+                                                                            class="btn-secondary">
+                                                                            Ver
+                                                                        </a>
+
+                                                                        <a href="/ventas/<%= factura.id_venta %>/ticket"
+                                                                            class="btn-secondary" target="_blank"
+                                                                            rel="noopener">
+                                                                            Ticket
+                                                                        </a>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                            <% }) %>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <% } %>
                         </article>
 </section>

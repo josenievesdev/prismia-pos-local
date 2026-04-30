@@ -324,6 +324,108 @@ function calcularTotalesGastosTurno(gastos) {
     );
 }
 
+function prepararFacturaVentaTurno(factura) {
+    const numeroComprobante =
+        limpiarTexto(factura.comprobante_numero)
+        || limpiarTexto(factura.numero_venta)
+        || `Venta #${factura.id_venta}`;
+
+    const clienteNombre =
+        limpiarTexto(factura.cliente_nombre)
+        || 'Consumidor final';
+
+    const clienteDocumento = limpiarTexto(factura.cliente_documento);
+    const clienteTipoDocumento =
+        limpiarTexto(factura.cliente_tipo_documento)
+        || 'CF';
+
+    return {
+        ...factura,
+        id_venta: Number(factura.id_venta || 0),
+        id_turno_caja: Number(factura.id_turno_caja || 0),
+        numero_venta: limpiarTexto(factura.numero_venta) || numeroComprobante,
+        numero_comprobante: numeroComprobante,
+        fecha_venta: limpiarTexto(factura.fecha_venta),
+        subtotal: Number(factura.subtotal || 0),
+        descuento_total: Number(factura.descuento_total || 0),
+        impuesto_total: Number(factura.impuesto_total || 0),
+        total: Number(factura.total || 0),
+        total_pagado: Number(factura.total_pagado || factura.total_pagado_calculado || 0),
+        saldo_pendiente: Number(factura.saldo_pendiente || 0),
+        cambio_entregado: Number(factura.cambio_entregado || 0),
+        estado: limpiarTexto(factura.estado) || 'pagada',
+        cliente_nombre: clienteNombre,
+        cliente_tipo_documento: clienteTipoDocumento,
+        cliente_documento: clienteDocumento,
+        cliente_etiqueta: clienteDocumento
+            ? `${clienteTipoDocumento} ${clienteDocumento}`
+            : 'Sin documento',
+        cajero_nombre: limpiarTexto(factura.cajero_nombre) || 'Usuario',
+        medio_pago_nombre:
+            limpiarTexto(factura.medios_pago_nombre)
+            || 'Sin pago registrado',
+        medio_pago_tipo:
+            limpiarTexto(factura.medios_pago_tipo || factura.metodos_pago)
+            || 'sin_tipo',
+        cantidad_items: Number(factura.cantidad_items || 0),
+        total_unidades: Number(factura.total_unidades || 0),
+    };
+}
+
+function calcularTotalesFacturasTurno(facturas) {
+    return facturas.reduce(
+        (totales, factura) => {
+            totales.cantidad += 1;
+            totales.subtotal += factura.subtotal;
+            totales.impuesto_total += factura.impuesto_total;
+            totales.descuento_total += factura.descuento_total;
+            totales.total += factura.total;
+            totales.total_pagado += factura.total_pagado;
+            totales.saldo_pendiente += factura.saldo_pendiente;
+            totales.cambio_entregado += factura.cambio_entregado;
+            totales.cantidad_items += factura.cantidad_items;
+            totales.total_unidades += factura.total_unidades;
+
+            if (factura.estado === 'pagada') {
+                totales.pagadas.cantidad += 1;
+                totales.pagadas.total += factura.total;
+            } else if (factura.estado === 'anulada') {
+                totales.anuladas.cantidad += 1;
+                totales.anuladas.total += factura.total;
+            } else {
+                totales.otras.cantidad += 1;
+                totales.otras.total += factura.total;
+            }
+
+            return totales;
+        },
+        {
+            cantidad: 0,
+            subtotal: 0,
+            impuesto_total: 0,
+            descuento_total: 0,
+            total: 0,
+            total_pagado: 0,
+            saldo_pendiente: 0,
+            cambio_entregado: 0,
+            cantidad_items: 0,
+            total_unidades: 0,
+            pagadas: {
+                cantidad: 0,
+                total: 0,
+            },
+            anuladas: {
+                cantidad: 0,
+                total: 0,
+            },
+            otras: {
+                cantidad: 0,
+                total: 0,
+            },
+        }
+    );
+}
+
 function obtenerGrupoMedioPago(tipo) {
     const grupos = {
         efectivo: 'Efectivo',
@@ -394,6 +496,12 @@ function obtenerDetalleArqueoTurno(idTurnoCaja) {
 
     const totalesGastos = calcularTotalesGastosTurno(gastos);
 
+    const facturas = cajaRepository
+        .listarFacturasVentasPorTurno(idTurno)
+        .map(prepararFacturaVentaTurno);
+
+    const totalesFacturas = calcularTotalesFacturasTurno(facturas);
+
     return {
         ok: true,
         arqueo: {
@@ -404,14 +512,13 @@ function obtenerDetalleArqueoTurno(idTurnoCaja) {
             totalesResumenMediosPago,
             gastos,
             totalesGastos,
-            facturas: [],
-            facturasPendientesDeIntegracion: true,
-            mensajeFacturas:
-                'La sección de facturas se integrará cuando el módulo POS/Ventas esté conectado al turno de caja.',
+            facturas,
+            totalesFacturas,
+            facturasPendientesDeIntegracion: false,
+            mensajeFacturas: null,
         },
     };
 }
-
 function generarExcelArqueoTurno(idTurnoCaja) {
     const resultado = obtenerDetalleArqueoTurno(idTurnoCaja);
 

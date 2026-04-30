@@ -160,92 +160,22 @@
                                     </article>
                                 </section>
 
-                                <article class="module-card caja-medios-card">
-                                    <div class="caja-medios-header">
-                                        <div>
-                                            <p class="eyebrow">Medios de pago</p>
-                                            <h3>Medios configurados para el turno</h3>
-                                        </div>
 
-                                        <span class="badge badge-muted">
-                                            <%= totalMediosPago %> activos
-                                        </span>
-                                    </div>
-
-                                    <div class="caja-medios-grid">
-                                        <div class="caja-medio-group">
-                                            <span class="caja-medio-title">Efectivo</span>
-
-                                            <% if (gruposMediosPago.efectivo.length===0) { %>
-                                                <p class="caja-medio-empty">Sin medios configurados</p>
-                                                <% } else { %>
-                                                    <div class="caja-medio-list">
-                                                        <% gruposMediosPago.efectivo.forEach((medio)=> { %>
-                                                            <span class="caja-medio-pill">
-                                                                <%= medio.nombre %>
-                                                            </span>
-                                                            <% }) %>
-                                                    </div>
-                                                    <% } %>
-                                        </div>
-
-                                        <div class="caja-medio-group">
-                                            <span class="caja-medio-title">Transferencias</span>
-
-                                            <% if (gruposMediosPago.transferencias.length===0) { %>
-                                                <p class="caja-medio-empty">Sin medios configurados</p>
-                                                <% } else { %>
-                                                    <div class="caja-medio-list">
-                                                        <% gruposMediosPago.transferencias.forEach((medio)=> { %>
-                                                            <span class="caja-medio-pill">
-                                                                <%= medio.nombre %>
-                                                            </span>
-                                                            <% }) %>
-                                                    </div>
-                                                    <% } %>
-                                        </div>
-
-                                        <div class="caja-medio-group">
-                                            <span class="caja-medio-title">Tarjetas</span>
-
-                                            <% if (gruposMediosPago.tarjetas.length===0) { %>
-                                                <p class="caja-medio-empty">Sin medios configurados</p>
-                                                <% } else { %>
-                                                    <div class="caja-medio-list">
-                                                        <% gruposMediosPago.tarjetas.forEach((medio)=> { %>
-                                                            <span class="caja-medio-pill">
-                                                                <%= medio.nombre %>
-                                                            </span>
-                                                            <% }) %>
-                                                    </div>
-                                                    <% } %>
-                                        </div>
-
-                                        <div class="caja-medio-group">
-                                            <span class="caja-medio-title">Otros</span>
-
-                                            <% if (gruposMediosPago.otros.length===0) { %>
-                                                <p class="caja-medio-empty">Sin medios configurados</p>
-                                                <% } else { %>
-                                                    <div class="caja-medio-list">
-                                                        <% gruposMediosPago.otros.forEach((medio)=> { %>
-                                                            <span class="caja-medio-pill">
-                                                                <%= medio.nombre %>
-                                                            </span>
-                                                            <% }) %>
-                                                    </div>
-                                                    <% } %>
-                                        </div>
-                                    </div>
-                                </article>
 
                                 <article class="module-card caja-operativo-card">
-                                    <div class="table-summary">
-                                        <span>Resumen operativo por medios</span>
-                                        <span>
+                                    <div class="caja-section-head">
+                                        <div>
+                                            <span class="caja-section-eyebrow">Resumen operativo</span>
+                                            <h3>Ingresos y egresos por medio de pago</h3>
+                                            <p>Consolidado del turno actual agrupado por efectivo, transferencias,
+                                                tarjetas y otros medios.</p>
+                                        </div>
+
+                                        <span class="caja-section-count">
                                             <strong>
                                                 <%= totalesResumen.cantidad_operaciones %>
-                                            </strong> operaciones
+                                            </strong>
+                                            operaciones
                                         </span>
                                     </div>
 
@@ -365,12 +295,19 @@
                                 </article>
 
                                 <article class="module-card caja-movimientos-card caja-scroll-card">
-                                    <div class="table-summary">
-                                        <span>Movimientos del turno</span>
-                                        <span>
+                                    <div class="caja-section-head">
+                                        <div>
+                                            <span class="caja-section-eyebrow">Detalle operativo</span>
+                                            <h3>Movimientos registrados en este turno</h3>
+                                            <p>Listado cronológico de ventas, ingresos, egresos y soportes generados
+                                                durante la caja.</p>
+                                        </div>
+
+                                        <span class="caja-section-count">
                                             <strong>
                                                 <%= movimientos.length %>
-                                            </strong> registrados
+                                            </strong>
+                                            registrados
                                         </span>
                                     </div>
 
@@ -480,12 +417,19 @@
                                 <% } %>
 
                                     <article class="module-card caja-historial-card caja-scroll-card">
-                                        <div class="table-summary">
-                                            <span>Historial reciente de turnos</span>
-                                            <span>
+                                        <div class="caja-section-head">
+                                            <div>
+                                                <span class="caja-section-eyebrow">Historial de caja</span>
+                                                <h3>Últimos turnos registrados</h3>
+                                                <p>Consulta rápida de aperturas, cierres, valores esperados, conteos y
+                                                    diferencias.</p>
+                                            </div>
+
+                                            <span class="caja-section-count">
                                                 <strong>
                                                     <%= turnosRecientes.length %>
-                                                </strong> turnos
+                                                </strong>
+                                                turnos
                                             </span>
                                         </div>
 
