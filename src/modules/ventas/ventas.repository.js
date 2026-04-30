@@ -147,6 +147,26 @@ function listarMediosPagoActivos() {
         .all();
 }
 
+function obtenerMedioPagoPorId(idMedioPago) {
+    return db
+        .prepare(`
+            SELECT
+                id_medio_pago,
+                codigo,
+                nombre,
+                tipo,
+                requiere_referencia,
+                afecta_efectivo_caja,
+                activo,
+                orden
+            FROM medios_pago
+            WHERE id_medio_pago = ?
+              AND activo = 1
+            LIMIT 1
+        `)
+        .get(idMedioPago);
+}
+
 function buscarProductosParaVenta({ busqueda = '', limite = 30 } = {}) {
     const termino = String(busqueda || '').trim();
 
@@ -359,6 +379,361 @@ function listarVentasRecientes(limite = 10) {
         .all(limite);
 }
 
+function registrarVentaPOS(datos) {
+    const transaccion = db.transaction(() => {
+        const prefijo = datos.prefijo_comprobante || 'FV';
+
+        const siguiente = db
+            .prepare(`
+                SELECT COALESCE(MAX(consecutivo), 0) + 1 AS consecutivo
+                FROM comprobantes
+                WHERE prefijo = ?
+            `)
+            .get(prefijo);
+
+        const consecutivo = siguiente.consecutivo;
+        const numeroVenta = `${prefijo}-${String(consecutivo).padStart(6, '0')}`;
+
+        const ventaInsertada = db
+            .prepare(`
+                INSERT INTO ventas (
+                    id_cliente,
+                    id_usuario,
+                    id_turno_caja,
+                    numero_venta,
+                    fecha_venta,
+                    subtotal,
+                    descuento_total,
+                    impuesto_total,
+                    total,
+                    estado,
+                    observaciones,
+                    total_pagado,
+                    saldo_pendiente,
+                    cambio_entregado,
+                    total_costo,
+                    utilidad_bruta,
+                    origen,
+                    tipo_venta,
+                    requiere_factura
+                ) VALUES (
+                    @id_cliente,
+                    @id_usuario,
+                    @id_turno_caja,
+                    @numero_venta,
+                    @fecha_venta,
+                    @subtotal,
+                    @descuento_total,
+                    @impuesto_total,
+                    @total,
+                    'pagada',
+                    @observaciones,
+                    @total_pagado,
+                    @saldo_pendiente,
+                    @cambio_entregado,
+                    @total_costo,
+                    @utilidad_bruta,
+                    'pos',
+                    'contado',
+                    @requiere_factura
+                )
+            `)
+            .run({
+                id_cliente: datos.cliente ? datos.cliente.id_cliente : null,
+                id_usuario: datos.id_usuario,
+                id_turno_caja: datos.turno.id_turno_caja,
+                numero_venta: numeroVenta,
+                fecha_venta: datos.fecha_venta,
+                subtotal: datos.resumen.subtotal,
+                descuento_total: datos.resumen.descuento_total,
+                impuesto_total: datos.resumen.impuesto_total,
+                total: datos.resumen.total,
+                observaciones: datos.observaciones || null,
+                total_pagado: datos.pago.monto_pago,
+                saldo_pendiente: datos.pago.saldo_pendiente,
+                cambio_entregado: datos.pago.cambio_entregado,
+                total_costo: datos.resumen.total_costo,
+                utilidad_bruta: datos.resumen.utilidad_bruta,
+                requiere_factura: datos.requiere_factura ? 1 : 0,
+            });
+
+        const idVenta = Number(ventaInsertada.lastInsertRowid);
+
+        const insertarDetalle = db.prepare(`
+            INSERT INTO detalle_ventas (
+                id_venta,
+                id_producto,
+                id_unidad_medida,
+                unidad_abreviatura,
+                codigo_interno,
+                codigo_barras,
+                nombre_producto,
+                cantidad,
+                precio_unitario,
+                precio_costo_unitario,
+                descuento_unitario,
+                porcentaje_iva,
+                impuesto_unitario,
+                impuesto_total,
+                subtotal,
+                total_linea,
+                costo_total,
+                utilidad_bruta
+            ) VALUES (
+                @id_venta,
+                @id_producto,
+                @id_unidad_medida,
+                @unidad_abreviatura,
+                @codigo_interno,
+                @codigo_barras,
+                @nombre_producto,
+                @cantidad,
+                @precio_unitario,
+                @precio_costo_unitario,
+                @descuento_unitario,
+                @porcentaje_iva,
+                @impuesto_unitario,
+                @impuesto_total,
+                @subtotal,
+                @total_linea,
+                @costo_total,
+                @utilidad_bruta
+            )
+        `);
+
+        const actualizarStock = db.prepare(`
+            UPDATE productos
+            SET
+                stock_actual = @stock_nuevo,
+                actualizado_en = CURRENT_TIMESTAMP
+            WHERE id_producto = @id_producto
+        `);
+
+        const insertarMovimientoInventario = db.prepare(`
+            INSERT INTO movimientos_inventario (
+                id_producto,
+                id_usuario,
+                id_unidad_medida,
+                unidad_abreviatura,
+                tipo_movimiento,
+                cantidad,
+                stock_anterior,
+                stock_nuevo,
+                costo_unitario,
+                costo_total,
+                motivo,
+                referencia_tipo,
+                referencia_id
+            ) VALUES (
+                @id_producto,
+                @id_usuario,
+                @id_unidad_medida,
+                @unidad_abreviatura,
+                'venta',
+                @cantidad,
+                @stock_anterior,
+                @stock_nuevo,
+                @costo_unitario,
+                @costo_total,
+                @motivo,
+                'venta',
+                @referencia_id
+            )
+        `);
+
+        for (const item of datos.items) {
+            insertarDetalle.run({
+                id_venta: idVenta,
+                id_producto: item.id_producto,
+                id_unidad_medida: item.id_unidad_medida,
+                unidad_abreviatura: item.unidad_abreviatura,
+                codigo_interno: item.codigo_interno,
+                codigo_barras: item.codigo_barras,
+                nombre_producto: item.nombre_producto,
+                cantidad: item.cantidad,
+                precio_unitario: item.precio_unitario,
+                precio_costo_unitario: item.precio_costo_unitario,
+                descuento_unitario: item.descuento_unitario,
+                porcentaje_iva: item.porcentaje_iva,
+                impuesto_unitario: item.impuesto_unitario,
+                impuesto_total: item.impuesto_total,
+                subtotal: item.subtotal,
+                total_linea: item.total_linea,
+                costo_total: item.costo_total,
+                utilidad_bruta: item.utilidad_bruta,
+            });
+
+            if (item.controla_inventario === 1) {
+                const resultadoStock = actualizarStock.run({
+                    id_producto: item.id_producto,
+                    stock_nuevo: item.stock_nuevo,
+                });
+
+                if (resultadoStock.changes === 0) {
+                    throw new Error(`No se pudo actualizar stock del producto ${item.nombre_producto}.`);
+                }
+
+                insertarMovimientoInventario.run({
+                    id_producto: item.id_producto,
+                    id_usuario: datos.id_usuario,
+                    id_unidad_medida: item.id_unidad_medida,
+                    unidad_abreviatura: item.unidad_abreviatura,
+                    cantidad: item.cantidad,
+                    stock_anterior: item.stock_anterior,
+                    stock_nuevo: item.stock_nuevo,
+                    costo_unitario: item.precio_costo_unitario,
+                    costo_total: item.costo_total,
+                    motivo: `Venta ${numeroVenta}`,
+                    referencia_id: idVenta,
+                });
+            }
+        }
+
+        db.prepare(`
+            INSERT INTO pagos_venta (
+                id_venta,
+                metodo_pago,
+                monto,
+                referencia,
+                entidad,
+                observaciones,
+                id_medio_pago,
+                id_usuario,
+                monto_recibido,
+                cambio_entregado,
+                estado
+            ) VALUES (
+                @id_venta,
+                @metodo_pago,
+                @monto,
+                @referencia,
+                @entidad,
+                @observaciones,
+                @id_medio_pago,
+                @id_usuario,
+                @monto_recibido,
+                @cambio_entregado,
+                'registrado'
+            )
+        `).run({
+            id_venta: idVenta,
+            metodo_pago: datos.pago.metodo_pago,
+            monto: datos.pago.monto_pago,
+            referencia: datos.pago.referencia || null,
+            entidad: datos.pago.entidad || null,
+            observaciones: datos.pago.observaciones || null,
+            id_medio_pago: datos.pago.id_medio_pago,
+            id_usuario: datos.id_usuario,
+            monto_recibido: datos.pago.monto_recibido,
+            cambio_entregado: datos.pago.cambio_entregado,
+        });
+
+        db.prepare(`
+            INSERT INTO movimientos_caja (
+                id_turno_caja,
+                id_usuario,
+                tipo_movimiento,
+                metodo_pago,
+                monto,
+                descripcion,
+                referencia_tipo,
+                referencia_id,
+                id_medio_pago,
+                referencia_pago,
+                entidad_pago
+            ) VALUES (
+                @id_turno_caja,
+                @id_usuario,
+                'venta',
+                @metodo_pago,
+                @monto,
+                @descripcion,
+                'venta',
+                @referencia_id,
+                @id_medio_pago,
+                @referencia_pago,
+                @entidad_pago
+            )
+        `).run({
+            id_turno_caja: datos.turno.id_turno_caja,
+            id_usuario: datos.id_usuario,
+            metodo_pago: datos.pago.metodo_pago,
+            monto: datos.pago.monto_pago,
+            descripcion: `Venta ${numeroVenta}`,
+            referencia_id: idVenta,
+            id_medio_pago: datos.pago.id_medio_pago,
+            referencia_pago: datos.pago.referencia || null,
+            entidad_pago: datos.pago.entidad || null,
+        });
+
+        const resultadoTurno = db
+            .prepare(`
+                UPDATE turnos_caja
+                SET
+                    total_ventas = total_ventas + @total_ventas,
+                    total_efectivo = total_efectivo + @total_efectivo,
+                    total_transferencia = total_transferencia + @total_transferencia,
+                    total_tarjeta = total_tarjeta + @total_tarjeta,
+                    total_otros = total_otros + @total_otros,
+                    monto_esperado = monto_esperado + @monto_esperado,
+                    actualizado_en = CURRENT_TIMESTAMP
+                WHERE id_turno_caja = @id_turno_caja
+                  AND estado = 'abierto'
+            `)
+            .run({
+                id_turno_caja: datos.turno.id_turno_caja,
+                total_ventas: datos.resumen.total,
+                total_efectivo: datos.totales_turno.total_efectivo,
+                total_transferencia: datos.totales_turno.total_transferencia,
+                total_tarjeta: datos.totales_turno.total_tarjeta,
+                total_otros: datos.totales_turno.total_otros,
+                monto_esperado: datos.totales_turno.monto_esperado,
+            });
+
+        if (resultadoTurno.changes === 0) {
+            throw new Error('No se pudo actualizar el turno de caja abierto.');
+        }
+
+        db.prepare(`
+            INSERT INTO comprobantes (
+                id_venta,
+                tipo_comprobante,
+                prefijo,
+                numero,
+                consecutivo,
+                estado,
+                datos_fiscales_json
+            ) VALUES (
+                @id_venta,
+                'recibo_interno',
+                @prefijo,
+                @numero,
+                @consecutivo,
+                'emitido',
+                @datos_fiscales_json
+            )
+        `).run({
+            id_venta: idVenta,
+            prefijo,
+            numero: numeroVenta,
+            consecutivo,
+            datos_fiscales_json: JSON.stringify(datos.datos_fiscales || {}),
+        });
+
+        return {
+            id_venta: idVenta,
+            numero_venta: numeroVenta,
+            comprobante: {
+                prefijo,
+                numero: numeroVenta,
+                consecutivo,
+            },
+        };
+    });
+
+    return transaccion();
+}
+
 module.exports = {
     obtenerTurnoAbierto,
     obtenerConfiguracionNegocio,
@@ -366,7 +741,9 @@ module.exports = {
     obtenerClientePorId,
     buscarClientesParaVenta,
     listarMediosPagoActivos,
+    obtenerMedioPagoPorId,
     buscarProductosParaVenta,
     obtenerProductoParaVenta,
     listarVentasRecientes,
+    registrarVentaPOS,
 };

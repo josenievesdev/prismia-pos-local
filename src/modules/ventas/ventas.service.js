@@ -319,11 +319,453 @@ function obtenerProductoParaVenta(idProducto) {
     };
 }
 
+function crearErrorVenta(mensaje, codigoEstado = 400) {
+    return {
+        ok: false,
+        mensaje,
+        codigoEstado,
+    };
+}
+
+function normalizarId(valor) {
+    const numero = Number(valor);
+
+    if (!Number.isInteger(numero) || numero <= 0) {
+        return null;
+    }
+
+    return numero;
+}
+
+function redondearDinero(valor) {
+    return Math.round(normalizarNumero(valor));
+}
+
+function redondearCantidad(valor) {
+    return Math.round(normalizarNumero(valor) * 1000) / 1000;
+}
+
+function tieneParteDecimal(valor) {
+    return Math.abs(valor - Math.round(valor)) > 0.000001;
+}
+
+function obtenerFechaVentaSQL(fechaVenta) {
+    const texto = limpiarTexto(fechaVenta);
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(texto)) {
+        const ahora = new Date();
+        return ahora.toISOString().slice(0, 19).replace('T', ' ');
+    }
+
+    const horaActual = new Date().toTimeString().slice(0, 8);
+    return `${texto} ${horaActual}`;
+}
+
+function obtenerClienteParaRegistro(idCliente) {
+    const id = normalizarId(idCliente);
+
+    if (id) {
+        const cliente = ventasRepository.obtenerClientePorId(id);
+
+        if (!cliente) {
+            return {
+                ok: false,
+                mensaje: 'El cliente seleccionado no existe o no está activo.',
+            };
+        }
+
+        return {
+            ok: true,
+            cliente: prepararCliente(cliente),
+        };
+    }
+
+    const consumidorFinal = ventasRepository.obtenerClienteConsumidorFinal();
+
+    if (!consumidorFinal) {
+        return {
+            ok: false,
+            mensaje: 'No existe consumidor final activo para registrar la venta.',
+        };
+    }
+
+    return {
+        ok: true,
+        cliente: prepararCliente(consumidorFinal),
+    };
+}
+
+function consolidarItemsVenta(items) {
+    if (!Array.isArray(items) || items.length === 0) {
+        return {
+            ok: false,
+            mensaje: 'Agrega al menos un producto para registrar la venta.',
+        };
+    }
+
+    const mapa = new Map();
+
+    for (const item of items) {
+        const idProducto = normalizarId(item.id_producto);
+        const cantidad = normalizarNumero(item.cantidad);
+
+        if (!idProducto) {
+            return {
+                ok: false,
+                mensaje: 'Uno de los productos enviados no es válido.',
+            };
+        }
+
+        if (cantidad <= 0) {
+            return {
+                ok: false,
+                mensaje: 'Todas las cantidades deben ser mayores a cero.',
+            };
+        }
+
+        const acumulado = mapa.get(idProducto) || 0;
+        mapa.set(idProducto, redondearCantidad(acumulado + cantidad));
+    }
+
+    return {
+        ok: true,
+        items: Array.from(mapa.entries()).map(([id_producto, cantidad]) => ({
+            id_producto,
+            cantidad,
+        })),
+    };
+}
+
+function calcularLineaVenta(producto, cantidad) {
+    const precioUnitario = normalizarEntero(producto.precio_venta);
+    const precioCostoUnitario = normalizarEntero(producto.precio_costo_referencia);
+
+    const brutoLinea = redondearDinero(precioUnitario * cantidad);
+
+    const manejaIva = normalizarEntero(producto.maneja_iva) === 1;
+    const porcentajeIva = normalizarEntero(producto.porcentaje_iva);
+    const precioIncluyeIva = normalizarEntero(producto.precio_incluye_iva) === 1;
+
+    let subtotal = brutoLinea;
+    let impuestoTotal = 0;
+    let totalLinea = brutoLinea;
+
+    if (manejaIva && porcentajeIva > 0) {
+        const tasa = porcentajeIva / 100;
+
+        if (precioIncluyeIva) {
+            subtotal = redondearDinero(brutoLinea / (1 + tasa));
+            impuestoTotal = brutoLinea - subtotal;
+            totalLinea = brutoLinea;
+        } else {
+            impuestoTotal = redondearDinero(subtotal * tasa);
+            totalLinea = subtotal + impuestoTotal;
+        }
+    }
+
+    const costoTotal = redondearDinero(precioCostoUnitario * cantidad);
+    const utilidadBruta = subtotal - costoTotal;
+
+    return {
+        precio_unitario: precioUnitario,
+        precio_costo_unitario: precioCostoUnitario,
+        descuento_unitario: 0,
+        porcentaje_iva: manejaIva ? porcentajeIva : 0,
+        impuesto_unitario: cantidad > 0 ? redondearDinero(impuestoTotal / cantidad) : 0,
+        impuesto_total: impuestoTotal,
+        subtotal,
+        total_linea: totalLinea,
+        costo_total: costoTotal,
+        utilidad_bruta: utilidadBruta,
+    };
+}
+
+function prepararItemsParaRegistro(itemsConsolidados) {
+    const itemsPreparados = [];
+
+    for (const item of itemsConsolidados) {
+        const productoRaw = ventasRepository.obtenerProductoParaVenta(item.id_producto);
+
+        if (!productoRaw) {
+            return {
+                ok: false,
+                mensaje: `El producto con ID ${item.id_producto} no existe o no está activo.`,
+            };
+        }
+
+        const producto = prepararProductoParaVenta(productoRaw);
+
+        let cantidad = redondearCantidad(item.cantidad);
+
+        if (producto.permite_cantidad_decimal !== 1) {
+            if (tieneParteDecimal(cantidad)) {
+                return {
+                    ok: false,
+                    mensaje: `El producto "${producto.nombre}" no permite cantidades decimales.`,
+                };
+            }
+
+            cantidad = Math.trunc(cantidad);
+        }
+
+        if (cantidad <= 0) {
+            return {
+                ok: false,
+                mensaje: `La cantidad del producto "${producto.nombre}" debe ser mayor a cero.`,
+            };
+        }
+
+        if (
+            producto.controla_inventario === 1
+            && producto.permite_venta_sin_stock !== 1
+            && cantidad > producto.stock_disponible
+        ) {
+            return {
+                ok: false,
+                mensaje: `Stock insuficiente para "${producto.nombre}". Disponible: ${producto.stock_disponible}.`,
+            };
+        }
+
+        const linea = calcularLineaVenta(producto, cantidad);
+
+        const stockAnterior = normalizarNumero(producto.stock_actual);
+        const stockNuevo = producto.controla_inventario === 1
+            ? redondearCantidad(stockAnterior - cantidad)
+            : stockAnterior;
+
+        itemsPreparados.push({
+            id_producto: producto.id_producto,
+            id_unidad_medida: producto.id_unidad_medida || null,
+            unidad_abreviatura: producto.unidad_abreviatura || 'und',
+            codigo_interno: producto.codigo_interno || null,
+            codigo_barras: producto.codigo_barras || null,
+            nombre_producto: producto.nombre,
+            cantidad,
+            controla_inventario: producto.controla_inventario,
+            stock_anterior: stockAnterior,
+            stock_nuevo: stockNuevo,
+            ...linea,
+        });
+    }
+
+    return {
+        ok: true,
+        items: itemsPreparados,
+    };
+}
+
+function calcularResumenRegistroVenta(items) {
+    return items.reduce((resumen, item) => {
+        resumen.subtotal += item.subtotal;
+        resumen.descuento_total += item.descuento_unitario * item.cantidad;
+        resumen.impuesto_total += item.impuesto_total;
+        resumen.total += item.total_linea;
+        resumen.total_costo += item.costo_total;
+        resumen.utilidad_bruta += item.utilidad_bruta;
+
+        return resumen;
+    }, {
+        subtotal: 0,
+        descuento_total: 0,
+        impuesto_total: 0,
+        total: 0,
+        total_costo: 0,
+        utilidad_bruta: 0,
+    });
+}
+
+function prepararPagoRegistroVenta(pago, medioPago, totalVenta) {
+    if (!pago || typeof pago !== 'object') {
+        return {
+            ok: false,
+            mensaje: 'Debes registrar el pago de la venta.',
+        };
+    }
+
+    const montoRecibido = redondearDinero(pago.monto_recibido);
+    const referencia = limpiarTexto(pago.referencia || '');
+
+    if (montoRecibido < totalVenta) {
+        return {
+            ok: false,
+            mensaje: 'El valor recibido no cubre el total de la venta.',
+        };
+    }
+
+    if (normalizarEntero(medioPago.requiere_referencia) === 1 && !referencia) {
+        return {
+            ok: false,
+            mensaje: `El medio de pago "${medioPago.nombre}" requiere referencia.`,
+        };
+    }
+
+    const afectaEfectivo = normalizarEntero(medioPago.afecta_efectivo_caja) === 1;
+
+    if (!afectaEfectivo && montoRecibido > totalVenta) {
+        return {
+            ok: false,
+            mensaje: 'El cambio solo aplica para pagos en efectivo.',
+        };
+    }
+
+    const cambioEntregado = afectaEfectivo
+        ? Math.max(montoRecibido - totalVenta, 0)
+        : 0;
+
+    const metodoPagoGeneral = ['efectivo', 'transferencia', 'tarjeta'].includes(medioPago.tipo)
+        ? medioPago.tipo
+        : 'otro';
+
+    return {
+        ok: true,
+        pago: {
+            id_medio_pago: medioPago.id_medio_pago,
+            metodo_pago: metodoPagoGeneral,
+
+            entidad: medioPago.nombre,
+            referencia,
+            observaciones: null,
+            monto_pago: totalVenta,
+            monto_recibido: montoRecibido,
+            cambio_entregado: cambioEntregado,
+            saldo_pendiente: 0,
+        },
+    };
+}
+
+function calcularTotalesTurno(medioPago, totalVenta) {
+    const tipo = medioPago.tipo;
+    const afectaEfectivo = normalizarEntero(medioPago.afecta_efectivo_caja) === 1;
+
+    return {
+        total_efectivo: tipo === 'efectivo' ? totalVenta : 0,
+        total_transferencia: tipo === 'transferencia' ? totalVenta : 0,
+        total_tarjeta: tipo === 'tarjeta' ? totalVenta : 0,
+        total_otros: !['efectivo', 'transferencia', 'tarjeta'].includes(tipo) ? totalVenta : 0,
+        monto_esperado: afectaEfectivo ? totalVenta : 0,
+    };
+}
+
+function registrarVentaPOS({ idUsuario, payload = {} } = {}) {
+    const idUsuarioNormalizado = normalizarId(idUsuario);
+
+    if (!idUsuarioNormalizado) {
+        return crearErrorVenta('No se pudo identificar el usuario autenticado.', 401);
+    }
+
+    const turnoAbierto = prepararTurno(ventasRepository.obtenerTurnoAbierto());
+
+    if (!turnoAbierto) {
+        return crearErrorVenta('Debes abrir caja antes de registrar ventas.');
+    }
+
+    const resultadoCliente = obtenerClienteParaRegistro(payload.id_cliente);
+
+    if (!resultadoCliente.ok) {
+        return crearErrorVenta(resultadoCliente.mensaje);
+    }
+
+    const idMedioPago = normalizarId(payload.pago && payload.pago.id_medio_pago);
+
+    if (!idMedioPago) {
+        return crearErrorVenta('Selecciona un medio de pago válido.');
+    }
+
+    const medioPagoRaw = ventasRepository.obtenerMedioPagoPorId(idMedioPago);
+
+    if (!medioPagoRaw) {
+        return crearErrorVenta('El medio de pago seleccionado no existe o no está activo.');
+    }
+
+    const medioPago = prepararMedioPago(medioPagoRaw);
+
+    const resultadoItemsConsolidados = consolidarItemsVenta(payload.items);
+
+    if (!resultadoItemsConsolidados.ok) {
+        return crearErrorVenta(resultadoItemsConsolidados.mensaje);
+    }
+
+    const resultadoItems = prepararItemsParaRegistro(resultadoItemsConsolidados.items);
+
+    if (!resultadoItems.ok) {
+        return crearErrorVenta(resultadoItems.mensaje);
+    }
+
+    const resumen = calcularResumenRegistroVenta(resultadoItems.items);
+
+    if (resumen.total <= 0) {
+        return crearErrorVenta('El total de la venta debe ser mayor a cero.');
+    }
+
+    const resultadoPago = prepararPagoRegistroVenta(payload.pago, medioPago, resumen.total);
+
+    if (!resultadoPago.ok) {
+        return crearErrorVenta(resultadoPago.mensaje);
+    }
+
+    const totalesTurno = calcularTotalesTurno(medioPago, resumen.total);
+
+    try {
+        const registro = ventasRepository.registrarVentaPOS({
+            id_usuario: idUsuarioNormalizado,
+            turno: turnoAbierto,
+            cliente: resultadoCliente.cliente,
+            fecha_venta: obtenerFechaVentaSQL(payload.fecha_venta),
+            observaciones: limpiarTexto(payload.observaciones || ''),
+            requiere_factura: 0,
+            prefijo_comprobante: 'FV',
+            items: resultadoItems.items,
+            resumen,
+            pago: resultadoPago.pago,
+            totales_turno: totalesTurno,
+            datos_fiscales: {
+                cliente: {
+                    id_cliente: resultadoCliente.cliente.id_cliente,
+                    nombre: resultadoCliente.cliente.nombre,
+                    documento: resultadoCliente.cliente.documento,
+                    tipo_documento: resultadoCliente.cliente.tipo_documento,
+                },
+                medio_pago: {
+                    id_medio_pago: medioPago.id_medio_pago,
+                    codigo: medioPago.codigo,
+                    nombre: medioPago.nombre,
+                    tipo: medioPago.tipo,
+                },
+                resumen,
+            },
+        });
+
+        return {
+            ok: true,
+            mensaje: 'Venta registrada correctamente.',
+            venta: {
+                id_venta: registro.id_venta,
+                numero_venta: registro.numero_venta,
+                subtotal: resumen.subtotal,
+                impuesto_total: resumen.impuesto_total,
+                total: resumen.total,
+                total_pagado: resultadoPago.pago.monto_pago,
+                monto_recibido: resultadoPago.pago.monto_recibido,
+                cambio_entregado: resultadoPago.pago.cambio_entregado,
+            },
+            comprobante: registro.comprobante,
+        };
+    } catch (error) {
+        console.error('Error registrando venta POS:', error);
+
+        return crearErrorVenta(
+            'No se pudo registrar la venta. Revisa los datos e intenta nuevamente.',
+            500
+        );
+    }
+}
+
 module.exports = {
     obtenerEstadoPOS,
     buscarProductos,
     buscarClientes,
     obtenerProductoParaVenta,
+    registrarVentaPOS,
     obtenerCarritoInicial,
     prepararProductoParaVenta,
     agruparMediosPago,

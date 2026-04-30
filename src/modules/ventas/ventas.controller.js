@@ -66,9 +66,33 @@ function obtenerProducto(req, res) {
     });
 }
 
+function obtenerIdUsuarioAutenticado(req) {
+    return (
+        req.session?.usuario?.id_usuario
+        || req.session?.usuario?.id
+        || req.session?.user?.id_usuario
+        || req.user?.id_usuario
+        || null
+    );
+}
+
+function registrarVenta(req, res) {
+    const resultado = ventasService.registrarVentaPOS({
+        idUsuario: obtenerIdUsuarioAutenticado(req),
+        payload: req.body || {},
+    });
+
+    if (!resultado.ok) {
+        return res.status(resultado.codigoEstado || 400).json(resultado);
+    }
+
+    return res.status(201).json(resultado);
+}
+
 module.exports = {
     mostrarPOS,
     buscarProductos,
     buscarClientes,
     obtenerProducto,
+    registrarVenta,
 };

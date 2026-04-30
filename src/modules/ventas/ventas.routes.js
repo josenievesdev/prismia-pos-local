@@ -10,6 +10,7 @@ router.use(requiereAutenticacion);
 router.use(requiereRol('administrador', 'cajero'));
 
 router.get('/', ventasController.mostrarPOS);
+router.post('/', ventasController.registrarVenta);
 
 router.get('/productos/buscar', ventasController.buscarProductos);
 router.get('/clientes/buscar', ventasController.buscarClientes);

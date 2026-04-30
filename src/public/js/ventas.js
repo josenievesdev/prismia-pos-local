@@ -8,6 +8,7 @@
             carrito: [],
             puedeVender: obtenerPuedeVender(),
             usuarioEditoPago: false,
+            enviandoVenta: false,
         };
 
         const ui = obtenerElementos();
@@ -769,14 +770,7 @@
     function inicializarAcciones(ui, estado) {
         if (ui.botonLimpiar) {
             ui.botonLimpiar.addEventListener('click', function () {
-                estado.carrito = [];
-                estado.usuarioEditoPago = false;
-
-                if (ui.montoPagadoPrincipal) ui.montoPagadoPrincipal.value = '';
-                if (ui.referenciaPagoPrincipal) ui.referenciaPagoPrincipal.value = '';
-
-                renderizarCarrito(ui, estado);
-                recalcularTodo(ui, estado);
+                limpiarVentaActual(ui, estado);
             });
         }
 
@@ -787,7 +781,11 @@
         }
 
         if (ui.botonCobrar) {
-            ui.botonCobrar.addEventListener('click', function () {
+            ui.botonCobrar.addEventListener('click', async function () {
+                if (estado.enviandoVenta) {
+                    return;
+                }
+
                 const resumen = calcularResumen(estado.carrito);
                 const pagado = obtenerMontoPagado(ui);
 
@@ -802,12 +800,117 @@
                 }
 
                 if (pagado < resumen.total) {
-                    mostrarAviso('El monto pagado no cubre el total.', 'error');
+                    mostrarAviso('El monto recibido no cubre el total.', 'error');
                     return;
                 }
 
-                mostrarAviso('Carrito validado. Falta conectar registro real de venta.', 'ok');
+                const payload = construirPayloadVenta(ui, estado);
+
+                if (!payload.ok) {
+                    mostrarAviso(payload.mensaje, 'error');
+                    return;
+                }
+
+                await enviarVentaAlBackend(payload.datos, ui, estado);
             });
+        }
+    }
+
+    function limpiarVentaActual(ui, estado) {
+        estado.carrito = [];
+        estado.usuarioEditoPago = false;
+
+        if (ui.montoPagadoPrincipal) ui.montoPagadoPrincipal.value = '';
+        if (ui.referenciaPagoPrincipal) ui.referenciaPagoPrincipal.value = '';
+
+        renderizarCarrito(ui, estado);
+        recalcularTodo(ui, estado);
+
+        if (ui.inputBusqueda) {
+            ui.inputBusqueda.focus();
+        }
+    }
+
+    function construirPayloadVenta(ui, estado) {
+        const idMedioPago = Number(ui.medioPagoPrincipal ? ui.medioPagoPrincipal.value : 0);
+        const montoRecibido = obtenerMontoPagado(ui);
+
+        if (!Number.isInteger(idMedioPago) || idMedioPago <= 0) {
+            return {
+                ok: false,
+                mensaje: 'Selecciona un medio de pago válido.',
+            };
+        }
+
+        const idClienteSeleccionado = Number(ui.inputCliente?.dataset.selectedClientId || 0);
+
+        return {
+            ok: true,
+            datos: {
+                id_cliente: Number.isInteger(idClienteSeleccionado) && idClienteSeleccionado > 0
+                    ? idClienteSeleccionado
+                    : null,
+                fecha_venta: ui.fechaVenta ? ui.fechaVenta.value : '',
+                items: estado.carrito.map(function (item) {
+                    return {
+                        id_producto: item.idProducto,
+                        cantidad: item.cantidad,
+                    };
+                }),
+                pago: {
+                    id_medio_pago: idMedioPago,
+                    monto_recibido: montoRecibido,
+                    referencia: ui.referenciaPagoPrincipal
+                        ? ui.referenciaPagoPrincipal.value.trim()
+                        : '',
+                },
+            },
+        };
+    }
+
+    async function enviarVentaAlBackend(payload, ui, estado) {
+        estado.enviandoVenta = true;
+
+        const textoOriginalBoton = ui.botonCobrar ? ui.botonCobrar.textContent : '';
+
+        if (ui.botonCobrar) {
+            ui.botonCobrar.disabled = true;
+            ui.botonCobrar.textContent = 'Guardando...';
+        }
+
+        try {
+            const respuesta = await fetch('/ventas', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            });
+
+            const datos = await respuesta.json();
+
+            if (!respuesta.ok || !datos.ok) {
+                mostrarAviso(datos.mensaje || 'No se pudo registrar la venta.', 'error');
+                return;
+            }
+
+            limpiarVentaActual(ui, estado);
+
+            mostrarAviso(
+                `Venta ${datos.venta.numero_venta} registrada correctamente.`,
+                'ok'
+            );
+        } catch (error) {
+            console.error('Error enviando venta:', error);
+            mostrarAviso('Error de conexión registrando la venta.', 'error');
+        } finally {
+            estado.enviandoVenta = false;
+
+            if (ui.botonCobrar) {
+                ui.botonCobrar.textContent = textoOriginalBoton || 'Cobrar';
+            }
+
+            recalcularTodo(ui, estado);
         }
     }
 
@@ -817,6 +920,7 @@
         actualizarResumenFactura(ui, resumen);
         actualizarPago(ui, estado, resumen);
         actualizarBotones(ui, estado, resumen);
+        actualizarInfoPago(ui, estado);
     }
 
     function actualizarInfoPago(ui, estado) {
