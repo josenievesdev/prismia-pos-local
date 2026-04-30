@@ -38,6 +38,18 @@ function buscarProductos(req, res) {
     });
 }
 
+function buscarClientes(req, res) {
+    const clientes = ventasService.buscarClientes({
+        busqueda: req.query.busqueda || '',
+        limite: 10,
+    });
+
+    return res.json({
+        ok: true,
+        clientes,
+    });
+}
+
 function obtenerProducto(req, res) {
     const resultado = ventasService.obtenerProductoParaVenta(req.params.id);
 
@@ -57,5 +69,6 @@ function obtenerProducto(req, res) {
 module.exports = {
     mostrarPOS,
     buscarProductos,
+    buscarClientes,
     obtenerProducto,
 };

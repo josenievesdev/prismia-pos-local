@@ -68,6 +68,33 @@ function prepararCliente(cliente) {
     };
 }
 
+function prepararClienteParaVenta(cliente) {
+    if (!cliente) {
+        return null;
+    }
+
+    const tipoDocumento = cliente.tipo_documento || 'CC';
+    const documento = cliente.documento || '0000000000';
+
+    return {
+        id_cliente: cliente.id_cliente,
+        tipo_documento: tipoDocumento,
+        documento,
+        nombre: cliente.nombre,
+        telefono: cliente.telefono || '',
+        correo: cliente.correo || '',
+        direccion: cliente.direccion || '',
+        es_consumidor_final: normalizarEntero(cliente.es_consumidor_final),
+        estado: cliente.estado,
+        etiqueta_documento: `${tipoDocumento} ${documento}`,
+        texto_secundario: [
+            documento ? `${tipoDocumento} ${documento}` : null,
+            cliente.telefono || null,
+            cliente.correo || null,
+        ].filter(Boolean).join(' · '),
+    };
+}
+
 function prepararMedioPago(medioPago) {
     return {
         ...medioPago,
@@ -252,6 +279,21 @@ function buscarProductos({ busqueda = '', limite = 30 } = {}) {
         .map(prepararProductoParaVenta);
 }
 
+function buscarClientes({ busqueda = '', limite = 10 } = {}) {
+    const termino = limpiarTexto(busqueda);
+
+    if (!termino) {
+        return [];
+    }
+
+    return ventasRepository
+        .buscarClientesParaVenta({
+            busqueda: termino,
+            limite,
+        })
+        .map(prepararClienteParaVenta);
+}
+
 function obtenerProductoParaVenta(idProducto) {
     const id = Number(idProducto);
 
@@ -280,6 +322,7 @@ function obtenerProductoParaVenta(idProducto) {
 module.exports = {
     obtenerEstadoPOS,
     buscarProductos,
+    buscarClientes,
     obtenerProductoParaVenta,
     obtenerCarritoInicial,
     prepararProductoParaVenta,

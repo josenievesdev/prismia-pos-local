@@ -77,6 +77,57 @@ function obtenerClientePorId(idCliente) {
         .get(idCliente);
 }
 
+function buscarClientesParaVenta({ busqueda = '', limite = 10 } = {}) {
+    const termino = String(busqueda || '').trim();
+
+    if (!termino) {
+        return [];
+    }
+
+    const patron = `%${termino}%`;
+    const inicio = `${termino}%`;
+
+    return db
+        .prepare(`
+            SELECT
+                id_cliente,
+                tipo_documento,
+                documento,
+                nombre,
+                telefono,
+                correo,
+                direccion,
+                es_consumidor_final,
+                estado
+            FROM clientes
+            WHERE estado = 'activo'
+              AND eliminado_en IS NULL
+              AND (
+                    nombre LIKE @patron
+                 OR documento LIKE @patron
+                 OR telefono LIKE @patron
+                 OR correo LIKE @patron
+              )
+            ORDER BY
+                CASE
+                    WHEN documento = @termino THEN 1
+                    WHEN telefono = @termino THEN 2
+                    WHEN nombre LIKE @inicio THEN 3
+                    WHEN documento LIKE @inicio THEN 4
+                    ELSE 5
+                END,
+                es_consumidor_final DESC,
+                nombre ASC
+            LIMIT @limite
+        `)
+        .all({
+            termino,
+            patron,
+            inicio,
+            limite,
+        });
+}
+
 function listarMediosPagoActivos() {
     return db
         .prepare(`
@@ -313,6 +364,7 @@ module.exports = {
     obtenerConfiguracionNegocio,
     obtenerClienteConsumidorFinal,
     obtenerClientePorId,
+    buscarClientesParaVenta,
     listarMediosPagoActivos,
     buscarProductosParaVenta,
     obtenerProductoParaVenta,

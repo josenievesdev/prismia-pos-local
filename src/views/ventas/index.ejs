@@ -3,8 +3,10 @@
         : []; const mediosPagoListado=Array.isArray(mediosPago) ? mediosPago : []; const
         clienteActual=clienteConsumidorFinal || { id_cliente: null, nombre: 'Consumidor final' , documento: '0000000000'
         }; const nombreCajero=turnoAbierto ? (turnoAbierto.usuario_apertura_nombre || 'Usuario' ) : 'Sin caja abierta' ;
-        function nombreTipoMedio(t) { if (t==='efectivo' ) return 'Efectivo' ; if (t==='transferencia' )
-        return 'Transferencia' ; if (t==='tarjeta' ) return 'Tarjeta' ; return 'Otro' ; } %>
+        const prefijoFacturaPOS='FV' ; const numeroFacturaPOS='BORRADOR' ; const
+        nomenclaturaFacturaPOS=`${prefijoFacturaPOS}-${numeroFacturaPOS}`; function nombreTipoMedio(t) { if
+        (t==='efectivo' ) return 'Efectivo' ; if (t==='transferencia' ) return 'Transferencia' ; if (t==='tarjeta' )
+        return 'Tarjeta' ; return 'Otro' ; } %>
 
         <div class="ventas-pos-shell" data-puede-vender="<%= puedeVender ? 1 : 0 %>">
 
@@ -76,25 +78,29 @@
                                 <% } %>
 
                                     <section class="ventas-context-bar">
-                                        <div class="ventas-context-item is-client ventas-client-search-box">
-                                            <span>Cliente</span>
+                                        <div
+                                            class="ventas-context-item is-client ventas-client-search-box ventas-client-clean">
+                                            <div class="ventas-client-clean-head">
+                                                <span>Cliente</span>
+                                                <strong>Consumidor final</strong>
+                                            </div>
 
-                                            <div class="ventas-client-search-wrap">
+                                            <div class="ventas-client-search-wrap ventas-client-clean-search">
                                                 <input type="search" id="buscarCliente" name="buscar_cliente"
                                                     value="<%= clienteActual.nombre %>"
-                                                    placeholder="Buscar cliente por nombre, documento o teléfono…"
+                                                    placeholder="Buscar cliente por nombre, documento o teléfono..."
                                                     autocomplete="off" data-search-clients-url="/ventas/clientes/buscar"
                                                     data-selected-client-id="<%= clienteActual.id_cliente || '' %>">
 
                                                 <div class="ventas-client-results" id="resultadosClientes" hidden>
                                                     <div class="ventas-client-result-empty">
-                                                        Búsqueda de clientes pendiente de conectar.
+                                                        Escribe para buscar un cliente.
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <small id="clienteDocumentoActual">
-                                                <%= clienteActual.documento || '0000000000' %>
+                                            <small id="clienteDocumentoActual" hidden>
+                                                <%= clienteActual.documento || '' %>
                                             </small>
                                         </div>
 
@@ -104,6 +110,14 @@
                                                 value="<%= fechaHoy %>" max="<%= fechaHoy %>"
                                                 data-fecha-hoy="<%= fechaHoy %>">
                                         </label>
+
+                                        <div class="ventas-context-item ventas-invoice-code-box">
+                                            <span>Factura</span>
+                                            <strong>
+                                                <%= nomenclaturaFacturaPOS %>
+                                            </strong>
+                                            <small>Consecutivo real al guardar</small>
+                                        </div>
 
                                         <div class="ventas-context-item ventas-context-actions">
                                             <span>Acciones</span>
@@ -173,7 +187,9 @@
                                                 <h3>Detalle de venta</h3>
                                             </div>
 
-                                            <span class="ventas-ticket-state">Borrador</span>
+                                            <span class="ventas-ticket-state">
+                                                <%= nomenclaturaFacturaPOS %>
+                                            </span>
                                         </header>
 
                                         <div class="ventas-invoice-table-wrap">
@@ -257,9 +273,7 @@
                                                         <strong id="infoPagoCliente">
                                                             <%= clienteActual.nombre || 'Consumidor final' %>
                                                         </strong>
-                                                        <small id="infoPagoDocumento">
-                                                            <%= clienteActual.documento || '0000000000' %>
-                                                        </small>
+                                                        <small>Cliente por defecto</small>
                                                     </div>
 
                                                     <div class="ventas-payment-info-card">
@@ -279,14 +293,11 @@
                                                     </div>
 
                                                     <div class="ventas-payment-info-card">
-                                                        <span>Turno</span>
+                                                        <span>Factura</span>
                                                         <strong>
-                                                            <%= turnoAbierto ? ('#' + turnoAbierto.id_turno_caja)
-                                                                : 'Sin turno' %>
+                                                            <%= nomenclaturaFacturaPOS %>
                                                         </strong>
-                                                        <small>
-                                                            <%= turnoAbierto ? 'Caja abierta' : 'Caja cerrada' %>
-                                                        </small>
+                                                        <small>Estado borrador</small>
                                                     </div>
                                                 </div>
                                             </div>

@@ -12,6 +12,7 @@ router.use(requiereRol('administrador', 'cajero'));
 router.get('/', ventasController.mostrarPOS);
 
 router.get('/productos/buscar', ventasController.buscarProductos);
+router.get('/clientes/buscar', ventasController.buscarClientes);
 router.get('/productos/:id', ventasController.obtenerProducto);
 
 module.exports = router;

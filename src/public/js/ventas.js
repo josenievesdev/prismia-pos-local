@@ -13,6 +13,7 @@
         const ui = obtenerElementos();
 
         inicializarFecha(ui);
+        inicializarBusquedaClientes(ui);
         inicializarBusqueda(ui, estado);
         inicializarCarrito(ui, estado);
         inicializarPago(ui, estado);
@@ -140,6 +141,159 @@
         }
     }
 
+    function inicializarBusquedaClientes(ui) {
+        if (!ui.inputCliente || !ui.resultadosClientes) {
+            return;
+        }
+
+        const url = ui.inputCliente.dataset.searchClientsUrl || '/ventas/clientes/buscar';
+
+        let temporizadorBusqueda = null;
+        let abortController = null;
+
+        ui.inputCliente.addEventListener('input', function () {
+            clearTimeout(temporizadorBusqueda);
+
+            const termino = ui.inputCliente.value.trim();
+
+            ui.inputCliente.dataset.selectedClientId = '';
+
+            if (termino.length === 0) {
+                ocultarResultadosClientes(ui);
+                actualizarInfoPago(ui, { carrito: [] });
+                return;
+            }
+
+            temporizadorBusqueda = setTimeout(function () {
+                buscarClientes(termino, url, ui, abortController, function (nuevoController) {
+                    abortController = nuevoController;
+                });
+            }, 180);
+        });
+
+        ui.inputCliente.addEventListener('keydown', function (evento) {
+            if (evento.key === 'Escape') {
+                ocultarResultadosClientes(ui);
+                ui.inputCliente.blur();
+            }
+        });
+
+        ui.resultadosClientes.addEventListener('click', function (evento) {
+            const itemCliente = evento.target.closest('.ventas-client-result-item');
+
+            if (!itemCliente) {
+                return;
+            }
+
+            seleccionarClienteDesdeElemento(itemCliente, ui);
+        });
+    }
+
+    async function buscarClientes(termino, url, ui, abortControllerActual, setAbortController) {
+        if (abortControllerActual) {
+            abortControllerActual.abort();
+        }
+
+        const nuevoController = new AbortController();
+        setAbortController(nuevoController);
+
+        try {
+            const respuesta = await fetch(`${url}?busqueda=${encodeURIComponent(termino)}`, {
+                signal: nuevoController.signal,
+            });
+
+            const datos = await respuesta.json();
+
+            if (!datos.ok || !Array.isArray(datos.clientes)) {
+                renderizarClientes([], ui);
+                return;
+            }
+
+            renderizarClientes(datos.clientes, ui);
+        } catch (error) {
+            if (error.name !== 'AbortError') {
+                console.error('Error buscando clientes:', error);
+            }
+        }
+    }
+
+    function renderizarClientes(clientes, ui) {
+        if (!ui.resultadosClientes) {
+            return;
+        }
+
+        ui.resultadosClientes.hidden = false;
+
+        if (clientes.length === 0) {
+            ui.resultadosClientes.innerHTML = `
+            <div class="ventas-client-result-empty">
+                No se encontraron clientes.
+            </div>
+        `;
+            return;
+        }
+
+        ui.resultadosClientes.innerHTML = clientes.map(construirResultadoCliente).join('');
+    }
+
+    function construirResultadoCliente(cliente) {
+        const documento = cliente.etiqueta_documento || cliente.documento || 'Sin documento';
+        const secundario = cliente.texto_secundario || documento;
+
+        return `
+        <button
+            type="button"
+            class="ventas-client-result-item"
+            data-client-id="${cliente.id_cliente}"
+            data-client-name="${escaparHtml(cliente.nombre)}"
+            data-client-document="${escaparHtml(cliente.documento || '')}"
+            data-client-document-type="${escaparHtml(cliente.tipo_documento || '')}"
+            data-client-phone="${escaparHtml(cliente.telefono || '')}"
+            data-client-email="${escaparHtml(cliente.correo || '')}"
+        >
+            <span>${escaparHtml(cliente.nombre)}</span>
+            <small>${escaparHtml(secundario)}</small>
+        </button>
+    `;
+    }
+
+    function seleccionarClienteDesdeElemento(elemento, ui) {
+        const idCliente = elemento.dataset.clientId || '';
+        const nombre = elemento.dataset.clientName || 'Consumidor final';
+        const documento = elemento.dataset.clientDocument || '0000000000';
+
+        ui.inputCliente.value = nombre;
+        ui.inputCliente.dataset.selectedClientId = idCliente;
+
+        const documentoActual = document.getElementById('clienteDocumentoActual');
+
+        if (documentoActual) {
+            documentoActual.textContent = documento || '0000000000';
+        }
+
+        ocultarResultadosClientes(ui);
+
+        if (ui.infoPagoCliente) {
+            ui.infoPagoCliente.textContent = nombre;
+        }
+
+        if (ui.infoPagoDocumento) {
+            ui.infoPagoDocumento.textContent = documento || '0000000000';
+        }
+
+        if (ui.inputBusqueda) {
+            ui.inputBusqueda.focus();
+        }
+    }
+
+    function ocultarResultadosClientes(ui) {
+        if (!ui.resultadosClientes) {
+            return;
+        }
+
+        ui.resultadosClientes.hidden = true;
+    }
+
     function inicializarCierreResultados(ui) {
         document.addEventListener('click', function (evento) {
             const clickDentroProductos = evento.target.closest('.ventas-search-section');
@@ -150,21 +304,14 @@
 
             const clickDentroClientes = evento.target.closest('.ventas-client-search-box');
 
-            if (!clickDentroClientes && ui.resultadosClientes) {
-                ui.resultadosClientes.hidden = true;
+            if (!clickDentroClientes) {
+                ocultarResultadosClientes(ui);
             }
         });
 
         if (ui.inputCliente && ui.resultadosClientes) {
             ui.inputCliente.addEventListener('focus', function () {
-                ui.resultadosClientes.hidden = true;
-            });
-
-            ui.inputCliente.addEventListener('keydown', function (evento) {
-                if (evento.key === 'Escape') {
-                    ui.resultadosClientes.hidden = true;
-                    ui.inputCliente.blur();
-                }
+                ocultarResultadosClientes(ui);
             });
         }
     }
