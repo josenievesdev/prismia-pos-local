@@ -11,6 +11,8 @@ router.use(requiereRol('administrador', 'cajero'));
 
 router.get('/', ventasController.mostrarPOS);
 router.post('/', ventasController.registrarVenta);
+
+router.get('/historial', ventasController.mostrarHistorial);
 router.get('/:id/ticket', ventasController.imprimirTicket);
 
 router.get('/productos/buscar', ventasController.buscarProductos);

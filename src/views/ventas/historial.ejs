@@ -1,0 +1,267 @@
+<section class="module-page ventas-page ventas-history-page">
+    <% const ventasListado=Array.isArray(ventas) ? ventas : []; const filtrosActuales=filtros || {}; const
+        mediosPagoListado=Array.isArray(mediosPago) ? mediosPago : []; const cajerosListado=Array.isArray(cajeros) ?
+        cajeros : []; const turnosListado=Array.isArray(turnos) ? turnos : []; const pagina=Number(paginaActual ||
+        filtrosActuales.pagina || 1); const paginas=Number(totalPaginas || 1); const limite=Number(limiteResultados ||
+        filtrosActuales.limite || 50); function dinero(valor) { return new Intl.NumberFormat('es-CO', {
+        style: 'currency' , currency: 'COP' , maximumFractionDigits: 0 }).format(Number(valor || 0)); } function
+        fecha(valor) { if (!valor) return 'Sin fecha' ; const fechaObj=new Date(String(valor).replace(' ', ' T')); if
+        (Number.isNaN(fechaObj.getTime())) { return valor; } return fechaObj.toLocaleString('es-CO', {
+        dateStyle: 'short' , timeStyle: 'short' }); } function estadoClase(estado) { if (estado==='pagada' )
+        return 'is-paid' ; if (estado==='pendiente' ) return 'is-pending' ; if (estado==='anulada' )
+        return 'is-cancelled' ; return '' ; } function construirUrlPagina(numeroPagina, limitePagina=limite) { const
+        params=new URLSearchParams(); if (filtrosActuales.fecha_desde) params.set('fecha_desde',
+        filtrosActuales.fecha_desde); if (filtrosActuales.fecha_hasta) params.set('fecha_hasta',
+        filtrosActuales.fecha_hasta); if (filtrosActuales.factura) params.set('factura', filtrosActuales.factura); if
+        (filtrosActuales.cliente) params.set('cliente', filtrosActuales.cliente); if (filtrosActuales.id_medio_pago)
+        params.set('id_medio_pago', filtrosActuales.id_medio_pago); if (filtrosActuales.estado) params.set('estado',
+        filtrosActuales.estado); if (filtrosActuales.id_turno_caja) params.set('id_turno_caja',
+        filtrosActuales.id_turno_caja); if (filtrosActuales.id_cajero) params.set('id_cajero',
+        filtrosActuales.id_cajero); params.set('pagina', numeroPagina); params.set('limite', limitePagina); return
+        `/ventas/historial?${params.toString()}`; } function rangoVisible() { if (!totalResultados || totalResultados
+        <=0) { return '0' ; } const inicio=((pagina - 1) * limite) + 1; const fin=Math.min(pagina * limite,
+        totalResultados); return `${inicio} - ${fin}`; } %>
+
+        <header class="ventas-history-header">
+            <div>
+                <span class="ventas-kicker">Ventas</span>
+                <h2>Historial de facturas</h2>
+                <p>Consulta ventas registradas, filtra resultados y reimprime tickets cuando lo necesites.</p>
+            </div>
+
+            <div class="ventas-history-actions">
+                <a href="/ventas" class="btn-secondary">Volver al POS</a>
+            </div>
+        </header>
+
+        <section class="ventas-history-filters">
+            <form method="GET" action="/ventas/historial" class="ventas-history-filter-grid">
+                <input type="hidden" name="pagina" value="1">
+
+                <label>
+                    <span>Fecha desde</span>
+                    <input type="date" name="fecha_desde" value="<%= filtrosActuales.fecha_desde || '' %>">
+                </label>
+
+                <label>
+                    <span>Fecha hasta</span>
+                    <input type="date" name="fecha_hasta" value="<%= filtrosActuales.fecha_hasta || '' %>">
+                </label>
+
+                <label>
+                    <span>Factura</span>
+                    <input type="search" name="factura" value="<%= filtrosActuales.factura || '' %>"
+                        placeholder="FV-000001">
+                </label>
+
+                <label>
+                    <span>Cliente</span>
+                    <input type="search" name="cliente" value="<%= filtrosActuales.cliente || '' %>"
+                        placeholder="Nombre, documento o teléfono">
+                </label>
+
+                <label>
+                    <span>Medio de pago</span>
+                    <select name="id_medio_pago">
+                        <option value="">Todos</option>
+                        <% mediosPagoListado.forEach((medio)=> { %>
+                            <option value="<%= medio.id_medio_pago %>"
+                                <%=Number(filtrosActuales.id_medio_pago)===Number(medio.id_medio_pago) ? 'selected' : ''
+                                %>>
+                                <%= medio.nombre %>
+                            </option>
+                            <% }) %>
+                    </select>
+                </label>
+
+                <label>
+                    <span>Estado</span>
+                    <select name="estado">
+                        <option value="">Todos</option>
+                        <option value="pagada" <%=filtrosActuales.estado==='pagada' ? 'selected' : '' %>>Pagada</option>
+                        <option value="pendiente" <%=filtrosActuales.estado==='pendiente' ? 'selected' : '' %>>Pendiente
+                        </option>
+                        <option value="anulada" <%=filtrosActuales.estado==='anulada' ? 'selected' : '' %>>Anulada
+                        </option>
+                    </select>
+                </label>
+
+                <label>
+                    <span>Turno</span>
+                    <select name="id_turno_caja">
+                        <option value="">Todos</option>
+                        <% turnosListado.forEach((turno)=> { %>
+                            <option value="<%= turno.id_turno_caja %>"
+                                <%=Number(filtrosActuales.id_turno_caja)===Number(turno.id_turno_caja) ? 'selected' : ''
+                                %>>
+                                Turno #<%= turno.id_turno_caja %>
+                            </option>
+                            <% }) %>
+                    </select>
+                </label>
+
+                <label>
+                    <span>Cajero</span>
+                    <select name="id_cajero">
+                        <option value="">Todos</option>
+                        <% cajerosListado.forEach((cajero)=> { %>
+                            <option value="<%= cajero.id_usuario %>"
+                                <%=Number(filtrosActuales.id_cajero)===Number(cajero.id_usuario) ? 'selected' : '' %>>
+                                <%= cajero.nombre %>
+                            </option>
+                            <% }) %>
+                    </select>
+                </label>
+
+                <label>
+                    <span>Registros</span>
+                    <select name="limite">
+                        <option value="25" <%=limite===25 ? 'selected' : '' %>>25 por página</option>
+                        <option value="50" <%=limite===50 ? 'selected' : '' %>>50 por página</option>
+                        <option value="100" <%=limite===100 ? 'selected' : '' %>>100 por página</option>
+                    </select>
+                </label>
+
+                <div class="ventas-history-filter-actions">
+                    <button type="submit" class="btn-primary">Filtrar</button>
+                    <a href="/ventas/historial" class="btn-secondary">Limpiar</a>
+                </div>
+            </form>
+        </section>
+
+        <section class="ventas-history-card">
+            <div class="ventas-history-card-header">
+                <div class="ventas-history-card-title-wrap">
+                    <h3>Resultados</h3>
+                    <p class="ventas-history-card-meta">
+                        Mostrando <strong>
+                            <%= rangoVisible() %>
+                        </strong> de <strong>
+                            <%= totalResultados || 0 %>
+                        </strong> ventas
+                        <span class="ventas-history-card-separator">·</span>
+                        Página <strong>
+                            <%= pagina %>
+                        </strong> de <strong>
+                            <%= paginas %>
+                        </strong>
+                    </p>
+                </div>
+            </div>
+
+            <% if (ventasListado.length===0) { %>
+                <div class="ventas-history-empty">
+                    <strong>No hay ventas para los filtros seleccionados.</strong>
+                    <span>Quita filtros o registra una venta desde el POS.</span>
+                </div>
+                <% } else { %>
+                    <div class="ventas-history-table-wrap">
+                        <table class="ventas-history-table">
+                            <thead>
+                                <tr>
+                                    <th>Factura</th>
+                                    <th>Fecha</th>
+                                    <th>Cliente</th>
+                                    <th>Cajero</th>
+                                    <th>Medio de pago</th>
+                                    <th class="text-right">Total</th>
+                                    <th>Estado</th>
+                                    <th class="text-center">Ticket</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% ventasListado.forEach((venta)=> { %>
+                                    <tr>
+                                        <td>
+                                            <strong class="ventas-history-invoice">
+                                                <%= venta.numero_comprobante %>
+                                            </strong>
+                                            <small class="ventas-history-meta">ID venta: <%= venta.id_venta %></small>
+                                        </td>
+
+                                        <td>
+                                            <span>
+                                                <%= fecha(venta.fecha_venta) %>
+                                            </span>
+                                            <small class="ventas-history-meta">Turno #<%= venta.id_turno_caja %></small>
+                                        </td>
+
+                                        <td>
+                                            <strong>
+                                                <%= venta.cliente_nombre %>
+                                            </strong>
+                                            <small class="ventas-history-meta">
+                                                <%= venta.cliente_etiqueta %>
+                                            </small>
+                                        </td>
+
+                                        <td>
+                                            <span>
+                                                <%= venta.cajero_nombre %>
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <span>
+                                                <%= venta.medio_pago_nombre %>
+                                            </span>
+                                            <small class="ventas-history-meta">
+                                                <%= venta.medio_pago_tipo %>
+                                            </small>
+                                        </td>
+
+                                        <td class="text-right">
+                                            <strong>
+                                                <%= dinero(venta.total) %>
+                                            </strong>
+                                        </td>
+
+                                        <td>
+                                            <span class="ventas-history-status <%= estadoClase(venta.estado) %>">
+                                                <%= venta.estado %>
+                                            </span>
+                                        </td>
+
+                                        <td class="text-center">
+                                            <div class="ventas-history-row-actions">
+                                                <a href="/ventas/<%= venta.id_venta %>/ticket" class="btn-primary"
+                                                    target="_blank" rel="noopener">
+                                                    Ticket
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                    <% } %>
+        </section>
+
+        <% if (totalResultados> 0) { %>
+            <nav class="ventas-history-pagination" aria-label="Paginación del historial de ventas">
+                <div class="ventas-history-pagination-actions">
+                    <% if (tienePaginaAnterior) { %>
+                        <a href="<%= construirUrlPagina(paginaAnterior) %>" class="btn-secondary">Anterior</a>
+                        <% } else { %>
+                            <button type="button" class="btn-secondary" disabled>Anterior</button>
+                            <% } %>
+
+                                <span class="ventas-history-pagination-current">
+                                    Página <strong>
+                                        <%= pagina %>
+                                    </strong> de <strong>
+                                        <%= paginas %>
+                                    </strong>
+                                </span>
+
+                                <% if (tienePaginaSiguiente) { %>
+                                    <a href="<%= construirUrlPagina(paginaSiguiente) %>"
+                                        class="btn-secondary">Siguiente</a>
+                                    <% } else { %>
+                                        <button type="button" class="btn-secondary" disabled>Siguiente</button>
+                                        <% } %>
+                </div>
+            </nav>
+            <% } %>
+</section>

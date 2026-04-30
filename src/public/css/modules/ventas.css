@@ -1509,3 +1509,324 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ===== Historial simple de ventas ===== */
+
+.ventas-history-page {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.ventas-history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 22px 24px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+}
+
+.ventas-history-header h2 {
+    margin: 4px 0 8px;
+    color: #0f172a;
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+}
+
+.ventas-history-header p {
+    max-width: 760px;
+    margin: 0;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+.ventas-history-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+}
+
+.ventas-history-filters,
+.ventas-history-card,
+.ventas-history-summary,
+.ventas-history-pagination {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+}
+
+.ventas-history-filters {
+    padding: 16px;
+}
+
+.ventas-history-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(180px, 1fr));
+    gap: 14px;
+    align-items: end;
+}
+
+.ventas-history-filter-grid label {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.ventas-history-filter-grid label span {
+    color: #475569;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.ventas-history-filter-grid input,
+.ventas-history-filter-grid select {
+    min-height: 42px;
+    width: 100%;
+    padding: 0 12px;
+    border: 1px solid #dbe3ee;
+    border-radius: 12px;
+    background: #f8fafc;
+    color: #0f172a;
+    font-size: 13px;
+    font-weight: 700;
+    outline: none;
+}
+
+.ventas-history-filter-grid input:focus,
+.ventas-history-filter-grid select:focus {
+    border-color: #2f5ea4;
+    box-shadow: 0 0 0 3px rgba(47, 94, 164, 0.10);
+}
+
+.ventas-history-filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ventas-history-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 18px 12px;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.ventas-history-card-title-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.ventas-history-card-title-wrap h3 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+}
+
+.ventas-history-card-meta {
+    margin: 0;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.ventas-history-card-meta strong {
+    color: #334155;
+    font-weight: 800;
+}
+
+.ventas-history-card-separator {
+    display: inline-block;
+    margin: 0 6px;
+    color: #cbd5e1;
+}
+
+.ventas-history-card {
+    overflow: hidden;
+}
+
+.ventas-history-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.ventas-history-table {
+    width: 100%;
+    min-width: 980px;
+    border-collapse: collapse;
+}
+
+.ventas-history-table th,
+.ventas-history-table td {
+    padding: 15px 16px;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+    vertical-align: middle;
+}
+
+.ventas-history-table th {
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-align: left;
+    text-transform: uppercase;
+}
+
+.ventas-history-table td {
+    color: #0f172a;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.ventas-history-table tbody tr:hover {
+    background: rgba(248, 250, 252, 0.8);
+}
+
+.ventas-history-meta,
+.ventas-history-table td small,
+.ventas-history-table td span+small,
+.ventas-history-table td strong+small {
+    display: block;
+    margin-top: 4px;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.ventas-history-invoice {
+    color: #1f4d8e;
+    font-weight: 900;
+}
+
+.ventas-history-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 84px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #eef2f7;
+    color: #475569;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.ventas-history-status.is-paid {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.ventas-history-status.is-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.ventas-history-status.is-cancelled {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.ventas-history-row-actions {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.ventas-history-row-actions .btn-primary {
+    min-height: 34px;
+    padding: 0 12px;
+    font-size: 12px;
+}
+
+.ventas-history-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 46px 18px;
+    color: #64748b;
+    text-align: center;
+}
+
+.ventas-history-empty strong {
+    color: #0f172a;
+    font-size: 15px;
+}
+
+.ventas-history-pagination {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+}
+
+.ventas-history-pagination-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ventas-history-pagination-current {
+    color: #334155;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+@media (max-width: 1180px) {
+    .ventas-history-filter-grid {
+        grid-template-columns: repeat(2, minmax(180px, 1fr));
+    }
+}
+
+@media (max-width: 720px) {
+
+    .ventas-history-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .ventas-history-actions,
+    .ventas-history-filter-actions,
+    .ventas-history-pagination-actions {
+        width: 100%;
+    }
+
+    .ventas-history-filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ventas-history-card-header,
+    .ventas-history-pagination {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .ventas-history-pagination-actions {
+        justify-content: space-between;
+    }
+
+    .ventas-history-card-meta {
+        line-height: 1.5;
+    }
+}

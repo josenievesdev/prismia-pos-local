@@ -760,6 +760,160 @@ function registrarVentaPOS({ idUsuario, payload = {} } = {}) {
     }
 }
 
+function normalizarFechaFiltro(valor) {
+    const texto = limpiarTexto(valor);
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(texto)) {
+        return '';
+    }
+
+    return texto;
+}
+
+function normalizarEstadoVenta(valor) {
+    const estado = limpiarTexto(valor).toLowerCase();
+    const estadosPermitidos = ['pagada', 'pendiente', 'anulada'];
+
+    return estadosPermitidos.includes(estado) ? estado : '';
+}
+
+function normalizarPaginaHistorial(valor) {
+    const pagina = Number.parseInt(valor, 10);
+
+    if (!Number.isInteger(pagina) || pagina < 1) {
+        return 1;
+    }
+
+    return pagina;
+}
+
+function normalizarLimiteHistorial(valor) {
+    const limite = Number.parseInt(valor, 10);
+    const limitesPermitidos = [25, 50, 100];
+
+    if (!limitesPermitidos.includes(limite)) {
+        return 50;
+    }
+
+    return limite;
+}
+
+function normalizarFiltrosHistorialVentas(query = {}) {
+    const pagina = normalizarPaginaHistorial(query.pagina);
+    const limite = normalizarLimiteHistorial(query.limite);
+    const offset = (pagina - 1) * limite;
+
+    return {
+        fecha_desde: normalizarFechaFiltro(query.fecha_desde),
+        fecha_hasta: normalizarFechaFiltro(query.fecha_hasta),
+        factura: limpiarTexto(query.factura),
+        cliente: limpiarTexto(query.cliente),
+        id_medio_pago: normalizarId(query.id_medio_pago),
+        estado: normalizarEstadoVenta(query.estado),
+        id_turno_caja: normalizarId(query.id_turno_caja),
+        id_cajero: normalizarId(query.id_cajero),
+        pagina,
+        limite,
+        offset,
+    };
+}
+
+function prepararVentaHistorial(venta) {
+    const clienteNombre = limpiarTexto(venta.cliente_nombre) || 'Consumidor final';
+    const clienteDocumento = limpiarTexto(venta.cliente_documento);
+    const clienteTipoDocumento = limpiarTexto(venta.cliente_tipo_documento) || 'CF';
+
+    const numeroComprobante =
+        limpiarTexto(venta.comprobante_numero)
+        || limpiarTexto(venta.numero_venta)
+        || `Venta #${venta.id_venta}`;
+
+    return {
+        ...venta,
+        numero_venta: limpiarTexto(venta.numero_venta) || numeroComprobante,
+        numero_comprobante: numeroComprobante,
+        fecha_venta: limpiarTexto(venta.fecha_venta),
+        subtotal: normalizarEntero(venta.subtotal),
+        descuento_total: normalizarEntero(venta.descuento_total),
+        impuesto_total: normalizarEntero(venta.impuesto_total),
+        total: normalizarEntero(venta.total),
+        total_pagado: normalizarEntero(venta.total_pagado || venta.total_pagado_calculado),
+        saldo_pendiente: normalizarEntero(venta.saldo_pendiente),
+        cambio_entregado: normalizarEntero(venta.cambio_entregado),
+        total_costo: normalizarEntero(venta.total_costo),
+        utilidad_bruta: normalizarEntero(venta.utilidad_bruta),
+        estado: limpiarTexto(venta.estado) || 'pagada',
+        cliente_nombre: clienteNombre,
+        cliente_documento: clienteDocumento,
+        cliente_tipo_documento: clienteTipoDocumento,
+        cliente_etiqueta: clienteDocumento
+            ? `${clienteTipoDocumento} ${clienteDocumento}`
+            : 'Sin documento',
+        cajero_nombre: limpiarTexto(venta.cajero_nombre) || 'Usuario',
+        medio_pago_nombre: limpiarTexto(venta.medios_pago_nombre) || 'Sin pago registrado',
+        medio_pago_tipo: limpiarTexto(venta.medios_pago_tipo || venta.metodos_pago) || 'sin_tipo',
+    };
+}
+
+function prepararCajeroFiltro(cajero) {
+    return {
+        id_usuario: cajero.id_usuario,
+        nombre: limpiarTexto(cajero.nombre) || `Usuario #${cajero.id_usuario}`,
+    };
+}
+
+function prepararTurnoFiltro(turno) {
+    return {
+        id_turno_caja: turno.id_turno_caja,
+        fecha_apertura: limpiarTexto(turno.fecha_apertura),
+        estado: limpiarTexto(turno.estado) || 'sin_estado',
+    };
+}
+
+function obtenerHistorialVentas({ query = {} } = {}) {
+    const filtros = normalizarFiltrosHistorialVentas(query);
+
+    const totalResultados = ventasRepository.contarHistorialVentas(filtros);
+    const totalPaginas = Math.max(1, Math.ceil(totalResultados / filtros.limite));
+
+    if (filtros.pagina > totalPaginas) {
+        filtros.pagina = totalPaginas;
+        filtros.offset = (filtros.pagina - 1) * filtros.limite;
+    }
+
+    const ventas = ventasRepository
+        .listarHistorialVentas(filtros)
+        .map(prepararVentaHistorial);
+
+    const mediosPago = ventasRepository
+        .listarMediosPagoActivos()
+        .map(prepararMedioPago);
+
+    const cajeros = ventasRepository
+        .listarCajerosConVentas()
+        .map(prepararCajeroFiltro);
+
+    const turnos = ventasRepository
+        .listarTurnosConVentas(100)
+        .map(prepararTurnoFiltro);
+
+    return {
+        filtros,
+        ventas,
+        mediosPago,
+        cajeros,
+        turnos,
+        total_resultados: totalResultados,
+        limite_resultados: filtros.limite,
+        pagina_actual: filtros.pagina,
+        total_paginas: totalPaginas,
+        tiene_pagina_anterior: filtros.pagina > 1,
+        tiene_pagina_siguiente: filtros.pagina < totalPaginas,
+        pagina_anterior: filtros.pagina > 1 ? filtros.pagina - 1 : 1,
+        pagina_siguiente: filtros.pagina < totalPaginas ? filtros.pagina + 1 : totalPaginas,
+    };
+}
+
 function obtenerPrimerValor(objeto, claves, defecto = '') {
     if (!objeto) {
         return defecto;
@@ -974,6 +1128,7 @@ module.exports = {
     buscarClientes,
     obtenerProductoParaVenta,
     registrarVentaPOS,
+    obtenerHistorialVentas,
     obtenerTicketVenta,
     obtenerCarritoInicial,
     prepararProductoParaVenta,

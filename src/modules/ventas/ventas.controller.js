@@ -26,6 +26,30 @@ function mostrarPOS(req, res) {
     });
 }
 
+function mostrarHistorial(req, res) {
+    const historial = ventasService.obtenerHistorialVentas({
+        query: req.query || {},
+    });
+
+    return res.render('ventas/historial', {
+        titulo: 'Historial de ventas',
+        filtros: historial.filtros,
+        ventas: historial.ventas,
+        mediosPago: historial.mediosPago,
+        cajeros: historial.cajeros,
+        turnos: historial.turnos,
+        totalResultados: historial.total_resultados,
+        limiteResultados: historial.limite_resultados,
+        paginaActual: historial.pagina_actual,
+        totalPaginas: historial.total_paginas,
+        tienePaginaAnterior: historial.tiene_pagina_anterior,
+        tienePaginaSiguiente: historial.tiene_pagina_siguiente,
+        paginaAnterior: historial.pagina_anterior,
+        paginaSiguiente: historial.pagina_siguiente,
+        estilosModulo: estilosVentas,
+    });
+}
+
 function buscarProductos(req, res) {
     const productos = ventasService.buscarProductos({
         busqueda: req.query.busqueda || '',
@@ -105,6 +129,7 @@ function imprimirTicket(req, res) {
 
 module.exports = {
     mostrarPOS,
+    mostrarHistorial,
     buscarProductos,
     buscarClientes,
     obtenerProducto,

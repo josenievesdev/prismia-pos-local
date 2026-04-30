@@ -379,6 +379,208 @@ function listarVentasRecientes(limite = 10) {
         .all(limite);
 }
 
+function construirFiltrosHistorialVentas(filtros = {}) {
+    const condiciones = [];
+    const limiteSeguro = Number(filtros.limite || 50);
+    const offsetSeguro = Number(filtros.offset || 0);
+
+    const params = {
+        fecha_desde: filtros.fecha_desde || null,
+        fecha_hasta: filtros.fecha_hasta || null,
+        factura: filtros.factura || null,
+        cliente: filtros.cliente || null,
+        id_medio_pago: filtros.id_medio_pago || null,
+        estado: filtros.estado || null,
+        id_turno_caja: filtros.id_turno_caja || null,
+        id_cajero: filtros.id_cajero || null,
+        limite: limiteSeguro > 0 ? limiteSeguro : 50,
+        offset: offsetSeguro >= 0 ? offsetSeguro : 0,
+    };
+
+    if (params.fecha_desde) {
+        condiciones.push('date(v.fecha_venta) >= date(@fecha_desde)');
+    }
+
+    if (params.fecha_hasta) {
+        condiciones.push('date(v.fecha_venta) <= date(@fecha_hasta)');
+    }
+
+    if (params.factura) {
+        params.factura = `%${params.factura}%`;
+        condiciones.push(`(
+            v.numero_venta LIKE @factura
+            OR comp.numero LIKE @factura
+        )`);
+    }
+
+    if (params.cliente) {
+        params.cliente = `%${params.cliente}%`;
+        condiciones.push(`(
+            c.nombre LIKE @cliente
+            OR c.documento LIKE @cliente
+            OR c.telefono LIKE @cliente
+            OR c.correo LIKE @cliente
+        )`);
+    }
+
+    if (params.id_medio_pago) {
+        condiciones.push(`EXISTS (
+            SELECT 1
+            FROM pagos_venta pvf
+            WHERE pvf.id_venta = v.id_venta
+              AND pvf.estado = 'registrado'
+              AND pvf.anulado_en IS NULL
+              AND pvf.id_medio_pago = @id_medio_pago
+        )`);
+    }
+
+    if (params.estado) {
+        condiciones.push('v.estado = @estado');
+    }
+
+    if (params.id_turno_caja) {
+        condiciones.push('v.id_turno_caja = @id_turno_caja');
+    }
+
+    if (params.id_cajero) {
+        condiciones.push('v.id_usuario = @id_cajero');
+    }
+
+    const where = condiciones.length > 0
+        ? `WHERE ${condiciones.join(' AND ')}`
+        : '';
+
+    return {
+        where,
+        params,
+    };
+}
+
+function contarHistorialVentas(filtros = {}) {
+    const { where, params } = construirFiltrosHistorialVentas(filtros);
+
+    const resultado = db
+        .prepare(`
+            SELECT
+                COUNT(DISTINCT v.id_venta) AS total
+            FROM ventas v
+            LEFT JOIN clientes c
+                ON c.id_cliente = v.id_cliente
+            LEFT JOIN comprobantes comp
+                ON comp.id_venta = v.id_venta
+            ${where}
+        `)
+        .get(params);
+
+    return Number(resultado?.total || 0);
+}
+
+function listarHistorialVentas(filtros = {}) {
+    const { where, params } = construirFiltrosHistorialVentas(filtros);
+
+    return db
+        .prepare(`
+            SELECT
+                v.id_venta,
+                v.id_cliente,
+                v.id_usuario,
+                v.id_turno_caja,
+                v.numero_venta,
+                v.fecha_venta,
+                v.subtotal,
+                v.descuento_total,
+                v.impuesto_total,
+                v.total,
+                v.estado,
+                v.observaciones,
+                v.total_pagado,
+                v.saldo_pendiente,
+                v.cambio_entregado,
+                v.total_costo,
+                v.utilidad_bruta,
+                v.origen,
+                v.tipo_venta,
+                v.creado_en,
+
+                c.tipo_documento AS cliente_tipo_documento,
+                c.documento AS cliente_documento,
+                c.nombre AS cliente_nombre,
+
+                u.nombre AS cajero_nombre,
+
+                t.estado AS estado_turno,
+                t.fecha_apertura AS turno_fecha_apertura,
+
+                pagos.medios_pago_nombre,
+                pagos.medios_pago_tipo,
+                pagos.metodos_pago,
+                pagos.total_pagado_calculado,
+
+                comp.id_comprobante,
+                comp.numero AS comprobante_numero,
+                comp.estado AS comprobante_estado,
+                comp.fecha_emision AS comprobante_fecha_emision
+            FROM ventas v
+            LEFT JOIN clientes c
+                ON c.id_cliente = v.id_cliente
+            LEFT JOIN usuarios u
+                ON u.id_usuario = v.id_usuario
+            LEFT JOIN turnos_caja t
+                ON t.id_turno_caja = v.id_turno_caja
+            LEFT JOIN comprobantes comp
+                ON comp.id_venta = v.id_venta
+            LEFT JOIN (
+                SELECT
+                    pv.id_venta,
+                    GROUP_CONCAT(DISTINCT COALESCE(mp.nombre, pv.entidad, pv.metodo_pago)) AS medios_pago_nombre,
+                    GROUP_CONCAT(DISTINCT COALESCE(mp.tipo, pv.metodo_pago)) AS medios_pago_tipo,
+                    GROUP_CONCAT(DISTINCT pv.metodo_pago) AS metodos_pago,
+                    SUM(pv.monto) AS total_pagado_calculado
+                FROM pagos_venta pv
+                LEFT JOIN medios_pago mp
+                    ON mp.id_medio_pago = pv.id_medio_pago
+                WHERE pv.estado = 'registrado'
+                  AND pv.anulado_en IS NULL
+                GROUP BY pv.id_venta
+            ) pagos
+                ON pagos.id_venta = v.id_venta
+            ${where}
+            ORDER BY datetime(v.fecha_venta) DESC, v.id_venta DESC
+            LIMIT @limite OFFSET @offset
+        `)
+        .all(params);
+}
+
+function listarCajerosConVentas() {
+    return db
+        .prepare(`
+            SELECT DISTINCT
+                u.id_usuario,
+                u.nombre
+            FROM ventas v
+            INNER JOIN usuarios u
+                ON u.id_usuario = v.id_usuario
+            ORDER BY u.nombre ASC
+        `)
+        .all();
+}
+
+function listarTurnosConVentas(limite = 100) {
+    return db
+        .prepare(`
+            SELECT DISTINCT
+                t.id_turno_caja,
+                t.fecha_apertura,
+                t.estado
+            FROM ventas v
+            INNER JOIN turnos_caja t
+                ON t.id_turno_caja = v.id_turno_caja
+            ORDER BY t.id_turno_caja DESC
+            LIMIT ?
+        `)
+        .all(limite);
+}
+
 function registrarVentaPOS(datos) {
     const transaccion = db.transaction(() => {
         const prefijo = datos.prefijo_comprobante || 'FV';
@@ -881,6 +1083,10 @@ module.exports = {
     buscarProductosParaVenta,
     obtenerProductoParaVenta,
     listarVentasRecientes,
+    listarHistorialVentas,
+    contarHistorialVentas,
+    listarCajerosConVentas,
+    listarTurnosConVentas,
     registrarVentaPOS,
 
     obtenerVentaTicketPorId,
