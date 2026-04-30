@@ -152,10 +152,10 @@ CREATE TABLE IF NOT EXISTS productos (
     precio_venta INTEGER NOT NULL DEFAULT 0
         CHECK (precio_venta >= 0),
 
-    stock_actual INTEGER NOT NULL DEFAULT 0
+    stock_actual REAL NOT NULL DEFAULT 0
         CHECK (stock_actual >= 0),
 
-    stock_minimo INTEGER NOT NULL DEFAULT 0
+    stock_minimo REAL NOT NULL DEFAULT 0
         CHECK (stock_minimo >= 0),
 
     controla_inventario INTEGER NOT NULL DEFAULT 1
