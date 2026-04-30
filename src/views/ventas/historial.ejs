@@ -166,7 +166,7 @@
                                     <th>Medio de pago</th>
                                     <th class="text-right">Total</th>
                                     <th>Estado</th>
-                                    <th class="text-center">Ticket</th>
+                                    <th class="text-center">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -224,6 +224,10 @@
 
                                         <td class="text-center">
                                             <div class="ventas-history-row-actions">
+                                                <a href="/ventas/<%= venta.id_venta %>" class="btn-secondary">
+                                                    Detalle
+                                                </a>
+
                                                 <a href="/ventas/<%= venta.id_venta %>/ticket" class="btn-primary"
                                                     target="_blank" rel="noopener">
                                                     Ticket

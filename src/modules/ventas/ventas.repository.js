@@ -1072,6 +1072,22 @@ function obtenerComprobanteVentaTicket(idVenta) {
         .get(idVenta);
 }
 
+function obtenerVentaDetallePorId(idVenta) {
+    return obtenerVentaTicketPorId(idVenta);
+}
+
+function listarDetalleVentaPorId(idVenta) {
+    return listarDetalleVentaTicket(idVenta);
+}
+
+function listarPagosVentaPorId(idVenta) {
+    return listarPagosVentaTicket(idVenta);
+}
+
+function obtenerComprobanteVentaPorId(idVenta) {
+    return obtenerComprobanteVentaTicket(idVenta);
+}
+
 module.exports = {
     obtenerTurnoAbierto,
     obtenerConfiguracionNegocio,
@@ -1093,4 +1109,9 @@ module.exports = {
     listarDetalleVentaTicket,
     listarPagosVentaTicket,
     obtenerComprobanteVentaTicket,
+
+    obtenerVentaDetallePorId,
+    listarDetalleVentaPorId,
+    listarPagosVentaPorId,
+    obtenerComprobanteVentaPorId,
 };

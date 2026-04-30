@@ -1076,6 +1076,48 @@ function prepararPagosTicket(pagos) {
     }));
 }
 
+function obtenerDetalleVenta(idVenta) {
+    const idVentaNormalizado = normalizarId(idVenta);
+
+    if (!idVentaNormalizado) {
+        return {
+            ok: false,
+            codigoEstado: 400,
+            mensaje: 'La venta solicitada no es válida.',
+        };
+    }
+
+    const ventaRaw = ventasRepository.obtenerVentaDetallePorId(idVentaNormalizado);
+
+    if (!ventaRaw) {
+        return {
+            ok: false,
+            codigoEstado: 404,
+            mensaje: 'No se encontró la venta solicitada.',
+        };
+    }
+
+    const detalleRaw = ventasRepository.listarDetalleVentaPorId(idVentaNormalizado);
+    const pagosRaw = ventasRepository.listarPagosVentaPorId(idVentaNormalizado);
+    const comprobante = ventasRepository.obtenerComprobanteVentaPorId(idVentaNormalizado);
+
+    return {
+        ok: true,
+        detalleVenta: {
+            venta: prepararVentaTicket(ventaRaw),
+            detalle: prepararDetalleTicket(detalleRaw),
+            pagos: prepararPagosTicket(pagosRaw),
+            comprobante: comprobante || {
+                numero: ventaRaw.numero_venta || 'FV-SIN-NUMERO',
+                prefijo: 'FV',
+                consecutivo: null,
+                estado: ventaRaw.estado || 'pagada',
+                fecha_emision: ventaRaw.fecha_venta,
+            },
+        },
+    };
+}
+
 function obtenerTicketVenta(idVenta) {
     const id = Number(idVenta);
 
@@ -1129,6 +1171,7 @@ module.exports = {
     obtenerProductoParaVenta,
     registrarVentaPOS,
     obtenerHistorialVentas,
+    obtenerDetalleVenta,
     obtenerTicketVenta,
     obtenerCarritoInicial,
     prepararProductoParaVenta,

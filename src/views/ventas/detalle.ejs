@@ -1,0 +1,239 @@
+<section class="module-page ventas-page ventas-detail-page">
+    <% const ventaActual=venta || {}; const detalleListado=Array.isArray(detalle) ? detalle : []; const
+        pagosListado=Array.isArray(pagos) ? pagos : []; const comprobanteActual=comprobante || {}; function
+        dinero(valor) { return new Intl.NumberFormat('es-CO', { style: 'currency' , currency: 'COP' ,
+        maximumFractionDigits: 0 }).format(Number(valor || 0)); } function numero(valor) { return new
+        Intl.NumberFormat('es-CO', { maximumFractionDigits: 3 }).format(Number(valor || 0)); } function fecha(valor) {
+        if (!valor) return 'Sin fecha' ; const fechaObj=new Date(String(valor).replace(' ', ' T')); if
+        (Number.isNaN(fechaObj.getTime())) { return valor; } return fechaObj.toLocaleString('es-CO', {
+        dateStyle: 'medium' , timeStyle: 'short' }); } function estadoClase(estado) { if (estado==='pagada' )
+        return 'is-paid' ; if (estado==='pendiente' ) return 'is-pending' ; if (estado==='anulada' )
+        return 'is-cancelled' ; return '' ; } %>
+
+        <header class="ventas-detail-header">
+            <div>
+                <span class="ventas-kicker">Ventas</span>
+                <h2>Detalle de venta</h2>
+                <p>Consulta la información completa de la factura registrada desde el POS.</p>
+            </div>
+
+            <div class="ventas-detail-actions">
+                <a href="/ventas/historial" class="btn-secondary">Volver al historial</a>
+                <a href="/ventas/<%= ventaActual.id_venta %>/ticket" class="btn-primary" target="_blank" rel="noopener">
+                    Reimprimir ticket
+                </a>
+            </div>
+        </header>
+
+        <section class="ventas-detail-summary">
+            <article class="ventas-detail-main-card">
+                <div class="ventas-detail-invoice-head">
+                    <div>
+                        <span class="ventas-detail-label">Factura</span>
+                        <strong>
+                            <%= comprobanteActual.numero || ventaActual.numero_venta || 'FV-SIN-NUMERO' %>
+                        </strong>
+                    </div>
+
+                    <span class="ventas-history-status <%= estadoClase(ventaActual.estado) %>">
+                        <%= ventaActual.estado || 'pagada' %>
+                    </span>
+                </div>
+
+                <dl class="ventas-detail-grid">
+                    <div>
+                        <dt>Fecha</dt>
+                        <dd>
+                            <%= fecha(ventaActual.fecha_venta) %>
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>Cliente</dt>
+                        <dd>
+                            <%= ventaActual.cliente_nombre || 'Consumidor final' %>
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>Documento</dt>
+                        <dd>
+                            <%= ventaActual.cliente_tipo_documento || 'CF' %>
+                                <%= ventaActual.cliente_documento || '0000000000' %>
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>Cajero</dt>
+                        <dd>
+                            <%= ventaActual.cajero_nombre || 'Usuario' %>
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>Turno</dt>
+                        <dd>#<%= ventaActual.id_turno_caja || 'N/A' %>
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>Tipo de venta</dt>
+                        <dd>
+                            <%= ventaActual.tipo_venta || 'contado' %>
+                        </dd>
+                    </div>
+                </dl>
+            </article>
+
+            <aside class="ventas-detail-totals-card">
+                <h3>Totales</h3>
+
+                <div class="ventas-detail-total-row">
+                    <span>Subtotal</span>
+                    <strong>
+                        <%= dinero(ventaActual.subtotal) %>
+                    </strong>
+                </div>
+
+                <div class="ventas-detail-total-row">
+                    <span>IVA</span>
+                    <strong>
+                        <%= dinero(ventaActual.impuesto_total) %>
+                    </strong>
+                </div>
+
+                <div class="ventas-detail-total-row">
+                    <span>Descuento</span>
+                    <strong>
+                        <%= dinero(ventaActual.descuento_total) %>
+                    </strong>
+                </div>
+
+                <div class="ventas-detail-total-row is-grand-total">
+                    <span>Total</span>
+                    <strong>
+                        <%= dinero(ventaActual.total) %>
+                    </strong>
+                </div>
+
+                <div class="ventas-detail-total-row">
+                    <span>Pagado</span>
+                    <strong>
+                        <%= dinero(ventaActual.total_pagado) %>
+                    </strong>
+                </div>
+
+                <div class="ventas-detail-total-row">
+                    <span>Cambio</span>
+                    <strong>
+                        <%= dinero(ventaActual.cambio_entregado) %>
+                    </strong>
+                </div>
+            </aside>
+        </section>
+
+        <section class="ventas-detail-card">
+            <div class="ventas-detail-card-header">
+                <h3>Productos vendidos</h3>
+                <span>
+                    <%= detalleListado.length %> ítems
+                </span>
+            </div>
+
+            <% if (detalleListado.length===0) { %>
+                <div class="ventas-history-empty">
+                    <strong>Esta venta no tiene productos asociados.</strong>
+                    <span>Revisa el registro de detalle de ventas.</span>
+                </div>
+                <% } else { %>
+                    <div class="ventas-history-table-wrap">
+                        <table class="ventas-history-table ventas-detail-table">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th class="text-right">Cantidad</th>
+                                    <th class="text-right">Precio</th>
+                                    <th class="text-right">IVA</th>
+                                    <th class="text-right">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% detalleListado.forEach((item)=> { %>
+                                    <tr>
+                                        <td>
+                                            <strong>
+                                                <%= item.nombre_producto %>
+                                            </strong>
+                                            <small class="ventas-history-meta">
+                                                <%= item.codigo_interno || item.codigo_barras || 'Sin código' %>
+                                                    · <%= item.unidad_abreviatura || 'und' %>
+                                            </small>
+                                        </td>
+
+                                        <td class="text-right">
+                                            <%= numero(item.cantidad) %>
+                                        </td>
+
+                                        <td class="text-right">
+                                            <%= dinero(item.precio_unitario) %>
+                                        </td>
+
+                                        <td class="text-right">
+                                            <%= item.porcentaje_iva || 0 %>% · <%= dinero(item.impuesto_total) %>
+                                        </td>
+
+                                        <td class="text-right">
+                                            <strong>
+                                                <%= dinero(item.total_linea) %>
+                                            </strong>
+                                        </td>
+                                    </tr>
+                                    <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                    <% } %>
+        </section>
+
+        <section class="ventas-detail-card">
+            <div class="ventas-detail-card-header">
+                <h3>Pagos registrados</h3>
+                <span>
+                    <%= pagosListado.length %> pago(s)
+                </span>
+            </div>
+
+            <% if (pagosListado.length===0) { %>
+                <div class="ventas-history-empty">
+                    <strong>No hay pagos asociados a esta venta.</strong>
+                    <span>Revisa pagos_venta para este registro.</span>
+                </div>
+                <% } else { %>
+                    <div class="ventas-detail-payments">
+                        <% pagosListado.forEach((pago)=> { %>
+                            <article class="ventas-detail-payment-item">
+                                <div>
+                                    <strong>
+                                        <%= pago.medio_pago_nombre %>
+                                    </strong>
+                                    <span>
+                                        <%= pago.medio_pago_tipo %>
+                                    </span>
+                                    <% if (pago.referencia) { %>
+                                        <small>Referencia: <%= pago.referencia %></small>
+                                        <% } %>
+                                </div>
+
+                                <div>
+                                    <strong>
+                                        <%= dinero(pago.monto) %>
+                                    </strong>
+                                    <small>Recibido: <%= dinero(pago.monto_recibido) %></small>
+                                    <small>Cambio: <%= dinero(pago.cambio_entregado) %></small>
+                                </div>
+                            </article>
+                            <% }) %>
+                    </div>
+                    <% } %>
+        </section>
+</section>

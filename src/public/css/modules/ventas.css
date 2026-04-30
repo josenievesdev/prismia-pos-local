@@ -1830,3 +1830,239 @@
         line-height: 1.5;
     }
 }
+
+/* ===== Detalle de venta ===== */
+
+.ventas-detail-page {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.ventas-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 22px 24px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+}
+
+.ventas-detail-header h2 {
+    margin: 4px 0 8px;
+    color: #0f172a;
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+}
+
+.ventas-detail-header p {
+    max-width: 760px;
+    margin: 0;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+.ventas-detail-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+}
+
+.ventas-detail-summary {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 16px;
+}
+
+.ventas-detail-main-card,
+.ventas-detail-totals-card,
+.ventas-detail-card {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+}
+
+.ventas-detail-main-card {
+    padding: 20px;
+}
+
+.ventas-detail-invoice-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.ventas-detail-label {
+    display: block;
+    margin-bottom: 5px;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.ventas-detail-invoice-head strong {
+    color: #1f4d8e;
+    font-size: 22px;
+    font-weight: 950;
+    letter-spacing: -0.02em;
+}
+
+.ventas-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(140px, 1fr));
+    gap: 14px;
+    margin: 0;
+}
+
+.ventas-detail-grid div {
+    padding: 12px;
+    border-radius: 14px;
+    background: #f8fafc;
+    border: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.ventas-detail-grid dt {
+    margin: 0 0 5px;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.ventas-detail-grid dd {
+    margin: 0;
+    color: #0f172a;
+    font-size: 13px;
+    font-weight: 750;
+}
+
+.ventas-detail-totals-card {
+    padding: 18px;
+}
+
+.ventas-detail-totals-card h3,
+.ventas-detail-card-header h3 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 14px;
+    font-weight: 850;
+}
+
+.ventas-detail-total-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+    color: #64748b;
+    font-size: 13px;
+}
+
+.ventas-detail-total-row strong {
+    color: #0f172a;
+    font-weight: 850;
+}
+
+.ventas-detail-total-row.is-grand-total {
+    margin: 8px 0;
+    padding: 14px 0;
+    color: #0f172a;
+    font-size: 15px;
+    font-weight: 850;
+}
+
+.ventas-detail-total-row.is-grand-total strong {
+    color: #1f4d8e;
+    font-size: 20px;
+    font-weight: 950;
+}
+
+.ventas-detail-card {
+    overflow: hidden;
+}
+
+.ventas-detail-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 18px 12px;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.ventas-detail-card-header span {
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.ventas-detail-payments {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+}
+
+.ventas-detail-payment-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: #f8fafc;
+    border: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.ventas-detail-payment-item strong {
+    display: block;
+    color: #0f172a;
+    font-size: 13px;
+    font-weight: 850;
+}
+
+.ventas-detail-payment-item span,
+.ventas-detail-payment-item small {
+    display: block;
+    margin-top: 3px;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+@media (max-width: 1080px) {
+    .ventas-detail-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .ventas-detail-grid {
+        grid-template-columns: repeat(2, minmax(140px, 1fr));
+    }
+}
+
+@media (max-width: 720px) {
+
+    .ventas-detail-header,
+    .ventas-detail-actions,
+    .ventas-detail-payment-item {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .ventas-detail-grid {
+        grid-template-columns: 1fr;
+    }
+}

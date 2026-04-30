@@ -113,6 +113,25 @@ function registrarVenta(req, res) {
     return res.status(201).json(resultado);
 }
 
+function mostrarDetalleVenta(req, res) {
+    const resultado = ventasService.obtenerDetalleVenta(req.params.id);
+
+    if (!resultado.ok) {
+        return res.status(resultado.codigoEstado || 404).send(resultado.mensaje);
+    }
+
+    const detalleVenta = resultado.detalleVenta;
+
+    return res.render('ventas/detalle', {
+        titulo: `Detalle de venta ${detalleVenta.comprobante.numero}`,
+        venta: detalleVenta.venta,
+        detalle: detalleVenta.detalle,
+        pagos: detalleVenta.pagos,
+        comprobante: detalleVenta.comprobante,
+        estilosModulo: estilosVentas,
+    });
+}
+
 function imprimirTicket(req, res) {
     const resultado = ventasService.obtenerTicketVenta(req.params.id);
 
@@ -134,5 +153,6 @@ module.exports = {
     buscarClientes,
     obtenerProducto,
     registrarVenta,
+    mostrarDetalleVenta,
     imprimirTicket,
 };
