@@ -1,33 +1,52 @@
 <section class="module-page ventas-page">
     <% const fechaHoy=new Date().toISOString().slice(0, 10); const productosListado=Array.isArray(productos) ? productos
-        : []; const ventasRecientesListado=Array.isArray(ventasRecientes) ? ventasRecientes : []; const
-        mediosPagoListado=Array.isArray(mediosPago) ? mediosPago : []; const clienteActual=clienteConsumidorFinal || {
-        id_cliente: null, nombre: 'Consumidor final' , documento: '0000000000' , }; const nombreCajero=turnoAbierto ?
-        (turnoAbierto.usuario_apertura_nombre || 'Usuario' ) : 'Sin caja abierta' ; function formatoCantidad(valor) {
-        const numero=Number(valor || 0); if (!Number.isFinite(numero)) { return '0' ; } return
-        numero.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 3, }); } function
-        nombreTipoMedio(tipo) { if (tipo==='efectivo' ) return 'Efectivo' ; if (tipo==='transferencia' )
-        return 'Transferencia' ; if (tipo==='tarjeta' ) return 'Tarjeta' ; return 'Otro' ; } %>
+        : []; const mediosPagoListado=Array.isArray(mediosPago) ? mediosPago : []; const
+        clienteActual=clienteConsumidorFinal || { id_cliente: null, nombre: 'Consumidor final' , documento: '0000000000'
+        }; const nombreCajero=turnoAbierto ? (turnoAbierto.usuario_apertura_nombre || 'Usuario' ) : 'Sin caja abierta' ;
+        function nombreTipoMedio(t) { if (t==='efectivo' ) return 'Efectivo' ; if (t==='transferencia' )
+        return 'Transferencia' ; if (t==='tarjeta' ) return 'Tarjeta' ; return 'Otro' ; } %>
 
-        <div class="ventas-pos-shell">
+        <div class="ventas-pos-shell" data-puede-vender="<%= puedeVender ? 1 : 0 %>">
+
             <header class="ventas-pos-header">
-                <div>
-                    <span class="ventas-kicker">Punto de venta</span>
-                    <h2>Facturación</h2>
+                <div class="ventas-header-left">
+                    <div class="ventas-header-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.2">
+                            <rect x="2" y="3" width="20" height="14" rx="2" />
+                            <line x1="8" y1="21" x2="16" y2="21" />
+                            <line x1="12" y1="17" x2="12" y2="21" />
+                        </svg>
+                    </div>
+
+                    <div>
+                        <h2>Punto de Venta</h2>
+                        <span class="ventas-header-sub">Factura central</span>
+                    </div>
                 </div>
 
                 <div class="ventas-header-status">
                     <span class="ventas-status-chip <%= turnoAbierto ? 'is-open' : 'is-closed' %>">
+                        <span class="ventas-status-dot"></span>
                         <%= turnoAbierto ? 'Caja abierta' : 'Caja cerrada' %>
                     </span>
 
                     <% if (turnoAbierto) { %>
-                        <span>Turno #<strong>
-                                <%= turnoAbierto.id_turno_caja %>
-                            </strong></span>
+                        <span class="ventas-header-meta">
+                            Turno <strong>#<%= turnoAbierto.id_turno_caja %></strong>
+                        </span>
                         <% } else { %>
-                            <span>Sin turno activo</span>
+                            <span class="ventas-header-meta">Sin turno</span>
                             <% } %>
+
+                                <span class="ventas-header-meta ventas-header-cajero">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                        <circle cx="12" cy="7" r="4" />
+                                    </svg>
+                                    <%= nombreCajero %>
+                                </span>
                 </div>
             </header>
 
@@ -52,279 +71,156 @@
                                         </span>
                                     </div>
 
-                                    <a href="/caja/abrir" class="btn-primary">
-                                        Abrir caja
-                                    </a>
+                                    <a href="/caja/abrir" class="btn-primary">Abrir caja</a>
                                 </div>
                                 <% } %>
 
                                     <section class="ventas-context-bar">
-                                        <div class="ventas-context-item is-client">
+                                        <div class="ventas-context-item is-client ventas-client-search-box">
                                             <span>Cliente</span>
-                                            <strong>
-                                                <%= clienteActual.nombre %>
-                                            </strong>
-                                            <small>
+
+                                            <div class="ventas-client-search-wrap">
+                                                <input type="search" id="buscarCliente" name="buscar_cliente"
+                                                    value="<%= clienteActual.nombre %>"
+                                                    placeholder="Buscar cliente por nombre, documento o teléfono…"
+                                                    autocomplete="off" data-search-clients-url="/ventas/clientes/buscar"
+                                                    data-selected-client-id="<%= clienteActual.id_cliente || '' %>">
+
+                                                <div class="ventas-client-results" id="resultadosClientes" hidden>
+                                                    <div class="ventas-client-result-empty">
+                                                        Búsqueda de clientes pendiente de conectar.
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <small id="clienteDocumentoActual">
                                                 <%= clienteActual.documento || '0000000000' %>
                                             </small>
                                         </div>
 
                                         <label class="ventas-context-item ventas-date-item" for="fechaVenta">
-                                            <span>Fecha venta</span>
+                                            <span>Fecha</span>
                                             <input type="date" id="fechaVenta" name="fecha_venta"
                                                 value="<%= fechaHoy %>" max="<%= fechaHoy %>"
                                                 data-fecha-hoy="<%= fechaHoy %>">
                                         </label>
 
-                                        <div class="ventas-context-item">
-                                            <span>Cajero</span>
-                                            <strong>
-                                                <%= nombreCajero %>
-                                            </strong>
-                                            <small>
-                                                <%= turnoAbierto ? 'Operación activa' : 'Caja requerida' %>
-                                            </small>
-                                        </div>
+                                        <div class="ventas-context-item ventas-context-actions">
+                                            <span>Acciones</span>
 
-                                        <div class="ventas-context-item">
-                                            <span>Productos</span>
-                                            <strong>
-                                                <%= productosListado.length %>
-                                            </strong>
-                                            <small>Listado actual</small>
+                                            <div class="ventas-context-buttons">
+                                                <button type="button" class="btn-secondary" id="btnLimpiarVenta"
+                                                    disabled>
+                                                    Limpiar
+                                                </button>
+
+                                                <button type="button" class="btn-secondary" id="btnVentaPendiente"
+                                                    disabled>
+                                                    Pendiente
+                                                </button>
+
+                                                <button type="button" class="btn-primary ventas-charge-button"
+                                                    id="btnCobrarVenta" <%=puedeVender ? '' : 'disabled' %>
+                                                    >
+                                                    Cobrar
+                                                </button>
+                                            </div>
+
+                                            <small>Atajos operativos de la venta</small>
                                         </div>
                                     </section>
 
-                                    <section class="ventas-pos-layout">
-                                        <main class="ventas-main-panel">
-                                            <section class="ventas-search-strip">
-                                                <form class="ventas-search-form" method="GET" action="/ventas">
-                                                    <label for="buscarProducto">
-                                                        <span>Buscar producto</span>
-                                                        <input type="search" id="buscarProducto" name="busqueda"
-                                                            value="<%= busqueda || '' %>"
-                                                            placeholder="Nombre, código, barras o categoría"
-                                                            autocomplete="off" autofocus
-                                                            data-search-products-url="/ventas/productos/buscar">
-                                                    </label>
+                                    <section class="ventas-search-section">
+                                        <form class="ventas-search-form" method="GET" action="/ventas"
+                                            id="formBusquedaProductos">
+                                            <div class="ventas-search-input-wrap">
+                                                <span class="ventas-search-icon">
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                                        stroke="currentColor" stroke-width="2.5">
+                                                        <circle cx="11" cy="11" r="8" />
+                                                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                                                    </svg>
+                                                </span>
 
-                                                    <button type="submit">
-                                                        Buscar
-                                                    </button>
+                                                <input type="search" id="buscarProducto" name="busqueda" value=""
+                                                    placeholder="Buscar producto por nombre, código de barras o SKU…"
+                                                    autocomplete="off" autofocus
+                                                    data-search-products-url="/ventas/productos/buscar">
 
-                                                    <div class="ventas-product-suggestions" id="sugerenciasProductos"
-                                                        hidden></div>
-                                                </form>
-                                            </section>
-
-                                            <section class="ventas-table-panel">
-                                                <div class="ventas-table-toolbar">
-                                                    <div>
-                                                        <span class="ventas-kicker">Productos</span>
-                                                        <strong>Selecciona para agregar al carrito</strong>
-                                                    </div>
-
-                                                    <div class="ventas-table-hints">
-                                                        <span>Enter / toque</span>
-                                                        <span>Cantidad decimal lista</span>
+                                                <div class="ventas-results-panel" id="panelResultados" hidden>
+                                                    <div class="ventas-empty-results">
+                                                        <strong>Escribe para buscar</strong>
+                                                        <span>Los productos aparecerán aquí.</span>
                                                     </div>
                                                 </div>
+                                            </div>
 
-                                                <% if (productosListado.length===0) { %>
-                                                    <div class="ventas-empty-products">
-                                                        <strong>No se encontraron productos</strong>
-                                                        <span>Prueba con otro nombre, código interno, código de barras o
-                                                            categoría.</span>
-                                                    </div>
-                                                    <% } else { %>
-                                                        <div class="ventas-products-table-wrap">
-                                                            <table class="ventas-products-table">
-                                                                <thead>
-                                                                    <tr>
-                                                                        <th>Producto</th>
-                                                                        <th>Código</th>
-                                                                        <th>Categoría</th>
-                                                                        <th class="text-right">Stock</th>
-                                                                        <th class="text-right">Precio</th>
-                                                                        <th class="text-center">IVA</th>
-                                                                        <th class="text-center">Acción</th>
-                                                                    </tr>
-                                                                </thead>
+                                            <button type="submit" class="ventas-search-btn">Buscar</button>
+                                        </form>
 
-                                                                <tbody>
-                                                                    <% productosListado.forEach((producto)=> { %>
-                                                                        <% const
-                                                                            stockDisponible=Number(producto.stock_disponible
-                                                                            || 0); const
-                                                                            controlaInventario=Number(producto.controla_inventario
-                                                                            || 0)===1; const
-                                                                            permiteDecimal=Number(producto.permite_cantidad_decimal
-                                                                            || 0)===1; const
-                                                                            manejaIva=Number(producto.maneja_iva ||
-                                                                            0)===1; const
-                                                                            puedeVenderProducto=Boolean(producto.puede_vender);
-                                                                            const codigoVisible=producto.codigo_barras
-                                                                            || producto.codigo_interno || `ID
-                                                                            ${producto.id_producto}`; const
-                                                                            unidad=producto.unidad_abreviatura || 'und'
-                                                                            ; %>
+                                        <div class="ventas-search-loading-bar">
+                                            <span class="ventas-search-loading" id="searchLoading">
+                                                <span class="ventas-loading-spinner"></span>
+                                                Buscando…
+                                            </span>
+                                        </div>
+                                    </section>
 
-                                                                            <tr class="<%= puedeVenderProducto ? '' : 'is-disabled' %>"
-                                                                                data-product-id="<%= producto.id_producto %>"
-                                                                                data-product-name="<%= producto.nombre %>"
-                                                                                data-product-price="<%= producto.precio_venta %>"
-                                                                                data-product-stock="<%= stockDisponible %>"
-                                                                                data-product-decimal="<%= permiteDecimal ? 1 : 0 %>"
-                                                                                data-product-unit="<%= unidad %>"
-                                                                                data-product-tax="<%= producto.porcentaje_iva || 0 %>"
-                                                                                data-product-has-tax="<%= manejaIva ? 1 : 0 %>"
-                                                                                data-product-can-sell="<%= puedeVenderProducto ? 1 : 0 %>">
-                                                                                <td>
-                                                                                    <div class="ventas-product-cell">
-                                                                                        <strong>
-                                                                                            <%= producto.nombre %>
-                                                                                        </strong>
+                                    <section class="ventas-sale-card">
+                                        <header class="ventas-sale-header">
+                                            <div>
+                                                <span class="ventas-kicker">Factura</span>
+                                                <h3>Detalle de venta</h3>
+                                            </div>
 
-                                                                                        <div>
-                                                                                            <% if (permiteDecimal) { %>
-                                                                                                <span
-                                                                                                    class="ventas-mini-badge info">Decimal</span>
-                                                                                                <% } %>
+                                            <span class="ventas-ticket-state">Borrador</span>
+                                        </header>
 
-                                                                                                    <% if
-                                                                                                        (!puedeVenderProducto)
-                                                                                                        { %>
-                                                                                                        <span
-                                                                                                            class="ventas-mini-badge danger">Sin
-                                                                                                            stock</span>
-                                                                                                        <% } %>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                </td>
+                                        <div class="ventas-invoice-table-wrap">
+                                            <table class="ventas-invoice-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="text-center ventas-col-item">#</th>
+                                                        <th>Producto</th>
+                                                        <th class="text-center">Cantidad</th>
+                                                        <th class="text-right">Precio</th>
+                                                        <th class="text-right">IVA</th>
+                                                        <th class="text-right">Total</th>
+                                                        <th class="text-center">Acción</th>
+                                                    </tr>
+                                                </thead>
 
-                                                                                <td>
-                                                                                    <span class="ventas-code-text">
-                                                                                        <%= codigoVisible %>
-                                                                                    </span>
-                                                                                </td>
+                                                <tbody id="ventasCarritoItems">
+                                                    <tr class="ventas-cart-empty-row">
+                                                        <td colspan="7">
+                                                            <div class="ventas-cart-empty">
+                                                                <strong>Carrito vacío</strong>
+                                                                <span>Busca un producto y agrégalo con el botón
+                                                                    +.</span>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
 
-                                                                                <td>
-                                                                                    <span class="ventas-muted-text">
-                                                                                        <%= producto.categoria_nombre
-                                                                                            || 'Sin categoría' %>
-                                                                                    </span>
-                                                                                </td>
-
-                                                                                <td class="text-right">
-                                                                                    <% if (controlaInventario) { %>
-                                                                                        <strong>
-                                                                                            <%= formatoCantidad(stockDisponible)
-                                                                                                %>
-                                                                                        </strong>
-                                                                                        <small>
-                                                                                            <%= unidad %>
-                                                                                        </small>
-                                                                                        <% } else { %>
-                                                                                            <strong>Libre</strong>
-                                                                                            <% } %>
-                                                                                </td>
-
-                                                                                <td class="text-right">
-                                                                                    <strong>
-                                                                                        <%= formatearPesos(producto.precio_venta)
-                                                                                            %>
-                                                                                    </strong>
-                                                                                </td>
-
-                                                                                <td class="text-center">
-                                                                                    <% if (manejaIva) { %>
-                                                                                        <span class="ventas-tax-pill">
-                                                                                            <%= producto.porcentaje_iva
-                                                                                                || 0 %>%
-                                                                                        </span>
-                                                                                        <% } else { %>
-                                                                                            <span
-                                                                                                class="ventas-tax-pill is-empty">No</span>
-                                                                                            <% } %>
-                                                                                </td>
-
-                                                                                <td class="text-center">
-                                                                                    <button type="button"
-                                                                                        class="ventas-add-button"
-                                                                                        data-add-product-id="<%= producto.id_producto %>"
-                                                                                        <%=puedeVender &&
-                                                                                        puedeVenderProducto ? ''
-                                                                                        : 'disabled' %>
-                                                                                        >
-                                                                                        Agregar
-                                                                                    </button>
-                                                                                </td>
-                                                                            </tr>
-                                                                            <% }) %>
-                                                                </tbody>
-                                                            </table>
-                                                        </div>
-                                                        <% } %>
-                                            </section>
-                                        </main>
-
-                                        <aside class="ventas-ticket-panel">
-                                            <section class="ventas-ticket-card">
-                                                <header class="ventas-ticket-header">
+                                        <section class="ventas-sale-footer">
+                                            <div class="ventas-payment-strip">
+                                                <div class="ventas-payment-strip-header">
                                                     <div>
-                                                        <span class="ventas-kicker">Orden actual</span>
-                                                        <h3>Factura</h3>
+                                                        <span class="ventas-kicker">Pago</span>
+                                                        <h4>Pasarela rápida</h4>
                                                     </div>
 
-                                                    <span class="ventas-ticket-state">Borrador</span>
-                                                </header>
-
-                                                <div class="ventas-cart-items" id="ventasCarritoItems">
-                                                    <div class="ventas-cart-empty">
-                                                        <strong>Carrito vacío</strong>
-                                                        <span>Busca un producto y presiona “Agregar”.</span>
-                                                    </div>
+                                                    <small class="ventas-payment-note">
+                                                        Cambio automático al ingresar el valor recibido.
+                                                    </small>
                                                 </div>
 
-                                                <div class="ventas-totals-box">
-                                                    <div>
-                                                        <span>Ítems</span>
-                                                        <strong id="resumenCantidadItems">0</strong>
-                                                    </div>
-
-                                                    <div>
-                                                        <span>Subtotal</span>
-                                                        <strong id="resumenSubtotal">$ 0</strong>
-                                                    </div>
-
-                                                    <div>
-                                                        <span>Descuento</span>
-                                                        <strong id="resumenDescuento">$ 0</strong>
-                                                    </div>
-
-                                                    <div>
-                                                        <span>IVA</span>
-                                                        <strong id="resumenIva">$ 0</strong>
-                                                    </div>
-
-                                                    <div class="ventas-total-main">
-                                                        <span>Total</span>
-                                                        <strong id="resumenTotal">$ 0</strong>
-                                                    </div>
-                                                </div>
-
-                                                <section class="ventas-payment-compact">
-                                                    <div class="ventas-payment-title">
-                                                        <div>
-                                                            <span class="ventas-kicker">Pago</span>
-                                                            <strong>Medio principal</strong>
-                                                        </div>
-
-                                                        <small>Pago mixto después</small>
-                                                    </div>
-
+                                                <div class="ventas-payment-fields">
                                                     <label class="ventas-field">
                                                         <span>Medio de pago</span>
+
                                                         <select id="medioPagoPrincipal" name="medio_pago_principal">
                                                             <% if (mediosPagoListado.length===0) { %>
                                                                 <option value="">Sin medios activos</option>
@@ -332,7 +228,8 @@
                                                                     <% mediosPagoListado.forEach((medio)=> { %>
                                                                         <option value="<%= medio.id_medio_pago %>"
                                                                             data-payment-type="<%= medio.tipo %>"
-                                                                            data-affects-cash="<%= medio.afecta_efectivo_caja %>">
+                                                                            data-affects-cash="<%= medio.afecta_efectivo_caja %>"
+                                                                            data-requires-reference="<%= medio.requiere_referencia || 0 %>">
                                                                             <%= medio.nombre %> · <%=
                                                                                     nombreTipoMedio(medio.tipo) %>
                                                                         </option>
@@ -341,79 +238,99 @@
                                                         </select>
                                                     </label>
 
-                                                    <div class="ventas-payment-grid">
-                                                        <label class="ventas-field">
-                                                            <span>Pagado</span>
-                                                            <input type="number" id="montoPagadoPrincipal" min="0"
-                                                                step="1" placeholder="0" disabled>
-                                                        </label>
+                                                    <label class="ventas-field">
+                                                        <span>Recibido</span>
+                                                        <input type="number" id="montoPagadoPrincipal" min="0" step="1"
+                                                            placeholder="0" disabled>
+                                                    </label>
 
-                                                        <label class="ventas-field">
-                                                            <span>Referencia</span>
-                                                            <input type="text" id="referenciaPagoPrincipal"
-                                                                placeholder="Opcional" disabled>
-                                                        </label>
-                                                    </div>
-
-                                                    <div class="ventas-payment-mini-summary">
-                                                        <div>
-                                                            <span>Pagado</span>
-                                                            <strong id="resumenPagado">$ 0</strong>
-                                                        </div>
-
-                                                        <div>
-                                                            <span>Saldo</span>
-                                                            <strong id="resumenSaldo">$ 0</strong>
-                                                        </div>
-
-                                                        <div>
-                                                            <span>Cambio</span>
-                                                            <strong id="resumenCambio">$ 0</strong>
-                                                        </div>
-                                                    </div>
-                                                </section>
-
-                                                <div class="ventas-action-row">
-                                                    <button type="button" class="btn-secondary" disabled>
-                                                        Limpiar
-                                                    </button>
-
-                                                    <button type="button" class="btn-secondary" disabled>
-                                                        Pendiente
-                                                    </button>
-
-                                                    <button type="button" class="btn-primary ventas-charge-button"
-                                                        <%=puedeVender ? '' : 'disabled' %>>
-                                                        Cobrar
-                                                    </button>
+                                                    <label class="ventas-field">
+                                                        <span>Referencia</span>
+                                                        <input type="text" id="referenciaPagoPrincipal"
+                                                            placeholder="Opcional" disabled>
+                                                    </label>
                                                 </div>
-                                            </section>
-                                        </aside>
+
+                                                <div class="ventas-payment-info">
+                                                    <div class="ventas-payment-info-card">
+                                                        <span>Cliente actual</span>
+                                                        <strong id="infoPagoCliente">
+                                                            <%= clienteActual.nombre || 'Consumidor final' %>
+                                                        </strong>
+                                                        <small id="infoPagoDocumento">
+                                                            <%= clienteActual.documento || '0000000000' %>
+                                                        </small>
+                                                    </div>
+
+                                                    <div class="ventas-payment-info-card">
+                                                        <span>Medio seleccionado</span>
+                                                        <strong id="infoPagoMedio">
+                                                            <%= mediosPagoListado.length ? (mediosPagoListado[0].nombre
+                                                                + ' · ' + nombreTipoMedio(mediosPagoListado[0].tipo))
+                                                                : 'Sin medio activo' %>
+                                                        </strong>
+                                                        <small>Pago principal</small>
+                                                    </div>
+
+                                                    <div class="ventas-payment-info-card">
+                                                        <span>Líneas en carrito</span>
+                                                        <strong id="infoPagoItems">0</strong>
+                                                        <small>Productos agregados</small>
+                                                    </div>
+
+                                                    <div class="ventas-payment-info-card">
+                                                        <span>Turno</span>
+                                                        <strong>
+                                                            <%= turnoAbierto ? ('#' + turnoAbierto.id_turno_caja)
+                                                                : 'Sin turno' %>
+                                                        </strong>
+                                                        <small>
+                                                            <%= turnoAbierto ? 'Caja abierta' : 'Caja cerrada' %>
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="ventas-totals-panel">
+                                                <div class="ventas-total-row">
+                                                    <span>Subtotal</span>
+                                                    <strong id="resumenSubtotal">$ 0</strong>
+                                                </div>
+
+                                                <div class="ventas-total-row">
+                                                    <span>IVA</span>
+                                                    <strong id="resumenIva">$ 0</strong>
+                                                </div>
+
+                                                <div class="ventas-total-row">
+                                                    <span>Recibido</span>
+                                                    <strong id="resumenPagado">$ 0</strong>
+                                                </div>
+
+                                                <div class="ventas-total-row">
+                                                    <span>Saldo</span>
+                                                    <strong id="resumenSaldo">$ 0</strong>
+                                                </div>
+
+                                                <div class="ventas-total-row">
+                                                    <span>Cambio</span>
+                                                    <strong id="resumenCambio">$ 0</strong>
+                                                </div>
+
+                                                <div class="ventas-total-row is-total">
+                                                    <span>Total</span>
+                                                    <strong id="resumenTotal">$ 0</strong>
+                                                </div>
+                                            </div>
+
+                                            <div class="ventas-hidden-metrics" hidden>
+                                                <span id="resumenCantidadItems">0</span>
+                                                <span id="resumenDescuento">$ 0</span>
+                                            </div>
+                                        </section>
                                     </section>
+
         </div>
 
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const fechaVenta = document.getElementById('fechaVenta');
-
-                if (!fechaVenta) {
-                    return;
-                }
-
-                const fechaHoy = fechaVenta.dataset.fechaHoy;
-
-                fechaVenta.addEventListener('change', function () {
-                    if (fechaVenta.value < fechaHoy) {
-                        fechaVenta.classList.add('is-invalid');
-                        fechaVenta.setCustomValidity('No puedes registrar ventas con fecha anterior desde el POS.');
-                        fechaVenta.reportValidity();
-                        fechaVenta.value = fechaHoy;
-                        return;
-                    }
-
-                    fechaVenta.classList.remove('is-invalid');
-                    fechaVenta.setCustomValidity('');
-                });
-            });
-        </script>
+        <script src="/js/ventas.js"></script>
 </section>
