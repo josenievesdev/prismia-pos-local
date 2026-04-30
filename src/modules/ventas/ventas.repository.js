@@ -734,6 +734,142 @@ function registrarVentaPOS(datos) {
     return transaccion();
 }
 
+function obtenerVentaTicketPorId(idVenta) {
+    return db
+        .prepare(`
+            SELECT
+                v.id_venta,
+                v.id_cliente,
+                v.id_usuario,
+                v.id_turno_caja,
+                v.numero_venta,
+                v.fecha_venta,
+                v.subtotal,
+                v.descuento_total,
+                v.impuesto_total,
+                v.total,
+                v.estado,
+                v.observaciones,
+                v.total_pagado,
+                v.saldo_pendiente,
+                v.cambio_entregado,
+                v.total_costo,
+                v.utilidad_bruta,
+                v.origen,
+                v.tipo_venta,
+                v.requiere_factura,
+                v.creado_en,
+
+                c.tipo_documento AS cliente_tipo_documento,
+                c.documento AS cliente_documento,
+                c.nombre AS cliente_nombre,
+                c.telefono AS cliente_telefono,
+                c.correo AS cliente_correo,
+                c.direccion AS cliente_direccion,
+                c.es_consumidor_final AS cliente_es_consumidor_final,
+
+                u.nombre AS cajero_nombre,
+
+                t.fecha_apertura AS turno_fecha_apertura,
+                t.estado AS turno_estado
+            FROM ventas v
+            LEFT JOIN clientes c
+                ON c.id_cliente = v.id_cliente
+            LEFT JOIN usuarios u
+                ON u.id_usuario = v.id_usuario
+            LEFT JOIN turnos_caja t
+                ON t.id_turno_caja = v.id_turno_caja
+            WHERE v.id_venta = ?
+            LIMIT 1
+        `)
+        .get(idVenta);
+}
+
+function listarDetalleVentaTicket(idVenta) {
+    return db
+        .prepare(`
+            SELECT
+                id_detalle_venta,
+                id_venta,
+                id_producto,
+                id_unidad_medida,
+                unidad_abreviatura,
+                codigo_interno,
+                codigo_barras,
+                nombre_producto,
+                cantidad,
+                precio_unitario,
+                precio_costo_unitario,
+                descuento_unitario,
+                porcentaje_iva,
+                impuesto_unitario,
+                impuesto_total,
+                subtotal,
+                total_linea,
+                costo_total,
+                utilidad_bruta
+            FROM detalle_ventas
+            WHERE id_venta = ?
+            ORDER BY id_detalle_venta ASC
+        `)
+        .all(idVenta);
+}
+
+function listarPagosVentaTicket(idVenta) {
+    return db
+        .prepare(`
+            SELECT
+                pv.id_pago_venta,
+                pv.id_venta,
+                pv.metodo_pago,
+                pv.monto,
+                pv.referencia,
+                pv.entidad,
+                pv.observaciones,
+                pv.creado_en,
+                pv.id_medio_pago,
+                pv.id_usuario,
+                pv.monto_recibido,
+                pv.cambio_entregado,
+                pv.estado,
+
+                mp.codigo AS medio_pago_codigo,
+                mp.nombre AS medio_pago_nombre,
+                mp.tipo AS medio_pago_tipo
+            FROM pagos_venta pv
+            LEFT JOIN medios_pago mp
+                ON mp.id_medio_pago = pv.id_medio_pago
+            WHERE pv.id_venta = ?
+              AND pv.estado = 'registrado'
+              AND pv.anulado_en IS NULL
+            ORDER BY pv.id_pago_venta ASC
+        `)
+        .all(idVenta);
+}
+
+function obtenerComprobanteVentaTicket(idVenta) {
+    return db
+        .prepare(`
+            SELECT
+                id_comprobante,
+                id_venta,
+                tipo_comprobante,
+                prefijo,
+                numero,
+                consecutivo,
+                estado,
+                fecha_emision,
+                ruta_pdf,
+                datos_fiscales_json,
+                creado_en
+            FROM comprobantes
+            WHERE id_venta = ?
+            ORDER BY id_comprobante DESC
+            LIMIT 1
+        `)
+        .get(idVenta);
+}
+
 module.exports = {
     obtenerTurnoAbierto,
     obtenerConfiguracionNegocio,
@@ -746,4 +882,9 @@ module.exports = {
     obtenerProductoParaVenta,
     listarVentasRecientes,
     registrarVentaPOS,
+
+    obtenerVentaTicketPorId,
+    listarDetalleVentaTicket,
+    listarPagosVentaTicket,
+    obtenerComprobanteVentaTicket,
 };

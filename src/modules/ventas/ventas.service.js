@@ -760,12 +760,221 @@ function registrarVentaPOS({ idUsuario, payload = {} } = {}) {
     }
 }
 
+function obtenerPrimerValor(objeto, claves, defecto = '') {
+    if (!objeto) {
+        return defecto;
+    }
+
+    for (const clave of claves) {
+        const valor = objeto[clave];
+
+        if (valor !== undefined && valor !== null && String(valor).trim() !== '') {
+            return String(valor).trim();
+        }
+    }
+
+    return defecto;
+}
+
+function obtenerPrimerValorPorClaveParcial(objeto, fragmentos, defecto = '') {
+    if (!objeto) {
+        return defecto;
+    }
+
+    const entradas = Object.entries(objeto);
+
+    for (const [clave, valor] of entradas) {
+        const claveNormalizada = String(clave || '').toLowerCase();
+
+        const coincide = fragmentos.some((fragmento) => {
+            return claveNormalizada.includes(String(fragmento).toLowerCase());
+        });
+
+        if (coincide && valor !== undefined && valor !== null && String(valor).trim() !== '') {
+            return String(valor).trim();
+        }
+    }
+
+    return defecto;
+}
+
+function prepararConfiguracionTicket(configuracion) {
+    return {
+        nombre_comercio: obtenerPrimerValor(
+            configuracion,
+            [
+                'nombre_negocio',
+                'nombre_comercio',
+                'nombre_empresa',
+                'nombre_establecimiento',
+                'nombre_comercial',
+                'razon_social',
+                'nombre',
+            ],
+            'Comercio sin nombre'
+        ),
+        razon_social: obtenerPrimerValor(
+            configuracion,
+            ['razon_social', 'nombre_legal', 'nombre_negocio'],
+            ''
+        ),
+        tipo_documento: obtenerPrimerValor(
+            configuracion,
+            ['tipo_documento'],
+            'NIT'
+        ),
+        nit: obtenerPrimerValor(
+            configuracion,
+            ['numero_documento', 'nit', 'documento', 'identificacion'],
+            ''
+        ),
+        telefono: obtenerPrimerValor(
+            configuracion,
+            ['telefono', 'celular', 'telefono_contacto'],
+            ''
+        ),
+        direccion: obtenerPrimerValor(
+            configuracion,
+            ['direccion', 'direccion_negocio', 'direccion_comercio'],
+            ''
+        ),
+        correo: obtenerPrimerValor(
+            configuracion,
+            ['correo', 'email', 'correo_contacto'],
+            ''
+        ),
+        ciudad: obtenerPrimerValor(
+            configuracion,
+            ['ciudad', 'municipio'],
+            ''
+        ),
+        mensaje_ticket: obtenerPrimerValor(
+            configuracion,
+            ['mensaje_ticket', 'mensaje_factura', 'mensaje_recibo'],
+            'Gracias por su compra.'
+        ),
+        software: 'Prismia POS Local',
+    };
+}
+
+function prepararVentaTicket(venta) {
+    const clienteNombre = limpiarTexto(venta.cliente_nombre) || 'Consumidor final';
+    const clienteDocumento = limpiarTexto(venta.cliente_documento) || '0000000000';
+    const clienteTipoDocumento = limpiarTexto(venta.cliente_tipo_documento) || 'CF';
+
+    const cajeroNombre =
+        limpiarTexto(venta.cajero_nombre)
+        || limpiarTexto(venta.usuario_nombre)
+        || 'Usuario';
+
+    const estadoVenta = limpiarTexto(venta.estado) || 'pagada';
+
+    return {
+        ...venta,
+        numero_venta: limpiarTexto(venta.numero_venta) || 'FV-SIN-NUMERO',
+
+        subtotal: normalizarEntero(venta.subtotal),
+        descuento_total: normalizarEntero(venta.descuento_total),
+        impuesto_total: normalizarEntero(venta.impuesto_total),
+        total: normalizarEntero(venta.total),
+        total_pagado: normalizarEntero(venta.total_pagado),
+        saldo_pendiente: normalizarEntero(venta.saldo_pendiente),
+        cambio_entregado: normalizarEntero(venta.cambio_entregado),
+        total_costo: normalizarEntero(venta.total_costo),
+        utilidad_bruta: normalizarEntero(venta.utilidad_bruta),
+
+        cliente_nombre: clienteNombre,
+        cliente_documento: clienteDocumento,
+        cliente_tipo_documento: clienteTipoDocumento,
+
+        cajero_nombre: cajeroNombre,
+        estado: estadoVenta,
+    };
+}
+
+function prepararDetalleTicket(detalle) {
+    return detalle.map((item) => ({
+        ...item,
+        cantidad: normalizarNumero(item.cantidad),
+        precio_unitario: normalizarEntero(item.precio_unitario),
+        descuento_unitario: normalizarEntero(item.descuento_unitario),
+        porcentaje_iva: normalizarEntero(item.porcentaje_iva),
+        impuesto_unitario: normalizarEntero(item.impuesto_unitario),
+        impuesto_total: normalizarEntero(item.impuesto_total),
+        subtotal: normalizarEntero(item.subtotal),
+        total_linea: normalizarEntero(item.total_linea),
+        costo_total: normalizarEntero(item.costo_total),
+        utilidad_bruta: normalizarEntero(item.utilidad_bruta),
+        unidad_abreviatura: item.unidad_abreviatura || 'und',
+    }));
+}
+
+function prepararPagosTicket(pagos) {
+    return pagos.map((pago) => ({
+        ...pago,
+        monto: normalizarEntero(pago.monto),
+        monto_recibido: normalizarEntero(pago.monto_recibido),
+        cambio_entregado: normalizarEntero(pago.cambio_entregado),
+        metodo_pago: pago.metodo_pago || 'efectivo',
+        medio_pago_nombre: pago.medio_pago_nombre || pago.entidad || pago.metodo_pago || 'Pago',
+        medio_pago_tipo: pago.medio_pago_tipo || pago.metodo_pago || 'otro',
+        referencia: pago.referencia || '',
+    }));
+}
+
+function obtenerTicketVenta(idVenta) {
+    const id = Number(idVenta);
+
+    if (!Number.isInteger(id) || id <= 0) {
+        return {
+            ok: false,
+            mensaje: 'La venta solicitada no es válida.',
+        };
+    }
+
+    const ventaRaw = ventasRepository.obtenerVentaTicketPorId(id);
+
+    if (!ventaRaw) {
+        return {
+            ok: false,
+            mensaje: 'No se encontró la venta solicitada.',
+        };
+    }
+
+    const detalleRaw = ventasRepository.listarDetalleVentaTicket(id);
+    const pagosRaw = ventasRepository.listarPagosVentaTicket(id);
+    const comprobante = ventasRepository.obtenerComprobanteVentaTicket(id);
+    const configuracion = ventasRepository.obtenerConfiguracionNegocio();
+
+    const venta = prepararVentaTicket(ventaRaw);
+    const detalle = prepararDetalleTicket(detalleRaw);
+    const pagos = prepararPagosTicket(pagosRaw);
+
+    return {
+        ok: true,
+        ticket: {
+            comercio: prepararConfiguracionTicket(configuracion),
+            venta,
+            detalle,
+            pagos,
+            comprobante: comprobante || {
+                numero: venta.numero_venta || 'FV-SIN-NUMERO',
+                prefijo: 'FV',
+                consecutivo: null,
+                estado: venta.estado || 'pagada',
+                fecha_emision: venta.fecha_venta,
+            },
+        },
+    };
+}
+
 module.exports = {
     obtenerEstadoPOS,
     buscarProductos,
     buscarClientes,
     obtenerProductoParaVenta,
     registrarVentaPOS,
+    obtenerTicketVenta,
     obtenerCarritoInicial,
     prepararProductoParaVenta,
     agruparMediosPago,

@@ -89,10 +89,25 @@ function registrarVenta(req, res) {
     return res.status(201).json(resultado);
 }
 
+function imprimirTicket(req, res) {
+    const resultado = ventasService.obtenerTicketVenta(req.params.id);
+
+    if (!resultado.ok) {
+        return res.status(404).send(resultado.mensaje);
+    }
+
+    return res.render('ventas/ticket', {
+        layout: false,
+        titulo: `Ticket ${resultado.ticket.comprobante.numero}`,
+        ticket: resultado.ticket,
+    });
+}
+
 module.exports = {
     mostrarPOS,
     buscarProductos,
     buscarClientes,
     obtenerProducto,
     registrarVenta,
+    imprimirTicket,
 };
