@@ -720,6 +720,10 @@
         if (ui.montoPagadoPrincipal) {
             ui.montoPagadoPrincipal.addEventListener('input', function () {
                 estado.usuarioEditoPago = true;
+
+                ui.montoPagadoPrincipal.classList.remove('is-invalid');
+                ui.montoPagadoPrincipal.setCustomValidity('');
+
                 recalcularTodo(ui, estado);
             });
 
@@ -734,8 +738,24 @@
         if (ui.medioPagoPrincipal) {
             ui.medioPagoPrincipal.addEventListener('change', function () {
                 const hayCarrito = estado.carrito.length > 0 && estado.puedeVender;
+
+                ui.medioPagoPrincipal.classList.remove('is-invalid');
+                ui.medioPagoPrincipal.setCustomValidity('');
+
+                if (ui.referenciaPagoPrincipal) {
+                    ui.referenciaPagoPrincipal.classList.remove('is-invalid');
+                    ui.referenciaPagoPrincipal.setCustomValidity('');
+                }
+
                 actualizarReferenciaPago(ui, hayCarrito);
                 actualizarInfoPago(ui, estado);
+            });
+        }
+
+        if (ui.referenciaPagoPrincipal) {
+            ui.referenciaPagoPrincipal.addEventListener('input', function () {
+                ui.referenciaPagoPrincipal.classList.remove('is-invalid');
+                ui.referenciaPagoPrincipal.setCustomValidity('');
             });
         }
 
@@ -767,6 +787,130 @@
         ui.referenciaPagoPrincipal.disabled = !(requiereReferencia || tipo === 'transferencia' || tipo === 'tarjeta');
     }
 
+    function obtenerOpcionMedioPago(ui) {
+        if (!ui.medioPagoPrincipal) {
+            return null;
+        }
+
+        return ui.medioPagoPrincipal.selectedOptions[0] || null;
+    }
+
+    function limpiarEstadoValidacionPago(ui) {
+        [
+            ui.montoPagadoPrincipal,
+            ui.medioPagoPrincipal,
+            ui.referenciaPagoPrincipal,
+        ].forEach(function (campo) {
+            if (campo) {
+                campo.classList.remove('is-invalid');
+                campo.setCustomValidity('');
+            }
+        });
+    }
+
+    function marcarCampoInvalido(campo, mensaje) {
+        if (!campo) {
+            return;
+        }
+
+        campo.classList.add('is-invalid');
+        campo.setCustomValidity(mensaje);
+        campo.reportValidity();
+        campo.focus();
+    }
+
+    function validarVentaAntesDeCobrar(ui, estado, resumen) {
+        limpiarEstadoValidacionPago(ui);
+
+        if (!estado.puedeVender) {
+            return {
+                ok: false,
+                mensaje: 'Debes abrir caja antes de cobrar.',
+            };
+        }
+
+        if (estado.carrito.length === 0) {
+            return {
+                ok: false,
+                mensaje: 'Agrega productos antes de cobrar.',
+            };
+        }
+
+        if (!resumen || resumen.total <= 0) {
+            return {
+                ok: false,
+                mensaje: 'El total de la venta debe ser mayor a cero.',
+            };
+        }
+
+        const opcionMedioPago = obtenerOpcionMedioPago(ui);
+
+        if (!opcionMedioPago || !ui.medioPagoPrincipal.value) {
+            return {
+                ok: false,
+                mensaje: 'Selecciona un medio de pago válido.',
+                campo: ui.medioPagoPrincipal,
+            };
+        }
+
+        const textoMonto = ui.montoPagadoPrincipal
+            ? String(ui.montoPagadoPrincipal.value || '').trim()
+            : '';
+
+        if (!textoMonto) {
+            return {
+                ok: false,
+                mensaje: 'Ingresa el monto recibido antes de cobrar.',
+                campo: ui.montoPagadoPrincipal,
+            };
+        }
+
+        const montoRecibido = obtenerMontoPagado(ui);
+
+        if (!Number.isFinite(montoRecibido) || montoRecibido <= 0) {
+            return {
+                ok: false,
+                mensaje: 'El monto recibido debe ser mayor a cero.',
+                campo: ui.montoPagadoPrincipal,
+            };
+        }
+
+        if (montoRecibido < resumen.total) {
+            return {
+                ok: false,
+                mensaje: `El monto recibido es menor que el total. Faltan ${formatearPesos(resumen.total - montoRecibido)}.`,
+                campo: ui.montoPagadoPrincipal,
+            };
+        }
+
+        const afectaEfectivo = opcionMedioPago.dataset.affectsCash === '1';
+
+        if (!afectaEfectivo && montoRecibido > resumen.total) {
+            return {
+                ok: false,
+                mensaje: 'El cambio solo aplica para pagos en efectivo. En medios electrónicos registra el valor exacto.',
+                campo: ui.montoPagadoPrincipal,
+            };
+        }
+
+        const requiereReferencia = opcionMedioPago.dataset.requiresReference === '1';
+        const referencia = ui.referenciaPagoPrincipal
+            ? ui.referenciaPagoPrincipal.value.trim()
+            : '';
+
+        if (requiereReferencia && !referencia) {
+            return {
+                ok: false,
+                mensaje: `El medio de pago "${opcionMedioPago.textContent.trim()}" requiere referencia.`,
+                campo: ui.referenciaPagoPrincipal,
+            };
+        }
+
+        return {
+            ok: true,
+        };
+    }
+
     function inicializarAcciones(ui, estado) {
         if (ui.botonLimpiar) {
             ui.botonLimpiar.addEventListener('click', function () {
@@ -787,20 +931,15 @@
                 }
 
                 const resumen = calcularResumen(estado.carrito);
-                const pagado = obtenerMontoPagado(ui);
+                const validacion = validarVentaAntesDeCobrar(ui, estado, resumen);
 
-                if (!estado.puedeVender) {
-                    mostrarAviso('Debes abrir caja antes de cobrar.', 'error');
-                    return;
-                }
+                if (!validacion.ok) {
+                    mostrarAviso(validacion.mensaje, 'error');
 
-                if (estado.carrito.length === 0) {
-                    mostrarAviso('Agrega productos antes de cobrar.', 'error');
-                    return;
-                }
+                    if (validacion.campo) {
+                        marcarCampoInvalido(validacion.campo, validacion.mensaje);
+                    }
 
-                if (pagado < resumen.total) {
-                    mostrarAviso('El monto recibido no cubre el total.', 'error');
                     return;
                 }
 
@@ -1024,8 +1163,11 @@
 
     function actualizarBotones(ui, estado, resumen) {
         const hayCarrito = estado.carrito.length > 0;
-        const pagado = obtenerMontoPagado(ui);
-        const puedeCobrar = estado.puedeVender && hayCarrito && pagado >= resumen.total && resumen.total > 0;
+        const puedeIntentarCobrar =
+            estado.puedeVender
+            && hayCarrito
+            && resumen.total > 0
+            && !estado.enviandoVenta;
 
         if (ui.botonLimpiar) {
             ui.botonLimpiar.disabled = !hayCarrito;
@@ -1036,7 +1178,7 @@
         }
 
         if (ui.botonCobrar) {
-            ui.botonCobrar.disabled = !puedeCobrar;
+            ui.botonCobrar.disabled = !puedeIntentarCobrar;
         }
     }
 
@@ -1107,6 +1249,6 @@
 
         aviso._timeout = window.setTimeout(function () {
             aviso.classList.remove('is-visible');
-        }, 2600);
+        }, tipo === 'error' ? 4600 : 3000);
     }
 })();
