@@ -19,6 +19,7 @@ const inventarioRoutes = require('./modules/inventario/inventario.routes');
 const cajaRoutes = require('./modules/caja/caja.routes');
 const ventasRoutes = require('./modules/ventas/ventas.routes');
 const clientesRoutes = require('./modules/clientes/clientes.routes');
+const cotizacionesRoutes = require('./modules/cotizaciones/cotizaciones.routes');
 const catalogosRoutes = require('./modules/catalogos/catalogos.routes');
 
 const app = express();
@@ -104,6 +105,7 @@ app.use('/inventario', inventarioRoutes);
 app.use('/caja', cajaRoutes);
 app.use('/ventas', ventasRoutes);
 app.use('/clientes', clientesRoutes);
+app.use('/cotizaciones', cotizacionesRoutes);
 app.use('/catalogos', catalogosRoutes);
 
 /**

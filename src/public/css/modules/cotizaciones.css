@@ -1,0 +1,1060 @@
+/* =========================================================
+   Módulo Cotizaciones · Prismia POS Local
+   ========================================================= */
+
+.cotizaciones-page {
+    gap: 16px;
+}
+
+.cotizaciones-filter-card,
+.cotizaciones-table-card {
+    display: grid;
+    gap: 16px;
+}
+
+.cotizaciones-filter-form {
+    display: grid;
+    grid-template-columns: minmax(260px, 1.5fr) repeat(4, minmax(145px, 1fr)) auto;
+    gap: 12px;
+    align-items: end;
+}
+
+.cotizaciones-filter-search {
+    min-width: 0;
+}
+
+.cotizaciones-filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cotizaciones-section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+    padding-bottom: 14px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.cotizaciones-section-head h3 {
+    margin: 3px 0 5px;
+    color: var(--color-text);
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+}
+
+.cotizaciones-section-head p {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.45;
+}
+
+.cotizaciones-section-eyebrow {
+    display: inline-flex;
+    margin-bottom: 2px;
+    color: var(--color-primary-dark);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.cotizaciones-section-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-width: max-content;
+    padding: 6px 10px;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    border-radius: 999px;
+    background: var(--color-surface-soft);
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.cotizaciones-section-count strong {
+    color: var(--color-text);
+    font-weight: 900;
+}
+
+.cotizaciones-table-wrapper {
+    overflow-x: visible;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+}
+
+.cotizaciones-table {
+    margin: 0;
+    width: 100%;
+    table-layout: auto;
+}
+
+.cotizaciones-table thead th {
+    background: var(--color-surface);
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.cotizaciones-table td {
+    vertical-align: middle;
+    padding-top: 14px;
+    padding-bottom: 14px;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.55;
+}
+
+.cotizaciones-main-cell,
+.cotizaciones-stack-cell {
+    display: grid;
+    gap: 2px;
+}
+
+.cotizaciones-main-cell strong,
+.cotizaciones-stack-cell strong {
+    color: var(--color-text);
+    font-size: 13px;
+    font-weight: 650;
+    letter-spacing: 0.01em;
+}
+
+.cotizaciones-main-cell span,
+.cotizaciones-stack-cell span {
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.55;
+    letter-spacing: 0.01em;
+}
+
+.cotizaciones-profit-positive {
+    color: #166534;
+    font-weight: 650;
+}
+
+.cotizaciones-profit-negative {
+    color: #b91c1c;
+    font-weight: 650;
+}
+
+.cotizaciones-values-cell {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(110px, 1fr));
+    gap: 8px 14px;
+    min-width: 0;
+}
+
+.cotizaciones-values-cell div {
+    display: grid;
+    gap: 2px;
+}
+
+.cotizaciones-values-cell span {
+    color: var(--color-muted);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.cotizaciones-values-cell strong {
+    color: var(--color-text);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+.cotizaciones-values-cell .cotizaciones-total-value {
+    font-size: 13px;
+    font-weight: 750;
+}
+
+.cotizaciones-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 82px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.cotizaciones-status.is-draft {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.cotizaciones-status.is-issued {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.cotizaciones-status.is-accepted {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.cotizaciones-status.is-rejected,
+.cotizaciones-status.is-cancelled {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.cotizaciones-status.is-expired {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.cotizaciones-status.is-converted {
+    background: #ede9fe;
+    color: #6d28d9;
+}
+
+.cotizaciones-status.is-muted {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.cotizaciones-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.cotizaciones-muted-action {
+    display: inline-flex;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--color-surface-soft);
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.cotizaciones-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    padding-top: 14px;
+    color: var(--color-muted);
+    font-size: 12px;
+}
+
+.cotizaciones-pagination div {
+    display: flex;
+    gap: 8px;
+}
+
+.cotizaciones-pagination .is-disabled {
+    opacity: 0.45;
+    pointer-events: none;
+}
+
+@media (max-width: 1180px) {
+    .cotizaciones-filter-form {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .cotizaciones-filter-search,
+    .cotizaciones-filter-actions {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 720px) {
+    .cotizaciones-filter-form {
+        grid-template-columns: 1fr;
+    }
+
+    .cotizaciones-section-head,
+    .cotizaciones-pagination {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .cotizaciones-filter-actions,
+    .cotizaciones-pagination div {
+        width: 100%;
+    }
+
+    .cotizaciones-filter-actions .btn-primary,
+    .cotizaciones-filter-actions .btn-secondary,
+    .cotizaciones-pagination .btn-secondary {
+        width: 100%;
+    }
+}
+
+/* ===== Detalle de cotización ===== */
+
+.cotizaciones-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.cotizaciones-header-actions button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.cotizaciones-detail-summary,
+.cotizaciones-detail-card {
+    display: grid;
+    gap: 16px;
+}
+
+.cotizaciones-detail-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+}
+
+.cotizaciones-detail-main h3 {
+    margin: 3px 0 5px;
+    color: var(--color-text);
+    font-size: 20px;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+}
+
+.cotizaciones-detail-main p {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.cotizaciones-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.cotizaciones-detail-box {
+    display: grid;
+    gap: 4px;
+    padding: 13px 14px;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    border-radius: 14px;
+    background: var(--color-surface-soft);
+}
+
+.cotizaciones-detail-box span {
+    color: var(--color-muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.cotizaciones-detail-box strong {
+    color: var(--color-text);
+    font-size: 14px;
+    font-weight: 650;
+    line-height: 1.35;
+}
+
+.cotizaciones-detail-box p {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+.cotizaciones-detail-table-wrapper {
+    overflow-x: visible;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+}
+
+.cotizaciones-detail-table {
+    width: 100%;
+    table-layout: auto;
+    margin: 0;
+}
+
+.cotizaciones-detail-table td {
+    padding-top: 14px;
+    padding-bottom: 14px;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.55;
+    vertical-align: middle;
+}
+
+.cotizaciones-stack-cell.is-right {
+    justify-items: end;
+}
+
+.cotizaciones-detail-bottom {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.cotizaciones-notes-card {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+}
+
+.cotizaciones-notes-card h3 {
+    margin: 0;
+    color: var(--color-text);
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.cotizaciones-notes-card p {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 13px;
+    line-height: 1.6;
+    white-space: pre-line;
+}
+
+.cotizaciones-muted-text {
+    color: var(--color-muted);
+    font-style: italic;
+}
+
+.cotizaciones-totals-card {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.cotizaciones-totals-card div {
+    display: grid;
+    gap: 4px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: var(--color-surface-soft);
+    border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.cotizaciones-totals-card span {
+    color: var(--color-muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.cotizaciones-totals-card strong {
+    color: var(--color-text);
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.cotizaciones-link-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 30px;
+    padding: 0 11px;
+    border-radius: 999px;
+    border: 1px solid rgba(36, 79, 143, 0.22);
+    background: #ffffff;
+    color: var(--color-primary-dark);
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.cotizaciones-link-action:hover {
+    background: rgba(36, 79, 143, 0.06);
+    border-color: rgba(36, 79, 143, 0.36);
+}
+
+@media (max-width: 980px) {
+
+    .cotizaciones-detail-grid,
+    .cotizaciones-totals-card {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .cotizaciones-detail-bottom {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 720px) {
+    .cotizaciones-header-actions {
+        width: 100%;
+    }
+
+    .cotizaciones-header-actions .btn-secondary,
+    .cotizaciones-header-actions .btn-primary,
+    .cotizaciones-header-actions button {
+        width: 100%;
+    }
+
+    .cotizaciones-detail-main {
+        flex-direction: column;
+    }
+
+    .cotizaciones-detail-grid,
+    .cotizaciones-totals-card {
+        grid-template-columns: 1fr;
+    }
+
+    .cotizaciones-detail-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .cotizaciones-detail-table {
+        min-width: 760px;
+    }
+}
+
+/* ===== Formulario nueva cotización ===== */
+
+.cotizaciones-form-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 330px;
+    gap: 16px;
+    align-items: start;
+}
+
+.cotizaciones-form-main,
+.cotizaciones-form-side {
+    display: grid;
+    gap: 16px;
+    min-width: 0;
+}
+
+.cotizaciones-form-side {
+    position: sticky;
+    top: 18px;
+}
+
+.cotizaciones-form-card,
+.cotizaciones-summary-card {
+    display: grid;
+    gap: 16px;
+}
+
+.cotizaciones-search-block {
+    display: grid;
+    gap: 10px;
+    position: relative;
+}
+
+.cotizaciones-search-results {
+    display: grid;
+    gap: 6px;
+    max-height: 260px;
+    overflow-y: auto;
+    padding: 8px;
+    border: 1px solid var(--color-border);
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.10);
+}
+
+.cotizaciones-search-results[hidden] {
+    display: none !important;
+}
+
+.cotizaciones-result-item,
+.cotizaciones-product-result-item {
+    width: 100%;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: 12px;
+    background: var(--color-surface-soft);
+    cursor: pointer;
+    text-align: left;
+}
+
+.cotizaciones-result-item {
+    display: grid;
+    gap: 3px;
+    padding: 10px 12px;
+}
+
+.cotizaciones-product-result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 12px;
+}
+
+.cotizaciones-result-item:hover,
+.cotizaciones-product-result-item:hover {
+    border-color: rgba(36, 79, 143, 0.30);
+    background: rgba(36, 79, 143, 0.05);
+}
+
+.cotizaciones-result-item strong,
+.cotizaciones-product-result-item strong {
+    color: var(--color-text);
+    font-size: 13px;
+    font-weight: 650;
+    line-height: 1.35;
+}
+
+.cotizaciones-result-item span,
+.cotizaciones-product-result-item span {
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.45;
+}
+
+.cotizaciones-search-empty {
+    padding: 10px 12px;
+    color: var(--color-muted);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.cotizaciones-selected-box {
+    display: grid;
+    gap: 4px;
+    padding: 12px 14px;
+    border: 1px solid rgba(22, 101, 52, 0.18);
+    border-radius: 14px;
+    background: #f0fdf4;
+}
+
+.cotizaciones-selected-box span {
+    color: #166534;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.cotizaciones-selected-box strong {
+    color: #14532d;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.cotizaciones-selected-box p {
+    margin: 0;
+    color: #166534;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.cotizaciones-link-button {
+    justify-self: start;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--color-primary-dark);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.cotizaciones-items-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    padding-top: 4px;
+}
+
+.cotizaciones-items-head h3 {
+    margin: 3px 0 0;
+    color: var(--color-text);
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.cotizaciones-items-list {
+    display: grid;
+    gap: 10px;
+}
+
+.cotizaciones-empty-items {
+    padding: 20px;
+}
+
+.cotizaciones-item-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 130px 130px auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    border-radius: 14px;
+    background: #ffffff;
+}
+
+.cotizaciones-item-info {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+}
+
+.cotizaciones-item-info strong {
+    color: var(--color-text);
+    font-size: 13px;
+    font-weight: 650;
+    line-height: 1.35;
+}
+
+.cotizaciones-item-info span {
+    color: var(--color-muted);
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+.cotizaciones-item-qty {
+    display: grid;
+    gap: 4px;
+}
+
+.cotizaciones-item-qty span,
+.cotizaciones-item-total span {
+    color: var(--color-muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.cotizaciones-item-qty input {
+    width: 100%;
+    min-height: 36px;
+    padding: 0 9px;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    color: var(--color-text);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.cotizaciones-item-total {
+    display: grid;
+    gap: 4px;
+    justify-items: end;
+}
+
+.cotizaciones-item-total strong {
+    color: var(--color-text);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.cotizaciones-item-remove {
+    min-height: 34px;
+    padding: 0 10px;
+    border: 1px solid rgba(185, 28, 28, 0.18);
+    border-radius: 999px;
+    background: #fff7f7;
+    color: #991b1b;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.cotizaciones-form-grid {
+    display: grid;
+    grid-template-columns: 180px minmax(0, 1fr);
+    gap: 12px;
+}
+
+.cotizaciones-form-wide {
+    grid-column: 1 / -1;
+}
+
+.cotizaciones-form-grid textarea {
+    width: 100%;
+    resize: vertical;
+    min-height: 82px;
+}
+
+.cotizaciones-summary-card {
+    align-content: start;
+}
+
+.cotizaciones-summary-card h3 {
+    margin: 0;
+    color: var(--color-text);
+    font-size: 20px;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+}
+
+.cotizaciones-summary-client {
+    display: grid;
+    gap: 4px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: var(--color-surface-soft);
+    border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.cotizaciones-summary-client span,
+.cotizaciones-summary-values span {
+    color: var(--color-muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.cotizaciones-summary-client strong {
+    color: var(--color-text);
+    font-size: 13px;
+    font-weight: 650;
+}
+
+.cotizaciones-summary-values {
+    display: grid;
+    gap: 8px;
+}
+
+.cotizaciones-summary-values div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.cotizaciones-summary-values strong {
+    color: var(--color-text);
+    font-size: 13px;
+    font-weight: 650;
+}
+
+.cotizaciones-form-alert {
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #fef2f2;
+    color: #991b1b;
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.45;
+}
+
+.cotizaciones-submit-btn {
+    width: 100%;
+    justify-content: center;
+}
+
+@media (max-width: 1100px) {
+    .cotizaciones-form-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .cotizaciones-form-side {
+        position: static;
+    }
+}
+
+@media (max-width: 780px) {
+    .cotizaciones-item-card {
+        grid-template-columns: 1fr;
+    }
+
+    .cotizaciones-item-total {
+        justify-items: start;
+    }
+
+    .cotizaciones-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .cotizaciones-product-result-item {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+/* ===== Cotización estilo POS ===== */
+
+.cotizaciones-pos-page {
+    gap: 0;
+}
+
+.cotizaciones-pos-shell {
+    gap: 14px;
+}
+
+.cotizaciones-status-chip {
+    background: rgba(36, 79, 143, 0.08);
+    color: var(--color-primary-dark);
+}
+
+.cotizaciones-selected-box-pos {
+    margin-top: 8px;
+    padding: 9px 10px;
+}
+
+.cotizaciones-selected-box-pos strong {
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.cotizaciones-selected-box-pos p {
+    font-size: 11px;
+}
+
+.cotizaciones-product-results,
+.cotizaciones-search-results {
+    z-index: 40;
+}
+
+.cotizaciones-product-result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    padding: 11px 12px;
+    border: 0;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+    background: #ffffff;
+    cursor: pointer;
+    text-align: left;
+}
+
+.cotizaciones-product-result-item:hover {
+    background: rgba(36, 79, 143, 0.06);
+}
+
+.cotizaciones-product-result-item div {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.cotizaciones-product-result-item strong {
+    color: var(--color-text);
+    font-size: 13px;
+    font-weight: 650;
+}
+
+.cotizaciones-product-result-item span {
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 400;
+}
+
+.cotizaciones-result-item {
+    display: grid;
+    gap: 2px;
+    width: 100%;
+    padding: 10px 12px;
+    border: 0;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+    background: #ffffff;
+    cursor: pointer;
+    text-align: left;
+}
+
+.cotizaciones-result-item:hover {
+    background: rgba(36, 79, 143, 0.06);
+}
+
+.cotizaciones-result-item strong {
+    color: var(--color-text);
+    font-size: 13px;
+    font-weight: 650;
+}
+
+.cotizaciones-result-item span {
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 400;
+}
+
+.cotizaciones-sale-card {
+    min-height: 360px;
+}
+
+.cotizaciones-invoice-table {
+    min-width: 900px;
+}
+
+.cotizaciones-table-qty {
+    width: 82px;
+    min-height: 32px;
+    padding: 0 8px;
+    border: 1px solid var(--color-border);
+    border-radius: 9px;
+    background: #ffffff;
+    color: var(--color-text);
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.cotizaciones-sale-footer {
+    grid-template-columns: minmax(0, 1fr) 310px;
+}
+
+.cotizaciones-conditions-strip {
+    min-width: 0;
+}
+
+.cotizaciones-commercial-fields {
+    display: grid;
+    grid-template-columns: 120px minmax(0, 1fr);
+    gap: 10px;
+}
+
+.cotizaciones-commercial-wide {
+    grid-column: 1 / -1;
+}
+
+.cotizaciones-commercial-fields textarea {
+    width: 100%;
+    min-height: 58px;
+    resize: vertical;
+}
+
+.cotizaciones-form-alert {
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #fef2f2;
+    color: #991b1b;
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.45;
+}
+
+@media (max-width: 1120px) {
+    .cotizaciones-sale-footer {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 760px) {
+    .cotizaciones-commercial-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .cotizaciones-product-result-item {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

@@ -1,0 +1,272 @@
+<section class="module-page cotizaciones-page cotizaciones-detail-page">
+    <% const items=Array.isArray(detalle) ? detalle : {}; function dinero(valor) { return new Intl.NumberFormat('es-CO',
+        { style: 'currency' , currency: 'COP' , maximumFractionDigits: 0, }).format(Number(valor || 0)); } function
+        cantidad(valor) { const numero=Number(valor || 0); return new Intl.NumberFormat('es-CO', {
+        minimumFractionDigits: Number.isInteger(numero) ? 0 : 2, maximumFractionDigits: 3, }).format(numero); } function
+        fecha(valor) { if (!valor) return 'Sin fecha' ; return String(valor).slice(0, 10); } function textoEstado(valor)
+        { const estados={ borrador: 'Borrador' , emitida: 'Emitida' , aceptada: 'Aceptada' , rechazada: 'Rechazada' ,
+        vencida: 'Vencida' , convertida: 'Convertida' , anulada: 'Anulada' , }; return estados[valor] || valor
+        || 'Sin estado' ; } function claseEstado(valor) { const clases={ borrador: 'is-draft' , emitida: 'is-issued' ,
+        aceptada: 'is-accepted' , rechazada: 'is-rejected' , vencida: 'is-expired' , convertida: 'is-converted' ,
+        anulada: 'is-cancelled' , }; return clases[valor] || 'is-muted' ; } %>
+
+        <div class="module-header module-header-actions">
+            <div>
+                <p class="eyebrow">Detalle comercial</p>
+                <h2>
+                    <%= cotizacion.numero_cotizacion %>
+                </h2>
+                <p>
+                    Consulta productos, cliente, valores y condiciones de la cotización.
+                </p>
+            </div>
+
+            <div class="cotizaciones-header-actions">
+                <a href="/cotizaciones" class="btn-secondary">
+                    Volver
+                </a>
+
+                <button type="button" class="btn-secondary" disabled>
+                    Imprimir luego
+                </button>
+
+                <button type="button" class="btn-primary" disabled>
+                    Convertir luego
+                </button>
+            </div>
+        </div>
+
+        <% if (mensajeExito) { %>
+            <div class="alert alert-success">
+                <%= mensajeExito %>
+            </div>
+            <% } %>
+
+                <% if (error) { %>
+                    <div class="alert alert-error">
+                        <%= error %>
+                    </div>
+                    <% } %>
+
+                        <article class="module-card cotizaciones-detail-summary">
+                            <div class="cotizaciones-detail-main">
+                                <div>
+                                    <span class="cotizaciones-section-eyebrow">Cotización</span>
+                                    <h3>
+                                        <%= cotizacion.numero_cotizacion %>
+                                    </h3>
+                                    <p>
+                                        Emitida por <strong>
+                                            <%= cotizacion.usuario_nombre || 'Usuario no disponible' %>
+                                        </strong>
+                                    </p>
+                                </div>
+
+                                <span class="cotizaciones-status <%= claseEstado(cotizacion.estado) %>">
+                                    <%= textoEstado(cotizacion.estado) %>
+                                </span>
+                            </div>
+
+                            <div class="cotizaciones-detail-grid">
+                                <div class="cotizaciones-detail-box">
+                                    <span>Cliente</span>
+                                    <strong>
+                                        <%= cotizacion.cliente_nombre_mostrar || 'Sin cliente' %>
+                                    </strong>
+                                    <p>
+                                        <%= cotizacion.cliente_etiqueta || 'Sin documento' %>
+                                    </p>
+                                </div>
+
+                                <div class="cotizaciones-detail-box">
+                                    <span>Fecha emisión</span>
+                                    <strong>
+                                        <%= fecha(cotizacion.fecha_cotizacion) %>
+                                    </strong>
+                                    <p>Vence: <%= fecha(cotizacion.fecha_vencimiento) %>
+                                    </p>
+                                </div>
+
+                                <div class="cotizaciones-detail-box">
+                                    <span>Total</span>
+                                    <strong>
+                                        <%= dinero(cotizacion.total) %>
+                                    </strong>
+                                    <p>Subtotal: <%= dinero(cotizacion.subtotal) %>
+                                    </p>
+                                </div>
+
+                                <div class="cotizaciones-detail-box">
+                                    <span>Utilidad bruta</span>
+                                    <strong
+                                        class="<%= Number(cotizacion.utilidad_bruta || 0) >= 0 ? 'cotizaciones-profit-positive' : 'cotizaciones-profit-negative' %>">
+                                        <%= dinero(cotizacion.utilidad_bruta) %>
+                                    </strong>
+                                    <p>Costo: <%= dinero(cotizacion.total_costo) %>
+                                    </p>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="module-card cotizaciones-detail-card">
+                            <div class="cotizaciones-section-head">
+                                <div>
+                                    <span class="cotizaciones-section-eyebrow">Productos</span>
+                                    <h3>Detalle de productos</h3>
+                                    <p>
+                                        Valores congelados al momento de emitir la cotización. No afectan inventario.
+                                    </p>
+                                </div>
+
+                                <span class="cotizaciones-section-count">
+                                    Ítems: <strong>
+                                        <%= items.length %>
+                                    </strong>
+                                </span>
+                            </div>
+
+                            <% if (!items.length) { %>
+                                <div class="empty-state">
+                                    <h3>Sin productos</h3>
+                                    <p>Esta cotización no tiene productos asociados.</p>
+                                </div>
+                                <% } else { %>
+                                    <div class="table-wrapper cotizaciones-detail-table-wrapper">
+                                        <table class="data-table cotizaciones-detail-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Producto</th>
+                                                    <th class="text-center">Cantidad</th>
+                                                    <th class="text-right">Precio</th>
+                                                    <th class="text-right">IVA</th>
+                                                    <th class="text-right">Total línea</th>
+                                                    <th class="text-right">Utilidad</th>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody>
+                                                <% items.forEach((item)=> { %>
+                                                    <tr>
+                                                        <td>
+                                                            <div class="cotizaciones-main-cell">
+                                                                <strong>
+                                                                    <%= item.nombre_producto %>
+                                                                </strong>
+                                                                <span>
+                                                                    <%= item.codigo_interno || 'Sin código' %>
+                                                                        · <%= item.unidad_abreviatura || 'und' %>
+                                                                </span>
+                                                            </div>
+                                                        </td>
+
+                                                        <td class="text-center">
+                                                            <%= cantidad(item.cantidad) %>
+                                                        </td>
+
+                                                        <td class="text-right">
+                                                            <div class="cotizaciones-stack-cell is-right">
+                                                                <strong>
+                                                                    <%= dinero(item.precio_unitario) %>
+                                                                </strong>
+                                                                <% if (Number(item.descuento_unitario || 0)> 0) { %>
+                                                                    <span>Desc: <%= dinero(item.descuento_unitario) %>
+                                                                            </span>
+                                                                    <% } else { %>
+                                                                        <span>Sin descuento</span>
+                                                                        <% } %>
+                                                            </div>
+                                                        </td>
+
+                                                        <td class="text-right">
+                                                            <div class="cotizaciones-stack-cell is-right">
+                                                                <strong>
+                                                                    <%= dinero(item.impuesto_total) %>
+                                                                </strong>
+                                                                <span>
+                                                                    <%= item.porcentaje_iva || 0 %>%
+                                                                </span>
+                                                            </div>
+                                                        </td>
+
+                                                        <td class="text-right">
+                                                            <strong>
+                                                                <%= dinero(item.total_linea) %>
+                                                            </strong>
+                                                        </td>
+
+                                                        <td class="text-right">
+                                                            <strong
+                                                                class="<%= Number(item.utilidad_bruta || 0) >= 0 ? 'cotizaciones-profit-positive' : 'cotizaciones-profit-negative' %>">
+                                                                <%= dinero(item.utilidad_bruta) %>
+                                                            </strong>
+                                                        </td>
+                                                    </tr>
+                                                    <% }) %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <% } %>
+                        </article>
+
+                        <section class="cotizaciones-detail-bottom">
+                            <article class="module-card cotizaciones-notes-card">
+                                <span class="cotizaciones-section-eyebrow">Condiciones</span>
+                                <h3>Condiciones comerciales</h3>
+
+                                <% if (cotizacion.condiciones_comerciales) { %>
+                                    <p>
+                                        <%= cotizacion.condiciones_comerciales %>
+                                    </p>
+                                    <% } else { %>
+                                        <p class="cotizaciones-muted-text">
+                                            Sin condiciones comerciales registradas.
+                                        </p>
+                                        <% } %>
+                            </article>
+
+                            <article class="module-card cotizaciones-notes-card">
+                                <span class="cotizaciones-section-eyebrow">Notas</span>
+                                <h3>Observaciones</h3>
+
+                                <% if (cotizacion.observaciones) { %>
+                                    <p>
+                                        <%= cotizacion.observaciones %>
+                                    </p>
+                                    <% } else { %>
+                                        <p class="cotizaciones-muted-text">
+                                            Sin observaciones registradas.
+                                        </p>
+                                        <% } %>
+                            </article>
+                        </section>
+
+                        <article class="module-card cotizaciones-totals-card">
+                            <div>
+                                <span>Subtotal</span>
+                                <strong>
+                                    <%= dinero(cotizacion.subtotal) %>
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>Descuento</span>
+                                <strong>
+                                    <%= dinero(cotizacion.descuento_total) %>
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>IVA</span>
+                                <strong>
+                                    <%= dinero(cotizacion.impuesto_total) %>
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>Total</span>
+                                <strong class="cotizaciones-total-value">
+                                    <%= dinero(cotizacion.total) %>
+                                </strong>
+                            </div>
+                        </article>
+</section>
