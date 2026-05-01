@@ -1,10 +1,11 @@
 <section class="module-page caja-page">
-    <% const gruposMediosPago=mediosPagoAgrupados || { efectivo: [], transferencias: [], tarjetas: [], otros: [] };
-        const gruposResumenMedios=resumenMediosPagoAgrupado || { efectivo: [], transferencias: [], tarjetas: [], otros:
+    <% const gruposResumenMedios=resumenMediosPagoAgrupado || { efectivo: [], transferencias: [], tarjetas: [], otros:
         [] }; const totalesResumen=totalesResumenMediosPago || { cantidad_operaciones: 0, total_ingresos: 0,
         total_egresos: 0, saldo_neto: 0, efectivo: { ingresos: 0, egresos: 0, saldo: 0 }, transferencias: { ingresos: 0,
         egresos: 0, saldo: 0 }, tarjetas: { ingresos: 0, egresos: 0, saldo: 0 }, otros: { ingresos: 0, egresos: 0,
-        saldo: 0 } }; const totalMediosPago=mediosPago ? mediosPago.length : 0; const resumenMediosTabla=[
+        saldo: 0 } }; const totalMediosPago=Array.isArray(mediosPago) ? mediosPago.length : 0; const
+        movimientosListado=Array.isArray(movimientos) ? movimientos : []; const
+        turnosListado=Array.isArray(turnosRecientes) ? turnosRecientes : []; const resumenMediosTabla=[
         ...(gruposResumenMedios.efectivo || []).map((medio)=> ({
         ...medio,
         grupo: 'Efectivo'
@@ -38,6 +39,10 @@
                 <% } else { %>
                     <div class="module-actions">
                         <span class="badge badge-success">Caja abierta</span>
+
+                        <a href="/caja/turnos/<%= turnoAbierto.id_turno_caja %>" class="btn-secondary">
+                            Ver arqueo
+                        </a>
 
                         <a href="/caja/movimiento" class="btn-secondary">
                             Movimiento
@@ -160,15 +165,15 @@
                                     </article>
                                 </section>
 
-
-
                                 <article class="module-card caja-operativo-card">
                                     <div class="caja-section-head">
                                         <div>
                                             <span class="caja-section-eyebrow">Resumen operativo</span>
                                             <h3>Ingresos y egresos por medio de pago</h3>
-                                            <p>Consolidado del turno actual agrupado por efectivo, transferencias,
-                                                tarjetas y otros medios.</p>
+                                            <p>
+                                                Consolidado del turno actual agrupado por efectivo, transferencias,
+                                                tarjetas y otros medios.
+                                            </p>
                                         </div>
 
                                         <span class="caja-section-count">
@@ -230,8 +235,9 @@
                                                         claseNeto=saldoNeto> 0
                                                         ? 'caja-neto-positivo'
                                                         : saldoNeto < 0 ? 'caja-neto-negativo' : 'caja-neto-cero' ;
-                                                            const signoNeto=saldoNeto> 0 ? '+' : saldoNeto < 0 ? '-'
-                                                                : '' ; %>
+                                                            const signoNeto=saldoNeto> 0
+                                                            ? '+'
+                                                            : saldoNeto < 0 ? '-' : '' ; %>
 
                                                                 <tr
                                                                     class="<%= medio.cantidad_operaciones > 0 ? 'caja-operativo-row-activa' : 'caja-operativo-row-vacia' %>">
@@ -299,19 +305,21 @@
                                         <div>
                                             <span class="caja-section-eyebrow">Detalle operativo</span>
                                             <h3>Movimientos registrados en este turno</h3>
-                                            <p>Listado cronológico de ventas, ingresos, egresos y soportes generados
-                                                durante la caja.</p>
+                                            <p>
+                                                Listado cronológico de ventas, ingresos, egresos y soportes generados
+                                                durante la caja.
+                                            </p>
                                         </div>
 
                                         <span class="caja-section-count">
                                             <strong>
-                                                <%= movimientos.length %>
+                                                <%= movimientosListado.length %>
                                             </strong>
                                             registrados
                                         </span>
                                     </div>
 
-                                    <% if (!movimientos || movimientos.length===0) { %>
+                                    <% if (movimientosListado.length===0) { %>
                                         <div class="empty-state">
                                             <h3>Sin movimientos todavía</h3>
                                             <p>
@@ -334,7 +342,7 @@
                                                     </thead>
 
                                                     <tbody>
-                                                        <% movimientos.forEach((movimiento)=> { %>
+                                                        <% movimientosListado.forEach((movimiento)=> { %>
                                                             <% const esEgreso=[ 'egreso_manual' , 'devolucion'
                                                                 , 'anulacion' ].includes(movimiento.tipo_movimiento);
                                                                 const claseMonto=esEgreso ? 'monto-egreso'
@@ -421,19 +429,21 @@
                                             <div>
                                                 <span class="caja-section-eyebrow">Historial de caja</span>
                                                 <h3>Últimos turnos registrados</h3>
-                                                <p>Consulta rápida de aperturas, cierres, valores esperados, conteos y
-                                                    diferencias.</p>
+                                                <p>
+                                                    Consulta rápida de aperturas, cierres, valores esperados, conteos y
+                                                    diferencias.
+                                                </p>
                                             </div>
 
                                             <span class="caja-section-count">
                                                 <strong>
-                                                    <%= turnosRecientes.length %>
+                                                    <%= turnosListado.length %>
                                                 </strong>
                                                 turnos
                                             </span>
                                         </div>
 
-                                        <% if (!turnosRecientes || turnosRecientes.length===0) { %>
+                                        <% if (turnosListado.length===0) { %>
                                             <div class="empty-state">
                                                 <h3>No hay turnos registrados</h3>
                                                 <p>
@@ -457,7 +467,7 @@
                                                         </thead>
 
                                                         <tbody>
-                                                            <% turnosRecientes.forEach((turno)=> { %>
+                                                            <% turnosListado.forEach((turno)=> { %>
                                                                 <tr>
                                                                     <td>
                                                                         <div class="caja-turno-cell">

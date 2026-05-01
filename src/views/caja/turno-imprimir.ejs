@@ -324,6 +324,75 @@
             color: var(--text);
         }
 
+        .print-section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 14px;
+            margin-bottom: 10px;
+        }
+
+        .print-section-head h2 {
+            margin-bottom: 4px;
+        }
+
+        .print-section-head p {
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .print-section-count {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: var(--soft);
+            color: var(--muted);
+            font-size: 10px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .print-section-count strong {
+            color: var(--text);
+        }
+
+        .print-invoice-number {
+            color: var(--primary);
+            font-weight: 800;
+        }
+
+        .print-status {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 64px;
+            padding: 3px 7px;
+            border-radius: 999px;
+            background: #f1f5f9;
+            color: #475569;
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .print-status.is-paid {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .print-status.is-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .print-status.is-cancelled {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
         .signatures {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -882,26 +951,146 @@
                     </section>
 
                     <section class="section">
-                        <h2>6. Facturas / ventas del turno</h2>
+                        <% const facturasImpresion=Array.isArray(facturas) ? facturas : []; const
+                            totalFacturasImpresion=facturasImpresion.reduce((acumulado, factura)=> {
+                            return acumulado + Number(factura.total || 0);
+                            }, 0);
 
-                        <% if (facturasPendientesDeIntegracion) { %>
-                            <div class="placeholder">
-                                <strong>Sección pendiente de integración POS/Ventas</strong>
-                                <p>
-                                    <%= mensajeFacturas %>
-                                </p>
-                                <p style="margin-top: 6px;">
-                                    Cuando el módulo POS/Ventas esté conectado, aquí se listarán las facturas del turno
-                                    con fecha, cajero, estado, medio de pago, total, pagado, pendiente, devoluciones y
-                                    anulaciones.
-                                </p>
-                            </div>
-                            <% } else if (!facturas || facturas.length===0) { %>
-                                <div class="placeholder">
-                                    <strong>Sin facturas</strong>
-                                    Este turno no tiene facturas asociadas.
+                            function claseEstadoFacturaImpresion(estado) {
+                            if (estado === 'pagada') return 'is-paid';
+                            if (estado === 'pendiente') return 'is-pending';
+                            if (estado === 'anulada') return 'is-cancelled';
+                            return '';
+                            }
+                            %>
+
+                            <div class="print-section-head">
+                                <div>
+                                    <h2>6. Facturas del turno</h2>
+                                    <p>Ventas reales registradas durante este turno de caja.</p>
                                 </div>
-                                <% } %>
+
+                                <span class="print-section-count">
+                                    <strong>
+                                        <%= facturasImpresion.length %>
+                                    </strong>
+                                    factura(s)
+                                </span>
+                            </div>
+
+                            <% if (facturasPendientesDeIntegracion) { %>
+                                <div class="placeholder">
+                                    <strong>Sección pendiente de integración POS/Ventas</strong>
+                                    <p>
+                                        <%= mensajeFacturas %>
+                                    </p>
+                                </div>
+                                <% } else if (facturasImpresion.length===0) { %>
+                                    <div class="placeholder">
+                                        <strong>Sin facturas</strong>
+                                        Este turno no tiene facturas asociadas.
+                                    </div>
+                                    <% } else { %>
+                                        <div class="grid-3" style="margin-bottom: 12px;">
+                                            <div class="info-card">
+                                                <span>Total facturas</span>
+                                                <strong>
+                                                    <%= facturasImpresion.length %>
+                                                </strong>
+                                            </div>
+
+                                            <div class="info-card">
+                                                <span>Total vendido</span>
+                                                <strong>
+                                                    <%= formatearPesos(totalFacturasImpresion) %>
+                                                </strong>
+                                            </div>
+
+                                            <div class="info-card">
+                                                <span>Estado principal</span>
+                                                <strong>
+                                                    <%= facturasImpresion.every((factura)=> factura.estado === 'pagada')
+                                                        ? 'Pagadas' : 'Mixto' %>
+                                                </strong>
+                                            </div>
+                                        </div>
+
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th>Factura</th>
+                                                    <th>Fecha</th>
+                                                    <th>Cliente</th>
+                                                    <th>Medio</th>
+                                                    <th class="text-center">Ítems</th>
+                                                    <th class="text-right">Total</th>
+                                                    <th class="text-center">Estado</th>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody>
+                                                <% facturasImpresion.forEach((factura)=> { %>
+                                                    <tr>
+                                                        <td>
+                                                            <div class="cell-stack">
+                                                                <strong class="print-invoice-number">
+                                                                    <%= factura.numero_comprobante ||
+                                                                        factura.numero_venta || ('Venta #' +
+                                                                        factura.id_venta) %>
+                                                                </strong>
+                                                                <small>ID venta: <%= factura.id_venta %></small>
+                                                            </div>
+                                                        </td>
+
+                                                        <td class="nowrap">
+                                                            <%= formatearFecha(factura.fecha_venta) %>
+                                                        </td>
+
+                                                        <td>
+                                                            <div class="cell-stack">
+                                                                <strong>
+                                                                    <%= factura.cliente_nombre || 'Consumidor final' %>
+                                                                </strong>
+                                                                <small>
+                                                                    <%= factura.cliente_etiqueta || 'Sin documento' %>
+                                                                </small>
+                                                            </div>
+                                                        </td>
+
+                                                        <td>
+                                                            <div class="cell-stack">
+                                                                <strong>
+                                                                    <%= factura.medio_pago_nombre || 'Sin pago' %>
+                                                                </strong>
+                                                                <small>
+                                                                    <%= factura.medio_pago_tipo || 'sin_tipo' %>
+                                                                </small>
+                                                            </div>
+                                                        </td>
+
+                                                        <td class="text-center">
+                                                            <strong>
+                                                                <%= factura.cantidad_items || 0 %>
+                                                            </strong>
+                                                        </td>
+
+                                                        <td class="text-right">
+                                                            <strong>
+                                                                <%= formatearPesos(factura.total) %>
+                                                            </strong>
+                                                        </td>
+
+                                                        <td class="text-center">
+                                                            <span
+                                                                class="print-status <%= claseEstadoFacturaImpresion(factura.estado) %>">
+                                                                <%= factura.estado || 'pagada' %>
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <% }) %>
+                                            </tbody>
+                                        </table>
+                                        <% } %>
                     </section>
 
                     <section class="section">
