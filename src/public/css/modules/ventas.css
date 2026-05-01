@@ -2066,3 +2066,198 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ===== Modal cliente rápido POS ===== */
+
+.ventas-client-clean-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.ventas-client-new-btn {
+    min-height: 26px;
+    padding: 0 9px;
+    border: 1px solid rgba(36, 79, 143, 0.22);
+    border-radius: 999px;
+    background: #ffffff;
+    color: #244f8f;
+    font-size: 11px;
+    font-weight: 900;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.ventas-client-new-btn:hover {
+    background: #f5f9ff;
+    border-color: rgba(36, 79, 143, 0.38);
+}
+
+.ventas-modal-open {
+    overflow: hidden;
+}
+
+.ventas-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: grid;
+    place-items: center;
+    padding: 18px;
+    background: rgba(15, 23, 42, 0.45);
+}
+
+.ventas-modal-backdrop[hidden] {
+    display: none !important;
+}
+
+.ventas-modal-card {
+    width: min(680px, 100%);
+    max-height: calc(100vh - 36px);
+    overflow-y: auto;
+    border-radius: 18px;
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.26);
+}
+
+.ventas-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.ventas-modal-header h3 {
+    margin: 3px 0 4px;
+    color: #0f172a;
+    font-size: 18px;
+    font-weight: 950;
+    letter-spacing: -0.03em;
+}
+
+.ventas-modal-header p {
+    margin: 0;
+    color: #64748b;
+    font-size: 12px;
+}
+
+.ventas-modal-close {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #f8fafc;
+    color: #334155;
+    font-size: 22px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.ventas-client-quick-form {
+    display: grid;
+    gap: 14px;
+    padding: 18px 20px 20px;
+}
+
+.ventas-client-quick-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.ventas-client-quick-wide {
+    grid-column: 1 / -1;
+}
+
+.ventas-client-quick-form .ventas-field {
+    display: grid;
+    gap: 5px;
+}
+
+.ventas-client-quick-form .ventas-field span {
+    color: #475569;
+    font-size: 11px;
+    font-weight: 850;
+}
+
+.ventas-client-quick-form input,
+.ventas-client-quick-form select {
+    width: 100%;
+    min-height: 39px;
+    padding: 0 11px;
+    border: 1px solid #cbd5e1;
+    border-radius: 11px;
+    background: #ffffff;
+    color: #0f172a;
+    font-size: 13px;
+    font-weight: 750;
+    outline: none;
+}
+
+.ventas-client-quick-form input:focus,
+.ventas-client-quick-form select:focus {
+    border-color: #244f8f;
+    box-shadow: 0 0 0 3px rgba(36, 79, 143, 0.11);
+}
+
+.ventas-client-quick-form input.is-invalid,
+.ventas-client-quick-form select.is-invalid {
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.10);
+}
+
+.ventas-client-quick-alert {
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #fef2f2;
+    color: #991b1b;
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.ventas-client-quick-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.ventas-client-quick-check input {
+    width: 16px;
+    height: 16px;
+}
+
+.ventas-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 4px;
+}
+
+.ventas-modal-actions .btn-primary,
+.ventas-modal-actions .btn-secondary {
+    min-height: 38px;
+}
+
+@media (max-width: 720px) {
+    .ventas-client-clean-head {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .ventas-client-quick-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ventas-modal-actions {
+        flex-direction: column-reverse;
+    }
+}

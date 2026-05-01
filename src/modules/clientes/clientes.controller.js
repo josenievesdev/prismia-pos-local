@@ -54,6 +54,24 @@ function crearCliente(req, res) {
     return res.redirect('/clientes?exito=' + encodeURIComponent(resultado.mensaje));
 }
 
+function crearClienteRapido(req, res) {
+    const resultado = clientesService.crearClienteRapido(req.body || {});
+
+    if (!resultado.ok) {
+        return res.status(400).json({
+            ok: false,
+            mensaje: resultado.mensaje,
+            datos: resultado.datos || {},
+        });
+    }
+
+    return res.status(201).json({
+        ok: true,
+        mensaje: resultado.mensaje,
+        cliente: resultado.cliente,
+    });
+}
+
 function mostrarEditarCliente(req, res) {
     const resultado = clientesService.obtenerClienteParaFormulario(req.params.id);
 
@@ -102,6 +120,7 @@ module.exports = {
     listarClientes,
     mostrarCrearCliente,
     crearCliente,
+    crearClienteRapido,
     mostrarEditarCliente,
     actualizarCliente,
     cambiarEstadoCliente,

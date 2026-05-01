@@ -393,6 +393,65 @@ function crearCliente(payload = {}) {
     };
 }
 
+function separarNombreRapido(nombreCompleto) {
+    const partes = limpiarTexto(nombreCompleto)
+        .split(/\s+/)
+        .filter(Boolean);
+
+    return {
+        primer_nombre: partes[0] || '',
+        segundo_nombre: partes.length > 3 ? partes.slice(1, -2).join(' ') : '',
+        primer_apellido: partes.length >= 2 ? partes[partes.length - 2] : '',
+        segundo_apellido: partes.length >= 3 ? partes[partes.length - 1] : '',
+    };
+}
+
+function crearClienteRapido(payload = {}) {
+    const tipoDocumento = limpiarTexto(payload.tipo_documento) || 'CC';
+    const documento = limpiarTexto(payload.documento).replace(/\s+/g, '');
+    const nombreRapido = limpiarTexto(payload.nombre || payload.nombre_completo);
+    const telefono = limpiarTexto(payload.telefono);
+    const celular = limpiarTexto(payload.celular || telefono);
+    const correo = limpiarTexto(payload.correo).toLowerCase();
+
+    const esNit = tipoDocumento === 'NIT';
+
+    if (esNit) {
+        return crearCliente({
+            tipo_cliente: 'persona_juridica',
+            tipo_documento: 'NIT',
+            documento,
+            digito_verificacion: limpiarTexto(payload.digito_verificacion),
+            razon_social: nombreRapido,
+            nombre_comercial: limpiarTexto(payload.nombre_comercial || nombreRapido),
+            telefono,
+            celular,
+            correo,
+            correo_facturacion: correo,
+            acepta_factura_electronica: 1,
+            autoriza_tratamiento_datos: normalizarBooleano(payload.autoriza_tratamiento_datos),
+        });
+    }
+
+    const nombreSeparado = separarNombreRapido(nombreRapido);
+
+    return crearCliente({
+        tipo_cliente: 'persona_natural',
+        tipo_documento: tipoDocumento,
+        documento,
+        primer_nombre: nombreSeparado.primer_nombre,
+        segundo_nombre: nombreSeparado.segundo_nombre,
+        primer_apellido: nombreSeparado.primer_apellido,
+        segundo_apellido: nombreSeparado.segundo_apellido,
+        telefono,
+        celular,
+        correo,
+        correo_facturacion: correo,
+        acepta_factura_electronica: 1,
+        autoriza_tratamiento_datos: normalizarBooleano(payload.autoriza_tratamiento_datos),
+    });
+}
+
 function actualizarCliente(idCliente, payload = {}) {
     const id = normalizarId(idCliente);
 
@@ -488,6 +547,7 @@ module.exports = {
     obtenerClienteParaFormulario,
     obtenerCatalogosFormulario,
     crearCliente,
+    crearClienteRapido,
     actualizarCliente,
     cambiarEstadoCliente,
 };

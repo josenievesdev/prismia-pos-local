@@ -14,6 +14,8 @@ router.get('/', clientesController.listarClientes);
 router.get('/nuevo', clientesController.mostrarCrearCliente);
 router.post('/nuevo', clientesController.crearCliente);
 
+router.post('/rapido', clientesController.crearClienteRapido);
+
 router.get('/:id/editar', clientesController.mostrarEditarCliente);
 router.post('/:id/editar', clientesController.actualizarCliente);
 

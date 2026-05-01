@@ -15,6 +15,7 @@
 
         inicializarFecha(ui);
         inicializarBusquedaClientes(ui);
+        inicializarClienteRapido(ui);
         inicializarBusqueda(ui, estado);
         inicializarCarrito(ui, estado);
         inicializarPago(ui, estado);
@@ -34,6 +35,21 @@
 
             inputCliente: document.getElementById('buscarCliente'),
             resultadosClientes: document.getElementById('resultadosClientes'),
+
+            botonAbrirClienteRapido: document.getElementById('btnAbrirClienteRapido'),
+            modalClienteRapido: document.getElementById('modalClienteRapido'),
+            formClienteRapido: document.getElementById('formClienteRapido'),
+            botonCerrarClienteRapido: document.getElementById('btnCerrarClienteRapido'),
+            botonCancelarClienteRapido: document.getElementById('btnCancelarClienteRapido'),
+            avisoClienteRapido: document.getElementById('avisoClienteRapido'),
+            tipoDocumentoClienteRapido: document.getElementById('clienteRapidoTipoDocumento'),
+            documentoClienteRapido: document.getElementById('clienteRapidoDocumento'),
+            campoDvClienteRapido: document.getElementById('campoClienteRapidoDv'),
+            dvClienteRapido: document.getElementById('clienteRapidoDv'),
+            nombreClienteRapido: document.getElementById('clienteRapidoNombre'),
+            celularClienteRapido: document.getElementById('clienteRapidoCelular'),
+            correoClienteRapido: document.getElementById('clienteRapidoCorreo'),
+            autorizaClienteRapido: document.getElementById('clienteRapidoAutoriza'),
 
             formularioBusqueda: document.getElementById('formBusquedaProductos'),
             inputBusqueda: document.getElementById('buscarProducto'),
@@ -259,9 +275,17 @@
     }
 
     function seleccionarClienteDesdeElemento(elemento, ui) {
-        const idCliente = elemento.dataset.clientId || '';
-        const nombre = elemento.dataset.clientName || 'Consumidor final';
-        const documento = elemento.dataset.clientDocument || '0000000000';
+        seleccionarClienteDirecto({
+            id_cliente: elemento.dataset.clientId || '',
+            nombre: elemento.dataset.clientName || 'Consumidor final',
+            documento: elemento.dataset.clientDocument || '0000000000',
+        }, ui);
+    }
+
+    function seleccionarClienteDirecto(cliente, ui) {
+        const idCliente = cliente.id_cliente || '';
+        const nombre = cliente.nombre || cliente.nombre_mostrar || 'Consumidor final';
+        const documento = cliente.documento || '0000000000';
 
         ui.inputCliente.value = nombre;
         ui.inputCliente.dataset.selectedClientId = idCliente;
@@ -293,6 +317,212 @@
         }
 
         ui.resultadosClientes.hidden = true;
+    }
+
+    function inicializarClienteRapido(ui) {
+        if (!ui.botonAbrirClienteRapido || !ui.modalClienteRapido || !ui.formClienteRapido) {
+            return;
+        }
+
+        ui.botonAbrirClienteRapido.addEventListener('click', function () {
+            abrirModalClienteRapido(ui);
+        });
+
+        ui.botonCerrarClienteRapido?.addEventListener('click', function () {
+            cerrarModalClienteRapido(ui);
+        });
+
+        ui.botonCancelarClienteRapido?.addEventListener('click', function () {
+            cerrarModalClienteRapido(ui);
+        });
+
+        ui.modalClienteRapido.addEventListener('click', function (evento) {
+            if (evento.target === ui.modalClienteRapido) {
+                cerrarModalClienteRapido(ui);
+            }
+        });
+
+        ui.tipoDocumentoClienteRapido?.addEventListener('change', function () {
+            actualizarTipoDocumentoClienteRapido(ui);
+        });
+
+        ui.formClienteRapido.addEventListener('submit', async function (evento) {
+            evento.preventDefault();
+            await guardarClienteRapido(ui);
+        });
+
+        document.addEventListener('keydown', function (evento) {
+            if (evento.key === 'Escape' && !ui.modalClienteRapido.hidden) {
+                cerrarModalClienteRapido(ui);
+            }
+        });
+
+        actualizarTipoDocumentoClienteRapido(ui);
+    }
+
+    function abrirModalClienteRapido(ui) {
+        limpiarFormularioClienteRapido(ui);
+        ui.modalClienteRapido.hidden = false;
+        document.body.classList.add('ventas-modal-open');
+
+        window.requestAnimationFrame(function () {
+            ui.documentoClienteRapido?.focus();
+        });
+    }
+
+    function cerrarModalClienteRapido(ui) {
+        ui.modalClienteRapido.hidden = true;
+        document.body.classList.remove('ventas-modal-open');
+    }
+
+    function limpiarFormularioClienteRapido(ui) {
+        ui.formClienteRapido.reset();
+
+        if (ui.tipoDocumentoClienteRapido) {
+            ui.tipoDocumentoClienteRapido.value = 'CC';
+        }
+
+        if (ui.autorizaClienteRapido) {
+            ui.autorizaClienteRapido.checked = true;
+        }
+
+        limpiarErroresClienteRapido(ui);
+        actualizarTipoDocumentoClienteRapido(ui);
+    }
+
+    function actualizarTipoDocumentoClienteRapido(ui) {
+        const esNit = ui.tipoDocumentoClienteRapido?.value === 'NIT';
+
+        if (ui.campoDvClienteRapido) {
+            ui.campoDvClienteRapido.hidden = !esNit;
+        }
+
+        if (!esNit && ui.dvClienteRapido) {
+            ui.dvClienteRapido.value = '';
+        }
+    }
+
+    function limpiarErroresClienteRapido(ui) {
+        [
+            ui.tipoDocumentoClienteRapido,
+            ui.documentoClienteRapido,
+            ui.dvClienteRapido,
+            ui.nombreClienteRapido,
+            ui.celularClienteRapido,
+            ui.correoClienteRapido,
+        ].forEach(function (campo) {
+            campo?.classList.remove('is-invalid');
+        });
+
+        if (ui.avisoClienteRapido) {
+            ui.avisoClienteRapido.hidden = true;
+            ui.avisoClienteRapido.textContent = '';
+        }
+    }
+
+    function mostrarErrorClienteRapido(ui, campo, mensaje) {
+        limpiarErroresClienteRapido(ui);
+
+        if (ui.avisoClienteRapido) {
+            ui.avisoClienteRapido.textContent = mensaje;
+            ui.avisoClienteRapido.hidden = false;
+        }
+
+        if (campo) {
+            campo.classList.add('is-invalid');
+            campo.focus();
+        }
+    }
+
+    function construirPayloadClienteRapido(ui) {
+        const tipoDocumento = ui.tipoDocumentoClienteRapido?.value || 'CC';
+        const documento = ui.documentoClienteRapido?.value.trim() || '';
+        const digitoVerificacion = ui.dvClienteRapido?.value.trim() || '';
+        const nombre = ui.nombreClienteRapido?.value.trim() || '';
+        const celular = ui.celularClienteRapido?.value.trim() || '';
+        const correo = ui.correoClienteRapido?.value.trim() || '';
+        const esNit = tipoDocumento === 'NIT';
+
+        if (!documento) {
+            return { ok: false, campo: ui.documentoClienteRapido, mensaje: 'Digita el documento del cliente.' };
+        }
+
+        if (esNit && !digitoVerificacion) {
+            return { ok: false, campo: ui.dvClienteRapido, mensaje: 'Digita el DV del NIT.' };
+        }
+
+        if (!nombre) {
+            return { ok: false, campo: ui.nombreClienteRapido, mensaje: 'Digita el nombre del cliente.' };
+        }
+
+        if (!esNit && nombre.split(/\s+/).filter(Boolean).length < 2) {
+            return { ok: false, campo: ui.nombreClienteRapido, mensaje: 'Digita nombre y apellido del cliente.' };
+        }
+
+        return {
+            ok: true,
+            datos: {
+                tipo_documento: tipoDocumento,
+                documento,
+                digito_verificacion: digitoVerificacion,
+                nombre,
+                celular,
+                correo,
+                autoriza_tratamiento_datos: ui.autorizaClienteRapido?.checked ? 1 : 0,
+            },
+        };
+    }
+
+    async function guardarClienteRapido(ui) {
+        limpiarErroresClienteRapido(ui);
+
+        const payload = construirPayloadClienteRapido(ui);
+
+        if (!payload.ok) {
+            mostrarErrorClienteRapido(ui, payload.campo, payload.mensaje);
+            return;
+        }
+
+        const botonGuardar = document.getElementById('btnGuardarClienteRapido');
+        const textoOriginal = botonGuardar?.textContent || 'Crear y seleccionar';
+
+        if (botonGuardar) {
+            botonGuardar.disabled = true;
+            botonGuardar.textContent = 'Guardando...';
+        }
+
+        try {
+            const respuesta = await fetch(ui.formClienteRapido.dataset.url || '/clientes/rapido', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload.datos),
+            });
+
+            const datos = await respuesta.json();
+
+            if (!respuesta.ok || !datos.ok) {
+                mostrarErrorClienteRapido(
+                    ui,
+                    null,
+                    datos.mensaje || 'No se pudo crear el cliente.'
+                );
+                return;
+            }
+
+            seleccionarClienteDirecto(datos.cliente, ui);
+            cerrarModalClienteRapido(ui);
+            mostrarAviso('Cliente creado y seleccionado.', 'ok');
+        } catch (error) {
+            console.error('Error creando cliente rápido:', error);
+            mostrarErrorClienteRapido(ui, null, 'Error de conexión creando el cliente.');
+        } finally {
+            if (botonGuardar) {
+                botonGuardar.disabled = false;
+                botonGuardar.textContent = textoOriginal;
+            }
+        }
     }
 
     function inicializarCierreResultados(ui) {
