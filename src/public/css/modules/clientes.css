@@ -1,0 +1,453 @@
+/* =========================================================
+   Módulo Clientes · Prismia POS Local
+   ========================================================= */
+
+.clientes-page {
+    gap: 16px;
+}
+
+.clientes-filter-card,
+.clientes-table-card,
+.clientes-form {
+    display: grid;
+    gap: 16px;
+}
+
+.clientes-filter-card,
+.clientes-table-card,
+.clientes-form-card {
+    width: 100%;
+}
+
+.clientes-filter-form {
+    display: grid;
+    grid-template-columns: minmax(260px, 1.6fr) repeat(4, minmax(150px, 1fr)) auto;
+    gap: 12px;
+    align-items: end;
+}
+
+.clientes-filter-search {
+    min-width: 0;
+}
+
+.clientes-filter-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.clientes-table-card-wide {
+    padding: 18px 20px;
+}
+
+.clientes-section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+    padding-bottom: 14px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.clientes-section-head h3,
+.clientes-form-card-head h3,
+.clientes-form-block-head h4 {
+    margin: 3px 0 5px;
+    color: var(--color-text);
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+}
+
+.clientes-section-head p,
+.clientes-form-card-head p,
+.clientes-form-block-head p {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.45;
+}
+
+.clientes-section-eyebrow {
+    display: inline-flex;
+    margin-bottom: 2px;
+    color: var(--color-primary-dark);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.clientes-section-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-width: max-content;
+    padding: 6px 10px;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    border-radius: 999px;
+    background: var(--color-surface-soft);
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.clientes-section-count strong {
+    color: var(--color-text);
+    font-weight: 900;
+}
+
+.clientes-table-wrapper {
+    overflow-x: auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+}
+
+.clientes-table {
+    margin: 0;
+    min-width: 980px;
+    width: 100%;
+}
+
+.clientes-table thead th {
+    background: var(--color-surface);
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.clientes-table td {
+    vertical-align: middle;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.clientes-main-cell,
+.clientes-stack-cell {
+    display: grid;
+    gap: 2px;
+}
+
+.clientes-main-cell strong,
+.clientes-stack-cell strong {
+    color: var(--color-text);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.clientes-main-cell span,
+.clientes-main-cell small,
+.clientes-stack-cell span {
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.35;
+}
+
+.clientes-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 72px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.clientes-status.is-active {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.clientes-status.is-inactive {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.clientes-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.clientes-actions form {
+    margin: 0;
+}
+
+.clientes-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 92px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+
+.clientes-action-btn-secondary {
+    background: #ffffff;
+    border-color: rgba(148, 163, 184, 0.28);
+    color: var(--color-text);
+}
+
+.clientes-action-btn-secondary:hover {
+    background: var(--color-surface-soft);
+}
+
+.clientes-action-btn-danger {
+    background: #fff1f2;
+    border-color: #fecdd3;
+    color: #be123c;
+}
+
+.clientes-action-btn-danger:hover {
+    background: #ffe4e6;
+}
+
+.clientes-muted-action {
+    display: inline-flex;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--color-surface-soft);
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.clientes-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    padding-top: 14px;
+    color: var(--color-muted);
+    font-size: 12px;
+}
+
+.clientes-pagination div {
+    display: flex;
+    gap: 8px;
+}
+
+.clientes-pagination .is-disabled {
+    opacity: 0.45;
+    pointer-events: none;
+}
+
+.clientes-form {
+    width: 100%;
+}
+
+.clientes-form-card {
+    display: grid;
+    gap: 20px;
+    padding: 20px 22px;
+}
+
+.clientes-form-card-head {
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.clientes-form-sections {
+    display: grid;
+    gap: 18px;
+}
+
+.clientes-form-block {
+    display: grid;
+    gap: 12px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.clientes-form-block:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.clientes-form-block-head h4 {
+    font-size: 14px;
+    margin-bottom: 2px;
+}
+
+.clientes-form-grid {
+    display: grid;
+    gap: 12px;
+}
+
+.clientes-form-grid-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.clientes-form-grid-1 {
+    grid-template-columns: 1fr;
+}
+
+.clientes-full-field {
+    grid-column: 1 / -1;
+}
+
+.clientes-form-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding-top: 6px;
+}
+
+@media (max-width: 1240px) {
+    .clientes-filter-form {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .clientes-filter-actions {
+        grid-column: 1 / -1;
+    }
+
+    .clientes-form-grid-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 860px) {
+
+    .clientes-section-head,
+    .clientes-pagination,
+    .clientes-form-actions {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .clientes-filter-form,
+    .clientes-form-grid-4 {
+        grid-template-columns: 1fr;
+    }
+
+    .clientes-filter-actions,
+    .clientes-pagination div {
+        width: 100%;
+    }
+
+    .clientes-filter-actions .btn-primary,
+    .clientes-filter-actions .btn-secondary,
+    .clientes-pagination .btn-secondary {
+        flex: 1;
+    }
+
+    .clientes-action-btn {
+        min-width: 100%;
+    }
+}
+
+/* ===== Buscador local de municipios ===== */
+
+.clientes-location-search {
+    position: relative;
+}
+
+.clientes-location-search-wrap {
+    position: relative;
+}
+
+.clientes-location-results {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    z-index: 30;
+    max-height: 260px;
+    overflow-y: auto;
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 18px 42px rgba(15, 23, 42, 0.14);
+}
+
+.clientes-location-result {
+    display: grid;
+    gap: 3px;
+    width: 100%;
+    padding: 11px 13px;
+    border: 0;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+}
+
+.clientes-location-result:last-child {
+    border-bottom: 0;
+}
+
+.clientes-location-result:hover {
+    background: #f8fafc;
+}
+
+.clientes-location-result strong {
+    color: var(--color-text);
+    font-size: 13px;
+    font-weight: 750;
+}
+
+.clientes-location-result span {
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.clientes-location-empty {
+    padding: 12px 14px;
+    color: var(--color-muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.clientes-form input[readonly] {
+    background: #f8fafc;
+    color: #475569;
+    cursor: not-allowed;
+}
+
+/* ===== Validación visual formulario clientes ===== */
+
+.clientes-required-marker {
+    color: #dc2626;
+    font-weight: 900;
+}
+
+.clientes-form .form-group.has-error span {
+    color: #b91c1c;
+}
+
+.clientes-form input.is-invalid,
+.clientes-form select.is-invalid,
+.clientes-form textarea.is-invalid {
+    border-color: #ef4444 !important;
+    background: #fff5f5;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+}
+
+.clientes-field-error {
+    display: block;
+    margin-top: 6px;
+    color: #b91c1c;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.35;
+}

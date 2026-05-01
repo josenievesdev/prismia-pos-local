@@ -1,0 +1,269 @@
+<section class="module-page clientes-page">
+    <% const clientesListado=Array.isArray(clientes) ? clientes : []; const filtrosActuales=filtros || {}; const
+        catalogosActuales=catalogos || { tipos_cliente: [], tipos_documento: [], regimenes_fiscales: [] }; function
+        textoTipoCliente(valor) { if (valor==='persona_natural' ) return 'Persona natural' ; if
+        (valor==='persona_juridica' ) return 'Persona jurídica' ; if (valor==='consumidor_final' )
+        return 'Consumidor final' ; return valor || 'Sin tipo' ; } function textoEstado(valor) { return valor==='activo'
+        ? 'Activo' : 'Inactivo' ; } function crearUrlPagina(pagina) { const params=new URLSearchParams(); if
+        (filtrosActuales.busqueda) params.set('busqueda', filtrosActuales.busqueda); if (filtrosActuales.estado)
+        params.set('estado', filtrosActuales.estado); if (filtrosActuales.tipo_cliente) params.set('tipo_cliente',
+        filtrosActuales.tipo_cliente); if (filtrosActuales.tipo_documento) params.set('tipo_documento',
+        filtrosActuales.tipo_documento); if (filtrosActuales.limite) params.set('limite', filtrosActuales.limite);
+        params.set('pagina', pagina); return `/clientes?${params.toString()}`; } %>
+
+        <div class="module-header module-header-actions">
+            <div>
+                <p class="eyebrow">Gestión comercial</p>
+                <h2>Clientes</h2>
+                <p>
+                    Administra clientes para ventas, cotizaciones, remisiones y futura facturación electrónica.
+                </p>
+            </div>
+
+            <a href="/clientes/nuevo" class="btn-primary">
+                Nuevo cliente
+            </a>
+        </div>
+
+        <% if (mensajeExito) { %>
+            <div class="alert alert-success">
+                <%= mensajeExito %>
+            </div>
+            <% } %>
+
+                <% if (error) { %>
+                    <div class="alert alert-error">
+                        <%= error %>
+                    </div>
+                    <% } %>
+
+                        <article class="module-card clientes-filter-card">
+                            <form method="GET" action="/clientes" class="clientes-filter-form">
+                                <label class="form-group clientes-filter-search">
+                                    <span>Buscar</span>
+                                    <input type="search" name="busqueda" value="<%= filtrosActuales.busqueda || '' %>"
+                                        placeholder="Nombre, documento, teléfono o correo..." autocomplete="off">
+                                </label>
+
+                                <label class="form-group">
+                                    <span>Estado</span>
+                                    <select name="estado">
+                                        <option value="">Todos</option>
+                                        <option value="activo" <%=filtrosActuales.estado==='activo' ? 'selected' : '' %>
+                                            >Activo</option>
+                                        <option value="inactivo" <%=filtrosActuales.estado==='inactivo' ? 'selected'
+                                            : '' %>>Inactivo</option>
+                                    </select>
+                                </label>
+
+                                <label class="form-group">
+                                    <span>Tipo de cliente</span>
+                                    <select name="tipo_cliente">
+                                        <option value="">Todos</option>
+                                        <option value="persona_natural"
+                                            <%=filtrosActuales.tipo_cliente==='persona_natural' ? 'selected' : '' %>
+                                            >Persona natural</option>
+                                        <option value="persona_juridica"
+                                            <%=filtrosActuales.tipo_cliente==='persona_juridica' ? 'selected' : '' %>
+                                            >Persona jurídica</option>
+                                        <option value="consumidor_final"
+                                            <%=filtrosActuales.tipo_cliente==='consumidor_final' ? 'selected' : '' %>
+                                            >Consumidor final</option>
+                                    </select>
+                                </label>
+
+                                <label class="form-group">
+                                    <span>Documento</span>
+                                    <select name="tipo_documento">
+                                        <option value="">Todos</option>
+                                        <% catalogosActuales.tipos_documento.forEach((tipo)=> { %>
+                                            <option value="<%= tipo.valor %>"
+                                                <%=filtrosActuales.tipo_documento===tipo.valor ? 'selected' : '' %>>
+                                                <%= tipo.valor %>
+                                            </option>
+                                            <% }) %>
+                                    </select>
+                                </label>
+
+                                <label class="form-group">
+                                    <span>Mostrar</span>
+                                    <select name="limite">
+                                        <option value="25" <%=Number(filtrosActuales.limite)===25 ? 'selected' : '' %>
+                                            >25</option>
+                                        <option value="50" <%=Number(filtrosActuales.limite)===50 ? 'selected' : '' %>
+                                            >50</option>
+                                        <option value="100" <%=Number(filtrosActuales.limite)===100 ? 'selected' : '' %>
+                                            >100</option>
+                                    </select>
+                                </label>
+
+                                <div class="clientes-filter-actions">
+                                    <button type="submit" class="btn-primary">
+                                        Filtrar
+                                    </button>
+
+                                    <a href="/clientes" class="btn-secondary">
+                                        Limpiar
+                                    </a>
+                                </div>
+                            </form>
+                        </article>
+
+                        <article class="module-card clientes-table-card clientes-table-card-wide">
+                            <div class="clientes-section-head">
+                                <div>
+                                    <span class="clientes-section-eyebrow">Directorio</span>
+                                    <h3>Clientes registrados</h3>
+                                    <p>
+                                        Mostrando página <%= paginaActual %> de <%= totalPaginas %>.
+                                    </p>
+                                </div>
+
+                                <span class="clientes-section-count">
+                                    <strong>
+                                        <%= totalResultados %>
+                                    </strong>
+                                    resultado(s)
+                                </span>
+                            </div>
+
+                            <% if (clientesListado.length===0) { %>
+                                <div class="empty-state">
+                                    <h3>Sin clientes</h3>
+                                    <p>No hay clientes que coincidan con los filtros aplicados.</p>
+                                </div>
+                                <% } else { %>
+                                    <div class="table-wrapper clientes-table-wrapper">
+                                        <table class="data-table clientes-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Cliente</th>
+                                                    <th>Documento</th>
+                                                    <th>Contacto</th>
+                                                    <th>Ubicación</th>
+                                                    <th class="text-center">Estado</th>
+                                                    <th class="text-center">Acciones</th>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody>
+                                                <% clientesListado.forEach((cliente)=> { %>
+                                                    <tr>
+                                                        <td>
+                                                            <div class="clientes-main-cell">
+                                                                <strong>
+                                                                    <%= cliente.nombre_mostrar %>
+                                                                </strong>
+                                                                <span>
+                                                                    <%= textoTipoCliente(cliente.tipo_cliente) %>
+                                                                </span>
+                                                                <small>
+                                                                    Régimen: <%= cliente.regimen_fiscal || 'no_definido'
+                                                                        %> ·
+                                                                        FE: <%=
+                                                                            Number(cliente.acepta_factura_electronica ||
+                                                                            0)===1 ? 'Sí' : 'No' %>
+                                                                </small>
+                                                            </div>
+                                                        </td>
+
+                                                        <td>
+                                                            <div class="clientes-stack-cell">
+                                                                <strong>
+                                                                    <%= cliente.tipo_documento %>
+                                                                        <%= cliente.documento %>
+                                                                            <% if (cliente.digito_verificacion) { %>
+                                                                                -<%= cliente.digito_verificacion %>
+                                                                                    <% } %>
+                                                                </strong>
+                                                                <span>ID #<%= cliente.id_cliente %></span>
+                                                            </div>
+                                                        </td>
+
+                                                        <td>
+                                                            <div class="clientes-stack-cell">
+                                                                <strong>
+                                                                    <%= cliente.telefono || cliente.celular
+                                                                        || 'Sin teléfono' %>
+                                                                </strong>
+                                                                <span>
+                                                                    <%= cliente.correo || cliente.correo_facturacion
+                                                                        || 'Sin correo' %>
+                                                                </span>
+                                                            </div>
+                                                        </td>
+
+                                                        <td>
+                                                            <div class="clientes-stack-cell">
+                                                                <strong>
+                                                                    <%= cliente.municipio || 'Sin municipio' %>
+                                                                </strong>
+                                                                <span>
+                                                                    <%= cliente.departamento || cliente.pais
+                                                                        || 'Colombia' %>
+                                                                </span>
+                                                            </div>
+                                                        </td>
+
+                                                        <td class="text-center">
+                                                            <span
+                                                                class="clientes-status <%= cliente.estado === 'activo' ? 'is-active' : 'is-inactive' %>">
+                                                                <%= textoEstado(cliente.estado) %>
+                                                            </span>
+                                                        </td>
+
+                                                        <td class="text-center">
+                                                            <div class="clientes-actions">
+                                                                <% if (Number(cliente.es_consumidor_final || 0) !==1) {
+                                                                    %>
+                                                                    <a href="/clientes/<%= cliente.id_cliente %>/editar"
+                                                                        class="clientes-action-btn clientes-action-btn-secondary">
+                                                                        Editar
+                                                                    </a>
+
+                                                                    <form method="POST"
+                                                                        action="/clientes/<%= cliente.id_cliente %>/estado">
+                                                                        <button type="submit"
+                                                                            class="clientes-action-btn clientes-action-btn-danger">
+                                                                            <%= cliente.estado==='activo' ? 'Desactivar'
+                                                                                : 'Activar' %>
+                                                                        </button>
+                                                                    </form>
+                                                                    <% } else { %>
+                                                                        <span
+                                                                            class="clientes-muted-action">Protegido</span>
+                                                                        <% } %>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <% }) %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div class="clientes-pagination">
+                                        <span>
+                                            Página <strong>
+                                                <%= paginaActual %>
+                                            </strong> de <strong>
+                                                <%= totalPaginas %>
+                                            </strong>
+                                        </span>
+
+                                        <div>
+                                            <a href="<%= crearUrlPagina(paginaAnterior) %>"
+                                                class="btn-secondary <%= tienePaginaAnterior ? '' : 'is-disabled' %>"
+                                                aria-disabled="<%= tienePaginaAnterior ? 'false' : 'true' %>">
+                                                Anterior
+                                            </a>
+
+                                            <a href="<%= crearUrlPagina(paginaSiguiente) %>"
+                                                class="btn-secondary <%= tienePaginaSiguiente ? '' : 'is-disabled' %>"
+                                                aria-disabled="<%= tienePaginaSiguiente ? 'false' : 'true' %>">
+                                                Siguiente
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <% } %>
+                        </article>
+</section>

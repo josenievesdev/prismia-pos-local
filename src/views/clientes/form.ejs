@@ -1,0 +1,408 @@
+<section class="module-page clientes-page">
+    <% const clienteActual=cliente || {}; const catalogosActuales=catalogos || { tipos_cliente: [], tipos_documento: [],
+        regimenes_fiscales: [] }; const esEditar=modo==='editar' ; const accionFormulario=esEditar ?
+        `/clientes/${clienteActual.id_cliente}/editar` : '/clientes/nuevo' ; function valor(campo, defecto='' ) { if
+        (clienteActual[campo]===undefined || clienteActual[campo]===null) { return defecto; } return
+        clienteActual[campo]; } function seleccionado(campo, opcion, defecto='' ) { const actual=valor(campo, defecto);
+        return actual===opcion ? 'selected' : '' ; } const etiquetaDepartamentoActual=valor('departamento') || '' ;
+        const etiquetaMunicipioActual=valor('municipio') || '' ; %>
+
+        <div class="module-header module-header-actions">
+            <div>
+                <p class="eyebrow">Clientes</p>
+                <h2>
+                    <%= esEditar ? 'Editar cliente' : 'Nuevo cliente' %>
+                </h2>
+                <p>
+                    Registra información comercial, fiscal y de contacto para ventas, cotizaciones,
+                    remisiones y futura facturación electrónica.
+                </p>
+            </div>
+
+            <a href="/clientes" class="btn-secondary">
+                Volver
+            </a>
+        </div>
+
+        <% if (error) { %>
+            <div class="alert alert-error">
+                <%= error %>
+            </div>
+            <% } %>
+
+                <form method="POST" action="<%= accionFormulario %>" class="clientes-form">
+                    <article class="module-card clientes-form-card">
+                        <div class="clientes-form-card-head">
+                            <div>
+                                <span class="clientes-section-eyebrow">Formulario comercial</span>
+                                <h3>
+                                    <%= esEditar ? 'Actualizar cliente' : 'Crear cliente' %>
+                                </h3>
+                                <p>
+                                    Completa los datos principales del cliente. La información fiscal queda preparada
+                                    para ventas, cotizaciones, remisiones y futuras integraciones.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="clientes-form-sections">
+                            <section class="clientes-form-block">
+                                <div class="clientes-form-block-head">
+                                    <span class="clientes-section-eyebrow">Identificación</span>
+                                    <h4>Datos principales</h4>
+                                </div>
+
+                                <div class="clientes-form-grid clientes-form-grid-4">
+                                    <label class="form-group">
+                                        <span>Tipo de cliente *</span>
+                                        <select name="tipo_cliente" id="tipoCliente" required>
+                                            <% catalogosActuales.tipos_cliente.forEach((tipo)=> { %>
+                                                <option value="<%= tipo.valor %>" <%=seleccionado('tipo_cliente',
+                                                    tipo.valor, 'persona_natural' ) %>>
+                                                    <%= tipo.texto %>
+                                                </option>
+                                                <% }) %>
+                                        </select>
+                                    </label>
+
+                                    <label class="form-group">
+                                        <span>Tipo de documento *</span>
+                                        <select name="tipo_documento" id="tipoDocumento" required>
+                                            <% catalogosActuales.tipos_documento.forEach((tipo)=> { %>
+                                                <option value="<%= tipo.valor %>" <%=seleccionado('tipo_documento',
+                                                    tipo.valor, 'CC' ) %>>
+                                                    <%= tipo.texto %>
+                                                </option>
+                                                <% }) %>
+                                        </select>
+                                    </label>
+
+                                    <label class="form-group">
+                                        <span>Número de documento *</span>
+                                        <input type="text" name="documento" value="<%= valor('documento') %>" required
+                                            maxlength="30" autocomplete="off">
+                                    </label>
+
+                                    <label class="form-group" data-juridica-field>
+                                        <span>Dígito de verificación</span>
+                                        <input type="text" name="digito_verificacion"
+                                            value="<%= valor('digito_verificacion') %>" maxlength="2"
+                                            autocomplete="off">
+                                    </label>
+                                </div>
+                            </section>
+
+                            <section class="clientes-form-block" data-client-section="natural">
+                                <div class="clientes-form-block-head">
+                                    <span class="clientes-section-eyebrow">Persona natural</span>
+                                    <h4>Nombres y apellidos</h4>
+                                </div>
+
+                                <div class="clientes-form-grid clientes-form-grid-4">
+                                    <label class="form-group">
+                                        <span>Primer nombre</span>
+                                        <input type="text" name="primer_nombre" value="<%= valor('primer_nombre') %>"
+                                            maxlength="80">
+                                    </label>
+
+                                    <label class="form-group">
+                                        <span>Segundo nombre</span>
+                                        <input type="text" name="segundo_nombre" value="<%= valor('segundo_nombre') %>"
+                                            maxlength="80">
+                                    </label>
+
+                                    <label class="form-group">
+                                        <span>Primer apellido</span>
+                                        <input type="text" name="primer_apellido"
+                                            value="<%= valor('primer_apellido') %>" maxlength="80">
+                                    </label>
+
+                                    <label class="form-group">
+                                        <span>Segundo apellido</span>
+                                        <input type="text" name="segundo_apellido"
+                                            value="<%= valor('segundo_apellido') %>" maxlength="80">
+                                    </label>
+                                </div>
+                            </section>
+
+                            <section class="clientes-form-block" data-client-section="juridica">
+                                <div class="clientes-form-block-head">
+                                    <span class="clientes-section-eyebrow">Persona jurídica</span>
+                                    <h4>Datos empresariales</h4>
+                                </div>
+
+                                <div class="clientes-form-grid clientes-form-grid-4">
+                                    <label class="form-group">
+                                        <span>Razón social</span>
+                                        <input type="text" name="razon_social" value="<%= valor('razon_social') %>"
+                                            maxlength="180">
+                                    </label>
+
+                                    <label class="form-group">
+                                        <span>Nombre comercial</span>
+                                        <input type="text" name="nombre_comercial"
+                                            value="<%= valor('nombre_comercial') %>" maxlength="180">
+                                    </label>
+
+                                    <label class="form-group">
+                                        <span>Contacto</span>
+                                        <input type="text" name="contacto_nombre"
+                                            value="<%= valor('contacto_nombre') %>" maxlength="120">
+                                    </label>
+
+                                    <label class="form-group">
+                                        <span>Cargo del contacto</span>
+                                        <input type="text" name="contacto_cargo" value="<%= valor('contacto_cargo') %>"
+                                            maxlength="120">
+                                    </label>
+                                </div>
+                            </section>
+
+                            <section class="clientes-form-block">
+                                <div class="clientes-form-block-head">
+                                    <span class="clientes-section-eyebrow">Contacto</span>
+                                    <h4>Teléfono y correos</h4>
+                                </div>
+
+                                <div class="clientes-form-grid clientes-form-grid-4">
+                                    <label class="form-group">
+                                        <span>Teléfono</span>
+                                        <input type="text" name="telefono" value="<%= valor('telefono') %>"
+                                            maxlength="40">
+                                    </label>
+
+                                    <label class="form-group">
+                                        <span>Celular</span>
+                                        <input type="text" name="celular" value="<%= valor('celular') %>"
+                                            maxlength="40">
+                                    </label>
+
+                                    <label class="form-group">
+                                        <span>Correo principal</span>
+                                        <input type="email" name="correo" value="<%= valor('correo') %>"
+                                            maxlength="160">
+                                    </label>
+
+                                    <label class="form-group">
+                                        <span>Correo de facturación</span>
+                                        <input type="email" name="correo_facturacion"
+                                            value="<%= valor('correo_facturacion') %>" maxlength="160">
+                                    </label>
+                                </div>
+                            </section>
+
+                            <section class="clientes-form-block">
+                                <div class="clientes-form-block-head">
+                                    <span class="clientes-section-eyebrow">Ubicación</span>
+                                    <h4>Departamento, municipio y dirección</h4>
+                                    <p>
+                                        Primero selecciona el departamento. Luego el sistema filtrará los municipios
+                                        disponibles
+                                        y completará los códigos automáticamente.
+                                    </p>
+                                </div>
+
+                                <div class="clientes-form-grid clientes-form-grid-4">
+                                    <label class="form-group clientes-full-field clientes-location-search">
+                                        <span>Buscar departamento</span>
+
+                                        <div class="clientes-location-search-wrap">
+                                            <input type="search" id="buscarDepartamentoCliente"
+                                                value="<%= etiquetaDepartamentoActual %>"
+                                                placeholder="Ej: Cesar, Risaralda, Antioquia..." autocomplete="off">
+
+                                            <div class="clientes-location-results" id="resultadosDepartamentosCliente"
+                                                hidden>
+                                                <div class="clientes-location-empty">
+                                                    Escribe para buscar un departamento.
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <small class="field-help">
+                                            Al seleccionar un departamento se habilita la búsqueda de municipios.
+                                        </small>
+                                    </label>
+
+                                    <label class="form-group clientes-full-field clientes-location-search">
+                                        <span>Buscar municipio</span>
+
+                                        <div class="clientes-location-search-wrap">
+                                            <input type="search" id="buscarMunicipioCliente"
+                                                value="<%= etiquetaMunicipioActual %>"
+                                                placeholder="Selecciona primero un departamento..." autocomplete="off"
+                                                <%=valor('codigo_departamento') ? '' : 'disabled' %>
+                                            >
+
+                                            <div class="clientes-location-results" id="resultadosMunicipiosCliente"
+                                                hidden>
+                                                <div class="clientes-location-empty">
+                                                    Escribe para buscar un municipio.
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <small class="field-help">
+                                            El listado de municipios se filtra por el departamento seleccionado.
+                                        </small>
+                                    </label>
+
+                                    <label class="form-group">
+                                        <span>País</span>
+                                        <input type="text" id="paisCliente" name="pais"
+                                            value="<%= valor('pais', 'Colombia') %>" maxlength="80" readonly>
+                                    </label>
+
+                                    <label class="form-group">
+                                        <span>Código país</span>
+                                        <input type="text" id="codigoPaisCliente" name="codigo_pais"
+                                            value="<%= valor('codigo_pais', 'CO') %>" maxlength="10" readonly>
+                                    </label>
+
+                                    <label class="form-group">
+                                        <span>Departamento</span>
+                                        <input type="text" id="departamentoCliente" name="departamento"
+                                            value="<%= valor('departamento') %>" maxlength="80" readonly>
+                                    </label>
+
+                                    <label class="form-group">
+                                        <span>Código departamento</span>
+                                        <input type="text" id="codigoDepartamentoCliente" name="codigo_departamento"
+                                            value="<%= valor('codigo_departamento') %>" maxlength="10" readonly>
+                                    </label>
+
+                                    <label class="form-group">
+                                        <span>Municipio</span>
+                                        <input type="text" id="municipioCliente" name="municipio"
+                                            value="<%= valor('municipio') %>" maxlength="80" readonly>
+                                    </label>
+
+                                    <label class="form-group">
+                                        <span>Código municipio</span>
+                                        <input type="text" id="codigoMunicipioCliente" name="codigo_municipio"
+                                            value="<%= valor('codigo_municipio') %>" maxlength="10" readonly>
+                                    </label>
+
+                                    <label class="form-group">
+                                        <span>Barrio</span>
+                                        <input type="text" name="barrio" value="<%= valor('barrio') %>" maxlength="100">
+                                    </label>
+
+                                    <label class="form-group">
+                                        <span>Código postal</span>
+                                        <input type="text" name="codigo_postal" value="<%= valor('codigo_postal') %>"
+                                            maxlength="20">
+                                    </label>
+
+                                    <label class="form-group clientes-full-field">
+                                        <span>Dirección</span>
+                                        <input type="text" name="direccion" value="<%= valor('direccion') %>"
+                                            maxlength="220" placeholder="Ej: Calle 10 # 8-25 Local 2">
+                                    </label>
+                                </div>
+                            </section>
+
+                            <section class="clientes-form-block">
+                                <div class="clientes-form-block-head">
+                                    <span class="clientes-section-eyebrow">Facturación</span>
+                                    <h4>Datos fiscales</h4>
+                                </div>
+
+                                <div class="clientes-form-grid clientes-form-grid-4">
+                                    <label class="form-group">
+                                        <span>Régimen fiscal</span>
+                                        <select name="regimen_fiscal">
+                                            <% catalogosActuales.regimenes_fiscales.forEach((regimen)=> { %>
+                                                <option value="<%= regimen.valor %>" <%=seleccionado('regimen_fiscal',
+                                                    regimen.valor, 'no_definido' ) %>>
+                                                    <%= regimen.texto %>
+                                                </option>
+                                                <% }) %>
+                                        </select>
+                                    </label>
+
+                                    <label class="form-group">
+                                        <span>Obligado a facturar</span>
+                                        <select name="obligado_facturar">
+                                            <option value="0" <%=Number(valor('obligado_facturar', 0))===0 ? 'selected'
+                                                : '' %>>
+                                                No
+                                            </option>
+                                            <option value="1" <%=Number(valor('obligado_facturar', 0))===1 ? 'selected'
+                                                : '' %>>
+                                                Sí
+                                            </option>
+                                        </select>
+                                    </label>
+
+                                    <label class="form-group">
+                                        <span>Acepta factura electrónica</span>
+                                        <select name="acepta_factura_electronica">
+                                            <option value="1" <%=Number(valor('acepta_factura_electronica', 1))===1
+                                                ? 'selected' : '' %>>
+                                                Sí
+                                            </option>
+                                            <option value="0" <%=Number(valor('acepta_factura_electronica', 1))===0
+                                                ? 'selected' : '' %>>
+                                                No
+                                            </option>
+                                        </select>
+                                    </label>
+
+                                    <label class="form-group">
+                                        <span>Autoriza tratamiento de datos</span>
+                                        <select name="autoriza_tratamiento_datos">
+                                            <option value="0" <%=Number(valor('autoriza_tratamiento_datos', 0))===0
+                                                ? 'selected' : '' %>>
+                                                No
+                                            </option>
+                                            <option value="1" <%=Number(valor('autoriza_tratamiento_datos', 0))===1
+                                                ? 'selected' : '' %>>
+                                                Sí
+                                            </option>
+                                        </select>
+                                    </label>
+
+                                    <label class="form-group clientes-full-field">
+                                        <span>Responsabilidades fiscales JSON</span>
+                                        <textarea name="responsabilidades_fiscales_json" rows="3"
+                                            placeholder='Ej: ["R-99-PN"]'><%= valor('responsabilidades_fiscales_json') %></textarea>
+                                    </label>
+
+                                    <label class="form-group clientes-full-field">
+                                        <span>Observaciones de facturación</span>
+                                        <textarea name="observaciones_facturacion"
+                                            rows="3"><%= valor('observaciones_facturacion') %></textarea>
+                                    </label>
+                                </div>
+                            </section>
+
+                            <section class="clientes-form-block">
+                                <div class="clientes-form-block-head">
+                                    <span class="clientes-section-eyebrow">Notas internas</span>
+                                    <h4>Observaciones</h4>
+                                </div>
+
+                                <div class="clientes-form-grid clientes-form-grid-1">
+                                    <label class="form-group clientes-full-field">
+                                        <span>Observaciones generales</span>
+                                        <textarea name="observaciones" rows="4"><%= valor('observaciones') %></textarea>
+                                    </label>
+                                </div>
+                            </section>
+                        </div>
+
+                        <div class="clientes-form-actions">
+                            <button type="submit" class="btn-primary">
+                                <%= esEditar ? 'Guardar cambios' : 'Crear cliente' %>
+                            </button>
+
+                            <a href="/clientes" class="btn-secondary">
+                                Cancelar
+                            </a>
+                        </div>
+                    </article>
+                </form>
+
+                <script src="/js/clientes.js"></script>
+</section>
