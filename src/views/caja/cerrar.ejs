@@ -1,8 +1,8 @@
 <section class="module-page caja-page">
     <% const gruposResumenMedios=resumenMediosPagoAgrupado || { efectivo: [], transferencias: [], tarjetas: [], otros:
         [] }; const totalesResumen=totalesResumenMediosPago || { cantidad_operaciones: 0, total_ingresos: 0,
-        total_egresos: 0, saldo_neto: 0 }; const resumenMediosTabla=[ ...(gruposResumenMedios.efectivo ||
-        []).map((medio)=> ({
+        total_egresos: 0, saldo_neto: 0 }; const movimientosListado=Array.isArray(movimientos) ? movimientos : []; const
+        resumenMediosTabla=[ ...(gruposResumenMedios.efectivo || []).map((medio)=> ({
         ...medio,
         grupo: 'Efectivo'
         })),
@@ -20,6 +20,17 @@
         }))
         ];
 
+        const mediosFisicos = resumenMediosTabla.filter((medio) => Number(medio.afecta_efectivo_caja || 0) === 1);
+        const mediosNoFisicos = resumenMediosTabla.filter((medio) => Number(medio.afecta_efectivo_caja || 0) !== 1);
+
+        const totalSoportesNoFisicos = mediosNoFisicos.reduce((total, medio) => {
+        return total + Number(medio.saldo_neto || 0);
+        }, 0);
+
+        const cantidadSoportesNoFisicos = mediosNoFisicos.reduce((total, medio) => {
+        return total + Number(medio.cantidad_operaciones || 0);
+        }, 0);
+
         const efectivoEsperado = Number(turnoAbierto?.monto_esperado_calculado || 0);
         const valorMontoContado = valores?.monto_contado || String(efectivoEsperado);
         %>
@@ -29,7 +40,8 @@
                 <p class="eyebrow">Cierre de caja</p>
                 <h2>Cerrar caja</h2>
                 <p>
-                    Verifica el efectivo físico contado y registra el cierre del turno activo.
+                    Cuenta únicamente el efectivo físico disponible en caja. Los pagos electrónicos se revisan como
+                    soportes.
                 </p>
             </div>
 
@@ -80,10 +92,19 @@
                             <% } %>
                     </article>
 
-                    <article class="module-card caja-summary-card">
-                        <p class="eyebrow">Resumen para cierre</p>
+                    <article class="module-card caja-cierre-cash-card">
+                        <div class="caja-cierre-card-head">
+                            <div>
+                                <p class="eyebrow">Efectivo físico</p>
+                                <h3>Valor que debe contarse en caja</h3>
+                                <p>
+                                    Este cálculo no incluye Nequi, Daviplata, Bre-B, Bancolombia, tarjetas ni otros
+                                    soportes externos.
+                                </p>
+                            </div>
+                        </div>
 
-                        <div class="caja-summary-grid">
+                        <div class="caja-cierre-formula">
                             <div>
                                 <span>Base inicial</span>
                                 <strong>
@@ -107,13 +128,11 @@
 
                             <div>
                                 <span>Egresos manuales</span>
-                                <strong>
-                                    <%= formatearPesos(turnoAbierto.total_egresos_manuales) %>
-                                </strong>
+                                <strong>- <%= formatearPesos(turnoAbierto.total_egresos_manuales) %></strong>
                             </div>
                         </div>
 
-                        <div class="caja-expected-box">
+                        <div class="caja-cierre-total-esperado">
                             <span>Efectivo esperado para cierre</span>
                             <strong>
                                 <%= formatearPesos(efectivoEsperado) %>
@@ -122,137 +141,163 @@
                     </article>
                 </section>
 
-                <article class="module-card caja-operativo-card">
-                    <div class="table-summary">
-                        <span>Resumen operativo por medios</span>
-                        <span>
+                <article class="module-card caja-cierre-soportes-card">
+                    <div class="caja-section-head">
+                        <div>
+                            <span class="caja-section-eyebrow">Soportes no físicos</span>
+                            <h3>Pagos electrónicos y otros medios para verificar</h3>
+                            <p>
+                                Estos valores sirven para revisar soportes, comprobantes y movimientos, pero no se suman
+                                al efectivo físico contado.
+                            </p>
+                        </div>
+
+                        <span class="caja-section-count">
                             <strong>
-                                <%= totalesResumen.cantidad_operaciones %>
-                            </strong> operaciones
+                                <%= cantidadSoportesNoFisicos %>
+                            </strong>
+                            operaciones
                         </span>
                     </div>
 
-                    <div class="caja-operativo-totales">
-                        <div class="caja-operativo-total-box">
-                            <span>Total ingresos</span>
+                    <div class="caja-cierre-support-summary">
+                        <div>
+                            <span>Total soportes no físicos</span>
+                            <strong>
+                                <%= formatearPesos(totalSoportesNoFisicos) %>
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span>Total ingresos operativos</span>
                             <strong>
                                 <%= formatearPesos(totalesResumen.total_ingresos) %>
                             </strong>
                         </div>
 
-                        <div class="caja-operativo-total-box">
-                            <span>Total egresos</span>
+                        <div>
+                            <span>Total egresos operativos</span>
                             <strong>
                                 <%= formatearPesos(totalesResumen.total_egresos) %>
                             </strong>
                         </div>
 
-                        <div class="caja-operativo-total-box">
-                            <span>Saldo neto operativo</span>
-                            <strong>
-                                <%= formatearPesos(totalesResumen.saldo_neto) %>
-                            </strong>
-                        </div>
-
-                        <div class="caja-operativo-total-box">
+                        <div>
                             <span>Movimientos del turno</span>
                             <strong>
-                                <%= movimientos.length %>
+                                <%= movimientosListado.length %>
                             </strong>
                         </div>
                     </div>
 
-                    <div class="table-wrapper caja-operativo-table-wrapper">
-                        <table class="data-table caja-table caja-operativo-table">
-                            <thead>
-                                <tr>
-                                    <th>Grupo</th>
-                                    <th>Medio</th>
-                                    <th class="text-center">Ops.</th>
-                                    <th class="text-right">Ingresos</th>
-                                    <th class="text-right">Egresos</th>
-                                    <th class="text-right">Neto</th>
-                                </tr>
-                            </thead>
+                    <% if (mediosNoFisicos.length===0) { %>
+                        <div class="empty-state">
+                            <h3>Sin soportes externos</h3>
+                            <p>
+                                Este turno no registra pagos electrónicos, tarjetas u otros medios no físicos.
+                            </p>
+                        </div>
+                        <% } else { %>
+                            <div class="table-wrapper caja-operativo-table-wrapper">
+                                <table class="data-table caja-table caja-operativo-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Grupo</th>
+                                            <th>Medio</th>
+                                            <th class="text-center">Ops.</th>
+                                            <th class="text-right">Ingresos</th>
+                                            <th class="text-right">Egresos</th>
+                                            <th class="text-right">Neto</th>
+                                        </tr>
+                                    </thead>
 
-                            <tbody>
-                                <% resumenMediosTabla.forEach((medio)=> { %>
-                                    <% const totalIngresos=Number(medio.total_ingresos || 0); const
-                                        totalEgresos=Number(medio.total_egresos || 0); const
-                                        saldoNeto=Number(medio.saldo_neto || 0); const claseNeto=saldoNeto> 0
-                                        ? 'caja-neto-positivo'
-                                        : saldoNeto < 0 ? 'caja-neto-negativo' : 'caja-neto-cero' ; const
-                                            signoNeto=saldoNeto> 0 ? '+' : saldoNeto < 0 ? '-' : '' ; %>
+                                    <tbody>
+                                        <% mediosNoFisicos.forEach((medio)=> { %>
+                                            <% const totalIngresos=Number(medio.total_ingresos || 0); const
+                                                totalEgresos=Number(medio.total_egresos || 0); const
+                                                saldoNeto=Number(medio.saldo_neto || 0); const claseNeto=saldoNeto> 0
+                                                ? 'caja-neto-positivo'
+                                                : saldoNeto < 0 ? 'caja-neto-negativo' : 'caja-neto-cero' ; const
+                                                    signoNeto=saldoNeto> 0
+                                                    ? '+'
+                                                    : saldoNeto < 0 ? '-' : '' ; %>
 
-                                                <tr
-                                                    class="<%= medio.cantidad_operaciones > 0 ? 'caja-operativo-row-activa' : 'caja-operativo-row-vacia' %>">
-                                                    <td>
-                                                        <span class="caja-operativo-grupo-badge">
-                                                            <%= medio.grupo %>
-                                                        </span>
-                                                    </td>
+                                                        <tr
+                                                            class="<%= medio.cantidad_operaciones > 0 ? 'caja-operativo-row-activa' : 'caja-operativo-row-vacia' %>">
+                                                            <td>
+                                                                <span class="caja-operativo-grupo-badge">
+                                                                    <%= medio.grupo %>
+                                                                </span>
+                                                            </td>
 
-                                                    <td>
-                                                        <div class="caja-operativo-medio-cell">
-                                                            <strong>
-                                                                <%= medio.nombre %>
-                                                            </strong>
+                                                            <td>
+                                                                <div class="caja-operativo-medio-cell">
+                                                                    <strong>
+                                                                        <%= medio.nombre %>
+                                                                    </strong>
+                                                                    <span>Verificar soporte externo</span>
+                                                                </div>
+                                                            </td>
 
-                                                            <% if (Number(medio.afecta_efectivo_caja || 0)===1) { %>
-                                                                <span>Afecta efectivo físico</span>
-                                                                <% } else { %>
-                                                                    <span>No afecta efectivo físico</span>
-                                                                    <% } %>
-                                                        </div>
-                                                    </td>
+                                                            <td class="text-center">
+                                                                <strong>
+                                                                    <%= medio.cantidad_operaciones %>
+                                                                </strong>
+                                                            </td>
 
-                                                    <td class="text-center">
-                                                        <strong>
-                                                            <%= medio.cantidad_operaciones %>
-                                                        </strong>
-                                                    </td>
+                                                            <td class="text-right">
+                                                                <span
+                                                                    class="<%= totalIngresos > 0 ? 'caja-operativo-ingreso' : 'caja-operativo-cero' %>">
+                                                                    <%= totalIngresos> 0 ? '+ ' : '' %><%=
+                                                                            formatearPesos(totalIngresos) %>
+                                                                </span>
+                                                            </td>
 
-                                                    <td class="text-right">
-                                                        <span
-                                                            class="<%= totalIngresos > 0 ? 'caja-operativo-ingreso' : 'caja-operativo-cero' %>">
-                                                            <%= totalIngresos> 0 ? '+ ' : '' %><%=
-                                                                    formatearPesos(totalIngresos) %>
-                                                        </span>
-                                                    </td>
+                                                            <td class="text-right">
+                                                                <span
+                                                                    class="<%= totalEgresos > 0 ? 'caja-operativo-egreso' : 'caja-operativo-cero' %>">
+                                                                    <%= totalEgresos> 0 ? '- ' : '' %><%=
+                                                                            formatearPesos(totalEgresos) %>
+                                                                </span>
+                                                            </td>
 
-                                                    <td class="text-right">
-                                                        <span
-                                                            class="<%= totalEgresos > 0 ? 'caja-operativo-egreso' : 'caja-operativo-cero' %>">
-                                                            <%= totalEgresos> 0 ? '- ' : '' %><%=
-                                                                    formatearPesos(totalEgresos) %>
-                                                        </span>
-                                                    </td>
-
-                                                    <td class="text-right">
-                                                        <strong class="caja-operativo-neto <%= claseNeto %>">
-                                                            <%= signoNeto %>
-                                                                <%= formatearPesos(Math.abs(saldoNeto)) %>
-                                                        </strong>
-                                                    </td>
-                                                </tr>
-                                                <% }) %>
-                            </tbody>
-                        </table>
-                    </div>
+                                                            <td class="text-right">
+                                                                <strong class="caja-operativo-neto <%= claseNeto %>">
+                                                                    <%= signoNeto %>
+                                                                        <%= formatearPesos(Math.abs(saldoNeto)) %>
+                                                                </strong>
+                                                            </td>
+                                                        </tr>
+                                                        <% }) %>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <% } %>
                 </article>
 
                 <section class="caja-active-grid">
                     <form class="module-card form-panel caja-cierre-form" method="POST" action="/caja/cerrar"
                         data-efectivo-esperado="<%= efectivoEsperado %>">
                         <div class="form-section">
-                            <h3>Conteo físico</h3>
+                            <div class="caja-cierre-form-title">
+                                <div>
+                                    <h3>Conteo físico</h3>
+                                    <p>
+                                        Digita solo el dinero físico real encontrado en la caja registradora.
+                                    </p>
+                                </div>
+
+                                <span class="caja-cierre-mini-badge">
+                                    Solo efectivo
+                                </span>
+                            </div>
 
                             <div class="form-group">
                                 <label for="monto_contado">Efectivo contado *</label>
                                 <input type="number" id="monto_contado" name="monto_contado" min="0" step="1"
                                     value="<%= valorMontoContado %>" required>
                                 <small class="field-help">
-                                    Digita el dinero físico real contado en caja.
+                                    No incluyas Nequi, Daviplata, Bre-B, Bancolombia, tarjetas ni otros pagos externos.
                                 </small>
                             </div>
 
@@ -296,9 +341,17 @@
                     </form>
 
                     <article class="module-card caja-help-card">
-                        <h3>Lectura del cierre</h3>
+                        <h3>Cómo interpretar el cierre</h3>
 
                         <div class="caja-cierre-help-list">
+                            <div>
+                                <span>Efectivo esperado</span>
+                                <p>
+                                    Es la base inicial más ventas en efectivo e ingresos manuales, menos egresos
+                                    manuales.
+                                </p>
+                            </div>
+
                             <div>
                                 <span>Si la diferencia es $0</span>
                                 <p>El efectivo contado coincide con el efectivo esperado.</p>
@@ -312,6 +365,13 @@
                             <div>
                                 <span>Si la diferencia es positiva</span>
                                 <p>Hay sobrante de efectivo físico en caja.</p>
+                            </div>
+
+                            <div>
+                                <span>Pagos electrónicos</span>
+                                <p>
+                                    Se revisan como soporte externo, pero no hacen parte del conteo físico de caja.
+                                </p>
                             </div>
                         </div>
                     </article>

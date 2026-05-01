@@ -1136,3 +1136,135 @@
         width: fit-content;
     }
 }
+
+/* ===== Cierre de caja · claridad operativo-contable ===== */
+
+.caja-cierre-cash-card,
+.caja-cierre-soportes-card {
+    display: grid;
+    gap: 16px;
+}
+
+.caja-cierre-card-head h3,
+.caja-cierre-form-title h3 {
+    margin: 3px 0 6px;
+    color: var(--color-text);
+    font-size: 15px;
+    font-weight: 900;
+    letter-spacing: -0.01em;
+}
+
+.caja-cierre-card-head p,
+.caja-cierre-form-title p {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.caja-cierre-formula {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.caja-cierre-formula div,
+.caja-cierre-support-summary div {
+    padding: 12px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-soft);
+}
+
+.caja-cierre-formula span,
+.caja-cierre-support-summary span {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--color-muted);
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.caja-cierre-formula strong,
+.caja-cierre-support-summary strong {
+    color: var(--color-text);
+    font-size: 15px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+}
+
+.caja-cierre-total-esperado {
+    padding: 16px;
+    border: 1px solid rgba(36, 79, 143, 0.18);
+    border-radius: var(--radius-md);
+    background: var(--color-primary-soft);
+}
+
+.caja-cierre-total-esperado span {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--color-primary-dark);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.caja-cierre-total-esperado strong {
+    color: var(--color-primary-dark);
+    font-size: 24px;
+    font-weight: 950;
+    letter-spacing: -0.03em;
+}
+
+.caja-cierre-support-summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.caja-cierre-form-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.caja-cierre-mini-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: max-content;
+    padding: 6px 10px;
+    border: 1px solid rgba(36, 79, 143, 0.22);
+    border-radius: 999px;
+    background: var(--color-primary-soft);
+    color: var(--color-primary-dark);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+@media (max-width: 1080px) {
+
+    .caja-cierre-formula,
+    .caja-cierre-support-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+
+    .caja-cierre-formula,
+    .caja-cierre-support-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .caja-cierre-form-title {
+        flex-direction: column;
+    }
+}
