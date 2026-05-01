@@ -14,6 +14,7 @@ function mostrarPOS(req, res) {
         clienteConsumidorFinal: estadoPOS.clienteConsumidorFinal,
         mediosPago: estadoPOS.mediosPago,
         mediosPagoAgrupados: estadoPOS.mediosPagoAgrupados,
+        siguienteFactura: estadoPOS.siguienteFactura,
         productos: estadoPOS.productos,
         ventasRecientes: estadoPOS.ventasRecientes,
         carrito: estadoPOS.carrito,

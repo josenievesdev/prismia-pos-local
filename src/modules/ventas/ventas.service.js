@@ -105,6 +105,30 @@ function prepararMedioPago(medioPago) {
     };
 }
 
+function prepararNumeracionDocumento(numeracion) {
+    if (!numeracion) {
+        return {
+            codigo_documento: 'factura_venta',
+            nombre_documento: 'Factura de venta',
+            prefijo: 'FV',
+            longitud_consecutivo: 6,
+            ultimo_consecutivo: 0,
+            siguiente_consecutivo: 1,
+            siguiente_numero: 'FV-000001',
+            tipo_comprobante: 'recibo_interno',
+        };
+    }
+
+    return {
+        ...numeracion,
+        longitud_consecutivo: normalizarEntero(numeracion.longitud_consecutivo, 6),
+        ultimo_consecutivo: normalizarEntero(numeracion.ultimo_consecutivo),
+        siguiente_consecutivo: normalizarEntero(numeracion.siguiente_consecutivo),
+        siguiente_numero: limpiarTexto(numeracion.siguiente_numero) || 'FV-000001',
+        activo: normalizarEntero(numeracion.activo),
+    };
+}
+
 function agruparMediosPago(mediosPago) {
     const grupos = {
         efectivo: [],
@@ -242,6 +266,10 @@ function obtenerEstadoPOS({ busqueda = '' } = {}) {
 
     const mediosPagoAgrupados = agruparMediosPago(mediosPago);
 
+    const siguienteFactura = prepararNumeracionDocumento(
+        ventasRepository.obtenerSiguienteNumeroDocumento('factura_venta')
+    );
+
     const productos = ventasRepository
         .buscarProductosParaVenta({
             busqueda: limpiarTexto(busqueda),
@@ -259,6 +287,7 @@ function obtenerEstadoPOS({ busqueda = '' } = {}) {
         clienteConsumidorFinal,
         mediosPago,
         mediosPagoAgrupados,
+        siguienteFactura,
         productos,
         ventasRecientes,
         carrito: obtenerCarritoInicial(),
@@ -713,6 +742,8 @@ function registrarVentaPOS({ idUsuario, payload = {} } = {}) {
             fecha_venta: obtenerFechaVentaSQL(payload.fecha_venta),
             observaciones: limpiarTexto(payload.observaciones || ''),
             requiere_factura: 0,
+            codigo_documento: 'factura_venta',
+            tipo_comprobante: 'recibo_interno',
             prefijo_comprobante: 'FV',
             items: resultadoItems.items,
             resumen,

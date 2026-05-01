@@ -32,6 +32,56 @@ function obtenerConfiguracionNegocio() {
         .get();
 }
 
+function formatearNumeroDocumento(prefijo, consecutivo, longitudConsecutivo = 6) {
+    const prefijoSeguro = String(prefijo || '').trim() || 'DOC';
+    const consecutivoSeguro = Number(consecutivo || 0);
+    const longitudSegura = Number(longitudConsecutivo || 6);
+
+    return `${prefijoSeguro}-${String(consecutivoSeguro).padStart(longitudSegura, '0')}`;
+}
+
+function obtenerNumeracionDocumento(codigoDocumento) {
+    return db
+        .prepare(`
+            SELECT
+                id_numeracion,
+                codigo_documento,
+                nombre_documento,
+                prefijo,
+                longitud_consecutivo,
+                ultimo_consecutivo,
+                tipo_comprobante,
+                activo,
+                observaciones
+            FROM numeraciones_documentos
+            WHERE codigo_documento = ?
+              AND activo = 1
+            LIMIT 1
+        `)
+        .get(codigoDocumento);
+}
+
+function obtenerSiguienteNumeroDocumento(codigoDocumento) {
+    const numeracion = obtenerNumeracionDocumento(codigoDocumento);
+
+    if (!numeracion) {
+        return null;
+    }
+
+    const siguienteConsecutivo = Number(numeracion.ultimo_consecutivo || 0) + 1;
+    const siguienteNumero = formatearNumeroDocumento(
+        numeracion.prefijo,
+        siguienteConsecutivo,
+        numeracion.longitud_consecutivo
+    );
+
+    return {
+        ...numeracion,
+        siguiente_consecutivo: siguienteConsecutivo,
+        siguiente_numero: siguienteNumero,
+    };
+}
+
 function obtenerClienteConsumidorFinal() {
     return db
         .prepare(`
@@ -583,18 +633,55 @@ function listarTurnosConVentas(limite = 100) {
 
 function registrarVentaPOS(datos) {
     const transaccion = db.transaction(() => {
-        const prefijo = datos.prefijo_comprobante || 'FV';
+        const codigoDocumento = datos.codigo_documento || 'factura_venta';
 
-        const siguiente = db
+        const numeracion = db
             .prepare(`
-                SELECT COALESCE(MAX(consecutivo), 0) + 1 AS consecutivo
+                SELECT
+                    id_numeracion,
+                    codigo_documento,
+                    nombre_documento,
+                    prefijo,
+                    longitud_consecutivo,
+                    ultimo_consecutivo,
+                    tipo_comprobante,
+                    activo
+                FROM numeraciones_documentos
+                WHERE codigo_documento = ?
+                  AND activo = 1
+                LIMIT 1
+            `)
+            .get(codigoDocumento);
+
+        if (!numeracion) {
+            throw new Error(`No existe una numeración activa para el documento "${codigoDocumento}".`);
+        }
+
+        const prefijo = String(numeracion.prefijo || datos.prefijo_comprobante || 'FV').trim();
+        const longitudConsecutivo = Number(numeracion.longitud_consecutivo || 6);
+        const tipoComprobante = String(
+            numeracion.tipo_comprobante || datos.tipo_comprobante || 'recibo_interno'
+        ).trim();
+
+        const ultimoComprobante = db
+            .prepare(`
+                SELECT COALESCE(MAX(consecutivo), 0) AS ultimo_consecutivo
                 FROM comprobantes
                 WHERE prefijo = ?
             `)
             .get(prefijo);
 
-        const consecutivo = siguiente.consecutivo;
-        const numeroVenta = `${prefijo}-${String(consecutivo).padStart(6, '0')}`;
+        const ultimoConsecutivo = Math.max(
+            Number(numeracion.ultimo_consecutivo || 0),
+            Number(ultimoComprobante?.ultimo_consecutivo || 0)
+        );
+
+        const consecutivo = ultimoConsecutivo + 1;
+        const numeroVenta = formatearNumeroDocumento(
+            prefijo,
+            consecutivo,
+            longitudConsecutivo
+        );
 
         const ventaInsertada = db
             .prepare(`
@@ -907,7 +994,7 @@ function registrarVentaPOS(datos) {
                 datos_fiscales_json
             ) VALUES (
                 @id_venta,
-                'recibo_interno',
+                @tipo_comprobante,
                 @prefijo,
                 @numero,
                 @consecutivo,
@@ -916,16 +1003,28 @@ function registrarVentaPOS(datos) {
             )
         `).run({
             id_venta: idVenta,
+            tipo_comprobante: tipoComprobante,
             prefijo,
             numero: numeroVenta,
             consecutivo,
             datos_fiscales_json: JSON.stringify(datos.datos_fiscales || {}),
         });
 
+        db.prepare(`
+            UPDATE numeraciones_documentos
+            SET ultimo_consecutivo = @consecutivo,
+                actualizado_en = CURRENT_TIMESTAMP
+            WHERE id_numeracion = @id_numeracion
+        `).run({
+            id_numeracion: numeracion.id_numeracion,
+            consecutivo,
+        });
+
         return {
             id_venta: idVenta,
             numero_venta: numeroVenta,
             comprobante: {
+                tipo_comprobante: tipoComprobante,
                 prefijo,
                 numero: numeroVenta,
                 consecutivo,
@@ -1091,6 +1190,8 @@ function obtenerComprobanteVentaPorId(idVenta) {
 module.exports = {
     obtenerTurnoAbierto,
     obtenerConfiguracionNegocio,
+    obtenerNumeracionDocumento,
+    obtenerSiguienteNumeroDocumento,
     obtenerClienteConsumidorFinal,
     obtenerClientePorId,
     buscarClientesParaVenta,
