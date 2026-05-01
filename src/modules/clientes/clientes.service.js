@@ -235,13 +235,21 @@ function obtenerClienteParaFormulario(idCliente) {
 }
 
 function normalizarPayloadCliente(payload = {}) {
-    const tipoCliente = TIPOS_CLIENTE.includes(limpiarTexto(payload.tipo_cliente))
+    const tipoDocumentoSolicitado = TIPOS_DOCUMENTO.includes(limpiarTexto(payload.tipo_documento))
+        ? limpiarTexto(payload.tipo_documento)
+        : 'CC';
+
+    const tipoClienteSolicitado = TIPOS_CLIENTE.includes(limpiarTexto(payload.tipo_cliente))
         ? limpiarTexto(payload.tipo_cliente)
         : 'persona_natural';
 
-    const tipoDocumento = TIPOS_DOCUMENTO.includes(limpiarTexto(payload.tipo_documento))
-        ? limpiarTexto(payload.tipo_documento)
-        : 'CC';
+    const tipoCliente = tipoDocumentoSolicitado === 'NIT'
+        ? 'persona_juridica'
+        : tipoClienteSolicitado;
+
+    const tipoDocumento = tipoCliente === 'persona_juridica'
+        ? 'NIT'
+        : tipoDocumentoSolicitado;
 
     const documento = limpiarTexto(payload.documento).replace(/\s+/g, '');
     const digitoVerificacion = limpiarTexto(payload.digito_verificacion);

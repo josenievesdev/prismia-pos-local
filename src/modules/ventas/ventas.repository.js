@@ -144,8 +144,12 @@ function buscarClientesParaVenta({ busqueda = '', limite = 10 } = {}) {
                 tipo_documento,
                 documento,
                 nombre,
+                razon_social,
+                nombre_comercial,
                 telefono,
+                celular,
                 correo,
+                correo_facturacion,
                 direccion,
                 es_consumidor_final,
                 estado
@@ -154,20 +158,27 @@ function buscarClientesParaVenta({ busqueda = '', limite = 10 } = {}) {
               AND eliminado_en IS NULL
               AND (
                     nombre LIKE @patron
+                 OR razon_social LIKE @patron
+                 OR nombre_comercial LIKE @patron
                  OR documento LIKE @patron
                  OR telefono LIKE @patron
+                 OR celular LIKE @patron
                  OR correo LIKE @patron
+                 OR correo_facturacion LIKE @patron
               )
             ORDER BY
                 CASE
                     WHEN documento = @termino THEN 1
                     WHEN telefono = @termino THEN 2
-                    WHEN nombre LIKE @inicio THEN 3
-                    WHEN documento LIKE @inicio THEN 4
-                    ELSE 5
+                    WHEN celular = @termino THEN 3
+                    WHEN nombre LIKE @inicio THEN 4
+                    WHEN razon_social LIKE @inicio THEN 5
+                    WHEN nombre_comercial LIKE @inicio THEN 6
+                    WHEN documento LIKE @inicio THEN 7
+                    ELSE 8
                 END,
                 es_consumidor_final DESC,
-                nombre ASC
+                nombre COLLATE NOCASE ASC
             LIMIT @limite
         `)
         .all({

@@ -76,21 +76,33 @@ function prepararClienteParaVenta(cliente) {
     const tipoDocumento = cliente.tipo_documento || 'CC';
     const documento = cliente.documento || '0000000000';
 
+    const nombreCliente = limpiarTexto(cliente.nombre)
+        || limpiarTexto(cliente.razon_social)
+        || limpiarTexto(cliente.nombre_comercial)
+        || `Cliente #${cliente.id_cliente}`;
+
+    const telefonoCliente = limpiarTexto(cliente.telefono)
+        || limpiarTexto(cliente.celular);
+
+    const correoCliente = limpiarTexto(cliente.correo)
+        || limpiarTexto(cliente.correo_facturacion);
+
     return {
         id_cliente: cliente.id_cliente,
         tipo_documento: tipoDocumento,
         documento,
-        nombre: cliente.nombre,
-        telefono: cliente.telefono || '',
-        correo: cliente.correo || '',
+        nombre: nombreCliente,
+        telefono: telefonoCliente,
+        celular: limpiarTexto(cliente.celular),
+        correo: correoCliente,
         direccion: cliente.direccion || '',
         es_consumidor_final: normalizarEntero(cliente.es_consumidor_final),
         estado: cliente.estado,
         etiqueta_documento: `${tipoDocumento} ${documento}`,
         texto_secundario: [
             documento ? `${tipoDocumento} ${documento}` : null,
-            cliente.telefono || null,
-            cliente.correo || null,
+            telefonoCliente || null,
+            correoCliente || null,
         ].filter(Boolean).join(' · '),
     };
 }

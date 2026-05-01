@@ -21,6 +21,16 @@
 
             const esJuridica = tipoCliente.value === 'persona_juridica';
 
+            if (tipoDocumento) {
+                if (esJuridica) {
+                    tipoDocumento.value = 'NIT';
+                }
+
+                if (!esJuridica && tipoDocumento.value === 'NIT') {
+                    tipoDocumento.value = 'CC';
+                }
+            }
+
             if (seccionNatural) {
                 seccionNatural.hidden = esJuridica;
             }
@@ -33,15 +43,31 @@
                 campo.hidden = !esJuridica;
             });
 
-            if (esJuridica && tipoDocumento) {
-                tipoDocumento.value = 'NIT';
-            }
-
             actualizarMarcadoresObligatorios();
         }
 
         tipoCliente?.addEventListener('change', actualizarVisibilidad);
-        tipoDocumento?.addEventListener('change', actualizarMarcadoresObligatorios);
+
+        tipoDocumento?.addEventListener('change', function () {
+            if (!tipoCliente) {
+                actualizarMarcadoresObligatorios();
+                return;
+            }
+
+            if (tipoDocumento.value === 'NIT') {
+                tipoCliente.value = 'persona_juridica';
+                actualizarVisibilidad();
+                return;
+            }
+
+            if (tipoCliente.value === 'persona_juridica') {
+                tipoDocumento.value = 'NIT';
+                actualizarVisibilidad();
+                return;
+            }
+
+            actualizarMarcadoresObligatorios();
+        });
 
         actualizarVisibilidad();
     }
