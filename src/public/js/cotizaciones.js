@@ -961,5 +961,293 @@
         actualizarResumen(ui);
     }
 
-    document.addEventListener('DOMContentLoaded', inicializarCotizaciones);
+    function obtenerUiConversionCotizacion() {
+        return {
+            btnAbrir: $('btnAbrirConversionCotizacion'),
+            modal: $('modalConvertirCotizacion'),
+            form: $('formConvertirCotizacion'),
+            btnCerrar: $('btnCerrarConversionCotizacion'),
+            btnCancelar: $('btnCancelarConversionCotizacion'),
+            btnConfirmar: $('btnConfirmarConversionCotizacion'),
+
+            alerta: $('alertaConversionCotizacion'),
+            problemas: $('conversionProblemasCotizacion'),
+
+            numero: $('conversionNumeroCotizacion'),
+            cliente: $('conversionClienteCotizacion'),
+            total: $('conversionTotalCotizacion'),
+
+            medioPago: $('conversionMedioPagoCotizacion'),
+            montoRecibido: $('conversionMontoRecibidoCotizacion'),
+            referencia: $('conversionReferenciaCotizacion'),
+            observaciones: $('conversionObservacionesCotizacion'),
+
+            preparacion: null,
+        };
+    }
+
+    function mostrarAlertaConversion(ui, mensaje) {
+        if (!ui.alerta) return;
+
+        ui.alerta.textContent = mensaje;
+        ui.alerta.hidden = false;
+    }
+
+    function limpiarAlertaConversion(ui) {
+        if (!ui.alerta) return;
+
+        ui.alerta.textContent = '';
+        ui.alerta.hidden = true;
+    }
+
+    function renderProblemasConversion(ui, problemas = []) {
+        if (!ui.problemas) return;
+
+        if (!problemas.length) {
+            ui.problemas.hidden = true;
+            ui.problemas.innerHTML = '';
+            return;
+        }
+
+        ui.problemas.innerHTML = `
+        <strong>No se puede convertir todavía:</strong>
+        <ul>
+            ${problemas.map((problema) => `<li>${problema}</li>`).join('')}
+        </ul>
+    `;
+
+        ui.problemas.hidden = false;
+    }
+
+    function renderMediosPagoConversion(ui, mediosPago = []) {
+        ui.medioPago.innerHTML = '';
+
+        mediosPago.forEach(function (medio) {
+            const option = document.createElement('option');
+
+            option.value = medio.id_medio_pago;
+            option.textContent = `${medio.nombre} · ${medio.tipo}`;
+            option.dataset.requiereReferencia = medio.requiere_referencia || 0;
+            option.dataset.afectaEfectivo = medio.afecta_efectivo_caja || 0;
+
+            ui.medioPago.appendChild(option);
+        });
+    }
+
+    function obtenerMedioPagoSeleccionadoConversion(ui) {
+        const option = ui.medioPago.options[ui.medioPago.selectedIndex];
+
+        if (!option) {
+            return null;
+        }
+
+        return {
+            id_medio_pago: Number(option.value),
+            nombre: option.textContent,
+            requiere_referencia: Number(option.dataset.requiereReferencia || 0),
+            afecta_efectivo_caja: Number(option.dataset.afectaEfectivo || 0),
+        };
+    }
+
+    function actualizarReferenciaConversion(ui) {
+        const medio = obtenerMedioPagoSeleccionadoConversion(ui);
+
+        if (!medio) return;
+
+        const requiereReferencia = medio.requiere_referencia === 1;
+
+        ui.referencia.placeholder = requiereReferencia
+            ? 'Referencia obligatoria'
+            : 'Referencia opcional';
+
+        ui.referencia.required = requiereReferencia;
+    }
+
+    async function abrirModalConversionCotizacion(ui) {
+        limpiarAlertaConversion(ui);
+        renderProblemasConversion(ui, []);
+
+        ui.modal.hidden = false;
+
+        if (ui.btnConfirmar) {
+            ui.btnConfirmar.disabled = true;
+            ui.btnConfirmar.textContent = 'Validando...';
+        }
+
+        try {
+            const respuesta = await fetch(ui.btnAbrir.dataset.urlPreparar);
+            const datos = await respuesta.json();
+
+            if (!respuesta.ok || !datos.ok) {
+                mostrarAlertaConversion(ui, datos.mensaje || 'No se pudo preparar la conversión.');
+                return;
+            }
+
+            ui.preparacion = datos;
+
+            ui.numero.textContent = datos.cotizacion?.numero_cotizacion || '-';
+            ui.cliente.textContent = datos.cotizacion?.cliente_nombre_mostrar || 'Sin cliente';
+            ui.total.textContent = dinero(datos.cotizacion?.total || 0);
+
+            ui.montoRecibido.value = datos.cotizacion?.total || 0;
+            ui.observaciones.value = `Venta generada desde cotización ${datos.cotizacion?.numero_cotizacion || ''}.`;
+
+            renderMediosPagoConversion(ui, datos.medios_pago || []);
+            renderProblemasConversion(ui, datos.problemas || []);
+            actualizarReferenciaConversion(ui);
+
+            if (ui.btnConfirmar) {
+                ui.btnConfirmar.disabled = !datos.puede_convertir;
+                ui.btnConfirmar.textContent = datos.puede_convertir
+                    ? 'Convertir a venta'
+                    : 'No disponible';
+            }
+        } catch (error) {
+            console.error('Error preparando conversión:', error);
+            mostrarAlertaConversion(ui, 'Error de conexión preparando la conversión.');
+        }
+    }
+
+    function cerrarModalConversionCotizacion(ui) {
+        ui.modal.hidden = true;
+        limpiarAlertaConversion(ui);
+    }
+
+    function construirPayloadConversion(ui) {
+        const medio = obtenerMedioPagoSeleccionadoConversion(ui);
+
+        if (!medio?.id_medio_pago) {
+            return {
+                ok: false,
+                mensaje: 'Selecciona un medio de pago válido.',
+            };
+        }
+
+        const total = Number(ui.preparacion?.cotizacion?.total || 0);
+        const montoRecibido = Number(ui.montoRecibido.value || 0);
+        const referencia = limpiarTexto(ui.referencia.value);
+
+        if (montoRecibido < total) {
+            return {
+                ok: false,
+                mensaje: 'El valor recibido no cubre el total de la cotización.',
+            };
+        }
+
+        if (medio.requiere_referencia === 1 && !referencia) {
+            return {
+                ok: false,
+                mensaje: `El medio de pago seleccionado requiere referencia.`,
+            };
+        }
+
+        if (medio.afecta_efectivo_caja !== 1 && montoRecibido > total) {
+            return {
+                ok: false,
+                mensaje: 'El cambio solo aplica para pagos en efectivo.',
+            };
+        }
+
+        return {
+            ok: true,
+            datos: {
+                pago: {
+                    id_medio_pago: medio.id_medio_pago,
+                    monto_recibido: montoRecibido,
+                    referencia,
+                },
+                observaciones: limpiarTexto(ui.observaciones.value),
+            },
+        };
+    }
+
+    async function confirmarConversionCotizacion(ui) {
+        limpiarAlertaConversion(ui);
+
+        const payload = construirPayloadConversion(ui);
+
+        if (!payload.ok) {
+            mostrarAlertaConversion(ui, payload.mensaje);
+            return;
+        }
+
+        const textoOriginal = ui.btnConfirmar.textContent;
+
+        ui.btnConfirmar.disabled = true;
+        ui.btnConfirmar.textContent = 'Convirtiendo...';
+
+        try {
+            const respuesta = await fetch(ui.btnAbrir.dataset.urlConvertir, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload.datos),
+            });
+
+            const datos = await respuesta.json();
+
+            if (!respuesta.ok || !datos.ok) {
+                mostrarAlertaConversion(ui, datos.mensaje || 'No se pudo convertir la cotización.');
+                return;
+            }
+
+            const idCotizacion = datos.cotizacion?.id_cotizacion || ui.btnAbrir.dataset.idCotizacion;
+            const mensaje = `${datos.mensaje} Venta: ${datos.venta?.numero_venta || ''}`;
+
+            window.location.href = `/cotizaciones/${idCotizacion}?exito=${encodeURIComponent(mensaje)}`;
+        } catch (error) {
+            console.error('Error convirtiendo cotización:', error);
+            mostrarAlertaConversion(ui, 'Error de conexión convirtiendo la cotización.');
+        } finally {
+            ui.btnConfirmar.disabled = false;
+            ui.btnConfirmar.textContent = textoOriginal;
+        }
+    }
+
+    function inicializarConversionCotizacion() {
+        const ui = obtenerUiConversionCotizacion();
+
+        if (!ui.btnAbrir || !ui.modal || !ui.form) {
+            return;
+        }
+
+        ui.btnAbrir.addEventListener('click', function () {
+            abrirModalConversionCotizacion(ui);
+        });
+
+        ui.btnCerrar?.addEventListener('click', function () {
+            cerrarModalConversionCotizacion(ui);
+        });
+
+        ui.btnCancelar?.addEventListener('click', function () {
+            cerrarModalConversionCotizacion(ui);
+        });
+
+        ui.modal.addEventListener('click', function (evento) {
+            if (evento.target === ui.modal) {
+                cerrarModalConversionCotizacion(ui);
+            }
+        });
+
+        ui.medioPago?.addEventListener('change', function () {
+            actualizarReferenciaConversion(ui);
+        });
+
+        ui.form.addEventListener('submit', function (evento) {
+            evento.preventDefault();
+            confirmarConversionCotizacion(ui);
+        });
+
+        document.addEventListener('keydown', function (evento) {
+            if (evento.key === 'Escape' && !ui.modal.hidden) {
+                cerrarModalConversionCotizacion(ui);
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        inicializarCotizaciones();
+        inicializarConversionCotizacion();
+    });
 })();

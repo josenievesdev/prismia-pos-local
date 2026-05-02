@@ -1022,14 +1022,27 @@ function registrarVentaPOS(datos) {
         });
 
         db.prepare(`
-            UPDATE numeraciones_documentos
-            SET ultimo_consecutivo = @consecutivo,
-                actualizado_en = CURRENT_TIMESTAMP
-            WHERE id_numeracion = @id_numeracion
-        `).run({
+    UPDATE numeraciones_documentos
+    SET ultimo_consecutivo = @consecutivo,
+        actualizado_en = CURRENT_TIMESTAMP
+    WHERE id_numeracion = @id_numeracion
+`).run({
             id_numeracion: numeracion.id_numeracion,
             consecutivo,
         });
+
+        if (typeof datos.afterRegistrarVenta === 'function') {
+            datos.afterRegistrarVenta({
+                id_venta: idVenta,
+                numero_venta: numeroVenta,
+                comprobante: {
+                    tipo_comprobante: tipoComprobante,
+                    prefijo,
+                    numero: numeroVenta,
+                    consecutivo,
+                },
+            });
+        }
 
         return {
             id_venta: idVenta,

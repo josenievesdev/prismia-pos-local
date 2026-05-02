@@ -554,6 +554,27 @@ function listarDetalleCotizacion(idCotizacion) {
         .all(idCotizacion);
 }
 
+function marcarCotizacionConvertida({ id_cotizacion, id_venta_convertida }) {
+    const resultado = db
+        .prepare(`
+            UPDATE cotizaciones
+            SET
+                estado = 'convertida',
+                id_venta_convertida = @id_venta_convertida,
+                convertida_en = CURRENT_TIMESTAMP,
+                actualizado_en = CURRENT_TIMESTAMP
+            WHERE id_cotizacion = @id_cotizacion
+              AND estado IN ('emitida', 'aceptada')
+              AND id_venta_convertida IS NULL
+        `)
+        .run({
+            id_cotizacion,
+            id_venta_convertida,
+        });
+
+    return resultado.changes;
+}
+
 function crearCotizacion(datos) {
     const transaccion = db.transaction(() => {
         const numeracion = obtenerNumeracionCotizacion();
@@ -755,5 +776,6 @@ module.exports = {
     listarCotizaciones,
     obtenerCotizacionPorId,
     listarDetalleCotizacion,
+    marcarCotizacionConvertida,
     crearCotizacion,
 };

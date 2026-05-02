@@ -21,6 +21,8 @@ router.get('/api', cotizacionesController.listarCotizaciones);
 router.get('/api/:id', cotizacionesController.obtenerDetalleCotizacion);
 
 router.get('/nueva', cotizacionesController.mostrarNuevaCotizacion);
+router.get('/:id/convertir/preparar', cotizacionesController.prepararConversionCotizacion);
+router.post('/:id/convertir', cotizacionesController.convertirCotizacionAVenta);
 router.get('/:id/imprimir', cotizacionesController.mostrarImprimirCotizacion);
 router.get('/:id', cotizacionesController.mostrarDetalleCotizacion);
 

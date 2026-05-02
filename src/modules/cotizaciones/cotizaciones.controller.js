@@ -183,6 +183,30 @@ function obtenerDetalleCotizacion(req, res) {
     return res.json(resultado);
 }
 
+function prepararConversionCotizacion(req, res) {
+    const resultado = cotizacionesService.prepararConversionCotizacion(req.params.id);
+
+    if (!resultado.ok) {
+        return responderError(res, resultado);
+    }
+
+    return res.json(resultado);
+}
+
+function convertirCotizacionAVenta(req, res) {
+    const resultado = cotizacionesService.convertirCotizacionAVenta({
+        idCotizacion: req.params.id,
+        idUsuario: obtenerIdUsuarioAutenticado(req),
+        payload: req.body || {},
+    });
+
+    if (!resultado.ok) {
+        return responderError(res, resultado);
+    }
+
+    return res.status(201).json(resultado);
+}
+
 module.exports = {
     mostrarListadoCotizaciones,
     mostrarNuevaCotizacion,
@@ -195,4 +219,6 @@ module.exports = {
     crearCotizacion,
     listarCotizaciones,
     obtenerDetalleCotizacion,
+    prepararConversionCotizacion,
+    convertirCotizacionAVenta,
 };

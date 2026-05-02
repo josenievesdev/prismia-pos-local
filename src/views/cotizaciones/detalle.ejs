@@ -31,9 +31,22 @@
                     Imprimir
                 </a>
 
-                <button type="button" class="btn-primary" disabled>
-                    Convertir luego
-                </button>
+                <% if (['emitida', 'aceptada' ].includes(cotizacion.estado)) { %>
+                    <button type="button" class="btn-primary" id="btnAbrirConversionCotizacion"
+                        data-id-cotizacion="<%= cotizacion.id_cotizacion %>"
+                        data-url-preparar="/cotizaciones/<%= cotizacion.id_cotizacion %>/convertir/preparar"
+                        data-url-convertir="/cotizaciones/<%= cotizacion.id_cotizacion %>/convertir">
+                        Convertir a venta
+                    </button>
+                    <% } else if (cotizacion.estado==='convertida' ) { %>
+                        <button type="button" class="btn-primary" disabled>
+                            Convertida
+                        </button>
+                        <% } else { %>
+                            <button type="button" class="btn-primary" disabled>
+                                No convertible
+                            </button>
+                            <% } %>
             </div>
         </div>
 
@@ -270,4 +283,87 @@
                                 </strong>
                             </div>
                         </article>
+
+                        <div class="cotizaciones-modal-backdrop" id="modalConvertirCotizacion" hidden>
+                            <section class="cotizaciones-modal-card" role="dialog" aria-modal="true"
+                                aria-labelledby="tituloConvertirCotizacion">
+                                <header class="cotizaciones-modal-header">
+                                    <div>
+                                        <span class="cotizaciones-section-eyebrow">Conversión</span>
+                                        <h3 id="tituloConvertirCotizacion">Convertir cotización a venta</h3>
+                                        <p>
+                                            Se creará una venta real, se descontará inventario y se registrará el pago.
+                                        </p>
+                                    </div>
+
+                                    <button type="button" class="cotizaciones-modal-close"
+                                        id="btnCerrarConversionCotizacion" aria-label="Cerrar">
+                                        ×
+                                    </button>
+                                </header>
+
+                                <form id="formConvertirCotizacion" class="cotizaciones-convert-form" novalidate>
+                                    <div class="cotizaciones-form-alert" id="alertaConversionCotizacion" hidden></div>
+
+                                    <div class="cotizaciones-convert-summary">
+                                        <div>
+                                            <span>Cotización</span>
+                                            <strong id="conversionNumeroCotizacion">-</strong>
+                                        </div>
+
+                                        <div>
+                                            <span>Cliente</span>
+                                            <strong id="conversionClienteCotizacion">-</strong>
+                                        </div>
+
+                                        <div>
+                                            <span>Total</span>
+                                            <strong id="conversionTotalCotizacion">$ 0</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="cotizaciones-convert-problems" id="conversionProblemasCotizacion"
+                                        hidden></div>
+
+                                    <div class="cotizaciones-convert-grid">
+                                        <label class="form-group">
+                                            <span>Medio de pago *</span>
+                                            <select id="conversionMedioPagoCotizacion"></select>
+                                        </label>
+
+                                        <label class="form-group">
+                                            <span>Valor recibido *</span>
+                                            <input type="number" id="conversionMontoRecibidoCotizacion" min="0"
+                                                step="1">
+                                        </label>
+
+                                        <label class="form-group cotizaciones-convert-wide">
+                                            <span>Referencia</span>
+                                            <input type="text" id="conversionReferenciaCotizacion"
+                                                placeholder="Obligatoria para transferencias o tarjetas"
+                                                autocomplete="off">
+                                        </label>
+
+                                        <label class="form-group cotizaciones-convert-wide">
+                                            <span>Observaciones</span>
+                                            <textarea id="conversionObservacionesCotizacion" rows="3"
+                                                placeholder="Ej: Venta generada desde cotización..."></textarea>
+                                        </label>
+                                    </div>
+
+                                    <footer class="cotizaciones-modal-actions">
+                                        <button type="button" class="btn-secondary"
+                                            id="btnCancelarConversionCotizacion">
+                                            Cancelar
+                                        </button>
+
+                                        <button type="submit" class="btn-primary" id="btnConfirmarConversionCotizacion">
+                                            Convertir a venta
+                                        </button>
+                                    </footer>
+                                </form>
+                            </section>
+                        </div>
+
+                        <script src="/js/cotizaciones.js"></script>
 </section>
