@@ -21,8 +21,8 @@ router.get('/api', cotizacionesController.listarCotizaciones);
 router.get('/api/:id', cotizacionesController.obtenerDetalleCotizacion);
 
 router.get('/nueva', cotizacionesController.mostrarNuevaCotizacion);
+router.get('/:id/imprimir', cotizacionesController.mostrarImprimirCotizacion);
 router.get('/:id', cotizacionesController.mostrarDetalleCotizacion);
 
 router.post('/', cotizacionesController.crearCotizacion);
-
 module.exports = router;

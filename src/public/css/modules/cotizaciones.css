@@ -1058,3 +1058,304 @@
         flex-direction: column;
     }
 }
+
+/* ===== Impresión cotización ===== */
+
+.cotizacion-print-page {
+    display: grid;
+    gap: 16px;
+    padding: 18px;
+    color: #0f172a;
+}
+
+.cotizacion-print-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.cotizacion-print-sheet {
+    width: min(960px, 100%);
+    margin: 0 auto;
+    padding: 28px;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 18px 50px rgba(15, 23, 42, 0.10);
+}
+
+.cotizacion-print-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    padding-bottom: 18px;
+    border-bottom: 2px solid #0f172a;
+}
+
+.cotizacion-print-brand {
+    display: inline-flex;
+    margin-bottom: 6px;
+    color: #244f8f;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.cotizacion-print-header h1 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 30px;
+    font-weight: 850;
+    letter-spacing: -0.04em;
+}
+
+.cotizacion-print-header p {
+    margin: 5px 0 0;
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.cotizacion-print-number {
+    display: grid;
+    gap: 4px;
+    min-width: 190px;
+    padding: 14px;
+    border-radius: 14px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    text-align: right;
+}
+
+.cotizacion-print-number span,
+.cotizacion-print-meta span,
+.cotizacion-print-client span,
+.cotizacion-print-notes span,
+.cotizacion-print-totals span {
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 850;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.cotizacion-print-number strong {
+    color: #0f172a;
+    font-size: 18px;
+    font-weight: 850;
+}
+
+.cotizacion-print-number small {
+    color: #244f8f;
+    font-size: 11px;
+    font-weight: 750;
+}
+
+.cotizacion-print-meta {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.cotizacion-print-meta div,
+.cotizacion-print-client,
+.cotizacion-print-notes div {
+    padding: 13px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    background: #f8fafc;
+}
+
+.cotizacion-print-meta strong {
+    display: block;
+    margin-top: 4px;
+    color: #0f172a;
+    font-size: 13px;
+    font-weight: 750;
+    line-height: 1.35;
+}
+
+.cotizacion-print-meta p,
+.cotizacion-print-client p,
+.cotizacion-print-notes p,
+.cotizacion-print-footer p {
+    margin: 4px 0 0;
+    color: #475569;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.cotizacion-print-client {
+    margin-top: 12px;
+}
+
+.cotizacion-print-products {
+    margin-top: 18px;
+}
+
+.cotizacion-print-products table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.cotizacion-print-products th {
+    padding: 10px 8px;
+    border-bottom: 1px solid #cbd5e1;
+    background: #f8fafc;
+    color: #475569;
+    font-size: 10px;
+    font-weight: 850;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.cotizacion-print-products td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #0f172a;
+    vertical-align: top;
+}
+
+.cotizacion-print-products td strong {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.cotizacion-print-products td span {
+    display: block;
+    margin-top: 2px;
+    color: #64748b;
+    font-size: 10px;
+    line-height: 1.4;
+}
+
+.cotizacion-print-bottom {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 270px;
+    gap: 18px;
+    margin-top: 18px;
+}
+
+.cotizacion-print-notes {
+    display: grid;
+    gap: 10px;
+}
+
+.cotizacion-print-totals {
+    display: grid;
+    align-content: start;
+    gap: 7px;
+}
+
+.cotizacion-print-totals div {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.cotizacion-print-totals strong {
+    color: #0f172a;
+    font-size: 13px;
+    font-weight: 750;
+}
+
+.cotizacion-print-totals .is-total {
+    margin-top: 4px;
+    padding: 12px;
+    border: 0;
+    border-radius: 12px;
+    background: #0f172a;
+    color: #ffffff;
+}
+
+.cotizacion-print-totals .is-total span,
+.cotizacion-print-totals .is-total strong {
+    color: #ffffff;
+}
+
+.cotizacion-print-totals .is-total strong {
+    font-size: 17px;
+    font-weight: 850;
+}
+
+.cotizacion-print-footer {
+    margin-top: 18px;
+    padding-top: 12px;
+    border-top: 1px solid #e2e8f0;
+    text-align: center;
+}
+
+@media print {
+    body * {
+        visibility: hidden !important;
+    }
+
+    .cotizacion-print-page,
+    .cotizacion-print-page * {
+        visibility: visible !important;
+    }
+
+    .cotizacion-print-page {
+        position: absolute;
+        inset: 0;
+        display: block;
+        padding: 0 !important;
+        background: #ffffff !important;
+    }
+
+    .cotizacion-print-actions {
+        display: none !important;
+    }
+
+    .cotizacion-print-sheet {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .cotizacion-print-header {
+        padding-bottom: 12px;
+    }
+
+    .cotizacion-print-products table {
+        page-break-inside: auto;
+    }
+
+    .cotizacion-print-products tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+    }
+
+    @page {
+        size: letter;
+        margin: 12mm;
+    }
+}
+
+@media (max-width: 780px) {
+
+    .cotizacion-print-header,
+    .cotizacion-print-bottom {
+        grid-template-columns: 1fr;
+        flex-direction: column;
+    }
+
+    .cotizacion-print-meta {
+        grid-template-columns: 1fr;
+    }
+
+    .cotizacion-print-number {
+        width: 100%;
+        text-align: left;
+    }
+}

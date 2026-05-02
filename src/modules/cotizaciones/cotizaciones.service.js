@@ -54,6 +54,81 @@ function crearError(mensaje, codigoEstado = 400) {
     };
 }
 
+function obtenerPrimerValor(objeto, claves, defecto = '') {
+    if (!objeto) {
+        return defecto;
+    }
+
+    for (const clave of claves) {
+        const valor = objeto[clave];
+
+        if (valor !== undefined && valor !== null && String(valor).trim() !== '') {
+            return String(valor).trim();
+        }
+    }
+
+    return defecto;
+}
+
+function prepararConfiguracionTicket(configuracion) {
+    return {
+        nombre_comercio: obtenerPrimerValor(
+            configuracion,
+            [
+                'nombre_negocio',
+                'nombre_comercio',
+                'nombre_empresa',
+                'nombre_establecimiento',
+                'nombre_comercial',
+                'razon_social',
+                'nombre',
+            ],
+            'Comercio sin nombre'
+        ),
+        razon_social: obtenerPrimerValor(
+            configuracion,
+            ['razon_social', 'nombre_legal', 'nombre_negocio'],
+            ''
+        ),
+        tipo_documento: obtenerPrimerValor(
+            configuracion,
+            ['tipo_documento'],
+            'NIT'
+        ),
+        nit: obtenerPrimerValor(
+            configuracion,
+            ['numero_documento', 'nit', 'documento', 'identificacion'],
+            ''
+        ),
+        telefono: obtenerPrimerValor(
+            configuracion,
+            ['telefono', 'celular', 'telefono_contacto'],
+            ''
+        ),
+        direccion: obtenerPrimerValor(
+            configuracion,
+            ['direccion', 'direccion_negocio', 'direccion_comercio'],
+            ''
+        ),
+        correo: obtenerPrimerValor(
+            configuracion,
+            ['correo', 'email', 'correo_contacto'],
+            ''
+        ),
+        ciudad: obtenerPrimerValor(
+            configuracion,
+            ['ciudad', 'municipio'],
+            ''
+        ),
+        mensaje_ticket: obtenerPrimerValor(
+            configuracion,
+            ['mensaje_ticket', 'mensaje_factura', 'mensaje_recibo'],
+            'Gracias por su preferencia.'
+        ),
+        software: 'Prismia POS Local',
+    };
+}
+
 function obtenerNombreCliente(cliente) {
     return (
         limpiarTexto(cliente?.nombre)
@@ -602,6 +677,25 @@ function obtenerDetalleCotizacion(idCotizacion) {
     };
 }
 
+function obtenerTicketCotizacion(idCotizacion) {
+    const resultado = obtenerDetalleCotizacion(idCotizacion);
+
+    if (!resultado.ok) {
+        return resultado;
+    }
+
+    const configuracion = cotizacionesRepository.obtenerConfiguracionNegocio();
+
+    return {
+        ok: true,
+        ticket: {
+            comercio: prepararConfiguracionTicket(configuracion),
+            cotizacion: resultado.cotizacion,
+            detalle: resultado.detalle,
+        },
+    };
+}
+
 module.exports = {
     obtenerSiguienteCotizacion,
     buscarClientes,
@@ -610,4 +704,5 @@ module.exports = {
     crearCotizacion,
     obtenerListadoCotizaciones,
     obtenerDetalleCotizacion,
+    obtenerTicketCotizacion,
 };

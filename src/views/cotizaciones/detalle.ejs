@@ -26,9 +26,10 @@
                     Volver
                 </a>
 
-                <button type="button" class="btn-secondary" disabled>
-                    Imprimir luego
-                </button>
+                <a href="/cotizaciones/<%= cotizacion.id_cotizacion %>/imprimir" class="btn-secondary" target="_blank"
+                    rel="noopener">
+                    Imprimir
+                </a>
 
                 <button type="button" class="btn-primary" disabled>
                     Convertir luego
@@ -170,7 +171,7 @@
                                                                 </strong>
                                                                 <% if (Number(item.descuento_unitario || 0)> 0) { %>
                                                                     <span>Desc: <%= dinero(item.descuento_unitario) %>
-                                                                            </span>
+                                                                    </span>
                                                                     <% } else { %>
                                                                         <span>Sin descuento</span>
                                                                         <% } %>

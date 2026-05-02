@@ -65,6 +65,19 @@ function mostrarDetalleCotizacion(req, res) {
     });
 }
 
+function mostrarImprimirCotizacion(req, res) {
+    const resultado = cotizacionesService.obtenerTicketCotizacion(req.params.id);
+
+    if (!resultado.ok) {
+        return res.status(resultado.codigoEstado || 404).send(resultado.mensaje);
+    }
+
+    return res.render('cotizaciones/imprimir', {
+        layout: false,
+        titulo: `Ticket ${resultado.ticket.cotizacion.numero_cotizacion}`,
+        ticket: resultado.ticket,
+    });
+}
 function mostrarNuevaCotizacion(req, res) {
     const siguienteCotizacion = cotizacionesService.obtenerSiguienteCotizacion();
 
@@ -174,6 +187,7 @@ module.exports = {
     mostrarListadoCotizaciones,
     mostrarNuevaCotizacion,
     mostrarDetalleCotizacion,
+    mostrarImprimirCotizacion,
     obtenerSiguienteCotizacion,
     buscarClientes,
     buscarProductos,

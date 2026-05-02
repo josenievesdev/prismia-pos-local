@@ -1,0 +1,287 @@
+<% const data=ticket || {}; const comercio=data.comercio || {}; const cotizacion=data.cotizacion || {}; const
+    detalle=Array.isArray(data.detalle) ? data.detalle : []; function pesos(valor) { const numero=Number(valor || 0);
+    return '$ ' + Math.round(numero).toLocaleString('es-CO'); } function cantidadFormateada(valor) { const
+    numero=Number(valor || 0); if (!Number.isFinite(numero)) { return '0' ; } return numero.toLocaleString('es-CO', {
+    minimumFractionDigits: Number.isInteger(numero) ? 0 : 2, maximumFractionDigits: 3, }); } function fecha(valor) { if
+    (!valor) return '' ; return String(valor).replace('T', ' ' ).slice(0, 19); } function fechaCorta(valor) { if
+    (!valor) return '' ; return String(valor).slice(0, 10); } function texto(valor, defecto='' ) { if (valor===null ||
+    valor===undefined) { return defecto; } const limpio=String(valor).trim(); return limpio || defecto; } function
+    mayuscula(valor, defecto='' ) { return texto(valor, defecto).toUpperCase(); } function textoEstado(valor) { const
+    estados={ borrador: 'BORRADOR' , emitida: 'EMITIDA' , aceptada: 'ACEPTADA' , rechazada: 'RECHAZADA' ,
+    vencida: 'VENCIDA' , convertida: 'CONVERTIDA' , anulada: 'ANULADA' , }; return estados[valor] ||
+    mayuscula(valor, 'EMITIDA' ); } const numeroCotizacion=texto(cotizacion.numero_cotizacion, 'COT-SIN-NUMERO' ); const
+    estadoCotizacion=textoEstado(cotizacion.estado); const
+    nombreComercio=texto(comercio.nombre_comercio, 'Comercio sin nombre' ); const
+    tipoDocumentoComercio=texto(comercio.tipo_documento, 'NIT' ); const documentoComercio=texto(comercio.nit, '' );
+    const nombreCliente=texto(cotizacion.cliente_nombre_mostrar, 'Cliente no registrado' ); const
+    documentoCliente=texto(cotizacion.cliente_etiqueta, 'Sin documento' ); const telefonoCliente=texto(
+    cotizacion.cliente_telefono || cotizacion.cliente_celular, 'No registrado' ); const correoCliente=texto(
+    cotizacion.cliente_correo || cotizacion.cliente_correo_facturacion, 'No registrado' ); const
+    vendedor=texto(cotizacion.usuario_nombre, 'Usuario' ); %>
+
+    <!DOCTYPE html>
+    <html lang="es">
+
+    <head>
+        <meta charset="UTF-8">
+        <title>Ticket <%= numeroCotizacion %>
+        </title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="/css/modules/ventas-ticket.css">
+    </head>
+
+    <body>
+        <main class="ticket-page">
+            <section class="ticket-paper">
+                <header class="ticket-header">
+                    <h1>
+                        <%= mayuscula(nombreComercio) %>
+                    </h1>
+
+                    <% if (documentoComercio) { %>
+                        <p>
+                            <%= tipoDocumentoComercio %>: <%= documentoComercio %>
+                        </p>
+                        <% } %>
+
+                            <% if (comercio.direccion) { %>
+                                <p>
+                                    <%= comercio.direccion %>
+                                </p>
+                                <% } %>
+
+                                    <% if (comercio.telefono) { %>
+                                        <p>
+                                            <%= comercio.telefono %>
+                                        </p>
+                                        <% } %>
+
+                                            <% if (comercio.correo) { %>
+                                                <p>
+                                                    <%= comercio.correo %>
+                                                </p>
+                                                <% } %>
+                </header>
+
+                <section class="ticket-block ticket-center ticket-document">
+                    <strong class="ticket-title">COTIZACIÓN COMERCIAL</strong>
+
+                    <div class="ticket-document-number">
+                        <span>Cotización No.</span>
+                        <strong>
+                            <%= numeroCotizacion %>
+                        </strong>
+                    </div>
+
+                    <div class="ticket-document-state">
+                        Estado: <strong>
+                            <%= estadoCotizacion %>
+                        </strong>
+                    </div>
+
+                    <div class="ticket-document-state">
+                        No es factura de venta
+                    </div>
+                </section>
+
+                <section class="ticket-block">
+                    <div class="ticket-row">
+                        <span>Fecha</span>
+                        <strong>
+                            <%= fecha(cotizacion.fecha_cotizacion) %>
+                        </strong>
+                    </div>
+
+                    <div class="ticket-row">
+                        <span>Vence</span>
+                        <strong>
+                            <%= fechaCorta(cotizacion.fecha_vencimiento) || '-' %>
+                        </strong>
+                    </div>
+
+                    <div class="ticket-row">
+                        <span>Validez</span>
+                        <strong>
+                            <%= texto(cotizacion.validez_dias, '0' ) %> días
+                        </strong>
+                    </div>
+
+                    <div class="ticket-row">
+                        <span>Vendedor</span>
+                        <strong>
+                            <%= vendedor %>
+                        </strong>
+                    </div>
+                </section>
+
+                <section class="ticket-block">
+                    <h2>Cliente</h2>
+
+                    <div class="ticket-row">
+                        <span>Nombre</span>
+                        <strong>
+                            <%= nombreCliente %>
+                        </strong>
+                    </div>
+
+                    <div class="ticket-row">
+                        <span>Documento</span>
+                        <strong>
+                            <%= documentoCliente %>
+                        </strong>
+                    </div>
+
+                    <div class="ticket-row">
+                        <span>Teléfono</span>
+                        <strong>
+                            <%= telefonoCliente %>
+                        </strong>
+                    </div>
+
+                    <div class="ticket-row">
+                        <span>Correo</span>
+                        <strong>
+                            <%= correoCliente %>
+                        </strong>
+                    </div>
+                </section>
+
+                <section class="ticket-block">
+                    <h2>Productos cotizados</h2>
+
+                    <table class="ticket-table">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th class="right">Cant.</th>
+                                <th class="right">Vlr. Unit.</th>
+                                <th class="right">Total</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <% if (!detalle.length) { %>
+                                <tr>
+                                    <td colspan="4">
+                                        <strong>Sin productos registrados.</strong>
+                                    </td>
+                                </tr>
+                                <% } %>
+
+                                    <% detalle.forEach((item)=> { %>
+                                        <tr>
+                                            <td>
+                                                <strong>
+                                                    <%= texto(item.nombre_producto, 'Producto' ) %>
+                                                </strong>
+
+                                                <% if (item.codigo_interno || item.codigo_barras) { %>
+                                                    <small>
+                                                        <%= [item.codigo_interno,
+                                                            item.codigo_barras].filter(Boolean).join(' · ') %>
+                                        </small>
+                                    <% } %>
+
+                                    <small>
+                                        <%= texto(item.unidad_abreviatura, ' und') %>
+                                                            <% if (Number(item.porcentaje_iva || 0)> 0) { %>
+                                                                · IVA <%= item.porcentaje_iva %>%
+                                                                    <% } else { %>
+                                                                        · Sin IVA
+                                                                        <% } %>
+                                                    </small>
+                                            </td>
+
+                                            <td class="right">
+                                                <%= cantidadFormateada(item.cantidad) %>
+                                            </td>
+
+                                            <td class="right">
+                                                <%= pesos(item.precio_unitario) %>
+                                            </td>
+
+                                            <td class="right">
+                                                <%= pesos(item.total_linea) %>
+                                            </td>
+                                        </tr>
+                                        <% }) %>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section class="ticket-block ticket-totals">
+                    <div class="ticket-row">
+                        <span>Subtotal</span>
+                        <strong>
+                            <%= pesos(cotizacion.subtotal) %>
+                        </strong>
+                    </div>
+
+                    <% if (Number(cotizacion.descuento_total || 0)> 0) { %>
+                        <div class="ticket-row">
+                            <span>Descuento</span>
+                            <strong>
+                                <%= pesos(cotizacion.descuento_total) %>
+                            </strong>
+                        </div>
+                        <% } %>
+
+                            <div class="ticket-row">
+                                <span>IVA</span>
+                                <strong>
+                                    <%= pesos(cotizacion.impuesto_total) %>
+                                </strong>
+                            </div>
+
+                            <div class="ticket-row ticket-total-main">
+                                <span>Total cotizado</span>
+                                <strong>
+                                    <%= pesos(cotizacion.total) %>
+                                </strong>
+                            </div>
+                </section>
+
+                <section class="ticket-block">
+                    <h2>Condiciones</h2>
+
+                    <p style="margin: 0; font-size: 9.5px; line-height: 1.35; color: #4b5563;">
+                        <%= texto(
+                            cotizacion.condiciones_comerciales, 'Precios sujetos a disponibilidad. Esta cotización no afecta inventario.'
+                            ) %>
+                    </p>
+                </section>
+
+                <% if (cotizacion.observaciones) { %>
+                    <section class="ticket-block">
+                        <h2>Observaciones</h2>
+
+                        <p style="margin: 0; font-size: 9.5px; line-height: 1.35; color: #4b5563;">
+                            <%= cotizacion.observaciones %>
+                        </p>
+                    </section>
+                    <% } %>
+
+                        <footer class="ticket-footer">
+                            <p>
+                                Esta cotización no representa factura de venta.
+                            </p>
+                            <p>
+                                No afecta inventario ni caja. Valores sujetos a disponibilidad.
+                            </p>
+                            <p>
+                                Generado por
+                                <strong>
+                                    <%= comercio.software || 'Prismia POS Local' %>
+                                </strong>
+                            </p>
+                        </footer>
+            </section>
+
+            <div class="ticket-actions">
+                <button type="button" onclick="window.print()">Imprimir</button>
+                <button type="button" onclick="window.close()">Cerrar</button>
+            </div>
+        </main>
+    </body>
+
+    </html>

@@ -32,6 +32,19 @@ function formatearNumeroDocumento(prefijo, consecutivo, longitudConsecutivo = 6)
     return `${prefijoSeguro}-${String(consecutivoSeguro).padStart(longitudSegura, '0')}`;
 }
 
+function obtenerConfiguracionNegocio() {
+    return db
+        .prepare(`
+            SELECT
+                *
+            FROM configuracion_negocio
+            WHERE estado = 'activo'
+            ORDER BY id_configuracion DESC
+            LIMIT 1
+        `)
+        .get();
+}
+
 function obtenerNumeracionCotizacion() {
     return db
         .prepare(`
@@ -731,6 +744,7 @@ function crearCotizacion(datos) {
 
 module.exports = {
     formatearNumeroDocumento,
+    obtenerConfiguracionNegocio,
     obtenerNumeracionCotizacion,
     obtenerSiguienteNumeroCotizacion,
     buscarClientesParaCotizacion,
