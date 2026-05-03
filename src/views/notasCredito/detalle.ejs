@@ -1,0 +1,277 @@
+<section class="module-page notas-credito-page">
+    <% var items=Array.isArray(detalle) ? detalle : []; %>
+
+        <div class="module-header module-header-actions">
+            <div>
+                <p class="eyebrow">Nota crédito interna</p>
+                <h2>
+                    <%= notaCredito.numero_nota_credito %>
+                </h2>
+                <p>
+                    Soporte interno generado desde la anulación total de la venta
+                    <strong>
+                        <%= notaCredito.numero_venta || 'sin venta asociada' %>
+                    </strong>.
+                </p>
+            </div>
+
+            <div class="notas-credito-header-actions">
+                <a href="/notas-credito" class="btn-secondary">Volver</a>
+
+                <% if (notaCredito.id_venta) { %>
+                    <a href="/ventas/<%= notaCredito.id_venta %>" class="btn-secondary">Ver venta</a>
+                    <% } %>
+
+                        <a href="/notas-credito/<%= notaCredito.id_nota_credito %>/imprimir" target="_blank"
+                            class="btn-primary">
+                            Imprimir
+                        </a>
+            </div>
+        </div>
+
+        <% if (mensajeExito) { %>
+            <div class="alert alert-success">
+                <%= mensajeExito %>
+            </div>
+            <% } %>
+
+                <% if (error) { %>
+                    <div class="alert alert-error">
+                        <%= error %>
+                    </div>
+                    <% } %>
+
+                        <div class="info-strip">
+                            <strong>Documento interno:</strong>
+                            <span>
+                                Esta nota crédito no representa validación electrónica DIAN. Es trazabilidad operativa
+                                dentro de Prismia POS Local.
+                            </span>
+                        </div>
+
+                        <section class="notas-credito-detail-grid">
+                            <article class="module-card">
+                                <div class="notas-credito-section-head">
+                                    <div>
+                                        <span class="notas-credito-section-eyebrow">Documento</span>
+                                        <h3>Información general</h3>
+                                        <p>Origen, estado y relación con la venta anulada.</p>
+                                    </div>
+                                </div>
+
+                                <div class="notas-credito-info-grid">
+                                    <div>
+                                        <span>Número</span>
+                                        <strong>
+                                            <%= notaCredito.numero_nota_credito %>
+                                        </strong>
+                                    </div>
+
+                                    <div>
+                                        <span>Fecha</span>
+                                        <strong>
+                                            <%= notaCredito.fecha_nota ? String(notaCredito.fecha_nota).slice(0, 19)
+                                                : 'Sin fecha' %>
+                                        </strong>
+                                    </div>
+
+                                    <div>
+                                        <span>Tipo</span>
+                                        <strong>
+                                            <%= notaCredito.tipo_nota || 'total' %>
+                                        </strong>
+                                    </div>
+
+                                    <div>
+                                        <span>Origen</span>
+                                        <strong>
+                                            <%= notaCredito.origen || 'anulacion_venta' %>
+                                        </strong>
+                                    </div>
+
+                                    <div>
+                                        <span>Estado</span>
+                                        <strong>
+                                            <%= notaCredito.estado==='emitida' ? 'Emitida' :
+                                                notaCredito.estado==='anulada' ? 'Anulada' : notaCredito.estado
+                                                || 'Sin estado' %>
+                                        </strong>
+                                    </div>
+
+                                    <div>
+                                        <span>Estado fiscal</span>
+                                        <strong>
+                                            <%= notaCredito.documento_fiscal_estado==='interno' ? 'Interna' :
+                                                notaCredito.documento_fiscal_estado || 'Interna' %>
+                                        </strong>
+                                    </div>
+
+                                    <div>
+                                        <span>Venta relacionada</span>
+                                        <strong>
+                                            <%= notaCredito.numero_venta || 'N/D' %>
+                                        </strong>
+                                    </div>
+
+                                    <div>
+                                        <span>Usuario</span>
+                                        <strong>
+                                            <%= notaCredito.usuario_nombre || 'Sin usuario' %>
+                                        </strong>
+                                    </div>
+                                </div>
+                            </article>
+
+                            <article class="module-card">
+                                <div class="notas-credito-section-head">
+                                    <div>
+                                        <span class="notas-credito-section-eyebrow">Cliente</span>
+                                        <h3>Cliente y motivo</h3>
+                                        <p>Datos registrados al emitir el soporte interno.</p>
+                                    </div>
+                                </div>
+
+                                <div class="notas-credito-client-box">
+                                    <strong>
+                                        <%= notaCredito.cliente_nombre_mostrar || notaCredito.cliente_nombre
+                                            || 'Consumidor final' %>
+                                    </strong>
+
+                                    <span>
+                                        <%= notaCredito.cliente_etiqueta || notaCredito.cliente_documento
+                                            || 'Sin documento registrado' %>
+                                    </span>
+
+                                    <% if (notaCredito.cliente_telefono || notaCredito.cliente_celular) { %>
+                                        <span>Tel: <%= notaCredito.cliente_celular || notaCredito.cliente_telefono %>
+                                                </span>
+                                        <% } %>
+
+                                            <% if (notaCredito.cliente_correo || notaCredito.cliente_correo_facturacion)
+                                                { %>
+                                                <span>
+                                                    <%= notaCredito.cliente_correo_facturacion ||
+                                                        notaCredito.cliente_correo %>
+                                                </span>
+                                                <% } %>
+                                </div>
+
+                                <div class="notas-credito-reason-box">
+                                    <span>Motivo</span>
+                                    <p>
+                                        <%= notaCredito.motivo || 'Sin motivo registrado.' %>
+                                    </p>
+
+                                    <% if (notaCredito.observaciones) { %>
+                                        <span>Observaciones</span>
+                                        <p>
+                                            <%= notaCredito.observaciones %>
+                                        </p>
+                                        <% } %>
+                                </div>
+                            </article>
+                        </section>
+
+                        <article class="module-card notas-credito-table-card">
+                            <div class="notas-credito-section-head">
+                                <div>
+                                    <span class="notas-credito-section-eyebrow">Detalle</span>
+                                    <h3>Productos acreditados</h3>
+                                    <p>Detalle copiado desde la venta anulada.</p>
+                                </div>
+
+                                <span class="notas-credito-section-count">
+                                    Ítems: <strong>
+                                        <%= items.length %>
+                                    </strong>
+                                </span>
+                            </div>
+
+                            <% if (!items.length) { %>
+                                <div class="empty-state">
+                                    <h3>Sin detalle</h3>
+                                    <p>La nota crédito no tiene productos asociados.</p>
+                                </div>
+                                <% } else { %>
+                                    <div class="table-wrapper notas-credito-table-wrapper">
+                                        <table class="data-table notas-credito-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Producto</th>
+                                                    <th class="text-center">Cant.</th>
+                                                    <th class="text-right">Precio</th>
+                                                    <th class="text-right">IVA</th>
+                                                    <th class="text-right">Subtotal</th>
+                                                    <th class="text-right">Total</th>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody>
+                                                <% items.forEach(function (item) { %>
+                                                    <tr>
+                                                        <td>
+                                                            <div class="notas-credito-main-cell">
+                                                                <strong>
+                                                                    <%= item.nombre_producto %>
+                                                                </strong>
+                                                                <span>
+                                                                    <%= item.codigo_interno || item.codigo_barras
+                                                                        || 'Sin código' %>
+                                                                </span>
+                                                            </div>
+                                                        </td>
+
+                                                        <td class="text-center">
+                                                            <%= Number(item.cantidad || 0).toLocaleString('es-CO') %>
+                                                                <%= item.unidad_abreviatura || 'und' %>
+                                                        </td>
+
+                                                        <td class="text-right">
+                                                            $<%= Number(item.precio_unitario ||
+                                                                0).toLocaleString('es-CO') %>
+                                                        </td>
+
+                                                        <td class="text-right">
+                                                            $<%= Number(item.impuesto_total ||
+                                                                0).toLocaleString('es-CO') %>
+                                                        </td>
+
+                                                        <td class="text-right">
+                                                            $<%= Number(item.subtotal || 0).toLocaleString('es-CO') %>
+                                                        </td>
+
+                                                        <td class="text-right">
+                                                            <strong>$<%= Number(item.total_linea ||
+                                                                    0).toLocaleString('es-CO') %></strong>
+                                                        </td>
+                                                    </tr>
+                                                    <% }) %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <% } %>
+                        </article>
+
+                        <section class="notas-credito-totals-panel">
+                            <div>
+                                <span>Subtotal</span>
+                                <strong>$<%= Number(notaCredito.subtotal || 0).toLocaleString('es-CO') %></strong>
+                            </div>
+
+                            <div>
+                                <span>Descuento</span>
+                                <strong>$<%= Number(notaCredito.descuento_total || 0).toLocaleString('es-CO') %>
+                                        </strong>
+                            </div>
+
+                            <div>
+                                <span>IVA</span>
+                                <strong>$<%= Number(notaCredito.impuesto_total || 0).toLocaleString('es-CO') %></strong>
+                            </div>
+
+                            <div class="is-total">
+                                <span>Total nota crédito</span>
+                                <strong>$<%= Number(notaCredito.total || 0).toLocaleString('es-CO') %></strong>
+                            </div>
+                        </section>
+</section>

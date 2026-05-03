@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= titulo || 'Nota crédito interna' %>
+    </title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #f3f4f6;
+            color: #111827;
+            font-family: "Segoe UI", Arial, sans-serif;
+            font-size: 12px;
+        }
+
+        .ticket-wrap {
+            width: 80mm;
+            max-width: 100%;
+            margin: 18px auto;
+            padding: 12px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+        }
+
+        .center {
+            text-align: center;
+        }
+
+        .ticket-title {
+            margin: 0;
+            font-size: 15px;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+
+        .ticket-subtitle {
+            margin: 4px 0 0;
+            color: #4b5563;
+            font-size: 11px;
+            line-height: 1.35;
+        }
+
+        .divider {
+            border-top: 1px dashed #9ca3af;
+            margin: 10px 0;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            margin: 3px 0;
+        }
+
+        .row span:first-child {
+            color: #4b5563;
+        }
+
+        .row strong {
+            text-align: right;
+        }
+
+        .notice {
+            margin-top: 10px;
+            padding: 8px;
+            border: 1px dashed #9ca3af;
+            border-radius: 8px;
+            color: #374151;
+            line-height: 1.35;
+            background: #f9fafb;
+        }
+
+        .items {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .items th,
+        .items td {
+            padding: 5px 0;
+            border-bottom: 1px dashed #d1d5db;
+            vertical-align: top;
+        }
+
+        .items th {
+            color: #4b5563;
+            font-size: 10px;
+            text-transform: uppercase;
+            text-align: left;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .product-name {
+            display: block;
+            font-weight: 700;
+        }
+
+        .product-meta {
+            display: block;
+            color: #6b7280;
+            font-size: 10px;
+            margin-top: 2px;
+        }
+
+        .total-line {
+            font-size: 15px;
+            padding-top: 6px;
+        }
+
+        .actions {
+            width: 80mm;
+            margin: 0 auto 16px;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .actions button {
+            border: 0;
+            border-radius: 999px;
+            padding: 8px 14px;
+            color: #ffffff;
+            background: #244f8f;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        @media print {
+            body {
+                background: #ffffff;
+            }
+
+            .ticket-wrap {
+                width: 80mm;
+                margin: 0;
+                border: 0;
+            }
+
+            .actions {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <% var items=Array.isArray(detalle) ? detalle : []; %>
+
+        <div class="ticket-wrap">
+            <header class="center">
+                <h1 class="ticket-title">
+                    <%= typeof empresa !=='undefined' && empresa.software ? empresa.software.nombre
+                        : 'Prismia POS Local' %>
+                </h1>
+
+                <p class="ticket-subtitle">
+                    Nota crédito interna<br>
+                    <strong>
+                        <%= notaCredito.numero_nota_credito %>
+                    </strong>
+                </p>
+            </header>
+
+            <div class="divider"></div>
+
+            <div class="row">
+                <span>Fecha</span>
+                <strong>
+                    <%= notaCredito.fecha_nota ? String(notaCredito.fecha_nota).slice(0, 19) : 'Sin fecha' %>
+                </strong>
+            </div>
+
+            <div class="row">
+                <span>Venta</span>
+                <strong>
+                    <%= notaCredito.numero_venta || 'N/D' %>
+                </strong>
+            </div>
+
+            <div class="row">
+                <span>Tipo</span>
+                <strong>
+                    <%= notaCredito.tipo_nota || 'total' %>
+                </strong>
+            </div>
+
+            <div class="row">
+                <span>Origen</span>
+                <strong>
+                    <%= notaCredito.origen || 'anulacion_venta' %>
+                </strong>
+            </div>
+
+            <div class="row">
+                <span>Fiscal</span>
+                <strong>
+                    <%= notaCredito.documento_fiscal_estado || 'interno' %>
+                </strong>
+            </div>
+
+            <div class="divider"></div>
+
+            <div>
+                <strong>Cliente</strong><br>
+                <span>
+                    <%= notaCredito.cliente_nombre_mostrar || notaCredito.cliente_nombre || 'Consumidor final' %>
+                </span><br>
+                <span>
+                    <%= notaCredito.cliente_etiqueta || notaCredito.cliente_documento || 'Sin documento registrado' %>
+                </span>
+            </div>
+
+            <div class="divider"></div>
+
+            <table class="items">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th class="text-right">Total</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <% items.forEach(function (item) { %>
+                        <tr>
+                            <td>
+                                <span class="product-name">
+                                    <%= item.nombre_producto %>
+                                </span>
+                                <span class="product-meta">
+                                    <%= Number(item.cantidad || 0).toLocaleString('es-CO') %>
+                                        <%= item.unidad_abreviatura || 'und' %>
+                                            x $<%= Number(item.precio_unitario || 0).toLocaleString('es-CO') %>
+                                </span>
+                            </td>
+
+                            <td class="text-right">
+                                $<%= Number(item.total_linea || 0).toLocaleString('es-CO') %>
+                            </td>
+                        </tr>
+                        <% }) %>
+                </tbody>
+            </table>
+
+            <div class="divider"></div>
+
+            <div class="row">
+                <span>Subtotal</span>
+                <strong>$<%= Number(notaCredito.subtotal || 0).toLocaleString('es-CO') %></strong>
+            </div>
+
+            <div class="row">
+                <span>Descuento</span>
+                <strong>$<%= Number(notaCredito.descuento_total || 0).toLocaleString('es-CO') %></strong>
+            </div>
+
+            <div class="row">
+                <span>IVA</span>
+                <strong>$<%= Number(notaCredito.impuesto_total || 0).toLocaleString('es-CO') %></strong>
+            </div>
+
+            <div class="row total-line">
+                <span>Total NC</span>
+                <strong>$<%= Number(notaCredito.total || 0).toLocaleString('es-CO') %></strong>
+            </div>
+
+            <div class="divider"></div>
+
+            <div>
+                <strong>Motivo</strong>
+                <p>
+                    <%= notaCredito.motivo || 'Sin motivo registrado.' %>
+                </p>
+            </div>
+
+            <div class="notice">
+                Esta nota crédito es interna y no representa validación electrónica DIAN.
+            </div>
+        </div>
+
+        <div class="actions">
+            <button type="button" onclick="window.print()">Imprimir</button>
+        </div>
+</body>
+
+</html>

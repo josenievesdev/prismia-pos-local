@@ -1,0 +1,399 @@
+.notas-credito-page {
+    display: grid;
+    gap: 18px;
+}
+
+.notas-credito-header-actions,
+.notas-credito-filter-actions,
+.notas-credito-actions,
+.notas-credito-pagination>div {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.notas-credito-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 12px 14px;
+    border: 1px solid #fde68a;
+    border-radius: 16px;
+    background: #fffbeb;
+    color: #92400e;
+    line-height: 1.45;
+}
+
+.notas-credito-warning strong {
+    white-space: nowrap;
+}
+
+.notas-credito-filters {
+    display: grid;
+    grid-template-columns: minmax(260px, 1.4fr) repeat(5, minmax(130px, 1fr)) auto;
+    gap: 12px;
+    align-items: end;
+    padding: 16px;
+    border: 1px solid var(--color-border);
+    border-radius: 22px;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-soft);
+}
+
+.notas-credito-filters .form-group {
+    display: grid;
+    gap: 6px;
+}
+
+.notas-credito-filters label {
+    color: var(--color-muted);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.notas-credito-filters input,
+.notas-credito-filters select {
+    min-height: 40px;
+    width: 100%;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 8px 10px;
+    background: #fff;
+    color: var(--color-text);
+}
+
+.notas-credito-card {
+    padding: 18px;
+    border: 1px solid var(--color-border);
+    border-radius: 24px;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-soft);
+}
+
+.notas-credito-section-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.notas-credito-section-header.compact {
+    margin-bottom: 12px;
+}
+
+.notas-credito-section-header h3 {
+    margin: 0;
+    font-size: 18px;
+    letter-spacing: -0.02em;
+}
+
+.notas-credito-section-header p {
+    margin: 4px 0 0;
+    color: var(--color-muted);
+}
+
+.notas-credito-section-header span {
+    color: var(--color-muted);
+    font-size: 13px;
+}
+
+.notas-credito-table-wrapper {
+    overflow-x: auto;
+}
+
+.notas-credito-table th,
+.notas-credito-table td {
+    vertical-align: middle;
+}
+
+.notas-credito-main-cell,
+.notas-credito-stack-cell,
+.notas-credito-client-box {
+    display: grid;
+    gap: 4px;
+}
+
+.notas-credito-main-cell strong,
+.notas-credito-stack-cell strong,
+.notas-credito-client-box strong {
+    color: var(--color-text);
+}
+
+.notas-credito-main-cell span,
+.notas-credito-stack-cell span,
+.notas-credito-client-box span {
+    color: var(--color-muted);
+    font-size: 12px;
+}
+
+.notas-credito-total {
+    color: var(--color-primary);
+    white-space: nowrap;
+}
+
+.notas-credito-status,
+.notas-credito-fiscal-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 26px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.notas-credito-status.is-issued {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.notas-credito-status.is-cancelled {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.notas-credito-status.is-muted,
+.notas-credito-fiscal-badge {
+    background: #eef2ff;
+    color: #3730a3;
+}
+
+.notas-credito-link-action {
+    color: var(--color-primary);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.notas-credito-link-action:hover {
+    text-decoration: underline;
+}
+
+.notas-credito-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 14px;
+    color: var(--color-muted);
+}
+
+.notas-credito-pagination .is-disabled {
+    pointer-events: none;
+    opacity: 0.45;
+}
+
+.notas-credito-detail-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+    gap: 18px;
+}
+
+.notas-credito-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.notas-credito-info-grid div {
+    display: grid;
+    gap: 4px;
+    padding: 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    background: var(--color-surface-soft);
+}
+
+.notas-credito-info-grid span,
+.notas-credito-reason-box span {
+    color: var(--color-muted);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.notas-credito-info-grid strong {
+    color: var(--color-text);
+}
+
+.notas-credito-client-box {
+    padding: 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    background: var(--color-surface-soft);
+}
+
+.notas-credito-reason-box {
+    display: grid;
+    gap: 6px;
+    margin-top: 12px;
+}
+
+.notas-credito-reason-box p {
+    margin: 0;
+    color: var(--color-text-soft);
+    line-height: 1.5;
+}
+
+.notas-credito-totals-panel {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.notas-credito-totals-panel div {
+    display: grid;
+    gap: 6px;
+    padding: 16px;
+    border: 1px solid var(--color-border);
+    border-radius: 18px;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-soft);
+}
+
+.notas-credito-totals-panel span {
+    color: var(--color-muted);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.notas-credito-totals-panel strong {
+    color: var(--color-text);
+    font-size: 17px;
+}
+
+.notas-credito-totals-panel .is-total {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+}
+
+.notas-credito-totals-panel .is-total strong {
+    color: var(--color-primary);
+    font-size: 20px;
+}
+
+@media (max-width: 1180px) {
+    .notas-credito-filters {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .notas-credito-search,
+    .notas-credito-filter-actions {
+        grid-column: 1 / -1;
+    }
+
+    .notas-credito-detail-grid,
+    .notas-credito-totals-panel {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 760px) {
+
+    .notas-credito-filters,
+    .notas-credito-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .notas-credito-pagination,
+    .notas-credito-section-header,
+    .notas-credito-warning {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+/* ===== Ajuste visual de acciones en listado ===== */
+
+.notas-credito-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.notas-credito-link-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 30px;
+    padding: 0 11px;
+    border-radius: 999px;
+    border: 1px solid rgba(36, 79, 143, 0.22);
+    background: #ffffff;
+    color: var(--color-primary-dark);
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.notas-credito-link-action:hover {
+    background: rgba(36, 79, 143, 0.06);
+    border-color: rgba(36, 79, 143, 0.36);
+    text-decoration: none;
+}
+
+.notas-credito-table-card {
+    display: grid;
+    gap: 16px;
+}
+
+.notas-credito-section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+    padding-bottom: 14px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.notas-credito-section-head h3 {
+    margin: 3px 0 5px;
+    color: var(--color-text);
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+}
+
+.notas-credito-section-head p {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.45;
+}
+
+.notas-credito-section-eyebrow {
+    display: inline-flex;
+    margin-bottom: 2px;
+    color: var(--color-primary-dark);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.notas-credito-section-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-width: max-content;
+    padding: 6px 10px;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    border-radius: 999px;
+    background: var(--color-surface-soft);
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.notas-credito-section-count strong {
+    color: var(--color-text);
+    font-weight: 900;
+}

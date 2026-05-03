@@ -1,0 +1,251 @@
+<section class="module-page notas-credito-page">
+    <% const notasCreditoListado=Array.isArray(notasCredito) ? notasCredito : []; const filtrosActuales=filtros || {};
+        function dinero(valor) { return new Intl.NumberFormat('es-CO', { style: 'currency' , currency: 'COP' ,
+        maximumFractionDigits: 0 }).format(Number(valor || 0)); } function fecha(valor) { if (!valor) return 'Sin fecha'
+        ; return String(valor).slice(0, 10); } function textoEstado(valor) { const estados={ emitida: 'Emitida' ,
+        anulada: 'Anulada' }; return estados[valor] || valor || 'Sin estado' ; } function textoFiscal(valor) { const
+        estados={ interno: 'Interna' , pendiente: 'Pendiente' , enviada: 'Enviada' , validada: 'Validada' ,
+        rechazada: 'Rechazada' }; return estados[valor] || valor || 'Interna' ; } function claseEstado(valor) { const
+        clases={ emitida: 'is-issued' , anulada: 'is-cancelled' }; return clases[valor] || 'is-muted' ; } function
+        crearUrlPagina(pagina) { const params=new URLSearchParams(); if (filtrosActuales.busqueda)
+        params.set('busqueda', filtrosActuales.busqueda); if (filtrosActuales.estado) params.set('estado',
+        filtrosActuales.estado); if (filtrosActuales.documento_fiscal_estado) params.set('documento_fiscal_estado',
+        filtrosActuales.documento_fiscal_estado); if (filtrosActuales.fecha_desde) params.set('fecha_desde',
+        filtrosActuales.fecha_desde); if (filtrosActuales.fecha_hasta) params.set('fecha_hasta',
+        filtrosActuales.fecha_hasta); if (filtrosActuales.limite) params.set('limite', filtrosActuales.limite);
+        params.set('pagina', pagina); return `/notas-credito?${params.toString()}`; } %>
+
+        <div class="module-header module-header-actions">
+            <div>
+                <p class="eyebrow">Documentos internos</p>
+                <h2>Notas crédito internas</h2>
+                <p>
+                    Consulta las notas crédito generadas por anulaciones totales. Por ahora son soportes internos, no
+                    documentos electrónicos DIAN.
+                </p>
+            </div>
+
+            <a href="/ventas/historial" class="btn-secondary">
+                Ir a historial de ventas
+            </a>
+        </div>
+
+        <% if (mensajeExito) { %>
+            <div class="alert alert-success">
+                <%= mensajeExito %>
+            </div>
+            <% } %>
+
+                <% if (error) { %>
+                    <div class="alert alert-error">
+                        <%= error %>
+                    </div>
+                    <% } %>
+
+                        <div class="notas-credito-warning">
+                            <strong>Soporte interno.</strong>
+                            <span>Estas notas crédito documentan anulaciones dentro del POS. No representan validación
+                                electrónica DIAN.</span>
+                        </div>
+
+                        <form class="notas-credito-filters" method="GET" action="/notas-credito">
+                            <div class="form-group notas-credito-search">
+                                <label for="busqueda">Buscar</label>
+                                <input type="search" id="busqueda" name="busqueda"
+                                    placeholder="NC, factura, cliente, documento o motivo"
+                                    value="<%= filtrosActuales.busqueda || '' %>">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="estado">Estado</label>
+                                <select id="estado" name="estado">
+                                    <option value="">Todos</option>
+                                    <option value="emitida" <%=filtrosActuales.estado==='emitida' ? 'selected' : '' %>
+                                        >Emitida</option>
+                                    <option value="anulada" <%=filtrosActuales.estado==='anulada' ? 'selected' : '' %>
+                                        >Anulada</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="documento_fiscal_estado">Fiscal</label>
+                                <select id="documento_fiscal_estado" name="documento_fiscal_estado">
+                                    <option value="">Todos</option>
+                                    <option value="interno" <%=filtrosActuales.documento_fiscal_estado==='interno'
+                                        ? 'selected' : '' %>>Interna</option>
+                                    <option value="pendiente" <%=filtrosActuales.documento_fiscal_estado==='pendiente'
+                                        ? 'selected' : '' %>>Pendiente</option>
+                                    <option value="enviada" <%=filtrosActuales.documento_fiscal_estado==='enviada'
+                                        ? 'selected' : '' %>>Enviada</option>
+                                    <option value="validada" <%=filtrosActuales.documento_fiscal_estado==='validada'
+                                        ? 'selected' : '' %>>Validada</option>
+                                    <option value="rechazada" <%=filtrosActuales.documento_fiscal_estado==='rechazada'
+                                        ? 'selected' : '' %>>Rechazada</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="fecha_desde">Desde</label>
+                                <input type="date" id="fecha_desde" name="fecha_desde"
+                                    value="<%= filtrosActuales.fecha_desde || '' %>">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="fecha_hasta">Hasta</label>
+                                <input type="date" id="fecha_hasta" name="fecha_hasta"
+                                    value="<%= filtrosActuales.fecha_hasta || '' %>">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="limite">Mostrar</label>
+                                <select id="limite" name="limite">
+                                    <option value="10" <%=Number(filtrosActuales.limite || 20)===10 ? 'selected' : '' %>
+                                        >10</option>
+                                    <option value="20" <%=Number(filtrosActuales.limite || 20)===20 ? 'selected' : '' %>
+                                        >20</option>
+                                    <option value="50" <%=Number(filtrosActuales.limite || 20)===50 ? 'selected' : '' %>
+                                        >50</option>
+                                </select>
+                            </div>
+
+                            <div class="notas-credito-filter-actions">
+                                <button type="submit" class="btn-primary">Filtrar</button>
+                                <a href="/notas-credito" class="btn-secondary">Limpiar</a>
+                            </div>
+                        </form>
+
+                        <section class="notas-credito-card">
+                            <div class="notas-credito-section-header">
+                                <div>
+                                    <h3>Listado</h3>
+                                    <p>Notas crédito internas emitidas desde anulaciones de venta.</p>
+                                </div>
+                                <span>Total: <strong>
+                                        <%= totalResultados || 0 %>
+                                    </strong></span>
+                            </div>
+
+                            <% if (!notasCreditoListado.length) { %>
+                                <div class="empty-state">
+                                    <h3>Sin notas crédito</h3>
+                                    <p>No hay notas crédito que coincidan con los filtros aplicados.</p>
+                                </div>
+                                <% } else { %>
+                                    <div class="table-wrapper notas-credito-table-wrapper">
+                                        <table class="data-table notas-credito-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Nota crédito</th>
+                                                    <th>Venta</th>
+                                                    <th>Cliente</th>
+                                                    <th>Fecha</th>
+                                                    <th class="text-right">Total</th>
+                                                    <th class="text-center">Estado</th>
+                                                    <th class="text-center">Fiscal</th>
+                                                    <th class="text-center">Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% notasCreditoListado.forEach((nota)=> { %>
+                                                    <tr>
+                                                        <td>
+                                                            <div class="notas-credito-main-cell">
+                                                                <strong>
+                                                                    <%= nota.numero_nota_credito %>
+                                                                </strong>
+                                                                <span>
+                                                                    <%= nota.tipo_nota || 'total' %> · <%= nota.origen
+                                                                            || 'anulacion_venta' %>
+                                                                </span>
+                                                            </div>
+                                                        </td>
+
+                                                        <td>
+                                                            <div class="notas-credito-stack-cell">
+                                                                <strong>
+                                                                    <%= nota.numero_venta || 'Sin venta' %>
+                                                                </strong>
+                                                                <span>Estado: <%= nota.venta_estado || 'N/D' %></span>
+                                                            </div>
+                                                        </td>
+
+                                                        <td>
+                                                            <div class="notas-credito-stack-cell">
+                                                                <strong>
+                                                                    <%= nota.cliente_nombre_mostrar %>
+                                                                </strong>
+                                                                <span>
+                                                                    <%= nota.cliente_etiqueta %>
+                                                                </span>
+                                                            </div>
+                                                        </td>
+
+                                                        <td>
+                                                            <div class="notas-credito-stack-cell">
+                                                                <strong>
+                                                                    <%= fecha(nota.fecha_nota) %>
+                                                                </strong>
+                                                                <span>Creada: <%= fecha(nota.creada_en) %></span>
+                                                            </div>
+                                                        </td>
+
+                                                        <td class="text-right">
+                                                            <strong class="notas-credito-total">
+                                                                <%= dinero(nota.total) %>
+                                                            </strong>
+                                                        </td>
+
+                                                        <td class="text-center">
+                                                            <span
+                                                                class="notas-credito-status <%= claseEstado(nota.estado) %>">
+                                                                <%= textoEstado(nota.estado) %>
+                                                            </span>
+                                                        </td>
+
+                                                        <td class="text-center">
+                                                            <span class="notas-credito-fiscal-badge">
+                                                                <%= textoFiscal(nota.documento_fiscal_estado) %>
+                                                            </span>
+                                                        </td>
+
+                                                        <td class="text-center">
+                                                            <div class="notas-credito-actions">
+                                                                <a href="/notas-credito/<%= nota.id_nota_credito %>"
+                                                                    class="notas-credito-link-action">Ver</a>
+                                                                <a href="/notas-credito/<%= nota.id_nota_credito %>/imprimir"
+                                                                    target="_blank"
+                                                                    class="notas-credito-link-action">Imprimir</a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <% }) %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div class="notas-credito-pagination">
+                                        <span>
+                                            Página <strong>
+                                                <%= paginaActual %>
+                                            </strong> de <strong>
+                                                <%= totalPaginas %>
+                                            </strong>
+                                        </span>
+
+                                        <div>
+                                            <a href="<%= crearUrlPagina(paginaAnterior) %>"
+                                                class="btn-secondary <%= tienePaginaAnterior ? '' : 'is-disabled' %>"
+                                                aria-disabled="<%= tienePaginaAnterior ? 'false' : 'true' %>">
+                                                Anterior
+                                            </a>
+
+                                            <a href="<%= crearUrlPagina(paginaSiguiente) %>"
+                                                class="btn-secondary <%= tienePaginaSiguiente ? '' : 'is-disabled' %>"
+                                                aria-disabled="<%= tienePaginaSiguiente ? 'false' : 'true' %>">
+                                                Siguiente
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <% } %>
+                        </section>
+</section>
