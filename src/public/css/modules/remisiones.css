@@ -1,0 +1,967 @@
+/* =========================================================
+   Módulo Remisiones · Prismia POS Local
+   ========================================================= */
+
+.remisiones-page {
+    gap: 16px;
+}
+
+.remisiones-filter-card,
+.remisiones-table-card {
+    display: grid;
+    gap: 16px;
+}
+
+.remisiones-filter-form {
+    display: grid;
+    grid-template-columns: minmax(260px, 1.5fr) repeat(4, minmax(145px, 1fr)) auto;
+    gap: 12px;
+    align-items: end;
+}
+
+.remisiones-filter-search {
+    min-width: 0;
+}
+
+.remisiones-filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.remisiones-section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+    padding-bottom: 14px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.remisiones-section-head h3 {
+    margin: 3px 0 5px;
+    color: var(--color-text);
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+}
+
+.remisiones-section-head p {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.45;
+}
+
+.remisiones-section-eyebrow {
+    display: inline-flex;
+    margin-bottom: 2px;
+    color: var(--color-primary-dark);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.remisiones-section-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-width: max-content;
+    padding: 6px 10px;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    border-radius: 999px;
+    background: var(--color-surface-soft);
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.remisiones-section-count strong {
+    color: var(--color-text);
+    font-weight: 900;
+}
+
+.remisiones-table-wrapper {
+    overflow-x: visible;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+}
+
+.remisiones-table {
+    margin: 0;
+    width: 100%;
+    table-layout: auto;
+}
+
+.remisiones-table thead th {
+    background: var(--color-surface);
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.remisiones-table td {
+    vertical-align: middle;
+    padding-top: 14px;
+    padding-bottom: 14px;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.55;
+}
+
+.remisiones-main-cell,
+.remisiones-stack-cell {
+    display: grid;
+    gap: 2px;
+}
+
+.remisiones-main-cell strong,
+.remisiones-stack-cell strong {
+    color: var(--color-text);
+    font-size: 13px;
+    font-weight: 650;
+    letter-spacing: 0.01em;
+}
+
+.remisiones-main-cell span,
+.remisiones-stack-cell span {
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.55;
+    letter-spacing: 0.01em;
+}
+
+.remisiones-values-cell {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(110px, 1fr));
+    gap: 8px 14px;
+    min-width: 0;
+}
+
+.remisiones-values-cell div {
+    display: grid;
+    gap: 2px;
+}
+
+.remisiones-values-cell span {
+    color: var(--color-muted);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.remisiones-values-cell strong {
+    color: var(--color-text);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+.remisiones-values-cell .remisiones-total-value {
+    font-size: 13px;
+    font-weight: 750;
+}
+
+.remisiones-profit-positive {
+    color: #166534;
+    font-weight: 650;
+}
+
+.remisiones-profit-negative {
+    color: #b91c1c;
+    font-weight: 650;
+}
+
+.remisiones-inventory-badge,
+.remisiones-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 82px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.remisiones-inventory-badge.is-on {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.remisiones-inventory-badge.is-off {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.remisiones-status.is-draft {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.remisiones-status.is-issued {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.remisiones-status.is-delivered {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.remisiones-status.is-converted {
+    background: #ede9fe;
+    color: #6d28d9;
+}
+
+.remisiones-status.is-cancelled {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.remisiones-status.is-muted {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.remisiones-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.remisiones-muted-action {
+    display: inline-flex;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--color-surface-soft);
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.remisiones-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    padding-top: 14px;
+    color: var(--color-muted);
+    font-size: 12px;
+}
+
+.remisiones-pagination div {
+    display: flex;
+    gap: 8px;
+}
+
+.remisiones-pagination .is-disabled {
+    opacity: 0.45;
+    pointer-events: none;
+}
+
+@media (max-width: 1180px) {
+    .remisiones-filter-form {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .remisiones-filter-search,
+    .remisiones-filter-actions {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 720px) {
+    .remisiones-filter-form {
+        grid-template-columns: 1fr;
+    }
+
+    .remisiones-section-head,
+    .remisiones-pagination {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .remisiones-filter-actions,
+    .remisiones-pagination div {
+        width: 100%;
+    }
+
+    .remisiones-filter-actions .btn-primary,
+    .remisiones-filter-actions .btn-secondary,
+    .remisiones-pagination .btn-secondary {
+        width: 100%;
+    }
+}
+
+/* ===== Detalle de remisión ===== */
+
+.remisiones-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.remisiones-header-actions button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.remisiones-link-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 30px;
+    padding: 0 11px;
+    border-radius: 999px;
+    border: 1px solid rgba(36, 79, 143, 0.22);
+    background: #ffffff;
+    color: var(--color-primary-dark);
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.remisiones-link-action:hover {
+    background: rgba(36, 79, 143, 0.06);
+    border-color: rgba(36, 79, 143, 0.36);
+}
+
+.remisiones-detail-summary,
+.remisiones-delivery-card,
+.remisiones-detail-card {
+    display: grid;
+    gap: 16px;
+}
+
+.remisiones-detail-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+}
+
+.remisiones-detail-main h3 {
+    margin: 3px 0 5px;
+    color: var(--color-text);
+    font-size: 20px;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+}
+
+.remisiones-detail-main p {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.remisiones-detail-main p strong {
+    color: var(--color-text);
+    font-weight: 700;
+}
+
+.remisiones-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.remisiones-detail-box,
+.remisiones-delivery-grid div {
+    display: grid;
+    gap: 4px;
+    padding: 13px 14px;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    border-radius: 14px;
+    background: var(--color-surface-soft);
+}
+
+.remisiones-detail-box span,
+.remisiones-delivery-grid span {
+    color: var(--color-muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.remisiones-detail-box strong,
+.remisiones-delivery-grid strong {
+    color: var(--color-text);
+    font-size: 14px;
+    font-weight: 650;
+    line-height: 1.35;
+}
+
+.remisiones-detail-box p {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+.remisiones-delivery-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 12px;
+}
+
+.remisiones-detail-table-wrapper {
+    overflow-x: visible;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+}
+
+.remisiones-detail-table {
+    width: 100%;
+    table-layout: auto;
+    margin: 0;
+}
+
+.remisiones-detail-table td {
+    padding-top: 14px;
+    padding-bottom: 14px;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.55;
+    vertical-align: middle;
+}
+
+.remisiones-stack-cell.is-right {
+    justify-items: end;
+}
+
+.remisiones-detail-bottom {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.remisiones-notes-card {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+}
+
+.remisiones-notes-card h3 {
+    margin: 0;
+    color: var(--color-text);
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.remisiones-notes-card p {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 13px;
+    line-height: 1.6;
+    white-space: pre-line;
+}
+
+.remisiones-muted-text {
+    color: var(--color-muted);
+    font-style: italic;
+}
+
+.remisiones-totals-card {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.remisiones-totals-card div {
+    display: grid;
+    gap: 4px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: var(--color-surface-soft);
+    border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.remisiones-totals-card span {
+    color: var(--color-muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.remisiones-totals-card strong {
+    color: var(--color-text);
+    font-size: 15px;
+    font-weight: 700;
+}
+
+@media (max-width: 980px) {
+
+    .remisiones-detail-grid,
+    .remisiones-totals-card,
+    .remisiones-delivery-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .remisiones-detail-bottom {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 720px) {
+    .remisiones-header-actions {
+        width: 100%;
+    }
+
+    .remisiones-header-actions .btn-secondary,
+    .remisiones-header-actions .btn-primary,
+    .remisiones-header-actions button {
+        width: 100%;
+    }
+
+    .remisiones-detail-main {
+        flex-direction: column;
+    }
+
+    .remisiones-detail-grid,
+    .remisiones-totals-card,
+    .remisiones-delivery-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .remisiones-detail-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .remisiones-detail-table {
+        min-width: 760px;
+    }
+}
+
+/* ===== Remisión estilo POS ===== */
+
+.remisiones-pos-page {
+    gap: 0;
+}
+
+.remisiones-pos-shell {
+    gap: 14px;
+}
+
+.remisiones-status-chip {
+    background: rgba(36, 79, 143, 0.08);
+    color: var(--color-primary-dark);
+}
+
+.remisiones-selected-box {
+    display: grid;
+    gap: 4px;
+    padding: 12px 14px;
+    border: 1px solid rgba(22, 101, 52, 0.18);
+    border-radius: 14px;
+    background: #f0fdf4;
+}
+
+.remisiones-selected-box-pos {
+    margin-top: 8px;
+    padding: 9px 10px;
+}
+
+.remisiones-selected-box span {
+    color: #166534;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.remisiones-selected-box strong {
+    color: #14532d;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.remisiones-selected-box p {
+    margin: 0;
+    color: #166534;
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+.remisiones-link-button {
+    justify-self: start;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--color-primary-dark);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.remisiones-product-results,
+.remisiones-search-results {
+    z-index: 40;
+}
+
+.remisiones-product-result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    padding: 11px 12px;
+    border: 0;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+    background: #ffffff;
+    cursor: pointer;
+    text-align: left;
+}
+
+.remisiones-product-result-item:hover {
+    background: rgba(36, 79, 143, 0.06);
+}
+
+.remisiones-product-result-item div {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.remisiones-product-result-item strong {
+    color: var(--color-text);
+    font-size: 13px;
+    font-weight: 650;
+}
+
+.remisiones-product-result-item span {
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 400;
+}
+
+.remisiones-result-item {
+    display: grid;
+    gap: 2px;
+    width: 100%;
+    padding: 10px 12px;
+    border: 0;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+    background: #ffffff;
+    cursor: pointer;
+    text-align: left;
+}
+
+.remisiones-result-item:hover {
+    background: rgba(36, 79, 143, 0.06);
+}
+
+.remisiones-result-item strong {
+    color: var(--color-text);
+    font-size: 13px;
+    font-weight: 650;
+}
+
+.remisiones-result-item span {
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 400;
+}
+
+.remisiones-search-empty {
+    padding: 10px 12px;
+    color: var(--color-muted);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.remisiones-sale-card {
+    min-height: 360px;
+}
+
+.remisiones-invoice-table {
+    min-width: 900px;
+}
+
+.remisiones-table-qty {
+    width: 82px;
+    min-height: 32px;
+    padding: 0 8px;
+    border: 1px solid var(--color-border);
+    border-radius: 9px;
+    background: #ffffff;
+    color: var(--color-text);
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.remisiones-sale-footer {
+    grid-template-columns: minmax(0, 1fr) 310px;
+}
+
+.remisiones-delivery-strip {
+    min-width: 0;
+}
+
+.remisiones-delivery-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.remisiones-delivery-wide {
+    grid-column: 1 / -1;
+}
+
+.remisiones-delivery-fields textarea {
+    width: 100%;
+    min-height: 58px;
+    resize: vertical;
+}
+
+.remisiones-form-alert {
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #fef2f2;
+    color: #991b1b;
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.45;
+}
+
+@media (max-width: 1120px) {
+    .remisiones-sale-footer {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 760px) {
+    .remisiones-delivery-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .remisiones-product-result-item {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+/* ===== Remisión convertida / trazabilidad RM → FV ===== */
+
+.remisiones-converted-card {
+    display: grid;
+    gap: 14px;
+    border-color: rgba(109, 40, 217, 0.18);
+    background:
+        linear-gradient(135deg, rgba(237, 233, 254, 0.78), rgba(255, 255, 255, 0.96));
+}
+
+.remisiones-converted-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+}
+
+.remisiones-converted-main h3 {
+    margin: 3px 0 5px;
+    color: var(--color-text);
+    font-size: 18px;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+}
+
+.remisiones-converted-main p {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+.remisiones-converted-main p strong {
+    color: var(--color-text);
+    font-weight: 700;
+}
+
+.remisiones-converted-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 720px) {
+    .remisiones-converted-main {
+        flex-direction: column;
+    }
+
+    .remisiones-converted-actions .btn-primary,
+    .remisiones-converted-actions .btn-secondary {
+        width: 100%;
+    }
+}
+
+/* ===== Modal convertir remisión ===== */
+
+.remisiones-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    display: grid;
+    place-items: center;
+    padding: 18px;
+    background: rgba(15, 23, 42, 0.48);
+}
+
+.remisiones-modal-backdrop[hidden] {
+    display: none !important;
+}
+
+.remisiones-modal-card {
+    width: min(620px, 100%);
+    max-height: calc(100vh - 36px);
+    overflow-y: auto;
+    border-radius: 18px;
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.28);
+}
+
+.remisiones-modal-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.remisiones-modal-header h3 {
+    margin: 3px 0 4px;
+    color: var(--color-text);
+    font-size: 18px;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+}
+
+.remisiones-modal-header p {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.remisiones-modal-close {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #f8fafc;
+    color: #334155;
+    font-size: 22px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.remisiones-convert-form {
+    display: grid;
+    gap: 14px;
+    padding: 18px 20px 20px;
+}
+
+.remisiones-convert-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.remisiones-convert-summary div {
+    display: grid;
+    gap: 4px;
+    padding: 11px 12px;
+    border-radius: 14px;
+    background: var(--color-surface-soft);
+    border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.remisiones-convert-summary span,
+.remisiones-convert-grid span {
+    color: var(--color-muted);
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.remisiones-convert-summary strong {
+    color: var(--color-text);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.remisiones-convert-problems {
+    padding: 11px 13px;
+    border-radius: 13px;
+    background: #fef2f2;
+    color: #991b1b;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.remisiones-convert-problems ul {
+    margin: 6px 0 0;
+    padding-left: 18px;
+}
+
+.remisiones-convert-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.remisiones-convert-wide {
+    grid-column: 1 / -1;
+}
+
+.remisiones-convert-grid input,
+.remisiones-convert-grid select,
+.remisiones-convert-grid textarea {
+    width: 100%;
+}
+
+.remisiones-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+@media (max-width: 720px) {
+
+    .remisiones-convert-summary,
+    .remisiones-convert-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .remisiones-modal-actions {
+        flex-direction: column-reverse;
+    }
+
+    .remisiones-modal-actions .btn-primary,
+    .remisiones-modal-actions .btn-secondary {
+        width: 100%;
+    }
+}

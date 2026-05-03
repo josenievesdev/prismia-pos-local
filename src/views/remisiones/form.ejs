@@ -1,0 +1,375 @@
+<section class="module-page ventas-page remisiones-pos-page">
+    <% const fechaHoy=new Date().toISOString().slice(0, 10); const remisionSugerida=siguienteRemision || { prefijo: 'RM'
+        , siguiente_numero: 'RM-BORRADOR' }; const numeroRemision=remisionSugerida.siguiente_numero || 'RM-BORRADOR' ;
+        %>
+
+        <form id="formNuevaRemision" class="ventas-pos-shell remisiones-pos-shell" data-url="/remisiones" novalidate>
+            <header class="ventas-pos-header">
+                <div class="ventas-header-left">
+                    <div class="ventas-header-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.2">
+                            <path d="M4 4h16v16H4z" />
+                            <path d="M8 8h8" />
+                            <path d="M8 12h8" />
+                            <path d="M8 16h5" />
+                        </svg>
+                    </div>
+
+                    <div>
+                        <h2>Remisión</h2>
+                        <span class="ventas-header-sub">Documento de entrega</span>
+                    </div>
+                </div>
+
+                <div class="ventas-header-status">
+                    <span class="ventas-status-chip is-open remisiones-status-chip">
+                        <span class="ventas-status-dot"></span>
+                        No afecta inventario
+                    </span>
+
+                    <span class="ventas-header-meta">
+                        Número sugerido <strong>
+                            <%= numeroRemision %>
+                        </strong>
+                    </span>
+                </div>
+            </header>
+
+            <% if (error) { %>
+                <div class="alert alert-error">
+                    <%= error %>
+                </div>
+                <% } %>
+
+                    <div class="remisiones-form-alert" id="alertaRemision" hidden></div>
+
+                    <section class="ventas-context-bar">
+                        <div class="ventas-context-item is-client ventas-client-search-box ventas-client-clean">
+                            <div class="ventas-client-clean-head">
+                                <span>Cliente</span>
+
+                                <div class="ventas-client-clean-actions">
+                                    <strong id="resumenClienteRemision">Sin seleccionar</strong>
+
+                                    <button type="button" class="ventas-client-new-btn"
+                                        id="btnAbrirClienteRapidoRemision">
+                                        + Nuevo
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="ventas-client-search-wrap ventas-client-clean-search">
+                                <input type="search" id="buscarClienteRemision"
+                                    placeholder="Buscar cliente por nombre, documento o teléfono..." autocomplete="off">
+
+                                <div class="ventas-client-results remisiones-search-results"
+                                    id="resultadosClientesRemision" hidden>
+                                    <div class="ventas-client-result-empty">
+                                        Escribe para buscar un cliente.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="remisiones-selected-box remisiones-selected-box-pos"
+                                id="clienteSeleccionadoBoxRemision" hidden>
+                                <span>Cliente seleccionado</span>
+                                <strong id="clienteSeleccionadoNombreRemision"></strong>
+                                <p id="clienteSeleccionadoDetalleRemision"></p>
+
+                                <button type="button" class="remisiones-link-button" id="btnQuitarClienteRemision">
+                                    Cambiar cliente
+                                </button>
+                            </div>
+                        </div>
+
+                        <label class="ventas-context-item ventas-date-item" for="fechaRemision">
+                            <span>Fecha</span>
+                            <input type="date" id="fechaRemision" value="<%= fechaHoy %>" max="<%= fechaHoy %>"
+                                disabled>
+                        </label>
+
+                        <div class="ventas-context-item ventas-invoice-code-box">
+                            <span>Remisión</span>
+                            <strong id="remisionNumeroSugerido">
+                                <%= numeroRemision %>
+                            </strong>
+                            <small>Número sugerido. Se confirma al guardar.</small>
+                        </div>
+
+                        <div class="ventas-context-item ventas-context-actions">
+                            <span>Acciones</span>
+
+                            <div class="ventas-context-buttons">
+                                <a href="/remisiones" class="btn-secondary">
+                                    Listado
+                                </a>
+
+                                <button type="button" class="btn-secondary" id="btnLimpiarRemision">
+                                    Limpiar
+                                </button>
+
+                                <button type="submit" class="btn-primary ventas-charge-button" id="btnGuardarRemision">
+                                    Crear remisión
+                                </button>
+                            </div>
+
+                            <small>Documento comercial sin salida de inventario</small>
+                        </div>
+                    </section>
+
+                    <section class="ventas-search-section">
+                        <div class="ventas-search-form">
+                            <div class="ventas-search-input-wrap">
+                                <span class="ventas-search-icon">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2.5">
+                                        <circle cx="11" cy="11" r="8" />
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                                    </svg>
+                                </span>
+
+                                <input type="search" id="buscarProductoRemision"
+                                    placeholder="Buscar producto por nombre, código de barras o SKU…" autocomplete="off"
+                                    autofocus>
+
+                                <div class="ventas-results-panel remisiones-product-results"
+                                    id="resultadosProductosRemision" hidden>
+                                    <div class="ventas-empty-results">
+                                        <strong>Escribe para buscar</strong>
+                                        <span>Los productos aparecerán aquí.</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="button" class="ventas-search-btn" id="btnBuscarProductoRemision">
+                                Buscar
+                            </button>
+                        </div>
+                    </section>
+
+                    <section class="ventas-sale-card remisiones-sale-card">
+                        <header class="ventas-sale-header">
+                            <div>
+                                <span class="ventas-kicker">Remisión</span>
+                                <h3>Detalle de productos</h3>
+                            </div>
+
+                            <span class="ventas-ticket-state">
+                                <%= numeroRemision %>
+                            </span>
+                        </header>
+
+                        <div class="ventas-invoice-table-wrap">
+                            <table class="ventas-invoice-table remisiones-invoice-table">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center ventas-col-item">#</th>
+                                        <th>Producto</th>
+                                        <th class="text-center">Cantidad</th>
+                                        <th class="text-right">Precio</th>
+                                        <th class="text-right">IVA</th>
+                                        <th class="text-right">Total</th>
+                                        <th class="text-center">Acción</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="itemsRemision">
+                                    <tr class="ventas-cart-empty-row">
+                                        <td colspan="7">
+                                            <div class="ventas-cart-empty">
+                                                <strong>Remisión vacía</strong>
+                                                <span>Busca un producto y agrégalo a la remisión.</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <section class="ventas-sale-footer remisiones-sale-footer">
+                            <div class="ventas-payment-strip remisiones-delivery-strip">
+                                <div class="ventas-payment-strip-header">
+                                    <div>
+                                        <span class="ventas-kicker">Entrega</span>
+                                        <h4>Datos de entrega</h4>
+                                    </div>
+
+                                    <small class="ventas-payment-note">
+                                        Esta remisión no descuenta inventario.
+                                    </small>
+                                </div>
+
+                                <div class="remisiones-delivery-fields">
+                                    <label class="ventas-field">
+                                        <span>Fecha estimada</span>
+                                        <input type="date" id="fechaEntregaEstimadaRemision" value="<%= fechaHoy %>">
+                                    </label>
+
+                                    <label class="ventas-field">
+                                        <span>Teléfono entrega</span>
+                                        <input type="text" id="telefonoEntregaRemision" autocomplete="off"
+                                            placeholder="Teléfono o celular">
+                                    </label>
+
+                                    <label class="ventas-field remisiones-delivery-wide">
+                                        <span>Dirección entrega</span>
+                                        <input type="text" id="direccionEntregaRemision" autocomplete="off"
+                                            placeholder="Dirección del cliente o punto de entrega">
+                                    </label>
+
+                                    <label class="ventas-field remisiones-delivery-wide">
+                                        <span>Contacto entrega</span>
+                                        <input type="text" id="contactoEntregaRemision" autocomplete="off"
+                                            placeholder="Persona que recibe">
+                                    </label>
+
+                                    <label class="ventas-field remisiones-delivery-wide">
+                                        <span>Condiciones de entrega</span>
+                                        <textarea id="condicionesEntregaRemision" rows="2"
+                                            placeholder="Ej: Entrega sujeta a disponibilidad o transporte.">Documento de remisión sin afectación de inventario.</textarea>
+                                    </label>
+
+                                    <label class="ventas-field remisiones-delivery-wide">
+                                        <span>Observaciones</span>
+                                        <textarea id="observacionesRemision" rows="2"
+                                            placeholder="Notas internas o aclaraciones..."></textarea>
+                                    </label>
+                                </div>
+
+                                <div class="ventas-payment-info">
+                                    <div class="ventas-payment-info-card">
+                                        <span>Cliente actual</span>
+                                        <strong id="resumenClienteInfoRemision">Sin seleccionar</strong>
+                                        <small>Cliente de la remisión</small>
+                                    </div>
+
+                                    <div class="ventas-payment-info-card">
+                                        <span>Líneas</span>
+                                        <strong id="totalItemsRemision">0</strong>
+                                        <small>Productos agregados</small>
+                                    </div>
+
+                                    <div class="ventas-payment-info-card">
+                                        <span>Inventario</span>
+                                        <strong>No afecta</strong>
+                                        <small>Fase actual del módulo</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="ventas-totals-panel">
+                                <div class="ventas-total-row">
+                                    <span>Subtotal</span>
+                                    <strong id="resumenSubtotalRemision">$ 0</strong>
+                                </div>
+
+                                <div class="ventas-total-row">
+                                    <span>Descuento</span>
+                                    <strong id="resumenDescuentoRemision">$ 0</strong>
+                                </div>
+
+                                <div class="ventas-total-row">
+                                    <span>IVA</span>
+                                    <strong id="resumenIvaRemision">$ 0</strong>
+                                </div>
+
+                                <div class="ventas-total-row">
+                                    <span>Costo</span>
+                                    <strong id="resumenCostoRemision">$ 0</strong>
+                                </div>
+
+                                <div class="ventas-total-row">
+                                    <span>Utilidad</span>
+                                    <strong id="resumenUtilidadRemision">$ 0</strong>
+                                </div>
+
+                                <div class="ventas-total-row is-total">
+                                    <span>Total</span>
+                                    <strong id="resumenTotalRemision">$ 0</strong>
+                                </div>
+                            </div>
+                        </section>
+                    </section>
+        </form>
+
+        <div class="ventas-modal-backdrop" id="modalClienteRapidoRemision" hidden>
+            <section class="ventas-modal-card" role="dialog" aria-modal="true"
+                aria-labelledby="tituloClienteRapidoRemision">
+                <header class="ventas-modal-header">
+                    <div>
+                        <span class="ventas-kicker">Cliente rápido</span>
+                        <h3 id="tituloClienteRapidoRemision">Nuevo cliente</h3>
+                        <p>Crea un cliente básico sin salir de la remisión.</p>
+                    </div>
+
+                    <button type="button" class="ventas-modal-close" id="btnCerrarClienteRapidoRemision"
+                        aria-label="Cerrar">
+                        ×
+                    </button>
+                </header>
+
+                <form class="ventas-client-quick-form" id="formClienteRapidoRemision" data-url="/clientes/rapido"
+                    novalidate>
+                    <div class="ventas-client-quick-alert" id="avisoClienteRapidoRemision" hidden></div>
+
+                    <div class="ventas-client-quick-grid">
+                        <label class="ventas-field">
+                            <span>Tipo documento *</span>
+                            <select name="tipo_documento" id="clienteRapidoRemisionTipoDocumento">
+                                <option value="CC">Cédula de ciudadanía</option>
+                                <option value="NIT">NIT</option>
+                                <option value="CE">Cédula de extranjería</option>
+                                <option value="PP">Pasaporte</option>
+                            </select>
+                        </label>
+
+                        <label class="ventas-field">
+                            <span>Documento *</span>
+                            <input type="text" name="documento" id="clienteRapidoRemisionDocumento" autocomplete="off">
+                        </label>
+
+                        <label class="ventas-field" id="campoClienteRapidoRemisionDv" hidden>
+                            <span>DV *</span>
+                            <input type="text" name="digito_verificacion" id="clienteRapidoRemisionDv" maxlength="1"
+                                inputmode="numeric" autocomplete="off">
+                        </label>
+
+                        <label class="ventas-field ventas-client-quick-wide">
+                            <span>Nombre / razón social *</span>
+                            <input type="text" name="nombre" id="clienteRapidoRemisionNombre" autocomplete="off"
+                                placeholder="Ej: Carlos Ramírez / Empresa SAS">
+                        </label>
+
+                        <label class="ventas-field">
+                            <span>Celular</span>
+                            <input type="text" name="celular" id="clienteRapidoRemisionCelular" autocomplete="off"
+                                inputmode="tel">
+                        </label>
+
+                        <label class="ventas-field">
+                            <span>Correo</span>
+                            <input type="email" name="correo" id="clienteRapidoRemisionCorreo" autocomplete="off">
+                        </label>
+                    </div>
+
+                    <label class="ventas-client-quick-check">
+                        <input type="checkbox" id="clienteRapidoRemisionAutoriza" checked>
+                        <span>Autoriza tratamiento de datos.</span>
+                    </label>
+
+                    <footer class="ventas-modal-actions">
+                        <button type="button" class="btn-secondary" id="btnCancelarClienteRapidoRemision">
+                            Cancelar
+                        </button>
+
+                        <button type="submit" class="btn-primary" id="btnGuardarClienteRapidoRemision">
+                            Crear y seleccionar
+                        </button>
+                    </footer>
+                </form>
+            </section>
+        </div>
+
+        <script src="/js/remisiones.js"></script>
+</section>

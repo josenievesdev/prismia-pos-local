@@ -1,0 +1,271 @@
+<section class="module-page remisiones-page">
+    <% const remisionesListado=Array.isArray(remisiones) ? remisiones : []; const filtrosActuales=filtros || {};
+        function dinero(valor) { return new Intl.NumberFormat('es-CO', { style: 'currency' , currency: 'COP' ,
+        maximumFractionDigits: 0, }).format(Number(valor || 0)); } function fecha(valor) { if (!valor)
+        return 'Sin fecha' ; return String(valor).slice(0, 10); } function textoEstado(valor) { const estados={
+        borrador: 'Borrador' , emitida: 'Emitida' , entregada: 'Entregada' , convertida: 'Convertida' ,
+        anulada: 'Anulada' , }; return estados[valor] || valor || 'Sin estado' ; } function claseEstado(valor) { const
+        clases={ borrador: 'is-draft' , emitida: 'is-issued' , entregada: 'is-delivered' , convertida: 'is-converted' ,
+        anulada: 'is-cancelled' , }; return clases[valor] || 'is-muted' ; } function crearUrlPagina(pagina) { const
+        params=new URLSearchParams(); if (filtrosActuales.busqueda) params.set('busqueda', filtrosActuales.busqueda); if
+        (filtrosActuales.estado) params.set('estado', filtrosActuales.estado); if (filtrosActuales.fecha_desde)
+        params.set('fecha_desde', filtrosActuales.fecha_desde); if (filtrosActuales.fecha_hasta)
+        params.set('fecha_hasta', filtrosActuales.fecha_hasta); if (filtrosActuales.limite) params.set('limite',
+        filtrosActuales.limite); params.set('pagina', pagina); return `/remisiones?${params.toString()}`; } %>
+
+        <div class="module-header module-header-actions">
+            <div>
+                <p class="eyebrow">Gestión comercial</p>
+                <h2>Remisiones</h2>
+                <p>
+                    Consulta documentos de entrega emitidos sin afectar inventario en esta fase.
+                </p>
+            </div>
+
+            <a href="/remisiones/nueva" class="btn-primary">
+                Nueva remisión
+            </a>
+        </div>
+
+        <% if (mensajeExito) { %>
+            <div class="alert alert-success">
+                <%= mensajeExito %>
+            </div>
+            <% } %>
+
+                <% if (error) { %>
+                    <div class="alert alert-error">
+                        <%= error %>
+                    </div>
+                    <% } %>
+
+                        <div class="info-strip">
+                            <strong>Estado del módulo:</strong>
+                            <span>
+                                API funcional. Las remisiones creadas actualmente no afectan inventario.
+                            </span>
+                        </div>
+
+                        <article class="module-card remisiones-filter-card">
+                            <form method="GET" action="/remisiones" class="remisiones-filter-form">
+                                <label class="form-group remisiones-filter-search">
+                                    <span>Buscar</span>
+                                    <input type="search" name="busqueda" value="<%= filtrosActuales.busqueda || '' %>"
+                                        placeholder="Número, cliente, documento o usuario..." autocomplete="off">
+                                </label>
+
+                                <label class="form-group">
+                                    <span>Estado</span>
+                                    <select name="estado">
+                                        <option value="">Todos</option>
+                                        <option value="borrador" <%=filtrosActuales.estado==='borrador' ? 'selected'
+                                            : '' %>>Borrador</option>
+                                        <option value="emitida" <%=filtrosActuales.estado==='emitida' ? 'selected' : ''
+                                            %>>Emitida</option>
+                                        <option value="entregada" <%=filtrosActuales.estado==='entregada' ? 'selected'
+                                            : '' %>>Entregada</option>
+                                        <option value="convertida" <%=filtrosActuales.estado==='convertida' ? 'selected'
+                                            : '' %>>Convertida</option>
+                                        <option value="anulada" <%=filtrosActuales.estado==='anulada' ? 'selected' : ''
+                                            %>>Anulada</option>
+                                    </select>
+                                </label>
+
+                                <label class="form-group">
+                                    <span>Desde</span>
+                                    <input type="date" name="fecha_desde"
+                                        value="<%= filtrosActuales.fecha_desde || '' %>">
+                                </label>
+
+                                <label class="form-group">
+                                    <span>Hasta</span>
+                                    <input type="date" name="fecha_hasta"
+                                        value="<%= filtrosActuales.fecha_hasta || '' %>">
+                                </label>
+
+                                <label class="form-group">
+                                    <span>Mostrar</span>
+                                    <select name="limite">
+                                        <option value="10" <%=Number(limiteResultados || 20)===10 ? 'selected' : '' %>
+                                            >10</option>
+                                        <option value="20" <%=Number(limiteResultados || 20)===20 ? 'selected' : '' %>
+                                            >20</option>
+                                        <option value="50" <%=Number(limiteResultados || 20)===50 ? 'selected' : '' %>
+                                            >50</option>
+                                    </select>
+                                </label>
+
+                                <div class="remisiones-filter-actions">
+                                    <button type="submit" class="btn-primary">
+                                        Filtrar
+                                    </button>
+
+                                    <a href="/remisiones" class="btn-secondary">
+                                        Limpiar
+                                    </a>
+                                </div>
+                            </form>
+                        </article>
+
+                        <article class="module-card remisiones-table-card">
+                            <div class="remisiones-section-head">
+                                <div>
+                                    <span class="remisiones-section-eyebrow">Listado</span>
+                                    <h3>Remisiones registradas</h3>
+                                    <p>
+                                        Documentos de entrega emitidos desde el módulo comercial.
+                                    </p>
+                                </div>
+
+                                <span class="remisiones-section-count">
+                                    Total: <strong>
+                                        <%= totalResultados || 0 %>
+                                    </strong>
+                                </span>
+                            </div>
+
+                            <% if (!remisionesListado.length) { %>
+                                <div class="empty-state">
+                                    <h3>Sin remisiones</h3>
+                                    <p>No hay remisiones que coincidan con los filtros aplicados.</p>
+                                </div>
+                                <% } else { %>
+                                    <div class="table-wrapper remisiones-table-wrapper">
+                                        <table class="data-table remisiones-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Remisión</th>
+                                                    <th>Cliente</th>
+                                                    <th>Fechas</th>
+                                                    <th>Valores</th>
+                                                    <th class="text-center">Inventario</th>
+                                                    <th class="text-center">Estado</th>
+                                                    <th class="text-center">Acciones</th>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody>
+                                                <% remisionesListado.forEach((remision)=> { %>
+                                                    <tr>
+                                                        <td>
+                                                            <div class="remisiones-main-cell">
+                                                                <strong>
+                                                                    <%= remision.numero_remision %>
+                                                                </strong>
+                                                                <span>ID #<%= remision.id_remision %> · <%=
+                                                                            remision.origen || 'manual' %></span>
+                                                            </div>
+                                                        </td>
+
+                                                        <td>
+                                                            <div class="remisiones-stack-cell">
+                                                                <strong>
+                                                                    <%= remision.cliente_nombre_mostrar %>
+                                                                </strong>
+                                                                <span>
+                                                                    <%= remision.cliente_etiqueta %>
+                                                                </span>
+                                                            </div>
+                                                        </td>
+
+                                                        <td>
+                                                            <div class="remisiones-stack-cell">
+                                                                <strong>Emisión: <%= fecha(remision.fecha_remision) %>
+                                                                </strong>
+                                                                <span>Entrega: <%=
+                                                                        fecha(remision.fecha_entrega_estimada) %></span>
+                                                            </div>
+                                                        </td>
+
+                                                        <td>
+                                                            <div class="remisiones-values-cell">
+                                                                <div>
+                                                                    <span>Subtotal</span>
+                                                                    <strong>
+                                                                        <%= dinero(remision.subtotal) %>
+                                                                    </strong>
+                                                                </div>
+
+                                                                <div>
+                                                                    <span>IVA</span>
+                                                                    <strong>
+                                                                        <%= dinero(remision.impuesto_total) %>
+                                                                    </strong>
+                                                                </div>
+
+                                                                <div>
+                                                                    <span>Total</span>
+                                                                    <strong class="remisiones-total-value">
+                                                                        <%= dinero(remision.total) %>
+                                                                    </strong>
+                                                                </div>
+
+                                                                <div>
+                                                                    <span>Utilidad</span>
+                                                                    <strong
+                                                                        class="<%= Number(remision.utilidad_bruta || 0) >= 0 ? 'remisiones-profit-positive' : 'remisiones-profit-negative' %>">
+                                                                        <%= dinero(remision.utilidad_bruta) %>
+                                                                    </strong>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+
+                                                        <td class="text-center">
+                                                            <% if (Number(remision.afecta_inventario || 0)===1) { %>
+                                                                <span class="remisiones-inventory-badge is-on">
+                                                                    Afecta
+                                                                </span>
+                                                                <% } else { %>
+                                                                    <span class="remisiones-inventory-badge is-off">
+                                                                        No afecta
+                                                                    </span>
+                                                                    <% } %>
+                                                        </td>
+
+                                                        <td class="text-center">
+                                                            <span
+                                                                class="remisiones-status <%= claseEstado(remision.estado) %>">
+                                                                <%= textoEstado(remision.estado) %>
+                                                            </span>
+                                                        </td>
+
+                                                        <td class="text-center">
+                                                            <div class="remisiones-actions">
+                                                                <a href="/remisiones/<%= remision.id_remision %>"
+                                                                    class="remisiones-link-action">
+                                                                    Ver detalle
+                                                                </a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <% }) %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div class="remisiones-pagination">
+                                        <span>
+                                            Página <strong>
+                                                <%= paginaActual %>
+                                            </strong> de <strong>
+                                                <%= totalPaginas %>
+                                            </strong>
+                                        </span>
+
+                                        <div>
+                                            <a href="<%= crearUrlPagina(paginaAnterior) %>"
+                                                class="btn-secondary <%= tienePaginaAnterior ? '' : 'is-disabled' %>"
+                                                aria-disabled="<%= tienePaginaAnterior ? 'false' : 'true' %>">
+                                                Anterior
+                                            </a>
+
+                                            <a href="<%= crearUrlPagina(paginaSiguiente) %>"
+                                                class="btn-secondary <%= tienePaginaSiguiente ? '' : 'is-disabled' %>"
+                                                aria-disabled="<%= tienePaginaSiguiente ? 'false' : 'true' %>">
+                                                Siguiente
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <% } %>
+                        </article>
+</section>

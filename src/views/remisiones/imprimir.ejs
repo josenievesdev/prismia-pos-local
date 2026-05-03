@@ -1,0 +1,317 @@
+<% const data=ticket || {}; const comercio=data.comercio || {}; const remision=data.remision || {}; const
+    detalle=Array.isArray(data.detalle) ? data.detalle : []; function pesos(valor) { const numero=Number(valor || 0);
+    return '$ ' + Math.round(numero).toLocaleString('es-CO'); } function cantidadFormateada(valor) { const
+    numero=Number(valor || 0); if (!Number.isFinite(numero)) { return '0' ; } return numero.toLocaleString('es-CO', {
+    minimumFractionDigits: Number.isInteger(numero) ? 0 : 2, maximumFractionDigits: 3, }); } function fecha(valor) { if
+    (!valor) return '' ; return String(valor).replace('T', ' ' ).slice(0, 19); } function fechaCorta(valor) { if
+    (!valor) return '' ; return String(valor).slice(0, 10); } function texto(valor, defecto='' ) { if (valor===null ||
+    valor===undefined) { return defecto; } const limpio=String(valor).trim(); return limpio || defecto; } function
+    mayuscula(valor, defecto='' ) { return texto(valor, defecto).toUpperCase(); } function textoEstado(valor) { const
+    estados={ borrador: 'BORRADOR' , emitida: 'EMITIDA' , entregada: 'ENTREGADA' , convertida: 'CONVERTIDA' ,
+    anulada: 'ANULADA' , }; return estados[valor] || mayuscula(valor, 'EMITIDA' ); } const
+    numeroRemision=texto(remision.numero_remision, 'RM-SIN-NUMERO' ); const estadoRemision=textoEstado(remision.estado);
+    const nombreComercio=texto(comercio.nombre_comercio, 'Comercio sin nombre' ); const
+    tipoDocumentoComercio=texto(comercio.tipo_documento, 'NIT' ); const documentoComercio=texto(comercio.nit, '' );
+    const nombreCliente=texto(remision.cliente_nombre_mostrar, 'Cliente no registrado' ); const
+    documentoCliente=texto(remision.cliente_etiqueta, 'Sin documento' ); const telefonoCliente=texto(
+    remision.cliente_telefono || remision.cliente_celular, 'No registrado' ); const correoCliente=texto(
+    remision.cliente_correo || remision.cliente_correo_facturacion, 'No registrado' ); const direccionEntrega=texto(
+    remision.direccion_entrega || remision.cliente_direccion, 'No registrada' ); const contactoEntrega=texto(
+    remision.contacto_entrega || remision.cliente_nombre_mostrar, nombreCliente ); const telefonoEntrega=texto(
+    remision.telefono_entrega || remision.cliente_celular || remision.cliente_telefono, 'No registrado' ); const
+    vendedor=texto(remision.usuario_nombre, 'Usuario' ); %>
+
+    <!DOCTYPE html>
+    <html lang="es">
+
+    <head>
+        <meta charset="UTF-8">
+        <title>Ticket <%= numeroRemision %>
+        </title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="/css/modules/ventas-ticket.css">
+    </head>
+
+    <body>
+        <main class="ticket-page">
+            <section class="ticket-paper">
+                <header class="ticket-header">
+                    <h1>
+                        <%= mayuscula(nombreComercio) %>
+                    </h1>
+
+                    <% if (documentoComercio) { %>
+                        <p>
+                            <%= tipoDocumentoComercio %>: <%= documentoComercio %>
+                        </p>
+                        <% } %>
+
+                            <% if (comercio.direccion) { %>
+                                <p>
+                                    <%= comercio.direccion %>
+                                </p>
+                                <% } %>
+
+                                    <% if (comercio.telefono) { %>
+                                        <p>
+                                            <%= comercio.telefono %>
+                                        </p>
+                                        <% } %>
+
+                                            <% if (comercio.correo) { %>
+                                                <p>
+                                                    <%= comercio.correo %>
+                                                </p>
+                                                <% } %>
+                </header>
+
+                <section class="ticket-block ticket-center ticket-document">
+                    <strong class="ticket-title">REMISIÓN</strong>
+
+                    <div class="ticket-document-number">
+                        <span>Remisión No.</span>
+                        <strong>
+                            <%= numeroRemision %>
+                        </strong>
+                    </div>
+
+                    <div class="ticket-document-state">
+                        Estado: <strong>
+                            <%= estadoRemision %>
+                        </strong>
+                    </div>
+
+                    <div class="ticket-document-state">
+                        Documento de entrega
+                    </div>
+                </section>
+
+                <section class="ticket-block">
+                    <div class="ticket-row">
+                        <span>Fecha</span>
+                        <strong>
+                            <%= fecha(remision.fecha_remision) %>
+                        </strong>
+                    </div>
+
+                    <div class="ticket-row">
+                        <span>Entrega estimada</span>
+                        <strong>
+                            <%= fechaCorta(remision.fecha_entrega_estimada) || '-' %>
+                        </strong>
+                    </div>
+
+                    <div class="ticket-row">
+                        <span>Entregada</span>
+                        <strong>
+                            <%= fecha(remision.fecha_entregada) || '-' %>
+                        </strong>
+                    </div>
+
+                    <div class="ticket-row">
+                        <span>Vendedor</span>
+                        <strong>
+                            <%= vendedor %>
+                        </strong>
+                    </div>
+                </section>
+
+                <section class="ticket-block">
+                    <h2>Cliente</h2>
+
+                    <div class="ticket-row">
+                        <span>Nombre</span>
+                        <strong>
+                            <%= nombreCliente %>
+                        </strong>
+                    </div>
+
+                    <div class="ticket-row">
+                        <span>Documento</span>
+                        <strong>
+                            <%= documentoCliente %>
+                        </strong>
+                    </div>
+
+                    <div class="ticket-row">
+                        <span>Teléfono</span>
+                        <strong>
+                            <%= telefonoCliente %>
+                        </strong>
+                    </div>
+
+                    <div class="ticket-row">
+                        <span>Correo</span>
+                        <strong>
+                            <%= correoCliente %>
+                        </strong>
+                    </div>
+                </section>
+
+                <section class="ticket-block">
+                    <h2>Entrega</h2>
+
+                    <div class="ticket-row">
+                        <span>Dirección</span>
+                        <strong>
+                            <%= direccionEntrega %>
+                        </strong>
+                    </div>
+
+                    <div class="ticket-row">
+                        <span>Contacto</span>
+                        <strong>
+                            <%= contactoEntrega %>
+                        </strong>
+                    </div>
+
+                    <div class="ticket-row">
+                        <span>Teléfono</span>
+                        <strong>
+                            <%= telefonoEntrega %>
+                        </strong>
+                    </div>
+                </section>
+
+                <section class="ticket-block">
+                    <h2>Productos remitidos</h2>
+
+                    <table class="ticket-table">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th class="right">Cant.</th>
+                                <th class="right">Vlr. Unit.</th>
+                                <th class="right">Total</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <% if (!detalle.length) { %>
+                                <tr>
+                                    <td colspan="4">
+                                        <strong>Sin productos registrados.</strong>
+                                    </td>
+                                </tr>
+                                <% } %>
+
+                                    <% detalle.forEach((item)=> { %>
+                                        <tr>
+                                            <td>
+                                                <strong>
+                                                    <%= texto(item.nombre_producto, 'Producto' ) %>
+                                                </strong>
+
+                                                <% if (item.codigo_interno || item.codigo_barras) { %>
+                                                    <small>
+                                                        <%= [item.codigo_interno,
+                                                            item.codigo_barras].filter(Boolean).join(' · ') %>
+                                        </small>
+                                    <% } %>
+
+                                    <small>
+                                        <%= texto(item.unidad_abreviatura, ' und') %>
+                                                            <% if (Number(item.afecta_inventario || 0)===1) { %>
+                                                                · Afecta inventario
+                                                                <% } else { %>
+                                                                    · No afecta inventario
+                                                                    <% } %>
+                                                    </small>
+                                            </td>
+
+                                            <td class="right">
+                                                <%= cantidadFormateada(item.cantidad) %>
+                                            </td>
+
+                                            <td class="right">
+                                                <%= pesos(item.precio_unitario) %>
+                                            </td>
+
+                                            <td class="right">
+                                                <%= pesos(item.total_linea) %>
+                                            </td>
+                                        </tr>
+                                        <% }) %>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section class="ticket-block ticket-totals">
+                    <div class="ticket-row">
+                        <span>Subtotal</span>
+                        <strong>
+                            <%= pesos(remision.subtotal) %>
+                        </strong>
+                    </div>
+
+                    <% if (Number(remision.descuento_total || 0)> 0) { %>
+                        <div class="ticket-row">
+                            <span>Descuento</span>
+                            <strong>
+                                <%= pesos(remision.descuento_total) %>
+                            </strong>
+                        </div>
+                        <% } %>
+
+                            <div class="ticket-row">
+                                <span>IVA</span>
+                                <strong>
+                                    <%= pesos(remision.impuesto_total) %>
+                                </strong>
+                            </div>
+
+                            <div class="ticket-row ticket-total-main">
+                                <span>Total</span>
+                                <strong>
+                                    <%= pesos(remision.total) %>
+                                </strong>
+                            </div>
+                </section>
+
+                <section class="ticket-block">
+                    <h2>Condiciones de entrega</h2>
+
+                    <p style="margin: 0; font-size: 9.5px; line-height: 1.35; color: #4b5563;">
+                        <%= texto( remision.condiciones_entrega, 'Documento de remisión sin afectación de inventario.' )
+                            %>
+                    </p>
+                </section>
+
+                <% if (remision.observaciones) { %>
+                    <section class="ticket-block">
+                        <h2>Observaciones</h2>
+
+                        <p style="margin: 0; font-size: 9.5px; line-height: 1.35; color: #4b5563;">
+                            <%= remision.observaciones %>
+                        </p>
+                    </section>
+                    <% } %>
+
+                        <footer class="ticket-footer">
+                            <% if (Number(remision.afecta_inventario || 0)===1) { %>
+                                <p>Esta remisión afecta inventario.</p>
+                                <% } else { %>
+                                    <p>Esta remisión no afecta inventario.</p>
+                                    <% } %>
+
+                                        <p>
+                                            Documento comercial de entrega. No representa factura de venta.
+                                        </p>
+
+                                        <p>
+                                            Generado por
+                                            <strong>
+                                                <%= comercio.software || 'Prismia POS Local' %>
+                                            </strong>
+                                        </p>
+                        </footer>
+            </section>
+
+            <div class="ticket-actions">
+                <button type="button" onclick="window.print()">Imprimir</button>
+                <button type="button" onclick="window.close()">Cerrar</button>
+            </div>
+        </main>
+    </body>
+
+    </html>

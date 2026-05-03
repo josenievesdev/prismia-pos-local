@@ -29,6 +29,14 @@ function limpiarTexto(valor) {
     return String(valor || '').trim();
 }
 
+function contieneSoloDigitos(valor) {
+    return /^\d+$/.test(String(valor || '').trim());
+}
+
+function normalizarDocumentoNumerico(valor) {
+    return limpiarTexto(valor).replace(/\s+/g, '');
+}
+
 function normalizarEntero(valor, defecto = 0) {
     const numero = Number(valor);
 
@@ -251,8 +259,8 @@ function normalizarPayloadCliente(payload = {}) {
         ? 'NIT'
         : tipoDocumentoSolicitado;
 
-    const documento = limpiarTexto(payload.documento).replace(/\s+/g, '');
-    const digitoVerificacion = limpiarTexto(payload.digito_verificacion);
+    const documento = normalizarDocumentoNumerico(payload.documento);
+    const digitoVerificacion = normalizarDocumentoNumerico(payload.digito_verificacion);
 
     const primerNombre = limpiarTexto(payload.primer_nombre);
     const segundoNombre = limpiarTexto(payload.segundo_nombre);
@@ -323,11 +331,23 @@ function validarCliente(datos, idCliente = null) {
         return 'Digita el número de documento.';
     }
 
+    if (!contieneSoloDigitos(datos.documento)) {
+        return 'El documento del cliente solo debe contener números.';
+    }
+
     const esPersonaJuridica = datos.tipo_cliente === 'persona_juridica';
     const esNit = datos.tipo_documento === 'NIT';
 
     if ((esPersonaJuridica || esNit) && !datos.digito_verificacion) {
         return 'Digita el dígito de verificación del NIT.';
+    }
+
+    if (datos.digito_verificacion && !contieneSoloDigitos(datos.digito_verificacion)) {
+        return 'El dígito de verificación solo debe contener números.';
+    }
+
+    if ((esPersonaJuridica || esNit) && datos.digito_verificacion.length !== 1) {
+        return 'El dígito de verificación debe contener un solo número.';
     }
 
     if (esPersonaJuridica) {
@@ -408,7 +428,8 @@ function separarNombreRapido(nombreCompleto) {
 
 function crearClienteRapido(payload = {}) {
     const tipoDocumento = limpiarTexto(payload.tipo_documento) || 'CC';
-    const documento = limpiarTexto(payload.documento).replace(/\s+/g, '');
+    const documento = normalizarDocumentoNumerico(payload.documento);
+    const digitoVerificacion = normalizarDocumentoNumerico(payload.digito_verificacion);
     const nombreRapido = limpiarTexto(payload.nombre || payload.nombre_completo);
     const telefono = limpiarTexto(payload.telefono);
     const celular = limpiarTexto(payload.celular || telefono);
@@ -421,7 +442,7 @@ function crearClienteRapido(payload = {}) {
             tipo_cliente: 'persona_juridica',
             tipo_documento: 'NIT',
             documento,
-            digito_verificacion: limpiarTexto(payload.digito_verificacion),
+            digito_verificacion: digitoVerificacion,
             razon_social: nombreRapido,
             nombre_comercial: limpiarTexto(payload.nombre_comercial || nombreRapido),
             telefono,
