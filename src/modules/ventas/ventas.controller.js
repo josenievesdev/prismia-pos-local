@@ -129,6 +129,8 @@ function mostrarDetalleVenta(req, res) {
         detalle: detalleVenta.detalle,
         pagos: detalleVenta.pagos,
         comprobante: detalleVenta.comprobante,
+        mensajeExito: req.query.exito || null,
+        error: req.query.error || null,
         estilosModulo: estilosVentas,
     });
 }

@@ -1557,7 +1557,9 @@ function anularVentaCompleta({ idVenta, idUsuario, payload = {} } = {}) {
 
         return {
             ok: true,
-            mensaje: `Venta ${registro.numero_venta} anulada correctamente.`,
+            mensaje: registro.nota_credito
+                ? `Venta ${registro.numero_venta} anulada correctamente. Nota crédito ${registro.nota_credito.numero_nota_credito} generada.`
+                : `Venta ${registro.numero_venta} anulada correctamente.`,
             anulacion: {
                 id_anulacion_venta: registro.id_anulacion_venta,
                 id_venta: registro.id_venta,
@@ -1565,6 +1567,7 @@ function anularVentaCompleta({ idVenta, idUsuario, payload = {} } = {}) {
                 estado: registro.estado,
                 motivo_anulacion: motivoAnulacion,
             },
+            nota_credito: registro.nota_credito || null,
         };
     } catch (error) {
         console.error('Error anulando venta completa:', error);

@@ -1327,6 +1327,10 @@ function obtenerProductoBasicoParaAnulacion(idProducto) {
         .get(idProducto);
 }
 
+function formatearNumeroNotaCredito(prefijo, longitudConsecutivo, consecutivo) {
+    return `${prefijo}-${String(consecutivo).padStart(longitudConsecutivo, '0')}`;
+}
+
 function anularVentaCompleta(datos) {
     const transaccion = db.transaction(() => {
         const venta = datos.venta;
@@ -1574,11 +1578,220 @@ function anularVentaCompleta(datos) {
             throw new Error('No se pudo ajustar el turno de caja.');
         }
 
+        const numeracionNotaCredito = db
+            .prepare(`
+                SELECT
+                    id_numeracion,
+                    prefijo,
+                    longitud_consecutivo,
+                    ultimo_consecutivo
+                FROM numeraciones_documentos
+                WHERE codigo_documento = 'nota_credito'
+                  AND activo = 1
+                LIMIT 1
+            `)
+            .get();
+
+        if (!numeracionNotaCredito) {
+            throw new Error('No existe numeración activa para nota crédito interna.');
+        }
+
+        const consecutivoNotaCredito = Number(numeracionNotaCredito.ultimo_consecutivo || 0) + 1;
+        const numeroNotaCredito = formatearNumeroNotaCredito(
+            numeracionNotaCredito.prefijo,
+            numeracionNotaCredito.longitud_consecutivo,
+            consecutivoNotaCredito
+        );
+
+        const resultadoNotaCredito = db
+            .prepare(`
+                INSERT INTO notas_credito (
+                    id_venta,
+                    id_cliente,
+                    id_usuario,
+
+                    numero_nota_credito,
+                    prefijo,
+                    consecutivo,
+
+                    tipo_nota,
+                    origen,
+                    id_anulacion_venta,
+
+                    subtotal,
+                    descuento_total,
+                    impuesto_total,
+                    total,
+
+                    motivo,
+                    observaciones,
+
+                    estado,
+                    documento_fiscal_estado
+                ) VALUES (
+                    @id_venta,
+                    @id_cliente,
+                    @id_usuario,
+
+                    @numero_nota_credito,
+                    @prefijo,
+                    @consecutivo,
+
+                    'total',
+                    'anulacion_venta',
+                    @id_anulacion_venta,
+
+                    @subtotal,
+                    @descuento_total,
+                    @impuesto_total,
+                    @total,
+
+                    @motivo,
+                    @observaciones,
+
+                    'emitida',
+                    'interno'
+                )
+            `)
+            .run({
+                id_venta: venta.id_venta,
+                id_cliente: venta.id_cliente || null,
+                id_usuario: datos.id_usuario,
+
+                numero_nota_credito: numeroNotaCredito,
+                prefijo: numeracionNotaCredito.prefijo,
+                consecutivo: consecutivoNotaCredito,
+
+                id_anulacion_venta: idAnulacionVenta,
+
+                subtotal: venta.subtotal || 0,
+                descuento_total: venta.descuento_total || 0,
+                impuesto_total: venta.impuesto_total || 0,
+                total: venta.total || 0,
+
+                motivo: datos.motivo_anulacion,
+                observaciones: datos.observaciones || null,
+            });
+
+        const idNotaCredito = Number(resultadoNotaCredito.lastInsertRowid);
+
+        const insertarDetalleNotaCredito = db.prepare(`
+            INSERT INTO detalle_notas_credito (
+                id_nota_credito,
+                id_venta,
+                id_detalle_venta,
+                id_producto,
+
+                id_unidad_medida,
+                unidad_abreviatura,
+
+                codigo_interno,
+                codigo_barras,
+                nombre_producto,
+
+                cantidad,
+
+                precio_unitario,
+                precio_costo_unitario,
+                descuento_unitario,
+
+                porcentaje_iva,
+                impuesto_unitario,
+                impuesto_total,
+
+                subtotal,
+                total_linea,
+                costo_total
+            ) VALUES (
+                @id_nota_credito,
+                @id_venta,
+                @id_detalle_venta,
+                @id_producto,
+
+                @id_unidad_medida,
+                @unidad_abreviatura,
+
+                @codigo_interno,
+                @codigo_barras,
+                @nombre_producto,
+
+                @cantidad,
+
+                @precio_unitario,
+                @precio_costo_unitario,
+                @descuento_unitario,
+
+                @porcentaje_iva,
+                @impuesto_unitario,
+                @impuesto_total,
+
+                @subtotal,
+                @total_linea,
+                @costo_total
+            )
+        `);
+
+        detalle.forEach((item) => {
+            insertarDetalleNotaCredito.run({
+                id_nota_credito: idNotaCredito,
+                id_venta: venta.id_venta,
+                id_detalle_venta: item.id_detalle_venta || null,
+                id_producto: item.id_producto || null,
+
+                id_unidad_medida: item.id_unidad_medida || null,
+                unidad_abreviatura: item.unidad_abreviatura || null,
+
+                codigo_interno: item.codigo_interno || null,
+                codigo_barras: item.codigo_barras || null,
+                nombre_producto: item.nombre_producto || 'Producto',
+
+                cantidad: item.cantidad || 0,
+
+                precio_unitario: item.precio_unitario || 0,
+                precio_costo_unitario: item.precio_costo_unitario || 0,
+                descuento_unitario: item.descuento_unitario || 0,
+
+                porcentaje_iva: item.porcentaje_iva || 0,
+                impuesto_unitario: item.impuesto_unitario || 0,
+                impuesto_total: item.impuesto_total || 0,
+
+                subtotal: item.subtotal || 0,
+                total_linea: item.total_linea || 0,
+                costo_total: item.costo_total || 0,
+            });
+        });
+
+        const numeracionActualizada = db
+            .prepare(`
+                UPDATE numeraciones_documentos
+                SET
+                    ultimo_consecutivo = @ultimo_consecutivo,
+                    actualizado_en = CURRENT_TIMESTAMP
+                WHERE id_numeracion = @id_numeracion
+                  AND ultimo_consecutivo = @ultimo_consecutivo_anterior
+            `)
+            .run({
+                id_numeracion: numeracionNotaCredito.id_numeracion,
+                ultimo_consecutivo: consecutivoNotaCredito,
+                ultimo_consecutivo_anterior: numeracionNotaCredito.ultimo_consecutivo,
+            });
+
+        if (numeracionActualizada.changes === 0) {
+            throw new Error('No se pudo actualizar la numeración de nota crédito.');
+        }
+
         return {
             id_anulacion_venta: idAnulacionVenta,
             id_venta: venta.id_venta,
             numero_venta: venta.numero_venta,
             estado: 'anulada',
+            nota_credito: {
+                id_nota_credito: idNotaCredito,
+                numero_nota_credito: numeroNotaCredito,
+                tipo_nota: 'total',
+                origen: 'anulacion_venta',
+                total: venta.total || 0,
+            },
         };
     });
 
