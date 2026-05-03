@@ -122,7 +122,7 @@
 
                                         <div class="ventas-context-item ventas-invoice-code-box">
                                             <span>Factura</span>
-                                            <strong>
+                                            <strong data-factura-sugerida>
                                                 <%= nomenclaturaFacturaPOS %>
                                             </strong>
                                             <small>Número sugerido. Se confirma al guardar</small>
@@ -199,7 +199,7 @@
                                                 <h3>Detalle de venta</h3>
                                             </div>
 
-                                            <span class="ventas-ticket-state">
+                                            <span class="ventas-ticket-state" data-factura-sugerida>
                                                 <%= nomenclaturaFacturaPOS %>
                                             </span>
                                         </header>
@@ -306,7 +306,7 @@
 
                                                     <div class="ventas-payment-info-card">
                                                         <span>Factura sugerida</span>
-                                                        <strong>
+                                                        <strong data-factura-sugerida>
                                                             <%= nomenclaturaFacturaPOS %>
                                                         </strong>
                                                         <small>Se confirma al guardar</small>

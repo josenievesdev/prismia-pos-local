@@ -644,6 +644,33 @@ function listarTurnosConVentas(limite = 100) {
 
 function registrarVentaPOS(datos) {
     const transaccion = db.transaction(() => {
+        const pagos = Array.isArray(datos.pagos) && datos.pagos.length > 0
+            ? datos.pagos
+            : [datos.pago];
+
+        const pagosValidos = pagos.filter((pago) => pago && Number(pago.monto_pago || 0) > 0);
+
+        if (!pagosValidos.length) {
+            throw new Error('La venta debe tener al menos un pago válido.');
+        }
+
+        const totalPagado = Number(datos.total_pagado ?? datos.resumen.total);
+        const saldoPendiente = Number(datos.saldo_pendiente ?? 0);
+        const cambioEntregado = Number(
+            datos.cambio_entregado
+            ?? pagosValidos.reduce((total, pago) => total + Number(pago.cambio_entregado || 0), 0)
+        );
+
+        const tipoVenta = datos.tipo_venta || (pagosValidos.length > 1 ? 'mixta' : 'contado');
+
+        const totalesTurnoSeguro = {
+            total_efectivo: Number(datos.totales_turno && datos.totales_turno.total_efectivo || 0),
+            total_transferencia: Number(datos.totales_turno && datos.totales_turno.total_transferencia || 0),
+            total_tarjeta: Number(datos.totales_turno && datos.totales_turno.total_tarjeta || 0),
+            total_otros: Number(datos.totales_turno && datos.totales_turno.total_otros || 0),
+            monto_esperado: Number(datos.totales_turno && datos.totales_turno.monto_esperado || 0),
+        };
+
         const codigoDocumento = datos.codigo_documento || 'factura_venta';
 
         const numeracion = db
@@ -734,7 +761,7 @@ function registrarVentaPOS(datos) {
                     @total_costo,
                     @utilidad_bruta,
                     'pos',
-                    'contado',
+                    @tipo_venta,
                     @requiere_factura
                 )
             `)
@@ -749,11 +776,12 @@ function registrarVentaPOS(datos) {
                 impuesto_total: datos.resumen.impuesto_total,
                 total: datos.resumen.total,
                 observaciones: datos.observaciones || null,
-                total_pagado: datos.pago.monto_pago,
-                saldo_pendiente: datos.pago.saldo_pendiente,
-                cambio_entregado: datos.pago.cambio_entregado,
+                total_pagado: totalPagado,
+                saldo_pendiente: saldoPendiente,
+                cambio_entregado: cambioEntregado,
                 total_costo: datos.resumen.total_costo,
                 utilidad_bruta: datos.resumen.utilidad_bruta,
+                tipo_venta: tipoVenta,
                 requiere_factura: datos.requiere_factura ? 1 : 0,
             });
 
@@ -889,7 +917,7 @@ function registrarVentaPOS(datos) {
             }
         }
 
-        db.prepare(`
+        const insertarPagoVenta = db.prepare(`
             INSERT INTO pagos_venta (
                 id_venta,
                 metodo_pago,
@@ -915,20 +943,9 @@ function registrarVentaPOS(datos) {
                 @cambio_entregado,
                 'registrado'
             )
-        `).run({
-            id_venta: idVenta,
-            metodo_pago: datos.pago.metodo_pago,
-            monto: datos.pago.monto_pago,
-            referencia: datos.pago.referencia || null,
-            entidad: datos.pago.entidad || null,
-            observaciones: datos.pago.observaciones || null,
-            id_medio_pago: datos.pago.id_medio_pago,
-            id_usuario: datos.id_usuario,
-            monto_recibido: datos.pago.monto_recibido,
-            cambio_entregado: datos.pago.cambio_entregado,
-        });
+        `);
 
-        db.prepare(`
+        const insertarMovimientoCaja = db.prepare(`
             INSERT INTO movimientos_caja (
                 id_turno_caja,
                 id_usuario,
@@ -954,17 +971,36 @@ function registrarVentaPOS(datos) {
                 @referencia_pago,
                 @entidad_pago
             )
-        `).run({
-            id_turno_caja: datos.turno.id_turno_caja,
-            id_usuario: datos.id_usuario,
-            metodo_pago: datos.pago.metodo_pago,
-            monto: datos.pago.monto_pago,
-            descripcion: `Venta ${numeroVenta}`,
-            referencia_id: idVenta,
-            id_medio_pago: datos.pago.id_medio_pago,
-            referencia_pago: datos.pago.referencia || null,
-            entidad_pago: datos.pago.entidad || null,
-        });
+        `);
+
+        for (const pago of pagosValidos) {
+            insertarPagoVenta.run({
+                id_venta: idVenta,
+                metodo_pago: pago.metodo_pago,
+                monto: pago.monto_pago,
+                referencia: pago.referencia || null,
+                entidad: pago.entidad || null,
+                observaciones: pago.observaciones || null,
+                id_medio_pago: pago.id_medio_pago,
+                id_usuario: datos.id_usuario,
+                monto_recibido: pago.monto_recibido,
+                cambio_entregado: pago.cambio_entregado || 0,
+            });
+
+            insertarMovimientoCaja.run({
+                id_turno_caja: datos.turno.id_turno_caja,
+                id_usuario: datos.id_usuario,
+                metodo_pago: pago.metodo_pago,
+                monto: pago.monto_pago,
+                descripcion: pagosValidos.length > 1
+                    ? `Venta ${numeroVenta} - pago mixto ${pago.entidad || pago.metodo_pago}`
+                    : `Venta ${numeroVenta}`,
+                referencia_id: idVenta,
+                id_medio_pago: pago.id_medio_pago,
+                referencia_pago: pago.referencia || null,
+                entidad_pago: pago.entidad || null,
+            });
+        }
 
         const resultadoTurno = db
             .prepare(`
@@ -983,11 +1019,11 @@ function registrarVentaPOS(datos) {
             .run({
                 id_turno_caja: datos.turno.id_turno_caja,
                 total_ventas: datos.resumen.total,
-                total_efectivo: datos.totales_turno.total_efectivo,
-                total_transferencia: datos.totales_turno.total_transferencia,
-                total_tarjeta: datos.totales_turno.total_tarjeta,
-                total_otros: datos.totales_turno.total_otros,
-                monto_esperado: datos.totales_turno.monto_esperado,
+                total_efectivo: totalesTurnoSeguro.total_efectivo,
+                total_transferencia: totalesTurnoSeguro.total_transferencia,
+                total_tarjeta: totalesTurnoSeguro.total_tarjeta,
+                total_otros: totalesTurnoSeguro.total_otros,
+                monto_esperado: totalesTurnoSeguro.monto_esperado,
             });
 
         if (resultadoTurno.changes === 0) {

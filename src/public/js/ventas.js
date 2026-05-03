@@ -30,6 +30,7 @@
     function obtenerElementos() {
         return {
             shell: document.querySelector('.ventas-pos-shell'),
+            facturaSugeridaElementos: document.querySelectorAll('[data-factura-sugerida]'),
 
             fechaVenta: document.getElementById('fechaVenta'),
 
@@ -1200,6 +1201,51 @@
         }
     }
 
+    function obtenerSiguienteNumeroFactura(datosRespuesta) {
+        const comprobante = datosRespuesta && datosRespuesta.comprobante
+            ? datosRespuesta.comprobante
+            : {};
+
+        const numeroActual = String(
+            comprobante.numero
+            || datosRespuesta?.venta?.numero_venta
+            || ''
+        ).trim();
+
+        const coincidencia = numeroActual.match(/^(.+?)-(\d+)$/);
+
+        if (coincidencia) {
+            const prefijo = coincidencia[1];
+            const consecutivoTexto = coincidencia[2];
+            const siguienteConsecutivo = Number(consecutivoTexto) + 1;
+
+            if (Number.isInteger(siguienteConsecutivo)) {
+                return `${prefijo}-${String(siguienteConsecutivo).padStart(consecutivoTexto.length, '0')}`;
+            }
+        }
+
+        const prefijoRespuesta = String(comprobante.prefijo || 'FV').trim();
+        const consecutivoRespuesta = Number(comprobante.consecutivo || 0);
+
+        if (Number.isInteger(consecutivoRespuesta) && consecutivoRespuesta > 0) {
+            return `${prefijoRespuesta}-${String(consecutivoRespuesta + 1).padStart(6, '0')}`;
+        }
+
+        return '';
+    }
+
+    function actualizarFacturaSugeridaPOS(ui, datosRespuesta) {
+        const siguienteNumero = obtenerSiguienteNumeroFactura(datosRespuesta);
+
+        if (!siguienteNumero || !ui.facturaSugeridaElementos) {
+            return;
+        }
+
+        ui.facturaSugeridaElementos.forEach(function (elemento) {
+            elemento.textContent = siguienteNumero;
+        });
+    }
+
     function construirPayloadVenta(ui, estado) {
         const idMedioPago = Number(ui.medioPagoPrincipal ? ui.medioPagoPrincipal.value : 0);
         const montoRecibido = obtenerMontoPagado(ui);
@@ -1264,6 +1310,7 @@
             }
 
             limpiarVentaActual(ui, estado);
+            actualizarFacturaSugeridaPOS(ui, datos);
 
             mostrarAviso(
                 `Venta ${datos.venta.numero_venta} registrada correctamente.`,

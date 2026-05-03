@@ -615,63 +615,228 @@ function calcularResumenRegistroVenta(items) {
     });
 }
 
-function prepararPagoRegistroVenta(pago, medioPago, totalVenta) {
-    if (!pago || typeof pago !== 'object') {
-        return {
-            ok: false,
-            mensaje: 'Debes registrar el pago de la venta.',
-        };
-    }
+function obtenerMetodoPagoGeneral(medioPago) {
+    const tipo = limpiarTexto(medioPago.tipo);
 
-    const montoRecibido = redondearDinero(pago.monto_recibido);
-    const referencia = limpiarTexto(pago.referencia || '');
-
-    if (montoRecibido < totalVenta) {
-        return {
-            ok: false,
-            mensaje: 'El valor recibido no cubre el total de la venta.',
-        };
-    }
-
-    if (normalizarEntero(medioPago.requiere_referencia) === 1 && !referencia) {
-        return {
-            ok: false,
-            mensaje: `El medio de pago "${medioPago.nombre}" requiere referencia.`,
-        };
-    }
-
-    const afectaEfectivo = normalizarEntero(medioPago.afecta_efectivo_caja) === 1;
-
-    if (!afectaEfectivo && montoRecibido > totalVenta) {
-        return {
-            ok: false,
-            mensaje: 'El cambio solo aplica para pagos en efectivo.',
-        };
-    }
-
-    const cambioEntregado = afectaEfectivo
-        ? Math.max(montoRecibido - totalVenta, 0)
-        : 0;
-
-    const metodoPagoGeneral = ['efectivo', 'transferencia', 'tarjeta'].includes(medioPago.tipo)
-        ? medioPago.tipo
+    return ['efectivo', 'transferencia', 'tarjeta'].includes(tipo)
+        ? tipo
         : 'otro';
+}
+
+function normalizarPagosPayload(payload = {}) {
+    if (Array.isArray(payload.pagos) && payload.pagos.length > 0) {
+        return payload.pagos;
+    }
+
+    if (payload.pago && typeof payload.pago === 'object') {
+        return [payload.pago];
+    }
+
+    return [];
+}
+
+function prepararPagosRegistroVenta(pagosPayload, totalVenta) {
+    if (!Array.isArray(pagosPayload) || pagosPayload.length === 0) {
+        return {
+            ok: false,
+            mensaje: 'Debes registrar al menos un pago para la venta.',
+        };
+    }
+
+    const pagosPreparados = [];
+    let totalRecibido = 0;
+    let totalEfectivoRecibido = 0;
+
+    for (const pagoPayload of pagosPayload) {
+        const idMedioPago = normalizarId(pagoPayload && pagoPayload.id_medio_pago);
+
+        if (!idMedioPago) {
+            return {
+                ok: false,
+                mensaje: 'Selecciona un medio de pago válido.',
+            };
+        }
+
+        const medioPagoRaw = ventasRepository.obtenerMedioPagoPorId(idMedioPago);
+
+        if (!medioPagoRaw) {
+            return {
+                ok: false,
+                mensaje: 'Uno de los medios de pago no existe o no está activo.',
+            };
+        }
+
+        const medioPago = prepararMedioPago(medioPagoRaw);
+        const montoRecibido = redondearDinero(
+            pagoPayload.monto_recibido ?? pagoPayload.monto ?? pagoPayload.valor
+        );
+
+        if (!Number.isFinite(montoRecibido) || montoRecibido <= 0) {
+            return {
+                ok: false,
+                mensaje: `El monto recibido para "${medioPago.nombre}" debe ser mayor a cero.`,
+            };
+        }
+
+        const referencia = limpiarTexto(pagoPayload.referencia || '');
+        const requiereReferencia = normalizarEntero(medioPago.requiere_referencia) === 1;
+        const afectaEfectivo = normalizarEntero(medioPago.afecta_efectivo_caja) === 1;
+
+        if (requiereReferencia && !referencia) {
+            return {
+                ok: false,
+                mensaje: `El medio de pago "${medioPago.nombre}" requiere referencia.`,
+            };
+        }
+
+        totalRecibido += montoRecibido;
+
+        if (afectaEfectivo) {
+            totalEfectivoRecibido += montoRecibido;
+        }
+
+        pagosPreparados.push({
+            id_medio_pago: medioPago.id_medio_pago,
+            metodo_pago: obtenerMetodoPagoGeneral(medioPago),
+            entidad: medioPago.nombre,
+            referencia,
+            observaciones: limpiarTexto(pagoPayload.observaciones || ''),
+            monto_pago: montoRecibido,
+            monto_recibido: montoRecibido,
+            cambio_entregado: 0,
+            saldo_pendiente: 0,
+
+            medio_pago_codigo: medioPago.codigo,
+            medio_pago_nombre: medioPago.nombre,
+            medio_pago_tipo: medioPago.tipo,
+            medio_pago_afecta_efectivo_caja: afectaEfectivo ? 1 : 0,
+        });
+    }
+
+    if (totalRecibido < totalVenta) {
+        return {
+            ok: false,
+            mensaje: `El valor recibido no cubre el total de la venta. Faltan ${totalVenta - totalRecibido}.`,
+        };
+    }
+
+    const cambioTotal = redondearDinero(totalRecibido - totalVenta);
+
+    if (cambioTotal > 0 && totalEfectivoRecibido <= 0) {
+        return {
+            ok: false,
+            mensaje: 'El cambio solo puede generarse cuando existe un pago en efectivo.',
+        };
+    }
+
+    if (cambioTotal > totalEfectivoRecibido) {
+        return {
+            ok: false,
+            mensaje: 'El cambio no puede ser mayor al efectivo recibido.',
+        };
+    }
+
+    let cambioPendiente = cambioTotal;
+
+    if (cambioPendiente > 0) {
+        for (let i = pagosPreparados.length - 1; i >= 0; i -= 1) {
+            const pago = pagosPreparados[i];
+
+            if (pago.medio_pago_afecta_efectivo_caja !== 1) {
+                continue;
+            }
+
+            const cambioAplicable = Math.min(cambioPendiente, pago.monto_recibido - 1);
+
+            if (cambioAplicable <= 0) {
+                continue;
+            }
+
+            pago.cambio_entregado += cambioAplicable;
+            pago.monto_pago = redondearDinero(pago.monto_recibido - pago.cambio_entregado);
+            cambioPendiente = redondearDinero(cambioPendiente - cambioAplicable);
+
+            if (cambioPendiente <= 0) {
+                break;
+            }
+        }
+    }
+
+    if (cambioPendiente > 0) {
+        return {
+            ok: false,
+            mensaje: 'No se pudo calcular el cambio del pago mixto. Revisa los valores en efectivo.',
+        };
+    }
+
+    for (const pago of pagosPreparados) {
+        if (pago.monto_pago <= 0) {
+            return {
+                ok: false,
+                mensaje: `El pago en "${pago.entidad}" queda en cero después del cambio. Ajusta los valores.`,
+            };
+        }
+    }
+
+    const totalAplicado = pagosPreparados.reduce((total, pago) => {
+        return total + redondearDinero(pago.monto_pago);
+    }, 0);
+
+    const diferencia = redondearDinero(totalAplicado - totalVenta);
+
+    if (diferencia !== 0) {
+        const ultimoPago = pagosPreparados[pagosPreparados.length - 1];
+
+        if (!ultimoPago || ultimoPago.monto_pago - diferencia <= 0) {
+            return {
+                ok: false,
+                mensaje: 'No se pudo cuadrar el total aplicado de los pagos.',
+            };
+        }
+
+        ultimoPago.monto_pago = redondearDinero(ultimoPago.monto_pago - diferencia);
+    }
 
     return {
         ok: true,
-        pago: {
-            id_medio_pago: medioPago.id_medio_pago,
-            metodo_pago: metodoPagoGeneral,
-
-            entidad: medioPago.nombre,
-            referencia,
-            observaciones: null,
-            monto_pago: totalVenta,
-            monto_recibido: montoRecibido,
-            cambio_entregado: cambioEntregado,
-            saldo_pendiente: 0,
-        },
+        pagos: pagosPreparados,
+        pago_principal: pagosPreparados[0],
+        total_pagado: totalVenta,
+        total_recibido: totalRecibido,
+        cambio_entregado: cambioTotal,
+        saldo_pendiente: 0,
+        es_mixto: pagosPreparados.length > 1,
     };
+}
+
+function calcularTotalesTurno(pagos) {
+    return pagos.reduce((totales, pago) => {
+        const tipo = limpiarTexto(pago.medio_pago_tipo || pago.metodo_pago);
+        const monto = redondearDinero(pago.monto_pago);
+        const afectaEfectivo = normalizarEntero(pago.medio_pago_afecta_efectivo_caja) === 1;
+
+        if (tipo === 'efectivo') {
+            totales.total_efectivo += monto;
+        } else if (tipo === 'transferencia') {
+            totales.total_transferencia += monto;
+        } else if (tipo === 'tarjeta') {
+            totales.total_tarjeta += monto;
+        } else {
+            totales.total_otros += monto;
+        }
+
+        if (afectaEfectivo) {
+            totales.monto_esperado += monto;
+        }
+
+        return totales;
+    }, {
+        total_efectivo: 0,
+        total_transferencia: 0,
+        total_tarjeta: 0,
+        total_otros: 0,
+        monto_esperado: 0,
+    });
 }
 
 function calcularTotalesTurno(medioPago, totalVenta) {
@@ -706,19 +871,7 @@ function registrarVentaPOS({ idUsuario, payload = {} } = {}) {
         return crearErrorVenta(resultadoCliente.mensaje);
     }
 
-    const idMedioPago = normalizarId(payload.pago && payload.pago.id_medio_pago);
-
-    if (!idMedioPago) {
-        return crearErrorVenta('Selecciona un medio de pago válido.');
-    }
-
-    const medioPagoRaw = ventasRepository.obtenerMedioPagoPorId(idMedioPago);
-
-    if (!medioPagoRaw) {
-        return crearErrorVenta('El medio de pago seleccionado no existe o no está activo.');
-    }
-
-    const medioPago = prepararMedioPago(medioPagoRaw);
+    const pagosPayload = normalizarPagosPayload(payload);
 
     const resultadoItemsConsolidados = consolidarItemsVenta(payload.items);
 
@@ -738,13 +891,13 @@ function registrarVentaPOS({ idUsuario, payload = {} } = {}) {
         return crearErrorVenta('El total de la venta debe ser mayor a cero.');
     }
 
-    const resultadoPago = prepararPagoRegistroVenta(payload.pago, medioPago, resumen.total);
+    const resultadoPagos = prepararPagosRegistroVenta(pagosPayload, resumen.total);
 
-    if (!resultadoPago.ok) {
-        return crearErrorVenta(resultadoPago.mensaje);
+    if (!resultadoPagos.ok) {
+        return crearErrorVenta(resultadoPagos.mensaje);
     }
 
-    const totalesTurno = calcularTotalesTurno(medioPago, resumen.total);
+    const totalesTurno = calcularTotalesTurno(resultadoPagos.pagos);
 
     try {
         const registro = ventasRepository.registrarVentaPOS({
@@ -759,7 +912,13 @@ function registrarVentaPOS({ idUsuario, payload = {} } = {}) {
             prefijo_comprobante: 'FV',
             items: resultadoItems.items,
             resumen,
-            pago: resultadoPago.pago,
+            pago: resultadoPagos.pago_principal,
+            pagos: resultadoPagos.pagos,
+            total_pagado: resultadoPagos.total_pagado,
+            total_recibido: resultadoPagos.total_recibido,
+            cambio_entregado: resultadoPagos.cambio_entregado,
+            saldo_pendiente: resultadoPagos.saldo_pendiente,
+            tipo_venta: resultadoPagos.es_mixto ? 'mixta' : 'contado',
             totales_turno: totalesTurno,
             datos_fiscales: {
                 cliente: {
@@ -768,12 +927,15 @@ function registrarVentaPOS({ idUsuario, payload = {} } = {}) {
                     documento: resultadoCliente.cliente.documento,
                     tipo_documento: resultadoCliente.cliente.tipo_documento,
                 },
-                medio_pago: {
-                    id_medio_pago: medioPago.id_medio_pago,
-                    codigo: medioPago.codigo,
-                    nombre: medioPago.nombre,
-                    tipo: medioPago.tipo,
-                },
+                pagos: resultadoPagos.pagos.map((pago) => ({
+                    id_medio_pago: pago.id_medio_pago,
+                    nombre: pago.medio_pago_nombre,
+                    tipo: pago.medio_pago_tipo,
+                    monto_pago: pago.monto_pago,
+                    monto_recibido: pago.monto_recibido,
+                    cambio_entregado: pago.cambio_entregado,
+                    referencia: pago.referencia,
+                })),
                 resumen,
             },
         });
@@ -787,9 +949,10 @@ function registrarVentaPOS({ idUsuario, payload = {} } = {}) {
                 subtotal: resumen.subtotal,
                 impuesto_total: resumen.impuesto_total,
                 total: resumen.total,
-                total_pagado: resultadoPago.pago.monto_pago,
-                monto_recibido: resultadoPago.pago.monto_recibido,
-                cambio_entregado: resultadoPago.pago.cambio_entregado,
+                total_pagado: resultadoPagos.total_pagado,
+                monto_recibido: resultadoPagos.total_recibido,
+                cambio_entregado: resultadoPagos.cambio_entregado,
+                tipo_venta: resultadoPagos.es_mixto ? 'mixta' : 'contado',
             },
             comprobante: registro.comprobante,
         };
