@@ -18,6 +18,8 @@ router.get('/productos/buscar', ventasController.buscarProductos);
 router.get('/clientes/buscar', ventasController.buscarClientes);
 router.get('/productos/:id', ventasController.obtenerProducto);
 
+router.get('/:id/anular/preparar', ventasController.prepararAnulacionVenta);
+router.post('/:id/anular', ventasController.anularVentaCompleta);
 router.get('/:id/ticket', ventasController.imprimirTicket);
 router.get('/:id', ventasController.mostrarDetalleVenta);
 

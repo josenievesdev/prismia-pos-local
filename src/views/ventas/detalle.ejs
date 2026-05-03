@@ -4,11 +4,12 @@
         dinero(valor) { return new Intl.NumberFormat('es-CO', { style: 'currency' , currency: 'COP' ,
         maximumFractionDigits: 0 }).format(Number(valor || 0)); } function numero(valor) { return new
         Intl.NumberFormat('es-CO', { maximumFractionDigits: 3 }).format(Number(valor || 0)); } function fecha(valor) {
-        if (!valor) return 'Sin fecha' ; const fechaObj=new Date(String(valor).replace(' ', ' T')); if
-        (Number.isNaN(fechaObj.getTime())) { return valor; } return fechaObj.toLocaleString('es-CO', {
-        dateStyle: 'medium' , timeStyle: 'short' }); } function estadoClase(estado) { if (estado==='pagada' )
-        return 'is-paid' ; if (estado==='pendiente' ) return 'is-pending' ; if (estado==='anulada' )
-        return 'is-cancelled' ; return '' ; } %>
+        if (!valor) { return 'Sin fecha' ; } const textoFecha=String(valor).replace(' ', ' T'); const fechaObj=new
+        Date(textoFecha); if (Number.isNaN(fechaObj.getTime())) { return String(valor); } return
+        fechaObj.toLocaleString('es-CO'); } function estadoClase(estado) { if (estado==='pagada' ) { return 'is-paid' ;
+        } if (estado==='pendiente' ) { return 'is-pending' ; } if (estado==='anulada' ) { return 'is-cancelled' ; }
+        return '' ; } const puedeMostrarAnulacion=ventaActual.estado==='pagada' ; const
+        ventaAnulada=ventaActual.estado==='anulada' ; %>
 
         <header class="ventas-detail-header">
             <div>
@@ -18,222 +19,373 @@
             </div>
 
             <div class="ventas-detail-actions">
-                <a href="/ventas/historial" class="btn-secondary">Volver al historial</a>
+                <a href="/ventas/historial" class="btn-secondary">
+                    Volver al historial
+                </a>
+
                 <a href="/ventas/<%= ventaActual.id_venta %>/ticket" class="btn-primary" target="_blank" rel="noopener">
                     Reimprimir ticket
                 </a>
+
+                <% if (puedeMostrarAnulacion) { %>
+                    <button type="button" class="btn-danger" id="btnAbrirAnulacionVenta"
+                        data-id-venta="<%= ventaActual.id_venta %>"
+                        data-url-preparar="/ventas/<%= ventaActual.id_venta %>/anular/preparar"
+                        data-url-anular="/ventas/<%= ventaActual.id_venta %>/anular">
+                        Anular venta
+                    </button>
+                    <% } else if (ventaAnulada) { %>
+                        <button type="button" class="btn-danger" disabled>
+                            Venta anulada
+                        </button>
+                        <% } %>
             </div>
         </header>
 
-        <section class="ventas-detail-summary">
-            <article class="ventas-detail-main-card">
-                <div class="ventas-detail-invoice-head">
-                    <div>
-                        <span class="ventas-detail-label">Factura</span>
-                        <strong>
-                            <%= comprobanteActual.numero || ventaActual.numero_venta || 'FV-SIN-NUMERO' %>
+
+
+        <% if (ventaAnulada) { %>
+            <section class="ventas-detail-card anulacion-warning">
+                <strong>Venta anulada</strong>
+                <span>
+                    Esta venta fue anulada y no debe considerarse como venta activa.
+                    <% if (ventaActual.anulado_en) { %>
+                        Fecha de anulación: <strong>
+                            <%= fecha(ventaActual.anulado_en) %>
+                        </strong>.
+                        <% } %>
+                </span>
+
+                <% if (ventaActual.motivo_anulacion) { %>
+                    <span>
+                        Motivo: <strong>
+                            <%= ventaActual.motivo_anulacion %>
                         </strong>
-                    </div>
-
-                    <span class="ventas-history-status <%= estadoClase(ventaActual.estado) %>">
-                        <%= ventaActual.estado || 'pagada' %>
                     </span>
-                </div>
+                    <% } %>
+            </section>
+            <% } %>
 
-                <dl class="ventas-detail-grid">
-                    <div>
-                        <dt>Fecha</dt>
-                        <dd>
-                            <%= fecha(ventaActual.fecha_venta) %>
-                        </dd>
+                <section class="ventas-detail-summary">
+                    <article class="ventas-detail-main-card">
+                        <div class="ventas-detail-invoice-head">
+                            <div>
+                                <span class="ventas-detail-label">Factura</span>
+                                <strong>
+                                    <%= comprobanteActual.numero || ventaActual.numero_venta || 'FV-SIN-NUMERO' %>
+                                </strong>
+                            </div>
+
+                            <span class="ventas-history-status <%= estadoClase(ventaActual.estado) %>">
+                                <%= ventaActual.estado || 'pagada' %>
+                            </span>
+                        </div>
+
+                        <dl class="ventas-detail-grid">
+                            <div>
+                                <dt>Fecha</dt>
+                                <dd>
+                                    <%= fecha(ventaActual.fecha_venta) %>
+                                </dd>
+                            </div>
+
+                            <div>
+                                <dt>Cliente</dt>
+                                <dd>
+                                    <%= ventaActual.cliente_nombre || 'Consumidor final' %>
+                                </dd>
+                            </div>
+
+                            <div>
+                                <dt>Documento</dt>
+                                <dd>
+                                    <%= ventaActual.cliente_tipo_documento || 'CF' %>
+                                        <%= ventaActual.cliente_documento || '0000000000' %>
+                                </dd>
+                            </div>
+
+                            <div>
+                                <dt>Cajero</dt>
+                                <dd>
+                                    <%= ventaActual.cajero_nombre || 'Usuario' %>
+                                </dd>
+                            </div>
+
+                            <div>
+                                <dt>Turno</dt>
+                                <dd>
+                                    #<%= ventaActual.id_turno_caja || 'N/A' %>
+                                </dd>
+                            </div>
+
+                            <div>
+                                <dt>Tipo de venta</dt>
+                                <dd>
+                                    <%= ventaActual.tipo_venta || 'contado' %>
+                                </dd>
+                            </div>
+                        </dl>
+                    </article>
+
+                    <aside class="ventas-detail-totals-card">
+                        <h3>Totales</h3>
+
+                        <div class="ventas-detail-total-row">
+                            <span>Subtotal</span>
+                            <strong>
+                                <%= dinero(ventaActual.subtotal) %>
+                            </strong>
+                        </div>
+
+                        <div class="ventas-detail-total-row">
+                            <span>IVA</span>
+                            <strong>
+                                <%= dinero(ventaActual.impuesto_total) %>
+                            </strong>
+                        </div>
+
+                        <div class="ventas-detail-total-row">
+                            <span>Descuento</span>
+                            <strong>
+                                <%= dinero(ventaActual.descuento_total) %>
+                            </strong>
+                        </div>
+
+                        <div class="ventas-detail-total-row is-grand-total">
+                            <span>Total</span>
+                            <strong>
+                                <%= dinero(ventaActual.total) %>
+                            </strong>
+                        </div>
+
+                        <div class="ventas-detail-total-row">
+                            <span>Pagado</span>
+                            <strong>
+                                <%= dinero(ventaActual.total_pagado) %>
+                            </strong>
+                        </div>
+
+                        <div class="ventas-detail-total-row">
+                            <span>Cambio</span>
+                            <strong>
+                                <%= dinero(ventaActual.cambio_entregado) %>
+                            </strong>
+                        </div>
+                    </aside>
+                </section>
+
+                <section class="ventas-detail-card">
+                    <div class="ventas-detail-card-header">
+                        <h3>Productos vendidos</h3>
+                        <span>
+                            <%= detalleListado.length %> ítems
+                        </span>
                     </div>
 
-                    <div>
-                        <dt>Cliente</dt>
-                        <dd>
-                            <%= ventaActual.cliente_nombre || 'Consumidor final' %>
-                        </dd>
+                    <% if (detalleListado.length===0) { %>
+                        <div class="ventas-history-empty">
+                            <strong>Esta venta no tiene productos asociados.</strong>
+                            <span>Revisa el registro de detalle de ventas.</span>
+                        </div>
+                        <% } else { %>
+                            <div class="ventas-history-table-wrap">
+                                <table class="ventas-history-table ventas-detail-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Producto</th>
+                                            <th class="text-right">Cantidad</th>
+                                            <th class="text-right">Precio</th>
+                                            <th class="text-right">IVA</th>
+                                            <th class="text-right">Total</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        <% detalleListado.forEach((item)=> { %>
+                                            <tr>
+                                                <td>
+                                                    <strong>
+                                                        <%= item.nombre_producto %>
+                                                    </strong>
+
+                                                    <small class="ventas-history-meta">
+                                                        <%= item.codigo_interno || item.codigo_barras || 'Sin código' %>
+                                                            · <%= item.unidad_abreviatura || 'und' %>
+                                                    </small>
+                                                </td>
+
+                                                <td class="text-right">
+                                                    <%= numero(item.cantidad) %>
+                                                </td>
+
+                                                <td class="text-right">
+                                                    <%= dinero(item.precio_unitario) %>
+                                                </td>
+
+                                                <td class="text-right">
+                                                    <%= item.porcentaje_iva || 0 %>% · <%= dinero(item.impuesto_total)
+                                                            %>
+                                                </td>
+
+                                                <td class="text-right">
+                                                    <strong>
+                                                        <%= dinero(item.total_linea) %>
+                                                    </strong>
+                                                </td>
+                                            </tr>
+                                            <% }) %>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <% } %>
+                </section>
+
+                <section class="ventas-detail-card">
+                    <div class="ventas-detail-card-header">
+                        <h3>Pagos registrados</h3>
+                        <span>
+                            <%= pagosListado.length %> pago(s)
+                        </span>
                     </div>
 
-                    <div>
-                        <dt>Documento</dt>
-                        <dd>
-                            <%= ventaActual.cliente_tipo_documento || 'CF' %>
-                                <%= ventaActual.cliente_documento || '0000000000' %>
-                        </dd>
-                    </div>
-
-                    <div>
-                        <dt>Cajero</dt>
-                        <dd>
-                            <%= ventaActual.cajero_nombre || 'Usuario' %>
-                        </dd>
-                    </div>
-
-                    <div>
-                        <dt>Turno</dt>
-                        <dd>#<%= ventaActual.id_turno_caja || 'N/A' %>
-                        </dd>
-                    </div>
-
-                    <div>
-                        <dt>Tipo de venta</dt>
-                        <dd>
-                            <%= ventaActual.tipo_venta || 'contado' %>
-                        </dd>
-                    </div>
-                </dl>
-            </article>
-
-            <aside class="ventas-detail-totals-card">
-                <h3>Totales</h3>
-
-                <div class="ventas-detail-total-row">
-                    <span>Subtotal</span>
-                    <strong>
-                        <%= dinero(ventaActual.subtotal) %>
-                    </strong>
-                </div>
-
-                <div class="ventas-detail-total-row">
-                    <span>IVA</span>
-                    <strong>
-                        <%= dinero(ventaActual.impuesto_total) %>
-                    </strong>
-                </div>
-
-                <div class="ventas-detail-total-row">
-                    <span>Descuento</span>
-                    <strong>
-                        <%= dinero(ventaActual.descuento_total) %>
-                    </strong>
-                </div>
-
-                <div class="ventas-detail-total-row is-grand-total">
-                    <span>Total</span>
-                    <strong>
-                        <%= dinero(ventaActual.total) %>
-                    </strong>
-                </div>
-
-                <div class="ventas-detail-total-row">
-                    <span>Pagado</span>
-                    <strong>
-                        <%= dinero(ventaActual.total_pagado) %>
-                    </strong>
-                </div>
-
-                <div class="ventas-detail-total-row">
-                    <span>Cambio</span>
-                    <strong>
-                        <%= dinero(ventaActual.cambio_entregado) %>
-                    </strong>
-                </div>
-            </aside>
-        </section>
-
-        <section class="ventas-detail-card">
-            <div class="ventas-detail-card-header">
-                <h3>Productos vendidos</h3>
-                <span>
-                    <%= detalleListado.length %> ítems
-                </span>
-            </div>
-
-            <% if (detalleListado.length===0) { %>
-                <div class="ventas-history-empty">
-                    <strong>Esta venta no tiene productos asociados.</strong>
-                    <span>Revisa el registro de detalle de ventas.</span>
-                </div>
-                <% } else { %>
-                    <div class="ventas-history-table-wrap">
-                        <table class="ventas-history-table ventas-detail-table">
-                            <thead>
-                                <tr>
-                                    <th>Producto</th>
-                                    <th class="text-right">Cantidad</th>
-                                    <th class="text-right">Precio</th>
-                                    <th class="text-right">IVA</th>
-                                    <th class="text-right">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <% detalleListado.forEach((item)=> { %>
-                                    <tr>
-                                        <td>
+                    <% if (pagosListado.length===0) { %>
+                        <div class="ventas-history-empty">
+                            <strong>No hay pagos asociados a esta venta.</strong>
+                            <span>Revisa pagos_venta para este registro.</span>
+                        </div>
+                        <% } else { %>
+                            <div class="ventas-detail-payments">
+                                <% pagosListado.forEach((pago)=> { %>
+                                    <article class="ventas-detail-payment-item">
+                                        <div>
                                             <strong>
-                                                <%= item.nombre_producto %>
+                                                <%= pago.medio_pago_nombre %>
                                             </strong>
-                                            <small class="ventas-history-meta">
-                                                <%= item.codigo_interno || item.codigo_barras || 'Sin código' %>
-                                                    · <%= item.unidad_abreviatura || 'und' %>
-                                            </small>
-                                        </td>
 
-                                        <td class="text-right">
-                                            <%= numero(item.cantidad) %>
-                                        </td>
+                                            <span>
+                                                <%= pago.medio_pago_tipo %>
+                                            </span>
 
-                                        <td class="text-right">
-                                            <%= dinero(item.precio_unitario) %>
-                                        </td>
+                                            <% if (pago.referencia) { %>
+                                                <small>Referencia: <%= pago.referencia %></small>
+                                                <% } %>
 
-                                        <td class="text-right">
-                                            <%= item.porcentaje_iva || 0 %>% · <%= dinero(item.impuesto_total) %>
-                                        </td>
+                                                    <% if (pago.estado==='anulado' ) { %>
+                                                        <small>Estado: anulado</small>
+                                                        <% } %>
+                                        </div>
 
-                                        <td class="text-right">
+                                        <div>
                                             <strong>
-                                                <%= dinero(item.total_linea) %>
+                                                <%= dinero(pago.monto) %>
                                             </strong>
-                                        </td>
-                                    </tr>
+
+                                            <small>Recibido: <%= dinero(pago.monto_recibido) %></small>
+                                            <small>Cambio: <%= dinero(pago.cambio_entregado) %></small>
+                                        </div>
+                                    </article>
                                     <% }) %>
-                            </tbody>
-                        </table>
-                    </div>
-                    <% } %>
-        </section>
+                            </div>
+                            <% } %>
+                </section>
 
-        <section class="ventas-detail-card">
-            <div class="ventas-detail-card-header">
-                <h3>Pagos registrados</h3>
-                <span>
-                    <%= pagosListado.length %> pago(s)
-                </span>
-            </div>
+                <div class="ventas-modal-backdrop anulacion-venta-backdrop" id="modalAnularVenta" hidden>
+                    <section class="ventas-modal-card anulacion-venta-card" role="dialog" aria-modal="true"
+                        aria-labelledby="tituloAnularVenta">
+                        <header class="ventas-modal-header">
+                            <div>
+                                <span class="ventas-kicker">Anulación total</span>
+                                <h3 id="tituloAnularVenta">Anular venta</h3>
+                                <p>
+                                    Esta acción reversa la venta completa, devuelve inventario, anula
+                                    pagos y ajusta caja.
+                                </p>
+                            </div>
 
-            <% if (pagosListado.length===0) { %>
-                <div class="ventas-history-empty">
-                    <strong>No hay pagos asociados a esta venta.</strong>
-                    <span>Revisa pagos_venta para este registro.</span>
+                            <button type="button" class="ventas-modal-close" id="btnCerrarAnulacionVenta"
+                                aria-label="Cerrar">
+                                ×
+                            </button>
+                        </header>
+
+                        <form id="formAnularVenta" class="anulacion-venta-form" novalidate>
+                            <div class="ventas-client-quick-alert" id="alertaAnulacionVenta" hidden>
+                            </div>
+
+                            <div class="anulacion-warning">
+                                <strong>Atención</strong>
+                                <span>
+                                    No se eliminará la venta. Quedará marcada como anulada con
+                                    trazabilidad completa.
+                                </span>
+                            </div>
+
+                            <div class="anulacion-summary">
+                                <div>
+                                    <span>Venta</span>
+                                    <strong id="anulacionNumeroVenta">-</strong>
+                                </div>
+
+                                <div>
+                                    <span>Cliente</span>
+                                    <strong id="anulacionClienteVenta">-</strong>
+                                </div>
+
+                                <div>
+                                    <span>Total</span>
+                                    <strong id="anulacionTotalVenta">$ 0</strong>
+                                </div>
+
+                                <div>
+                                    <span>Estado</span>
+                                    <strong id="anulacionEstadoVenta">-</strong>
+                                </div>
+                            </div>
+
+                            <div class="anulacion-problems" id="anulacionProblemasVenta" hidden></div>
+
+                            <section class="anulacion-preview-grid">
+                                <article>
+                                    <span>Inventario</span>
+
+                                    <div id="anulacionInventarioVenta" class="anulacion-preview-list">
+                                        -
+                                    </div>
+                                </article>
+
+                                <article>
+                                    <span>Caja</span>
+
+                                    <div id="anulacionCajaVenta" class="anulacion-preview-list">
+                                        -
+                                    </div>
+                                </article>
+                            </section>
+
+                            <label class="ventas-field">
+                                <span>Motivo de anulación *</span>
+                                <textarea id="motivoAnulacionVenta" rows="3"
+                                    placeholder="Ej: Cliente solicitó anulación total de la venta." required></textarea>
+                            </label>
+
+                            <label class="ventas-field">
+                                <span>Observaciones</span>
+                                <textarea id="observacionesAnulacionVenta" rows="2"
+                                    placeholder="Notas adicionales opcionales..."></textarea>
+                            </label>
+
+                            <footer class="ventas-modal-actions">
+                                <button type="button" class="btn-secondary" id="btnCancelarAnulacionVenta">
+                                    Cancelar
+                                </button>
+
+                                <button type="submit" class="btn-danger" id="btnConfirmarAnulacionVenta">
+                                    Anular venta
+                                </button>
+                            </footer>
+                        </form>
+                    </section>
                 </div>
-                <% } else { %>
-                    <div class="ventas-detail-payments">
-                        <% pagosListado.forEach((pago)=> { %>
-                            <article class="ventas-detail-payment-item">
-                                <div>
-                                    <strong>
-                                        <%= pago.medio_pago_nombre %>
-                                    </strong>
-                                    <span>
-                                        <%= pago.medio_pago_tipo %>
-                                    </span>
-                                    <% if (pago.referencia) { %>
-                                        <small>Referencia: <%= pago.referencia %></small>
-                                        <% } %>
-                                </div>
 
-                                <div>
-                                    <strong>
-                                        <%= dinero(pago.monto) %>
-                                    </strong>
-                                    <small>Recibido: <%= dinero(pago.monto_recibido) %></small>
-                                    <small>Cambio: <%= dinero(pago.cambio_entregado) %></small>
-                                </div>
-                            </article>
-                            <% }) %>
-                    </div>
-                    <% } %>
-        </section>
+                <script src="/js/ventas-anulacion.js"></script>
 </section>

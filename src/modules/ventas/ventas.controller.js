@@ -147,6 +147,36 @@ function imprimirTicket(req, res) {
     });
 }
 
+function prepararAnulacionVenta(req, res) {
+    const resultado = ventasService.prepararAnulacionVenta(req.params.id);
+
+    if (!resultado.ok) {
+        return res.status(resultado.codigoEstado || 400).json({
+            ok: false,
+            mensaje: resultado.mensaje || 'No se pudo preparar la anulación.',
+        });
+    }
+
+    return res.json(resultado);
+}
+
+function anularVentaCompleta(req, res) {
+    const resultado = ventasService.anularVentaCompleta({
+        idVenta: req.params.id,
+        idUsuario: obtenerIdUsuarioAutenticado(req),
+        payload: req.body || {},
+    });
+
+    if (!resultado.ok) {
+        return res.status(resultado.codigoEstado || 400).json({
+            ok: false,
+            mensaje: resultado.mensaje || 'No se pudo anular la venta.',
+        });
+    }
+
+    return res.json(resultado);
+}
+
 module.exports = {
     mostrarPOS,
     mostrarHistorial,
@@ -156,4 +186,6 @@ module.exports = {
     registrarVenta,
     mostrarDetalleVenta,
     imprimirTicket,
+    prepararAnulacionVenta,
+    anularVentaCompleta,
 };

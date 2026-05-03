@@ -1207,6 +1207,375 @@ function obtenerTicketVenta(idVenta) {
     };
 }
 
+function limpiarTexto(valor) {
+    return String(valor || '').trim();
+}
+
+function normalizarNumero(valor, defecto = 0) {
+    const numero = Number(valor);
+
+    if (!Number.isFinite(numero)) {
+        return defecto;
+    }
+
+    return numero;
+}
+
+function normalizarEntero(valor, defecto = 0) {
+    const numero = Number(valor);
+
+    if (!Number.isFinite(numero)) {
+        return defecto;
+    }
+
+    return Math.round(numero);
+}
+
+function normalizarId(valor) {
+    const numero = Number(valor);
+
+    if (!Number.isInteger(numero) || numero <= 0) {
+        return null;
+    }
+
+    return numero;
+}
+
+function crearError(mensaje, codigoEstado = 400) {
+    return {
+        ok: false,
+        mensaje,
+        codigoEstado,
+    };
+}
+
+function obtenerNombreClienteVenta(venta) {
+    return (
+        limpiarTexto(venta.cliente_razon_social)
+        || limpiarTexto(venta.cliente_nombre_comercial)
+        || limpiarTexto(venta.cliente_nombre)
+        || 'Consumidor final'
+    );
+}
+
+function prepararVentaParaAnulacion(venta) {
+    return {
+        ...venta,
+        subtotal: normalizarEntero(venta.subtotal),
+        descuento_total: normalizarEntero(venta.descuento_total),
+        impuesto_total: normalizarEntero(venta.impuesto_total),
+        total: normalizarEntero(venta.total),
+        total_pagado: normalizarEntero(venta.total_pagado),
+        saldo_pendiente: normalizarEntero(venta.saldo_pendiente),
+        cambio_entregado: normalizarEntero(venta.cambio_entregado),
+        total_costo: normalizarEntero(venta.total_costo),
+        utilidad_bruta: normalizarEntero(venta.utilidad_bruta),
+        cliente_nombre_mostrar: obtenerNombreClienteVenta(venta),
+        cliente_etiqueta: venta.cliente_documento
+            ? `${venta.cliente_tipo_documento || 'CC'} ${venta.cliente_documento}`
+            : 'Sin documento',
+    };
+}
+
+function prepararPagoParaAnulacion(pago) {
+    const tipo = limpiarTexto(pago.medio_pago_tipo || pago.metodo_pago || 'otro');
+
+    return {
+        ...pago,
+        monto: normalizarEntero(pago.monto),
+        monto_recibido: normalizarEntero(pago.monto_recibido),
+        cambio_entregado: normalizarEntero(pago.cambio_entregado),
+        id_medio_pago: normalizarEntero(pago.id_medio_pago),
+        id_usuario: normalizarEntero(pago.id_usuario),
+        medio_pago_tipo: tipo,
+        medio_pago_afecta_efectivo_caja: normalizarEntero(pago.medio_pago_afecta_efectivo_caja),
+        medio_pago_nombre: limpiarTexto(pago.medio_pago_nombre || pago.entidad || pago.metodo_pago),
+    };
+}
+
+function calcularReversaCajaAnulacion({ venta, pagos }) {
+    const reversa = {
+        total_ventas: normalizarEntero(venta.total),
+        total_efectivo: 0,
+        total_transferencia: 0,
+        total_tarjeta: 0,
+        total_otros: 0,
+        monto_esperado: 0,
+    };
+
+    pagos.forEach((pago) => {
+        if (pago.estado !== 'registrado') {
+            return;
+        }
+
+        const tipo = limpiarTexto(pago.medio_pago_tipo || pago.metodo_pago || 'otro');
+        const monto = normalizarEntero(pago.monto);
+        const afectaEfectivo = normalizarEntero(pago.medio_pago_afecta_efectivo_caja) === 1;
+
+        if (tipo === 'efectivo') {
+            reversa.total_efectivo += monto;
+        } else if (tipo === 'transferencia') {
+            reversa.total_transferencia += monto;
+        } else if (tipo === 'tarjeta') {
+            reversa.total_tarjeta += monto;
+        } else {
+            reversa.total_otros += monto;
+        }
+
+        if (afectaEfectivo) {
+            reversa.monto_esperado += monto;
+        }
+    });
+
+    return reversa;
+}
+
+function prepararPlanInventarioAnulacion({ detalle, movimientos }) {
+    const problemas = [];
+    const plan = [];
+
+    detalle.forEach((item) => {
+        const idProducto = normalizarId(item.id_producto);
+
+        if (!idProducto) {
+            problemas.push(`El producto "${item.nombre_producto}" no tiene ID de producto asociado.`);
+            return;
+        }
+
+        const producto = ventasRepository.obtenerProductoBasicoParaAnulacion(idProducto);
+
+        if (!producto) {
+            problemas.push(`El producto "${item.nombre_producto}" ya no existe.`);
+            return;
+        }
+
+        if (producto.eliminado_en) {
+            problemas.push(`El producto "${item.nombre_producto}" fue eliminado.`);
+            return;
+        }
+
+        const controlaInventario = normalizarEntero(producto.controla_inventario);
+        const cantidad = normalizarNumero(item.cantidad);
+        const stockActual = normalizarNumero(producto.stock_actual);
+        const stockNuevo = controlaInventario === 1
+            ? Math.round((stockActual + cantidad) * 1000) / 1000
+            : stockActual;
+
+        const movimientoOriginal = movimientos.find((movimiento) => (
+            normalizarEntero(movimiento.id_producto) === idProducto
+            && limpiarTexto(movimiento.tipo_movimiento) === 'venta'
+        ));
+
+        plan.push({
+            id_producto: idProducto,
+            nombre_producto: item.nombre_producto,
+            codigo_interno: item.codigo_interno,
+            unidad_abreviatura: item.unidad_abreviatura,
+            cantidad_vendida: cantidad,
+            controla_inventario: controlaInventario,
+            stock_actual: stockActual,
+            stock_despues_anulacion: stockNuevo,
+            costo_unitario: normalizarEntero(item.precio_costo_unitario),
+            costo_total: normalizarEntero(item.costo_total),
+            movimiento_original_encontrado: Boolean(movimientoOriginal),
+        });
+    });
+
+    return {
+        problemas,
+        plan,
+    };
+}
+
+function prepararAnulacionVenta(idVenta) {
+    const id = normalizarId(idVenta);
+
+    if (!id) {
+        return crearError('La venta solicitada no es válida.');
+    }
+
+    const ventaRaw = ventasRepository.obtenerVentaParaAnulacion(id);
+
+    if (!ventaRaw) {
+        return crearError('No se encontró la venta solicitada.', 404);
+    }
+
+    const venta = prepararVentaParaAnulacion(ventaRaw);
+    const detalle = ventasRepository.listarDetalleVentaParaAnulacion(id);
+    const pagos = ventasRepository
+        .listarPagosVentaParaAnulacion(id)
+        .map(prepararPagoParaAnulacion);
+    const movimientos = ventasRepository.listarMovimientosInventarioVenta(id);
+    const anulacionExistente = ventasRepository.obtenerAnulacionVentaPorVenta(id);
+
+    const problemas = [];
+
+    if (venta.estado === 'anulada') {
+        return {
+            ok: true,
+            puede_anular: false,
+            mensaje: 'La venta ya está anulada.',
+            problemas: [
+                `La venta ${venta.numero_venta} ya está anulada.`,
+            ],
+            venta,
+            detalle: [],
+            pagos: [],
+            movimientos_inventario: [],
+            plan_inventario: [],
+            reversa_caja: {
+                total_ventas: 0,
+                total_efectivo: 0,
+                total_transferencia: 0,
+                total_tarjeta: 0,
+                total_otros: 0,
+                monto_esperado: 0,
+            },
+        };
+    }
+
+    if (anulacionExistente) {
+        return {
+            ok: true,
+            puede_anular: false,
+            mensaje: 'La venta ya tiene una anulación registrada.',
+            problemas: [
+                `Ya existe una anulación registrada para la venta ${venta.numero_venta}.`,
+            ],
+            venta,
+            detalle: [],
+            pagos: [],
+            movimientos_inventario: [],
+            plan_inventario: [],
+            reversa_caja: {
+                total_ventas: 0,
+                total_efectivo: 0,
+                total_transferencia: 0,
+                total_tarjeta: 0,
+                total_otros: 0,
+                monto_esperado: 0,
+            },
+        };
+    }
+
+    if (venta.estado !== 'pagada') {
+        problemas.push(`La venta ${venta.numero_venta} no está pagada. Estado actual: ${venta.estado}.`);
+    }
+
+    if (!detalle.length) {
+        problemas.push('La venta no tiene detalle de productos.');
+    }
+
+    const pagosRegistrados = pagos.filter((pago) => pago.estado === 'registrado');
+
+    if (!pagosRegistrados.length) {
+        problemas.push('La venta no tiene pagos registrados activos para reversar.');
+    }
+
+    if (!venta.id_turno_caja) {
+        problemas.push('La venta no tiene turno de caja asociado.');
+    }
+
+    if (venta.turno_estado !== 'abierto') {
+        problemas.push('El turno de caja asociado a esta venta no está abierto. En esta fase solo se anulan ventas del turno abierto.');
+    }
+
+    const inventario = prepararPlanInventarioAnulacion({
+        detalle,
+        movimientos,
+    });
+
+    inventario.problemas.forEach((problema) => problemas.push(problema));
+
+    const reversaCaja = calcularReversaCajaAnulacion({
+        venta,
+        pagos,
+    });
+
+    return {
+        ok: true,
+        puede_anular: problemas.length === 0,
+        mensaje: problemas.length === 0
+            ? 'La venta puede anularse.'
+            : 'La venta tiene pendientes antes de anularse.',
+        problemas,
+        venta,
+        detalle: detalle.map((item) => ({
+            ...item,
+            cantidad: normalizarNumero(item.cantidad),
+            precio_unitario: normalizarEntero(item.precio_unitario),
+            precio_costo_unitario: normalizarEntero(item.precio_costo_unitario),
+            subtotal: normalizarEntero(item.subtotal),
+            impuesto_total: normalizarEntero(item.impuesto_total),
+            total_linea: normalizarEntero(item.total_linea),
+            costo_total: normalizarEntero(item.costo_total),
+        })),
+        pagos,
+        movimientos_inventario: movimientos,
+        plan_inventario: inventario.plan,
+        reversa_caja: reversaCaja,
+    };
+}
+
+function anularVentaCompleta({ idVenta, idUsuario, payload = {} } = {}) {
+    const idUsuarioNormalizado = normalizarId(idUsuario);
+
+    if (!idUsuarioNormalizado) {
+        return crearError('No se pudo identificar el usuario autenticado.', 401);
+    }
+
+    const motivoAnulacion = limpiarTexto(payload.motivo_anulacion || payload.motivo);
+
+    if (!motivoAnulacion) {
+        return crearError('Debes digitar el motivo de la anulación.');
+    }
+
+    if (motivoAnulacion.length < 8) {
+        return crearError('El motivo de anulación debe ser más descriptivo.');
+    }
+
+    const preparacion = prepararAnulacionVenta(idVenta);
+
+    if (!preparacion.ok) {
+        return preparacion;
+    }
+
+    if (!preparacion.puede_anular) {
+        return crearError(preparacion.problemas.join(' '));
+    }
+
+    try {
+        const registro = ventasRepository.anularVentaCompleta({
+            venta: preparacion.venta,
+            detalle: preparacion.detalle,
+            pagos: preparacion.pagos,
+            reversa_caja: preparacion.reversa_caja,
+            id_usuario: idUsuarioNormalizado,
+            motivo_anulacion: motivoAnulacion,
+            observaciones: limpiarTexto(payload.observaciones),
+        });
+
+        return {
+            ok: true,
+            mensaje: `Venta ${registro.numero_venta} anulada correctamente.`,
+            anulacion: {
+                id_anulacion_venta: registro.id_anulacion_venta,
+                id_venta: registro.id_venta,
+                numero_venta: registro.numero_venta,
+                estado: registro.estado,
+                motivo_anulacion: motivoAnulacion,
+            },
+        };
+    } catch (error) {
+        console.error('Error anulando venta completa:', error);
+
+        return crearError(
+            'No se pudo anular la venta. Revisa los datos e intenta nuevamente.',
+            500
+        );
+    }
+}
+
 module.exports = {
     obtenerEstadoPOS,
     buscarProductos,
@@ -1219,4 +1588,7 @@ module.exports = {
     obtenerCarritoInicial,
     prepararProductoParaVenta,
     agruparMediosPago,
+
+    prepararAnulacionVenta,
+    anularVentaCompleta,
 };

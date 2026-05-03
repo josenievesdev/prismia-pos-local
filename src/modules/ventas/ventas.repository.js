@@ -1211,6 +1211,380 @@ function obtenerComprobanteVentaPorId(idVenta) {
     return obtenerComprobanteVentaTicket(idVenta);
 }
 
+function obtenerVentaParaAnulacion(idVenta) {
+    return db
+        .prepare(`
+            SELECT
+                v.*,
+
+                c.tipo_documento AS cliente_tipo_documento,
+                c.documento AS cliente_documento,
+                c.nombre AS cliente_nombre,
+                c.razon_social AS cliente_razon_social,
+                c.nombre_comercial AS cliente_nombre_comercial,
+
+                u.nombre AS usuario_nombre,
+
+                tc.estado AS turno_estado,
+                tc.fecha_apertura AS turno_fecha_apertura,
+                tc.fecha_cierre AS turno_fecha_cierre,
+                tc.total_ventas AS turno_total_ventas,
+                tc.total_efectivo AS turno_total_efectivo,
+                tc.total_transferencia AS turno_total_transferencia,
+                tc.total_tarjeta AS turno_total_tarjeta,
+                tc.total_otros AS turno_total_otros,
+                tc.monto_esperado AS turno_monto_esperado
+            FROM ventas v
+            LEFT JOIN clientes c
+                ON c.id_cliente = v.id_cliente
+            LEFT JOIN usuarios u
+                ON u.id_usuario = v.id_usuario
+            LEFT JOIN turnos_caja tc
+                ON tc.id_turno_caja = v.id_turno_caja
+            WHERE v.id_venta = ?
+            LIMIT 1
+        `)
+        .get(idVenta);
+}
+
+function obtenerAnulacionVentaPorVenta(idVenta) {
+    return db
+        .prepare(`
+            SELECT *
+            FROM anulaciones_venta
+            WHERE id_venta = ?
+            LIMIT 1
+        `)
+        .get(idVenta);
+}
+
+function listarDetalleVentaParaAnulacion(idVenta) {
+    return db
+        .prepare(`
+            SELECT
+                dv.*,
+
+                p.nombre AS producto_nombre_actual,
+                p.stock_actual AS producto_stock_actual,
+                p.controla_inventario AS producto_controla_inventario,
+                p.estado AS producto_estado,
+                p.eliminado_en AS producto_eliminado_en
+            FROM detalle_ventas dv
+            LEFT JOIN productos p
+                ON p.id_producto = dv.id_producto
+            WHERE dv.id_venta = ?
+            ORDER BY dv.id_detalle_venta ASC
+        `)
+        .all(idVenta);
+}
+
+function listarPagosVentaParaAnulacion(idVenta) {
+    return db
+        .prepare(`
+            SELECT
+                pv.*,
+
+                mp.codigo AS medio_pago_codigo,
+                mp.nombre AS medio_pago_nombre,
+                mp.tipo AS medio_pago_tipo,
+                mp.afecta_efectivo_caja AS medio_pago_afecta_efectivo_caja,
+                mp.requiere_referencia AS medio_pago_requiere_referencia
+            FROM pagos_venta pv
+            LEFT JOIN medios_pago mp
+                ON mp.id_medio_pago = pv.id_medio_pago
+            WHERE pv.id_venta = ?
+            ORDER BY pv.id_pago_venta ASC
+        `)
+        .all(idVenta);
+}
+
+function listarMovimientosInventarioVenta(idVenta) {
+    return db
+        .prepare(`
+            SELECT *
+            FROM movimientos_inventario
+            WHERE referencia_tipo = 'venta'
+              AND referencia_id = ?
+            ORDER BY id_movimiento_inventario ASC
+        `)
+        .all(idVenta);
+}
+
+function obtenerProductoBasicoParaAnulacion(idProducto) {
+    return db
+        .prepare(`
+            SELECT
+                id_producto,
+                nombre,
+                stock_actual,
+                controla_inventario,
+                estado,
+                eliminado_en
+            FROM productos
+            WHERE id_producto = ?
+            LIMIT 1
+        `)
+        .get(idProducto);
+}
+
+function anularVentaCompleta(datos) {
+    const transaccion = db.transaction(() => {
+        const venta = datos.venta;
+        const detalle = datos.detalle;
+        const pagos = datos.pagos;
+        const reversaCaja = datos.reversa_caja;
+
+        const resultadoAnulacion = db
+            .prepare(`
+                INSERT INTO anulaciones_venta (
+                    id_venta,
+                    numero_venta,
+                    id_cliente,
+                    id_turno_caja,
+
+                    total_venta,
+                    total_pagado,
+                    cambio_entregado,
+
+                    total_efectivo_reversado,
+                    total_transferencia_reversado,
+                    total_tarjeta_reversado,
+                    total_otros_reversado,
+                    monto_esperado_reversado,
+
+                    motivo_anulacion,
+                    observaciones,
+
+                    anulada_por
+                ) VALUES (
+                    @id_venta,
+                    @numero_venta,
+                    @id_cliente,
+                    @id_turno_caja,
+
+                    @total_venta,
+                    @total_pagado,
+                    @cambio_entregado,
+
+                    @total_efectivo_reversado,
+                    @total_transferencia_reversado,
+                    @total_tarjeta_reversado,
+                    @total_otros_reversado,
+                    @monto_esperado_reversado,
+
+                    @motivo_anulacion,
+                    @observaciones,
+
+                    @anulada_por
+                )
+            `)
+            .run({
+                id_venta: venta.id_venta,
+                numero_venta: venta.numero_venta,
+                id_cliente: venta.id_cliente || null,
+                id_turno_caja: venta.id_turno_caja,
+
+                total_venta: venta.total,
+                total_pagado: venta.total_pagado,
+                cambio_entregado: venta.cambio_entregado,
+
+                total_efectivo_reversado: reversaCaja.total_efectivo,
+                total_transferencia_reversado: reversaCaja.total_transferencia,
+                total_tarjeta_reversado: reversaCaja.total_tarjeta,
+                total_otros_reversado: reversaCaja.total_otros,
+                monto_esperado_reversado: reversaCaja.monto_esperado,
+
+                motivo_anulacion: datos.motivo_anulacion,
+                observaciones: datos.observaciones || null,
+
+                anulada_por: datos.id_usuario,
+            });
+
+        const idAnulacionVenta = Number(resultadoAnulacion.lastInsertRowid);
+
+        const ventaActualizada = db
+            .prepare(`
+                UPDATE ventas
+                SET
+                    estado = 'anulada',
+                    anulado_en = CURRENT_TIMESTAMP,
+                    anulado_por = @anulado_por,
+                    motivo_anulacion = @motivo_anulacion,
+                    actualizado_en = CURRENT_TIMESTAMP
+                WHERE id_venta = @id_venta
+                  AND estado = 'pagada'
+                  AND anulado_en IS NULL
+            `)
+            .run({
+                id_venta: venta.id_venta,
+                anulado_por: datos.id_usuario,
+                motivo_anulacion: datos.motivo_anulacion,
+            });
+
+        if (ventaActualizada.changes === 0) {
+            throw new Error('No se pudo marcar la venta como anulada.');
+        }
+
+        const pagosActualizados = db
+            .prepare(`
+                UPDATE pagos_venta
+                SET
+                    estado = 'anulado',
+                    anulado_en = CURRENT_TIMESTAMP,
+                    anulado_por = @anulado_por,
+                    motivo_anulacion = @motivo_anulacion
+                WHERE id_venta = @id_venta
+                  AND estado = 'registrado'
+            `)
+            .run({
+                id_venta: venta.id_venta,
+                anulado_por: datos.id_usuario,
+                motivo_anulacion: datos.motivo_anulacion,
+            });
+
+        if (pagosActualizados.changes === 0 && pagos.length > 0) {
+            throw new Error('No se pudieron anular los pagos de la venta.');
+        }
+
+        const actualizarProducto = db.prepare(`
+            UPDATE productos
+            SET
+                stock_actual = @stock_nuevo,
+                actualizado_en = CURRENT_TIMESTAMP
+            WHERE id_producto = @id_producto
+        `);
+
+        const obtenerProducto = db.prepare(`
+            SELECT
+                id_producto,
+                nombre,
+                stock_actual,
+                controla_inventario,
+                estado,
+                eliminado_en
+            FROM productos
+            WHERE id_producto = ?
+            LIMIT 1
+        `);
+
+        const insertarMovimientoInventario = db.prepare(`
+            INSERT INTO movimientos_inventario (
+                id_producto,
+                id_usuario,
+                id_unidad_medida,
+                unidad_abreviatura,
+                tipo_movimiento,
+                cantidad,
+                stock_anterior,
+                stock_nuevo,
+                costo_unitario,
+                costo_total,
+                motivo,
+                referencia_tipo,
+                referencia_id
+            ) VALUES (
+                @id_producto,
+                @id_usuario,
+                @id_unidad_medida,
+                @unidad_abreviatura,
+                @tipo_movimiento,
+                @cantidad,
+                @stock_anterior,
+                @stock_nuevo,
+                @costo_unitario,
+                @costo_total,
+                @motivo,
+                @referencia_tipo,
+                @referencia_id
+            )
+        `);
+
+        detalle.forEach((item) => {
+            if (!item.id_producto) {
+                return;
+            }
+
+            const producto = obtenerProducto.get(item.id_producto);
+
+            if (!producto) {
+                throw new Error(`No se encontró el producto "${item.nombre_producto}".`);
+            }
+
+            const controlaInventario = Number(producto.controla_inventario || 0);
+
+            if (controlaInventario !== 1) {
+                return;
+            }
+
+            const cantidad = Number(item.cantidad || 0);
+            const stockAnterior = Number(producto.stock_actual || 0);
+            const stockNuevo = Math.round((stockAnterior + cantidad) * 1000) / 1000;
+
+            const actualizado = actualizarProducto.run({
+                id_producto: item.id_producto,
+                stock_nuevo: stockNuevo,
+            });
+
+            if (actualizado.changes === 0) {
+                throw new Error(`No se pudo actualizar stock de "${item.nombre_producto}".`);
+            }
+
+            insertarMovimientoInventario.run({
+                id_producto: item.id_producto,
+                id_usuario: datos.id_usuario,
+                id_unidad_medida: item.id_unidad_medida || null,
+                unidad_abreviatura: item.unidad_abreviatura || null,
+                tipo_movimiento: 'anulacion_venta',
+                cantidad,
+                stock_anterior: stockAnterior,
+                stock_nuevo: stockNuevo,
+                costo_unitario: item.precio_costo_unitario || 0,
+                costo_total: item.costo_total || 0,
+                motivo: `Anulación de venta ${venta.numero_venta}: ${datos.motivo_anulacion}`,
+                referencia_tipo: 'anulacion_venta',
+                referencia_id: idAnulacionVenta,
+            });
+        });
+
+        const turnoActualizado = db
+            .prepare(`
+                UPDATE turnos_caja
+                SET
+                    total_ventas = total_ventas - @total_ventas,
+                    total_efectivo = total_efectivo - @total_efectivo,
+                    total_transferencia = total_transferencia - @total_transferencia,
+                    total_tarjeta = total_tarjeta - @total_tarjeta,
+                    total_otros = total_otros - @total_otros,
+                    monto_esperado = monto_esperado - @monto_esperado,
+                    actualizado_en = CURRENT_TIMESTAMP
+                WHERE id_turno_caja = @id_turno_caja
+                  AND estado = 'abierto'
+            `)
+            .run({
+                id_turno_caja: venta.id_turno_caja,
+                total_ventas: reversaCaja.total_ventas,
+                total_efectivo: reversaCaja.total_efectivo,
+                total_transferencia: reversaCaja.total_transferencia,
+                total_tarjeta: reversaCaja.total_tarjeta,
+                total_otros: reversaCaja.total_otros,
+                monto_esperado: reversaCaja.monto_esperado,
+            });
+
+        if (turnoActualizado.changes === 0) {
+            throw new Error('No se pudo ajustar el turno de caja.');
+        }
+
+        return {
+            id_anulacion_venta: idAnulacionVenta,
+            id_venta: venta.id_venta,
+            numero_venta: venta.numero_venta,
+            estado: 'anulada',
+        };
+    });
+
+    return transaccion();
+}
+
 module.exports = {
     obtenerTurnoAbierto,
     obtenerConfiguracionNegocio,
@@ -1239,4 +1613,12 @@ module.exports = {
     listarDetalleVentaPorId,
     listarPagosVentaPorId,
     obtenerComprobanteVentaPorId,
+
+    obtenerVentaParaAnulacion,
+    obtenerAnulacionVentaPorVenta,
+    listarDetalleVentaParaAnulacion,
+    listarPagosVentaParaAnulacion,
+    listarMovimientosInventarioVenta,
+    obtenerProductoBasicoParaAnulacion,
+    anularVentaCompleta,
 };

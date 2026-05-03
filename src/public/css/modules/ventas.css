@@ -2261,3 +2261,157 @@
         flex-direction: column-reverse;
     }
 }
+
+/* ===== Anulación total de venta ===== */
+
+.btn-danger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 0 14px;
+    border: 1px solid #b91c1c;
+    border-radius: 11px;
+    background: #dc2626;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 750;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.btn-danger:hover {
+    background: #b91c1c;
+    border-color: #991b1b;
+}
+
+.btn-danger:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.anulacion-venta-card {
+    width: min(700px, 100%);
+}
+
+.anulacion-venta-form {
+    display: grid;
+    gap: 14px;
+    padding: 18px 20px 20px;
+}
+
+.anulacion-warning {
+    display: grid;
+    gap: 3px;
+    padding: 11px 13px;
+    border-radius: 13px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.anulacion-warning strong {
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.anulacion-summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.anulacion-summary div {
+    display: grid;
+    gap: 4px;
+    padding: 11px 12px;
+    border-radius: 14px;
+    background: var(--color-surface-soft);
+    border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.anulacion-summary span,
+.anulacion-preview-grid article>span {
+    color: var(--color-muted);
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.anulacion-summary strong {
+    color: var(--color-text);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.anulacion-problems {
+    padding: 11px 13px;
+    border-radius: 13px;
+    background: #fef2f2;
+    color: #991b1b;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.anulacion-problems ul {
+    margin: 6px 0 0;
+    padding-left: 18px;
+}
+
+.anulacion-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.anulacion-preview-grid article {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    min-height: 120px;
+    padding: 12px 13px;
+    border-radius: 14px;
+    background: var(--color-surface-soft);
+    border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.anulacion-preview-list {
+    display: grid;
+    gap: 7px;
+}
+
+.anulacion-preview-list p {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.anulacion-preview-list strong {
+    color: var(--color-text);
+    font-weight: 700;
+}
+
+.anulacion-preview-list span {
+    color: var(--color-muted);
+    font-size: 11px;
+}
+
+@media (max-width: 760px) {
+
+    .anulacion-summary,
+    .anulacion-preview-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .anulacion-venta-card {
+        max-height: calc(100vh - 30px);
+        overflow-y: auto;
+    }
+}
