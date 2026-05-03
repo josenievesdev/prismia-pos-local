@@ -717,8 +717,8 @@
 
     function construirPayloadClienteRapidoCotizacion(ui) {
         const tipoDocumento = ui.tipoDocumentoClienteRapido?.value || 'CC';
-        const documento = limpiarTexto(ui.documentoClienteRapido?.value);
-        const digitoVerificacion = limpiarTexto(ui.dvClienteRapido?.value);
+        const documento = dejarSoloDigitos(ui.documentoClienteRapido?.value);
+        const digitoVerificacion = dejarSoloDigitos(ui.dvClienteRapido?.value).slice(0, 1);
         const nombre = limpiarTexto(ui.nombreClienteRapido?.value);
         const celular = limpiarTexto(ui.celularClienteRapido?.value);
         const correo = limpiarTexto(ui.correoClienteRapido?.value);
