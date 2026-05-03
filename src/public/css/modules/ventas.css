@@ -2415,3 +2415,130 @@
         overflow-y: auto;
     }
 }
+
+/* ===== Nota crédito interna en detalle de venta ===== */
+
+.ventas-credit-note-card {
+    display: grid;
+    gap: 14px;
+    border-color: rgba(37, 99, 235, 0.18);
+    background:
+        linear-gradient(135deg, rgba(219, 234, 254, 0.82), rgba(255, 255, 255, 0.96));
+}
+
+.ventas-credit-note-main {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.ventas-credit-note-main h3 {
+    margin: 4px 0 5px;
+    color: var(--color-text);
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+}
+
+.ventas-credit-note-main p {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.ventas-credit-note-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.ventas-credit-note-grid div,
+.ventas-credit-note-message {
+    display: grid;
+    gap: 4px;
+    padding: 11px 12px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.ventas-credit-note-grid span,
+.ventas-credit-note-message span,
+.ventas-credit-note-detail>span {
+    color: var(--color-muted);
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.ventas-credit-note-grid strong,
+.ventas-credit-note-message strong {
+    color: var(--color-text);
+    font-size: 13px;
+    font-weight: 750;
+    line-height: 1.35;
+}
+
+.ventas-credit-note-detail {
+    display: grid;
+    gap: 8px;
+}
+
+.ventas-credit-note-detail ul {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ventas-credit-note-detail li {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 10px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.ventas-credit-note-detail li strong {
+    color: var(--color-text);
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.ventas-credit-note-detail li span {
+    color: var(--color-muted);
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.ventas-credit-note-disclaimer {
+    margin: 0;
+    padding-top: 4px;
+    color: var(--color-muted);
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+@media (max-width: 760px) {
+    .ventas-credit-note-main {
+        flex-direction: column;
+    }
+
+    .ventas-credit-note-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ventas-credit-note-detail li {
+        flex-direction: column;
+    }
+
+    .ventas-credit-note-detail li span {
+        white-space: normal;
+    }
+}

@@ -1,4 +1,5 @@
 const ventasService = require('./ventas.service');
+const notasCreditoService = require('../notasCredito/notasCredito.service');
 
 const estilosVentas = ['/css/modules/ventas.css'];
 
@@ -122,6 +123,9 @@ function mostrarDetalleVenta(req, res) {
     }
 
     const detalleVenta = resultado.detalleVenta;
+    const resultadoNotaCredito = notasCreditoService.obtenerNotaCreditoPorVenta(
+        detalleVenta.venta.id_venta
+    );
 
     return res.render('ventas/detalle', {
         titulo: `Detalle de venta ${detalleVenta.comprobante.numero}`,
@@ -129,6 +133,8 @@ function mostrarDetalleVenta(req, res) {
         detalle: detalleVenta.detalle,
         pagos: detalleVenta.pagos,
         comprobante: detalleVenta.comprobante,
+        notaCredito: resultadoNotaCredito.notaCredito || null,
+        detalleNotaCredito: resultadoNotaCredito.detalle || [],
         mensajeExito: req.query.exito || null,
         error: req.query.error || null,
         estilosModulo: estilosVentas,

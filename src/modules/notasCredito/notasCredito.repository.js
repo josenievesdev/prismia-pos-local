@@ -59,6 +59,80 @@ function contarDetalleNotasCredito() {
         .get();
 }
 
+function obtenerNotaCreditoPorVenta(idVenta) {
+    return db
+        .prepare(`
+            SELECT
+                nc.id_nota_credito,
+                nc.numero_nota_credito,
+                nc.id_venta,
+                nc.id_anulacion_venta,
+                nc.id_cliente,
+                nc.id_usuario,
+                nc.tipo_nota,
+                nc.origen,
+                nc.fecha_nota,
+                nc.subtotal,
+                nc.descuento_total,
+                nc.impuesto_total,
+                nc.total,
+                nc.motivo,
+                nc.observaciones,
+                nc.estado,
+                nc.documento_fiscal_estado,
+                nc.documento_fiscal_referencia,
+                nc.cude,
+                nc.creada_en,
+
+                v.numero_venta,
+                COALESCE(c.razon_social, c.nombre_comercial, c.nombre, 'Consumidor final') AS cliente_nombre,
+                u.nombre AS usuario_nombre
+            FROM notas_credito nc
+            LEFT JOIN ventas v
+                ON v.id_venta = nc.id_venta
+            LEFT JOIN clientes c
+                ON c.id_cliente = nc.id_cliente
+            LEFT JOIN usuarios u
+                ON u.id_usuario = nc.id_usuario
+            WHERE nc.id_venta = ?
+              AND nc.estado = 'emitida'
+            ORDER BY nc.id_nota_credito DESC
+            LIMIT 1
+        `)
+        .get(idVenta);
+}
+
+function listarDetalleNotaCredito(idNotaCredito) {
+    return db
+        .prepare(`
+            SELECT
+                id_detalle_nota_credito,
+                id_nota_credito,
+                id_venta,
+                id_detalle_venta,
+                id_producto,
+                id_unidad_medida,
+                unidad_abreviatura,
+                codigo_interno,
+                codigo_barras,
+                nombre_producto,
+                cantidad,
+                precio_unitario,
+                precio_costo_unitario,
+                descuento_unitario,
+                porcentaje_iva,
+                impuesto_unitario,
+                impuesto_total,
+                subtotal,
+                total_linea,
+                costo_total
+            FROM detalle_notas_credito
+            WHERE id_nota_credito = ?
+            ORDER BY id_detalle_nota_credito ASC
+        `)
+        .all(idNotaCredito);
+}
+
 function listarUltimasNotasCredito(limite = 10) {
     return db
         .prepare(`
@@ -93,5 +167,7 @@ module.exports = {
     obtenerNumeracionNotaCredito,
     contarNotasCredito,
     contarDetalleNotasCredito,
+    obtenerNotaCreditoPorVenta,
+    listarDetalleNotaCredito,
     listarUltimasNotasCredito,
 };

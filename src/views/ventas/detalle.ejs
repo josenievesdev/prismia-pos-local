@@ -1,6 +1,8 @@
 <section class="module-page ventas-page ventas-detail-page">
     <% var ventaActual=venta || {}; var detalleListado=Array.isArray(detalle) ? detalle : []; var
-        pagosListado=Array.isArray(pagos) ? pagos : []; var comprobanteActual=comprobante || {}; var mensajeOk=typeof
+        pagosListado=Array.isArray(pagos) ? pagos : []; var comprobanteActual=comprobante || {}; var
+        notaCreditoActual=typeof notaCredito !=='undefined' ? notaCredito : null; var
+        detalleNotaCreditoListado=Array.isArray(detalleNotaCredito) ? detalleNotaCredito : []; var mensajeOk=typeof
         mensajeExito !=='undefined' ? mensajeExito : null; var mensajeError=typeof error !=='undefined' ? error : null;
         var estadoVenta=ventaActual.estado || 'pagada' ; var puedeMostrarAnulacion=estadoVenta==='pagada' ; var
         ventaAnulada=estadoVenta==='anulada' ; var numeroFactura=comprobanteActual.numero || ventaActual.numero_venta
@@ -58,29 +60,93 @@
                     </div>
                     <% } %>
 
-                        <% if (ventaAnulada) { %>
-                            <section class="ventas-detail-card anulacion-warning">
-                                <strong>Venta anulada</strong>
+                        <% if (ventaAnulada && notaCreditoActual) { %>
+                            <section class="ventas-detail-card ventas-credit-note-card">
+                                <div class="ventas-credit-note-main">
+                                    <div>
+                                        <span class="ventas-kicker">Nota crédito interna</span>
 
-                                <span>
-                                    Esta venta fue anulada y no debe considerarse como venta activa.
+                                        <h3>
+                                            <%= notaCreditoActual.numero_nota_credito %>
+                                        </h3>
 
-                                    <% if (ventaActual.anulado_en) { %>
-                                        Fecha de anulación:
-                                        <strong>
-                                            <%= fecha(ventaActual.anulado_en) %>
-                                        </strong>.
-                                        <% } %>
-                                </span>
+                                        <p>
+                                            Documento interno generado por la anulación total de la venta
+                                            <strong>
+                                                <%= ventaActual.numero_venta %>
+                                            </strong>.
+                                        </p>
+                                    </div>
 
-                                <% if (ventaActual.motivo_anulacion) { %>
-                                    <span>
-                                        Motivo:
-                                        <strong>
-                                            <%= ventaActual.motivo_anulacion %>
-                                        </strong>
+                                    <span class="ventas-history-status is-cancelled">
+                                        <%= notaCreditoActual.estado || 'emitida' %>
                                     </span>
+                                </div>
+
+                                <div class="ventas-credit-note-grid">
+                                    <div>
+                                        <span>Tipo</span>
+                                        <strong>
+                                            <%= notaCreditoActual.tipo_nota || 'total' %>
+                                        </strong>
+                                    </div>
+
+                                    <div>
+                                        <span>Origen</span>
+                                        <strong>
+                                            <%= notaCreditoActual.origen || 'anulacion_venta' %>
+                                        </strong>
+                                    </div>
+
+                                    <div>
+                                        <span>Estado fiscal</span>
+                                        <strong>
+                                            <%= notaCreditoActual.documento_fiscal_estado || 'interno' %>
+                                        </strong>
+                                    </div>
+
+                                    <div>
+                                        <span>Total</span>
+                                        <strong>
+                                            <%= dinero(notaCreditoActual.total) %>
+                                        </strong>
+                                    </div>
+                                </div>
+
+                                <% if (notaCreditoActual.motivo) { %>
+                                    <div class="ventas-credit-note-message">
+                                        <span>Motivo</span>
+                                        <strong>
+                                            <%= notaCreditoActual.motivo %>
+                                        </strong>
+                                    </div>
                                     <% } %>
+
+                                        <% if (detalleNotaCreditoListado.length> 0) { %>
+                                            <div class="ventas-credit-note-detail">
+                                                <span>Productos asociados</span>
+
+                                                <ul>
+                                                    <% detalleNotaCreditoListado.forEach(function (item) { %>
+                                                        <li>
+                                                            <strong>
+                                                                <%= item.nombre_producto %>
+                                                            </strong>
+                                                            <span>
+                                                                <%= numero(item.cantidad) %>
+                                                                    <%= item.unidad_abreviatura || 'und' %>
+                                                                        · <%= dinero(item.total_linea) %>
+                                                            </span>
+                                                        </li>
+                                                        <% }); %>
+                                                </ul>
+                                            </div>
+                                            <% } %>
+
+                                                <p class="ventas-credit-note-disclaimer">
+                                                    Esta nota crédito es interna y no representa validación electrónica
+                                                    DIAN.
+                                                </p>
                             </section>
                             <% } %>
 
