@@ -1,6 +1,10 @@
 (function () {
     'use strict';
 
+    const POS_MODE_STORAGE_KEY = 'prismia.pos.modoVista';
+    const POS_MODE_CLASSIC = 'clasico';
+    const POS_MODE_TOUCH = 'tactil';
+
     document.addEventListener('DOMContentLoaded', iniciarPOSVentas);
 
     function iniciarPOSVentas() {
@@ -12,6 +16,8 @@
             contadorPagos: 1,
         };
         const ui = obtenerElementos();
+
+        inicializarModoVistaPOS(ui);
 
         inicializarFecha(ui);
         inicializarBusquedaClientes(ui);
@@ -30,6 +36,8 @@
     function obtenerElementos() {
         return {
             shell: document.querySelector('.ventas-pos-shell'),
+            botonCambiarModoPOS: document.getElementById('btnCambiarModoPOS'),
+            textoModoPOS: document.getElementById('textoModoPOS'),
             facturaSugeridaElementos: document.querySelectorAll('[data-factura-sugerida]'),
 
             fechaVenta: document.getElementById('fechaVenta'),
@@ -87,6 +95,91 @@
             botonPendiente: document.getElementById('btnVentaPendiente'),
             botonCobrar: document.querySelector('.ventas-charge-button'),
         };
+    }
+
+    function obtenerModoVistaGuardado() {
+        try {
+            const modoGuardado = window.localStorage.getItem(POS_MODE_STORAGE_KEY);
+
+            if (modoGuardado === POS_MODE_TOUCH) {
+                return POS_MODE_TOUCH;
+            }
+
+            return POS_MODE_CLASSIC;
+        } catch (error) {
+            return POS_MODE_CLASSIC;
+        }
+    }
+
+    function guardarModoVistaPOS(modo) {
+        try {
+            window.localStorage.setItem(POS_MODE_STORAGE_KEY, modo);
+        } catch (error) {
+            // Si localStorage falla, el POS sigue funcionando. Qué lujo, un error que no incendia nada.
+        }
+    }
+
+    function aplicarModoVistaPOS(ui, modo, animar) {
+        if (!ui.shell) {
+            return;
+        }
+
+        const modoSeguro = modo === POS_MODE_TOUCH
+            ? POS_MODE_TOUCH
+            : POS_MODE_CLASSIC;
+
+        if (animar) {
+            ui.shell.classList.add('is-switching-mode');
+
+            window.setTimeout(function () {
+                ui.shell.classList.remove('is-switching-mode');
+            }, 180);
+        }
+
+        ui.shell.dataset.posMode = modoSeguro;
+
+        if (document.documentElement) {
+            document.documentElement.dataset.posMode = modoSeguro;
+        }
+
+        if (ui.botonCambiarModoPOS) {
+            const esTactil = modoSeguro === POS_MODE_TOUCH;
+
+            ui.botonCambiarModoPOS.classList.toggle('is-touch', esTactil);
+            ui.botonCambiarModoPOS.setAttribute('aria-pressed', esTactil ? 'true' : 'false');
+            ui.botonCambiarModoPOS.title = esTactil
+                ? 'Cambiar a modo clásico'
+                : 'Cambiar a modo táctil';
+        }
+
+        if (ui.textoModoPOS) {
+            ui.textoModoPOS.textContent = modoSeguro === POS_MODE_TOUCH
+                ? 'Modo táctil'
+                : 'Modo clásico';
+        }
+    }
+
+    function inicializarModoVistaPOS(ui) {
+        const modoInicial = obtenerModoVistaGuardado();
+
+        aplicarModoVistaPOS(ui, modoInicial, false);
+
+        if (!ui.botonCambiarModoPOS) {
+            return;
+        }
+
+        ui.botonCambiarModoPOS.addEventListener('click', function () {
+            const modoActual = ui.shell && ui.shell.dataset.posMode === POS_MODE_TOUCH
+                ? POS_MODE_TOUCH
+                : POS_MODE_CLASSIC;
+
+            const modoSiguiente = modoActual === POS_MODE_TOUCH
+                ? POS_MODE_CLASSIC
+                : POS_MODE_TOUCH;
+
+            guardarModoVistaPOS(modoSiguiente);
+            aplicarModoVistaPOS(ui, modoSiguiente, true);
+        });
     }
 
     function obtenerPuedeVender() {

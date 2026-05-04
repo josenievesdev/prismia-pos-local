@@ -9,7 +9,7 @@
         nombreTipoMedio(t) { if (t==='efectivo' ) return 'Efectivo' ; if (t==='transferencia' ) return 'Transferencia' ;
         if (t==='tarjeta' ) return 'Tarjeta' ; return 'Otro' ; } %>
 
-        <div class="ventas-pos-shell" data-puede-vender="<%= puedeVender ? 1 : 0 %>">
+        <div class="ventas-pos-shell" data-puede-vender="<%= puedeVender ? 1 : 0 %>" data-pos-mode="clasico">
 
             <header class="ventas-pos-header">
                 <div class="ventas-header-left">
@@ -26,6 +26,20 @@
                         <h2>Punto de Venta</h2>
                         <span class="ventas-header-sub">Factura central</span>
                     </div>
+                </div>
+
+                <div class="ventas-mode-switch">
+                    <button type="button" class="ventas-mode-toggle" id="btnCambiarModoPOS" aria-pressed="false"
+                        title="Cambiar modo de vista del POS">
+                        <span class="ventas-mode-toggle-track" aria-hidden="true">
+                            <span class="ventas-mode-toggle-thumb"></span>
+                        </span>
+
+                        <span class="ventas-mode-toggle-copy">
+                            <strong id="textoModoPOS">Modo clásico</strong>
+                            <small>Vista POS</small>
+                        </span>
+                    </button>
                 </div>
 
                 <div class="ventas-header-status">

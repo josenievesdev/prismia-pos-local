@@ -2617,3 +2617,556 @@
         text-align: left;
     }
 }
+
+/* ===== POS modo clásico / táctil ===== */
+
+.ventas-pos-shell {
+    transition:
+        opacity 160ms ease,
+        transform 160ms ease;
+}
+
+.ventas-pos-shell.is-switching-mode {
+    opacity: 0.72;
+    transform: scale(0.996);
+}
+
+.ventas-mode-switch {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+}
+
+.ventas-mode-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 38px;
+    padding: 5px 12px 5px 6px;
+    border: 1px solid rgba(148, 163, 184, 0.34);
+    border-radius: 999px;
+    background: #ffffff;
+    color: var(--vt);
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.05);
+    cursor: pointer;
+    transition:
+        border-color 160ms ease,
+        background 160ms ease,
+        box-shadow 160ms ease,
+        transform 160ms ease;
+}
+
+.ventas-mode-toggle:hover {
+    border-color: rgba(36, 79, 143, 0.36);
+    background: #f8fbff;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+}
+
+.ventas-mode-toggle:active {
+    transform: scale(0.98);
+}
+
+.ventas-mode-toggle-track {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    width: 46px;
+    height: 26px;
+    padding: 3px;
+    border-radius: 999px;
+    background: #e2e8f0;
+    transition: background 160ms ease;
+}
+
+.ventas-mode-toggle-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    background: #ffffff;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.22);
+    transform: translateX(0);
+    transition: transform 160ms ease;
+}
+
+.ventas-mode-toggle.is-touch .ventas-mode-toggle-track {
+    background: var(--v);
+}
+
+.ventas-mode-toggle.is-touch .ventas-mode-toggle-thumb {
+    transform: translateX(20px);
+}
+
+.ventas-mode-toggle-copy {
+    display: grid;
+    gap: 1px;
+    text-align: left;
+    line-height: 1.05;
+}
+
+.ventas-mode-toggle-copy strong {
+    color: var(--vt);
+    font-size: 11px;
+    font-weight: 850;
+    white-space: nowrap;
+}
+
+.ventas-mode-toggle-copy small {
+    color: var(--vm);
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+/* ===== Primera capa del modo táctil ===== */
+
+.ventas-pos-shell[data-pos-mode="tactil"] {
+    gap: 12px;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-pos-header {
+    padding: 12px 16px;
+    border-radius: 18px;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-header-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 13px;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-pos-header h2 {
+    font-size: 17px;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-header-sub {
+    font-size: 12px;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-context-item {
+    border-radius: 18px;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] input,
+.ventas-pos-shell[data-pos-mode="tactil"] select,
+.ventas-pos-shell[data-pos-mode="tactil"] textarea {
+    min-height: 44px;
+    font-size: 14px;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-search-section {
+    border-radius: 18px;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-search-form {
+    gap: 10px;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-search-input-wrap input {
+    min-height: 50px;
+    font-size: 15px;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-search-btn {
+    min-height: 50px;
+    padding-inline: 24px;
+    border-radius: 14px;
+    font-size: 14px;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .btn-primary,
+.ventas-pos-shell[data-pos-mode="tactil"] .btn-secondary {
+    min-height: 42px;
+    padding-inline: 16px;
+    border-radius: 14px;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-charge-button {
+    min-height: 46px;
+    padding-inline: 26px;
+    font-size: 15px;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table-wrap {
+    height: clamp(360px, 52vh, 680px);
+    border-radius: 18px;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table thead th {
+    padding: 11px 12px;
+    font-size: 11px;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table tbody td {
+    padding: 12px;
+    font-size: 13px;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-product strong {
+    font-size: 14px;
+    white-space: normal;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-product small {
+    font-size: 11px;
+    white-space: normal;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-qty {
+    grid-template-columns: 38px 74px 38px;
+    gap: 5px;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-qty button {
+    width: 38px;
+    height: 40px;
+    border-radius: 12px;
+    font-size: 17px;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-qty input {
+    width: 74px;
+    height: 40px;
+    border-radius: 12px;
+    font-size: 14px;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-remove {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    font-size: 18px;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-payment-row {
+    gap: 10px;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-payment-remove {
+    width: 42px;
+    height: 44px;
+    border-radius: 13px;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-payment-add {
+    min-height: 40px;
+    border-radius: 13px;
+}
+
+/* Responsive del switch */
+@media (max-width: 1180px) {
+    .ventas-pos-header {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .ventas-mode-switch {
+        margin-left: 0;
+        order: 3;
+    }
+
+    .ventas-header-status {
+        margin-left: auto;
+    }
+}
+
+@media (max-width: 760px) {
+
+    .ventas-mode-switch,
+    .ventas-mode-toggle {
+        width: 100%;
+    }
+
+    .ventas-mode-toggle {
+        justify-content: space-between;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-qty {
+        grid-template-columns: 36px 1fr 36px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-qty input {
+        width: 100%;
+    }
+}
+
+/* ===== POS modo táctil: layout operativo mejorado ===== */
+
+.ventas-pos-shell[data-pos-mode="tactil"] {
+    --touch-radius: 22px;
+    --touch-gap: 14px;
+}
+
+/* Header más compacto pero más usable */
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-pos-header {
+    position: sticky;
+    top: 0;
+    z-index: 12;
+    backdrop-filter: blur(14px);
+    background: rgba(255, 255, 255, 0.92);
+}
+
+/* El buscador se vuelve el centro de la operación */
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-search-section {
+    position: sticky;
+    top: 76px;
+    z-index: 10;
+    padding: 12px;
+    border: 1px solid rgba(36, 79, 143, 0.18);
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-search-input-wrap {
+    border-radius: 16px;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-search-input-wrap input {
+    font-weight: 750;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-search-input-wrap input::placeholder {
+    color: #8a9ab4;
+    font-weight: 650;
+}
+
+/* Contexto más táctil */
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-context-grid {
+    gap: var(--touch-gap);
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-context-item,
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-actions-card {
+    padding: 14px;
+    border-radius: var(--touch-radius);
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-context-item span,
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-actions-card span {
+    font-size: 11px;
+    letter-spacing: 0.07em;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-context-item strong {
+    font-size: 15px;
+}
+
+/* Acciones rápidas más cómodas */
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-actions-grid {
+    gap: 8px;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-actions-grid .btn-secondary,
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-actions-grid .btn-primary {
+    min-height: 46px;
+    border-radius: 15px;
+    font-size: 14px;
+}
+
+/* Card principal del carrito */
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-card {
+    border-radius: 24px;
+    box-shadow: 0 12px 34px rgba(15, 23, 42, 0.07);
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-card-header {
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-card-header h3 {
+    font-size: 20px;
+}
+
+/* Tabla más cómoda, menos “sábana administrativa” */
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table {
+    border-collapse: separate;
+    border-spacing: 0 8px;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table thead th {
+    border-bottom: 0;
+    background: #f8fafc;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table tbody tr {
+    background: #ffffff;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table tbody td {
+    border-top: 1px solid rgba(148, 163, 184, 0.18);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table tbody td:first-child {
+    border-left: 1px solid rgba(148, 163, 184, 0.18);
+    border-top-left-radius: 16px;
+    border-bottom-left-radius: 16px;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table tbody td:last-child {
+    border-right: 1px solid rgba(148, 163, 184, 0.18);
+    border-top-right-radius: 16px;
+    border-bottom-right-radius: 16px;
+}
+
+/* Producto más legible */
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-product {
+    gap: 5px;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-product strong {
+    color: #0f172a;
+    font-size: 15px;
+    line-height: 1.2;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-product small {
+    color: #64748b;
+    font-size: 11px;
+}
+
+/* Controles de cantidad bien tocables */
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-qty button {
+    border: 1px solid rgba(36, 79, 143, 0.16);
+    background: #eef5ff;
+    color: #244f8f;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-qty button:hover {
+    background: #dceaff;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-qty input {
+    border: 1px solid rgba(36, 79, 143, 0.24);
+    background: #ffffff;
+    font-weight: 850;
+}
+
+/* Botón eliminar más claro */
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-remove {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-remove:hover {
+    background: #fecaca;
+}
+
+/* Panel de pago más cómodo */
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-payment-panel,
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-payment-card,
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-summary-card {
+    border-radius: 24px;
+    box-shadow: 0 12px 34px rgba(15, 23, 42, 0.07);
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-payment-list {
+    gap: 10px;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-payment-row {
+    padding: 10px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 18px;
+    background: #f8fafc;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-payment-row label span {
+    font-size: 11px;
+    font-weight: 850;
+    letter-spacing: 0.04em;
+}
+
+/* Botón cobrar como acción principal real */
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-charge-button {
+    width: 100%;
+    min-height: 54px;
+    border-radius: 18px;
+    font-size: 16px;
+    font-weight: 900;
+    box-shadow: 0 14px 26px rgba(36, 79, 143, 0.22);
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-charge-button:hover {
+    transform: translateY(-1px);
+}
+
+/* Resumen con números protagonistas */
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-summary-row strong,
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-total-row strong {
+    font-size: 18px;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-total-row strong {
+    font-size: 24px;
+}
+
+/* Estados vacíos más limpios */
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-empty-cart,
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-empty-state {
+    min-height: 260px;
+    border-radius: 20px;
+}
+
+/* En modo táctil se evita que la tabla se sienta apretada */
+.ventas-pos-shell[data-pos-mode="tactil"] .text-right {
+    white-space: nowrap;
+}
+
+/* Ajustes para pantallas medianas */
+@media (max-width: 1280px) {
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-search-section {
+        top: 0;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table-wrap {
+        height: auto;
+        max-height: 58vh;
+    }
+}
+
+/* Ajustes móviles */
+@media (max-width: 760px) {
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-pos-header {
+        position: relative;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-search-section {
+        position: relative;
+        top: auto;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table {
+        border-spacing: 0 10px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table thead {
+        display: none;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table tbody tr {
+        display: grid;
+        gap: 8px;
+        padding: 12px;
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        border-radius: 18px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table tbody td {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        border: 0;
+        padding: 4px 0;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table tbody td:first-child,
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table tbody td:last-child {
+        border: 0;
+        border-radius: 0;
+    }
+}
