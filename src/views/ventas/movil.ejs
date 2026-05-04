@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>
+        <%= titulo || 'POS móvil' %> | Prismia POS Local
+    </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="/css/modules/ventas-movil.css">
+</head>
+
+<body>
+    <main class="pos-movil" data-puede-vender="<%= puedeVender ? 1 : 0 %>"
+        data-search-products-url="/ventas/productos/buscar" data-register-sale-url="/ventas">
+        <header class="pos-movil-header">
+            <div>
+                <span>Prismia POS Local</span>
+                <h1>Facturación móvil</h1>
+                <p>Escanea, agrega al carrito y factura desde el celular.</p>
+            </div>
+
+            <a href="/ventas" class="pos-movil-link">POS escritorio</a>
+        </header>
+
+        <% if (!puedeVender) { %>
+            <section class="pos-movil-alert">
+                <strong>Caja cerrada</strong>
+                <p>
+                    <%= mensajeBloqueo || 'Debes abrir caja antes de facturar.' %>
+                </p>
+                <a href="/caja/abrir">Abrir caja</a>
+            </section>
+            <% } %>
+
+                <section class="pos-movil-card">
+                    <div class="pos-movil-section-head">
+                        <div>
+                            <span>Escáner</span>
+                            <h2>Código de barras</h2>
+                        </div>
+
+                        <span class="pos-movil-badge" id="estadoScannerMovil">
+                            Manual
+                        </span>
+                    </div>
+
+                    <div class="pos-movil-scan-actions">
+                        <button type="button" class="pos-btn primary" id="btnIniciarScannerMovil" <%=puedeVender ? ''
+                            : 'disabled' %>>
+                            Activar cámara
+                        </button>
+
+                        <button type="button" class="pos-btn neutral" id="btnDetenerScannerMovil" disabled>
+                            Detener
+                        </button>
+                    </div>
+
+                    <div class="pos-movil-reader" id="lectorCodigoMovil" hidden></div>
+
+                    <form class="pos-movil-search" id="formBuscarCodigoMovil">
+                        <label>
+                            <span>Código / SKU / nombre</span>
+                            <input type="search" id="inputCodigoMovil" autocomplete="off" inputmode="text"
+                                placeholder="Escanea o escribe el código..." <%=puedeVender ? '' : 'disabled' %>
+                            >
+                        </label>
+
+                        <button type="submit" class="pos-btn primary" <%=puedeVender ? '' : 'disabled' %>>
+                            Buscar
+                        </button>
+                    </form>
+
+                    <small class="pos-movil-help">
+                        Un lector físico USB/Bluetooth funciona como teclado: enfoca este campo, escanea y presiona
+                        Enter.
+                    </small>
+
+                    <div class="pos-movil-results" id="resultadosProductosMovil" hidden></div>
+                </section>
+
+                <section class="pos-movil-card">
+                    <div class="pos-movil-section-head">
+                        <div>
+                            <span>Carrito</span>
+                            <h2>Productos agregados</h2>
+                        </div>
+
+                        <span class="pos-movil-badge" id="conteoCarritoMovil">
+                            0 ítems
+                        </span>
+                    </div>
+
+                    <div class="pos-movil-cart" id="carritoMovil">
+                        <div class="pos-movil-empty">
+                            <strong>Carrito vacío</strong>
+                            <p>Escanea un producto para agregarlo.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="pos-movil-grid">
+                    <article class="pos-movil-total-card">
+                        <span>Subtotal</span>
+                        <strong id="subtotalMovil">$ 0</strong>
+                    </article>
+
+                    <article class="pos-movil-total-card">
+                        <span>IVA</span>
+                        <strong id="ivaMovil">$ 0</strong>
+                    </article>
+
+                    <article class="pos-movil-total-card total">
+                        <span>Total</span>
+                        <strong id="totalMovil">$ 0</strong>
+                    </article>
+                </section>
+
+                <section class="pos-movil-card">
+                    <div class="pos-movil-section-head">
+                        <div>
+                            <span>Pago</span>
+                            <h2>Cobro rápido</h2>
+                        </div>
+                    </div>
+
+                    <div class="pos-movil-payment">
+                        <label>
+                            <span>Medio de pago</span>
+                            <select id="medioPagoMovil" <%=puedeVender ? '' : 'disabled' %>>
+                                <% if (!Array.isArray(mediosPago) || mediosPago.length===0) { %>
+                                    <option value="">Sin medios activos</option>
+                                    <% } else { %>
+                                        <% mediosPago.forEach(function (medio) { %>
+                                            <option value="<%= medio.id_medio_pago %>"
+                                                data-payment-type="<%= medio.tipo %>"
+                                                data-requires-reference="<%= medio.requiere_referencia || 0 %>">
+                                                <%= medio.nombre %> · <%= medio.tipo %>
+                                            </option>
+                                            <% }) %>
+                                                <% } %>
+                            </select>
+                        </label>
+
+                        <label>
+                            <span>Recibido</span>
+                            <input type="number" id="montoRecibidoMovil" min="0" step="1" placeholder="0" <%=puedeVender
+                                ? '' : 'disabled' %>
+                            >
+                        </label>
+
+                        <label>
+                            <span>Referencia</span>
+                            <input type="text" id="referenciaPagoMovil" placeholder="Opcional" <%=puedeVender ? ''
+                                : 'disabled' %>
+                            >
+                        </label>
+                    </div>
+
+                    <button type="button" class="pos-btn cobrar" id="btnFacturarMovil" <%=puedeVender ? '' : 'disabled'
+                        %>>
+                        Facturar
+                    </button>
+
+                    <div class="pos-movil-message" id="mensajeMovil" hidden></div>
+                </section>
+    </main>
+
+    <script src="/vendor/html5-qrcode/html5-qrcode.min.js"></script>
+    <script src="/js/ventas-movil.js"></script>
+</body>
+
+</html>

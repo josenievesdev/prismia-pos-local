@@ -3,6 +3,23 @@ const notasCreditoService = require('../notasCredito/notasCredito.service');
 
 const estilosVentas = ['/css/modules/ventas.css'];
 
+function mostrarPOSMovil(req, res) {
+    const estadoPOS = ventasService.obtenerEstadoPOS({
+        busqueda: req.query.busqueda || '',
+    });
+
+    return res.render('ventas/movil', {
+        layout: false,
+        titulo: 'POS móvil',
+        turnoAbierto: estadoPOS.turnoAbierto,
+        clienteConsumidorFinal: estadoPOS.clienteConsumidorFinal,
+        mediosPago: estadoPOS.mediosPago,
+        siguienteFactura: estadoPOS.siguienteFactura,
+        puedeVender: estadoPOS.puedeVender,
+        mensajeBloqueo: estadoPOS.mensajeBloqueo,
+    });
+}
+
 function mostrarPOS(req, res) {
     const estadoPOS = ventasService.obtenerEstadoPOS({
         busqueda: req.query.busqueda || '',
@@ -186,6 +203,7 @@ function anularVentaCompleta(req, res) {
 }
 
 module.exports = {
+    mostrarPOSMovil,
     mostrarPOS,
     mostrarHistorial,
     buscarProductos,
