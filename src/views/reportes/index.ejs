@@ -1,0 +1,384 @@
+<section class="module-page reportes-page">
+    <% var pagosMedio=Array.isArray(resumenPagosPorMedio) ? resumenPagosPorMedio : []; %>
+        <% var ivaListado=Array.isArray(ivaPorTarifa) ? ivaPorTarifa : []; %>
+            <% var productosListado=Array.isArray(productosMasVendidos) ? productosMasVendidos : []; %>
+                <% var ventasListado=Array.isArray(ventasRecientes) ? ventasRecientes : []; %>
+
+                    <div class="module-header module-header-actions">
+                        <div>
+                            <p class="eyebrow">Indicadores comerciales</p>
+                            <h2>Reportes</h2>
+                            <p>
+                                Resumen de ventas, anulaciones, IVA, utilidad y medios de pago.
+                            </p>
+                        </div>
+                    </div>
+
+                    <form class="reportes-filtros" method="GET" action="/reportes">
+                        <label>
+                            <span>Desde</span>
+                            <input type="date" name="fecha_desde" value="<%= filtros.fecha_desde || '' %>">
+                        </label>
+
+                        <label>
+                            <span>Hasta</span>
+                            <input type="date" name="fecha_hasta" value="<%= filtros.fecha_hasta || '' %>">
+                        </label>
+
+                        <div class="reportes-filtros-actions">
+                            <button type="submit" class="btn-primary">Filtrar</button>
+                            <a href="/reportes" class="btn-secondary">Mes actual</a>
+                        </div>
+                    </form>
+
+                    <section class="reportes-kpi-grid">
+                        <article class="module-card reportes-kpi-card">
+                            <span>Total bruto</span>
+                            <strong>
+                                <%= formatearPesos(resumenVentas.total_bruto) %>
+                            </strong>
+                            <small>
+                                <%= resumenVentas.total_facturas %> factura(s)
+                            </small>
+                        </article>
+
+                        <article class="module-card reportes-kpi-card is-success">
+                            <span>Total neto</span>
+                            <strong>
+                                <%= formatearPesos(resumenVentas.total_neto) %>
+                            </strong>
+                            <small>
+                                <%= resumenVentas.facturas_pagadas %> pagada(s)
+                            </small>
+                        </article>
+
+                        <article class="module-card reportes-kpi-card is-danger">
+                            <span>Total anulado</span>
+                            <strong>
+                                <%= formatearPesos(resumenVentas.total_anulado) %>
+                            </strong>
+                            <small>
+                                <%= resumenVentas.facturas_anuladas %> anulada(s)
+                            </small>
+                        </article>
+
+                        <article class="module-card reportes-kpi-card">
+                            <span>Utilidad bruta neta</span>
+                            <strong>
+                                <%= formatearPesos(resumenVentas.utilidad_bruta_neta) %>
+                            </strong>
+                            <small>Margen: <%= resumenVentas.margen_bruto_porcentaje %>%</small>
+                        </article>
+                    </section>
+
+                    <section class="reportes-grid-two">
+                        <article class="module-card reportes-card">
+                            <div class="reportes-section-head">
+                                <div>
+                                    <span class="eyebrow">Impuestos</span>
+                                    <h3>IVA del periodo</h3>
+                                    <p>IVA bruto, anulado y neto según facturas del rango.</p>
+                                </div>
+                            </div>
+
+                            <div class="reportes-mini-grid">
+                                <div>
+                                    <span>IVA bruto</span>
+                                    <strong>
+                                        <%= formatearPesos(resumenVentas.iva_bruto) %>
+                                    </strong>
+                                </div>
+
+                                <div>
+                                    <span>IVA anulado</span>
+                                    <strong>
+                                        <%= formatearPesos(resumenVentas.iva_anulado) %>
+                                    </strong>
+                                </div>
+
+                                <div>
+                                    <span>IVA neto</span>
+                                    <strong>
+                                        <%= formatearPesos(resumenVentas.iva_neto) %>
+                                    </strong>
+                                </div>
+                            </div>
+
+                            <% if (!ivaListado.length) { %>
+                                <div class="empty-state small">
+                                    <p>No hay ventas con IVA en este periodo.</p>
+                                </div>
+                                <% } else { %>
+                                    <div class="table-wrapper reportes-scroll-area reportes-scroll-area-mini">
+                                        <table class="data-table reportes-table reportes-table-iva">
+                                            <thead>
+                                                <tr>
+                                                    <th>Tarifa</th>
+                                                    <th class="text-right">IVA bruto</th>
+                                                    <th class="text-right">IVA anulado</th>
+                                                    <th class="text-right">IVA neto</th>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody>
+                                                <% ivaListado.forEach(function (item) { %>
+                                                    <tr>
+                                                        <td>
+                                                            <strong>
+                                                                <%= item.porcentaje_iva %>%
+                                                            </strong>
+                                                        </td>
+
+                                                        <td class="text-right">
+                                                            <%= formatearPesos(item.iva_bruto) %>
+                                                        </td>
+
+                                                        <td class="text-right reportes-danger">
+                                                            <%= formatearPesos(item.iva_anulado) %>
+                                                        </td>
+
+                                                        <td class="text-right reportes-success">
+                                                            <%= formatearPesos(item.iva_neto) %>
+                                                        </td>
+                                                    </tr>
+                                                    <% }) %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <% } %>
+                        </article>
+
+                        <article class="module-card reportes-card">
+                            <div class="reportes-section-head">
+                                <div>
+                                    <span class="eyebrow">Notas crédito</span>
+                                    <h3>Soportes internos</h3>
+                                    <p>Notas crédito internas emitidas por anulación.</p>
+                                </div>
+                            </div>
+
+                            <div class="reportes-mini-grid">
+                                <div>
+                                    <span>Cantidad</span>
+                                    <strong>
+                                        <%= resumenNotasCredito.total_notas_credito %>
+                                    </strong>
+                                </div>
+
+                                <div>
+                                    <span>Total NC</span>
+                                    <strong>
+                                        <%= formatearPesos(resumenNotasCredito.total_notas_credito_valor) %>
+                                    </strong>
+                                </div>
+
+                                <div>
+                                    <span>IVA NC</span>
+                                    <strong>
+                                        <%= formatearPesos(resumenNotasCredito.iva_notas_credito) %>
+                                    </strong>
+                                </div>
+                            </div>
+
+                            <div class="reportes-note">
+                                Las notas crédito de esta fase son internas. No representan validación electrónica DIAN.
+                            </div>
+                        </article>
+                    </section>
+
+                    <article class="module-card reportes-card">
+                        <div class="reportes-section-head">
+                            <div>
+                                <span class="eyebrow">Medios de pago</span>
+                                <h3>Ingresos, anulaciones y neto</h3>
+                                <p>Consolidado por efectivo, transferencias, tarjetas y otros medios.</p>
+                            </div>
+                        </div>
+
+                        <% if (!pagosMedio.length) { %>
+                            <div class="empty-state">
+                                <h3>Sin pagos</h3>
+                                <p>No hay pagos registrados en el rango seleccionado.</p>
+                            </div>
+                            <% } else { %>
+                                <div class="table-wrapper reportes-scroll-area reportes-scroll-area-medium">
+                                    <table class="data-table reportes-table reportes-table-medios">
+                                        <thead>
+                                            <tr>
+                                                <th>Medio</th>
+                                                <th>Tipo</th>
+                                                <th class="text-center">Ops.</th>
+                                                <th class="text-right">Ingresos</th>
+                                                <th class="text-right">Anulaciones</th>
+                                                <th class="text-right">Neto</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            <% pagosMedio.forEach(function (medio) { %>
+                                                <tr>
+                                                    <td>
+                                                        <strong>
+                                                            <%= medio.medio_pago_nombre %>
+                                                        </strong>
+                                                        <small>
+                                                            <%= medio.afecta_efectivo_caja===1
+                                                                ? 'Afecta efectivo físico' : 'No afecta efectivo físico'
+                                                                %>
+                                                        </small>
+                                                    </td>
+
+                                                    <td>
+                                                        <%= medio.medio_pago_tipo %>
+                                                    </td>
+
+                                                    <td class="text-center">
+                                                        <%= medio.operaciones %>
+                                                    </td>
+
+                                                    <td class="text-right reportes-success">
+                                                        <%= formatearPesos(medio.ingresos) %>
+                                                    </td>
+
+                                                    <td class="text-right reportes-danger">
+                                                        <%= formatearPesos(medio.anulaciones) %>
+                                                    </td>
+
+                                                    <td class="text-right">
+                                                        <strong>
+                                                            <%= formatearPesos(medio.neto) %>
+                                                        </strong>
+                                                    </td>
+                                                </tr>
+                                                <% }) %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <% } %>
+                    </article>
+
+                    <section class="reportes-grid-two">
+                        <article class="module-card reportes-card">
+                            <div class="reportes-section-head">
+                                <div>
+                                    <span class="eyebrow">Productos</span>
+                                    <h3>Más vendidos</h3>
+                                    <p>Top 10 por valor neto vendido.</p>
+                                </div>
+                            </div>
+
+                            <% if (!productosListado.length) { %>
+                                <div class="empty-state small">
+                                    <p>No hay productos vendidos en este periodo.</p>
+                                </div>
+                                <% } else { %>
+                                    <div class="table-wrapper reportes-scroll-area reportes-scroll-area-small">
+                                        <table class="data-table reportes-table reportes-table-productos">
+                                            <thead>
+                                                <tr>
+                                                    <th>Producto</th>
+                                                    <th class="text-center">Cant.</th>
+                                                    <th class="text-right">Total</th>
+                                                    <th class="text-right">Utilidad</th>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody>
+                                                <% productosListado.forEach(function (producto) { %>
+                                                    <tr>
+                                                        <td>
+                                                            <strong>
+                                                                <%= producto.nombre_producto %>
+                                                            </strong>
+                                                            <small>
+                                                                <%= producto.codigo_interno %> · <%=
+                                                                        producto.unidad_abreviatura %>
+                                                            </small>
+                                                        </td>
+
+                                                        <td class="text-center">
+                                                            <%= producto.cantidad_vendida %>
+                                                        </td>
+
+                                                        <td class="text-right">
+                                                            <%= formatearPesos(producto.total_neto) %>
+                                                        </td>
+
+                                                        <td class="text-right">
+                                                            <%= formatearPesos(producto.utilidad_bruta) %>
+                                                        </td>
+                                                    </tr>
+                                                    <% }) %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <% } %>
+                        </article>
+
+                        <article class="module-card reportes-card">
+                            <div class="reportes-section-head">
+                                <div>
+                                    <span class="eyebrow">Ventas recientes</span>
+                                    <h3>Últimas facturas</h3>
+                                    <p>Últimos 12 documentos dentro del rango filtrado.</p>
+                                </div>
+                            </div>
+
+                            <% if (!ventasListado.length) { %>
+                                <div class="empty-state small">
+                                    <p>No hay facturas en el periodo seleccionado.</p>
+                                </div>
+                                <% } else { %>
+                                    <div class="table-wrapper reportes-scroll-area reportes-scroll-area-large">
+                                        <table class="data-table reportes-table reportes-table-ventas">
+                                            <thead>
+                                                <tr>
+                                                    <th>Factura</th>
+                                                    <th>Cliente</th>
+                                                    <th>Estado</th>
+                                                    <th class="text-right">Total</th>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody>
+                                                <% ventasListado.forEach(function (venta) { %>
+                                                    <tr>
+                                                        <td>
+                                                            <a href="/ventas/<%= venta.id_venta %>">
+                                                                <strong>
+                                                                    <%= venta.numero_venta %>
+                                                                </strong>
+                                                            </a>
+                                                            <small>
+                                                                <%= venta.fecha_venta %>
+                                                            </small>
+                                                        </td>
+
+                                                        <td>
+                                                            <strong>
+                                                                <%= venta.cliente_nombre %>
+                                                            </strong>
+                                                            <small>
+                                                                <%= venta.medios_pago %>
+                                                            </small>
+                                                        </td>
+
+                                                        <td>
+                                                            <span
+                                                                class="reportes-status <%= venta.estado === 'anulada' ? 'is-danger' : 'is-success' %>">
+                                                                <%= venta.estado %>
+                                                            </span>
+                                                        </td>
+
+                                                        <td class="text-right">
+                                                            <%= formatearPesos(venta.total) %>
+                                                        </td>
+                                                    </tr>
+                                                    <% }) %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <% } %>
+                        </article>
+                    </section>
+</section>
