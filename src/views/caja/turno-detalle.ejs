@@ -591,32 +591,32 @@
 
                                 <div class="caja-facturas-header">
                                     <div>
-                                        <span class="eyebrow">Ventas reales</span>
+                                        <span class="eyebrow">Facturación</span>
                                         <h3>Facturas del turno</h3>
                                         <p>
-                                            <%= facturasTurno.length %> factura(s) asociada(s) a este turno.
+                                            Facturas pagadas y anuladas asociadas a este turno.
                                         </p>
                                     </div>
 
                                     <div class="caja-facturas-resumen">
                                         <div>
-                                            <span>Total vendido</span>
+                                            <span>Total bruto</span>
                                             <strong>
                                                 <%= formatearPesos(totalesFacturasTurno.total) %>
                                             </strong>
                                         </div>
 
                                         <div>
-                                            <span>Pagadas</span>
+                                            <span>Total neto</span>
                                             <strong>
-                                                <%= totalesFacturasTurno.pagadas.cantidad %>
+                                                <%= formatearPesos(totalesFacturasTurno.pagadas.total) %>
                                             </strong>
                                         </div>
 
                                         <div>
-                                            <span>Anuladas</span>
+                                            <span>Total anulado</span>
                                             <strong>
-                                                <%= totalesFacturasTurno.anuladas.cantidad %>
+                                                <%= formatearPesos(totalesFacturasTurno.anuladas.total) %>
                                             </strong>
                                         </div>
                                     </div>

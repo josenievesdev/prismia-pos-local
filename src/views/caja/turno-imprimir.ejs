@@ -952,8 +952,20 @@
 
                     <section class="section">
                         <% const facturasImpresion=Array.isArray(facturas) ? facturas : []; const
-                            totalFacturasImpresion=facturasImpresion.reduce((acumulado, factura)=> {
+                            totalFacturasBrutoImpresion=facturasImpresion.reduce((acumulado, factura)=> {
                             return acumulado + Number(factura.total || 0);
+                            }, 0);
+
+                            const totalFacturasNetoImpresion=facturasImpresion.reduce((acumulado, factura)=> {
+                            return factura.estado === 'pagada'
+                            ? acumulado + Number(factura.total || 0)
+                            : acumulado;
+                            }, 0);
+
+                            const totalFacturasAnuladasImpresion=facturasImpresion.reduce((acumulado, factura)=> {
+                            return factura.estado === 'anulada'
+                            ? acumulado + Number(factura.total || 0)
+                            : acumulado;
                             }, 0);
 
                             function claseEstadoFacturaImpresion(estado) {
@@ -967,7 +979,7 @@
                             <div class="print-section-head">
                                 <div>
                                     <h2>6. Facturas del turno</h2>
-                                    <p>Ventas reales registradas durante este turno de caja.</p>
+                                    <p>Facturas pagadas y anuladas registradas durante este turno de caja.</p>
                                 </div>
 
                                 <span class="print-section-count">
@@ -993,24 +1005,23 @@
                                     <% } else { %>
                                         <div class="grid-3" style="margin-bottom: 12px;">
                                             <div class="info-card">
-                                                <span>Total facturas</span>
+                                                <span>Total bruto</span>
                                                 <strong>
-                                                    <%= facturasImpresion.length %>
+                                                    <%= formatearPesos(totalFacturasBrutoImpresion) %>
                                                 </strong>
                                             </div>
 
                                             <div class="info-card">
-                                                <span>Total vendido</span>
+                                                <span>Total neto</span>
                                                 <strong>
-                                                    <%= formatearPesos(totalFacturasImpresion) %>
+                                                    <%= formatearPesos(totalFacturasNetoImpresion) %>
                                                 </strong>
                                             </div>
 
                                             <div class="info-card">
-                                                <span>Estado principal</span>
+                                                <span>Total anulado</span>
                                                 <strong>
-                                                    <%= facturasImpresion.every((factura)=> factura.estado === 'pagada')
-                                                        ? 'Pagadas' : 'Mixto' %>
+                                                    <%= formatearPesos(totalFacturasAnuladasImpresion) %>
                                                 </strong>
                                             </div>
                                         </div>

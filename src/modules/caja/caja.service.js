@@ -84,6 +84,80 @@ function prepararTurno(turno) {
     };
 }
 
+function esMovimientoEfectivo(movimiento) {
+    if (!movimiento) {
+        return false;
+    }
+
+    return Number(movimiento.afecta_efectivo_caja || 0) === 1
+        || limpiarTexto(movimiento.tipo_medio_pago) === 'efectivo'
+        || limpiarTexto(movimiento.metodo_pago) === 'efectivo';
+}
+
+function recalcularTurnoEfectivoDesdeMovimientos(turno, movimientos = []) {
+    if (!turno || !Array.isArray(movimientos) || movimientos.length === 0) {
+        return turno;
+    }
+
+    let ventasEfectivo = 0;
+    let reversosVentaEfectivo = 0;
+    let ingresosManualesEfectivo = 0;
+    let egresosManualesEfectivo = 0;
+
+    movimientos.forEach((movimiento) => {
+        if (!esMovimientoEfectivo(movimiento)) {
+            return;
+        }
+
+        const monto = Number(movimiento.monto || 0);
+
+        if (movimiento.tipo_movimiento === 'venta') {
+            ventasEfectivo += monto;
+            return;
+        }
+
+        if (['anulacion', 'devolucion'].includes(movimiento.tipo_movimiento)) {
+            reversosVentaEfectivo += monto;
+            return;
+        }
+
+        if (movimiento.tipo_movimiento === 'ingreso_manual') {
+            ingresosManualesEfectivo += monto;
+            return;
+        }
+
+        if (movimiento.tipo_movimiento === 'egreso_manual') {
+            egresosManualesEfectivo += monto;
+        }
+    });
+
+    const montoInicial = Number(turno.monto_inicial || 0);
+    const totalEfectivoNeto = ventasEfectivo - reversosVentaEfectivo;
+
+    const montoEsperadoCalculado =
+        montoInicial
+        + totalEfectivoNeto
+        + ingresosManualesEfectivo
+        - egresosManualesEfectivo;
+
+    const montoContado =
+        turno.monto_contado === null || typeof turno.monto_contado === 'undefined'
+            ? null
+            : Number(turno.monto_contado || 0);
+
+    return {
+        ...turno,
+        total_efectivo: totalEfectivoNeto,
+        total_ingresos_manuales: ingresosManualesEfectivo,
+        total_egresos_manuales: egresosManualesEfectivo,
+        monto_esperado: montoEsperadoCalculado,
+        monto_esperado_calculado: montoEsperadoCalculado,
+        diferencia: montoContado === null
+            ? turno.diferencia
+            : montoContado - montoEsperadoCalculado,
+    };
+}
+
 function prepararMedioPago(medioPago) {
     if (!medioPago) {
         return null;
@@ -363,10 +437,15 @@ function prepararFacturaVentaTurno(factura) {
         cajero_nombre: limpiarTexto(factura.cajero_nombre) || 'Usuario',
         medio_pago_nombre:
             limpiarTexto(factura.medios_pago_nombre)
-            || 'Sin pago registrado',
+            || (limpiarTexto(factura.estado) === 'anulada'
+                ? 'Pago anulado sin detalle'
+                : 'Sin pago registrado'),
         medio_pago_tipo:
             limpiarTexto(factura.medios_pago_tipo || factura.metodos_pago)
-            || 'sin_tipo',
+            || (limpiarTexto(factura.estado) === 'anulada'
+                ? 'anulado'
+                : 'sin_tipo'),
+        pago_estado_resumen: limpiarTexto(factura.estados_pago),
         cantidad_items: Number(factura.cantidad_items || 0),
         total_unidades: Number(factura.total_unidades || 0),
     };
@@ -469,7 +548,7 @@ function obtenerDetalleArqueoTurno(idTurnoCaja) {
         };
     }
 
-    const turno = prepararTurno(cajaRepository.obtenerTurnoPorId(idTurno));
+    let turno = prepararTurno(cajaRepository.obtenerTurnoPorId(idTurno));
 
     if (!turno) {
         return {
@@ -481,6 +560,8 @@ function obtenerDetalleArqueoTurno(idTurnoCaja) {
     const movimientos = cajaRepository
         .listarMovimientosCompletosPorTurno(idTurno)
         .map(prepararMovimiento);
+
+    turno = recalcularTurnoEfectivoDesdeMovimientos(turno, movimientos);
 
     const resumenMediosPago = cajaRepository
         .listarResumenMovimientosPorMedio(idTurno)
@@ -746,13 +827,24 @@ function generarExcelArqueoTurno(idTurnoCaja) {
 }
 
 function obtenerEstadoCaja() {
-    const turnoAbierto = prepararTurno(cajaRepository.obtenerTurnoAbierto());
+    let turnoAbierto = prepararTurno(cajaRepository.obtenerTurnoAbierto());
 
     const movimientos = turnoAbierto
         ? cajaRepository
             .listarMovimientosPorTurno(turnoAbierto.id_turno_caja)
             .map(prepararMovimiento)
         : [];
+
+    const movimientosCompletos = turnoAbierto
+        ? cajaRepository
+            .listarMovimientosCompletosPorTurno(turnoAbierto.id_turno_caja)
+            .map(prepararMovimiento)
+        : [];
+
+    turnoAbierto = recalcularTurnoEfectivoDesdeMovimientos(
+        turnoAbierto,
+        movimientosCompletos
+    );
 
     const resumenMediosPago = turnoAbierto
         ? cajaRepository
@@ -826,13 +918,24 @@ function obtenerDatosFormularioGasto() {
 }
 
 function obtenerDatosFormularioCierre() {
-    const turnoAbierto = prepararTurno(cajaRepository.obtenerTurnoAbierto());
+    let turnoAbierto = prepararTurno(cajaRepository.obtenerTurnoAbierto());
 
     const movimientos = turnoAbierto
         ? cajaRepository
             .listarMovimientosPorTurno(turnoAbierto.id_turno_caja)
             .map(prepararMovimiento)
         : [];
+
+    const movimientosCompletos = turnoAbierto
+        ? cajaRepository
+            .listarMovimientosCompletosPorTurno(turnoAbierto.id_turno_caja)
+            .map(prepararMovimiento)
+        : [];
+
+    turnoAbierto = recalcularTurnoEfectivoDesdeMovimientos(
+        turnoAbierto,
+        movimientosCompletos
+    );
 
     const resumenMediosPago = turnoAbierto
         ? cajaRepository
@@ -1304,7 +1407,18 @@ function registrarGastoDesdeCaja({ datosFormulario, usuario, ip, userAgent }) {
 function cerrarCaja({ datosFormulario, usuario, ip, userAgent }) {
     const valores = prepararValoresCierre(datosFormulario);
 
-    const turnoAbierto = prepararTurno(cajaRepository.obtenerTurnoAbierto());
+    let turnoAbierto = prepararTurno(cajaRepository.obtenerTurnoAbierto());
+
+    if (turnoAbierto) {
+        const movimientosCompletos = cajaRepository
+            .listarMovimientosCompletosPorTurno(turnoAbierto.id_turno_caja)
+            .map(prepararMovimiento);
+
+        turnoAbierto = recalcularTurnoEfectivoDesdeMovimientos(
+            turnoAbierto,
+            movimientosCompletos
+        );
+    }
 
     const montoContado = normalizarMontoEnteroObligatorio(valores.monto_contado);
 

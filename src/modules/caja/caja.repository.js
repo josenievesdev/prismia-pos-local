@@ -607,6 +607,7 @@ function listarFacturasVentasPorTurno(idTurnoCaja) {
                 pagos.medios_pago_nombre,
                 pagos.medios_pago_tipo,
                 pagos.metodos_pago,
+                pagos.estados_pago,
                 pagos.total_pagado_calculado,
 
                 detalle.cantidad_items,
@@ -624,12 +625,12 @@ function listarFacturasVentasPorTurno(idTurnoCaja) {
                     GROUP_CONCAT(DISTINCT COALESCE(mp.nombre, pv.entidad, pv.metodo_pago)) AS medios_pago_nombre,
                     GROUP_CONCAT(DISTINCT COALESCE(mp.tipo, pv.metodo_pago)) AS medios_pago_tipo,
                     GROUP_CONCAT(DISTINCT pv.metodo_pago) AS metodos_pago,
+                    GROUP_CONCAT(DISTINCT pv.estado) AS estados_pago,
                     COALESCE(SUM(pv.monto), 0) AS total_pagado_calculado
                 FROM pagos_venta pv
                 LEFT JOIN medios_pago mp
                     ON mp.id_medio_pago = pv.id_medio_pago
-                WHERE pv.estado = 'registrado'
-                  AND pv.anulado_en IS NULL
+                WHERE pv.estado IN ('registrado', 'anulado')
                 GROUP BY pv.id_venta
             ) pagos
                 ON pagos.id_venta = v.id_venta
