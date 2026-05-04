@@ -30,6 +30,7 @@
         inicializarBusquedaClientes(ui);
         inicializarClienteRapido(ui);
         inicializarBusqueda(ui, estado);
+        inicializarCatalogoTactil(ui, estado);
         inicializarCarrito(ui, estado);
         inicializarPago(ui, estado);
         inicializarAcciones(ui, estado);
@@ -74,6 +75,10 @@
             panelResultados: document.getElementById('panelResultados'),
             conteoResultados: document.getElementById('conteoResultados'),
             searchLoading: document.getElementById('searchLoading'),
+
+            catalogoTactilPOS: document.getElementById('catalogoTactilPOS'),
+            gridCatalogoTactil: document.getElementById('gridCatalogoTactil'),
+            filtrosCatalogoTactil: document.getElementById('filtrosCatalogoTactil'),
 
             carritoItems: document.getElementById('ventasCarritoItems'),
 
@@ -886,6 +891,74 @@
                 </button>
             </div>
         `;
+    }
+
+    function inicializarCatalogoTactil(ui, estado) {
+        if (ui.gridCatalogoTactil) {
+            ui.gridCatalogoTactil.addEventListener('click', function (evento) {
+                const tarjetaProducto = evento.target.closest('[data-touch-product-card]');
+
+                if (!tarjetaProducto) {
+                    return;
+                }
+
+                if (tarjetaProducto.disabled || tarjetaProducto.classList.contains('is-disabled')) {
+                    return;
+                }
+
+                agregarProductoDesdeElemento(tarjetaProducto, ui, estado);
+            });
+        }
+
+        if (ui.filtrosCatalogoTactil) {
+            ui.filtrosCatalogoTactil.addEventListener('click', function (evento) {
+                const botonFiltro = evento.target.closest('[data-touch-category-filter]');
+
+                if (!botonFiltro) {
+                    return;
+                }
+
+                const categoria = botonFiltro.dataset.touchCategoryFilter || 'todos';
+
+                ui.filtrosCatalogoTactil
+                    .querySelectorAll('[data-touch-category-filter]')
+                    .forEach(function (boton) {
+                        boton.classList.toggle('is-active', boton === botonFiltro);
+                    });
+
+                filtrarCatalogoTactil(ui, categoria);
+            });
+        }
+
+        filtrarCatalogoTactil(ui, 'todos');
+    }
+
+    function filtrarCatalogoTactil(ui, categoria) {
+        if (!ui.gridCatalogoTactil) {
+            return;
+        }
+
+        const categoriaNormalizada = String(categoria || 'todos').trim().toLowerCase();
+        const tarjetas = Array.from(
+            ui.gridCatalogoTactil.querySelectorAll('[data-touch-product-card]')
+        );
+
+        const tarjetasFiltradas = tarjetas.filter(function (tarjeta) {
+            const categoriaProducto = String(tarjeta.dataset.touchCategory || '')
+                .trim()
+                .toLowerCase();
+
+            return categoriaNormalizada === 'todos'
+                || categoriaProducto === categoriaNormalizada;
+        });
+
+        tarjetas.forEach(function (tarjeta) {
+            tarjeta.hidden = true;
+        });
+
+        tarjetasFiltradas.slice(0, 6).forEach(function (tarjeta) {
+            tarjeta.hidden = false;
+        });
     }
 
     function inicializarCarrito(ui, estado) {

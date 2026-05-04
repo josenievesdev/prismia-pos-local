@@ -3335,3 +3335,299 @@
         flex: 1;
     }
 }
+
+/* ===== Catálogo táctil POS ===== */
+
+.ventas-touch-catalog {
+    display: none;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-catalog {
+    display: grid;
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid var(--pos-profile-border, rgba(36, 79, 143, 0.18));
+    border-radius: 24px;
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.96), var(--pos-profile-soft, #eef5ff));
+    box-shadow: 0 12px 34px rgba(15, 23, 42, 0.07);
+}
+
+.ventas-touch-catalog-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.ventas-touch-catalog-head h3 {
+    margin: 3px 0;
+    color: var(--vt);
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: -0.025em;
+}
+
+.ventas-touch-catalog-head p {
+    margin: 0;
+    color: var(--vm);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.ventas-touch-catalog-count {
+    display: inline-flex;
+    align-items: center;
+    min-width: max-content;
+    padding: 6px 10px;
+    border: 1px solid var(--pos-profile-border, rgba(36, 79, 143, 0.2));
+    border-radius: 999px;
+    background: #ffffff;
+    color: var(--pos-profile-accent, #244f8f);
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.ventas-touch-category-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: thin;
+}
+
+.ventas-touch-category {
+    min-height: 34px;
+    padding: 0 13px;
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    border-radius: 999px;
+    background: #ffffff;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 850;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+        background 150ms ease,
+        border-color 150ms ease,
+        color 150ms ease,
+        transform 150ms ease;
+}
+
+.ventas-touch-category:hover {
+    border-color: var(--pos-profile-border, rgba(36, 79, 143, 0.28));
+    color: var(--pos-profile-accent, #244f8f);
+}
+
+.ventas-touch-category:active {
+    transform: scale(0.97);
+}
+
+.ventas-touch-category.is-active {
+    border-color: var(--pos-profile-accent, #244f8f);
+    background: var(--pos-profile-accent, #244f8f);
+    color: #ffffff;
+}
+
+.ventas-touch-product-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    padding: 4px 0 0;
+}
+
+.ventas-touch-product-grid::-webkit-scrollbar {
+    width: 8px;
+}
+
+.ventas-touch-product-grid::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(100, 116, 139, 0.32);
+}
+
+.ventas-touch-product-grid::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.ventas-touch-product-card {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-content: space-between;
+    gap: 12px;
+    min-height: 176px;
+    padding: 16px;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.96);
+    color: var(--vt);
+    text-align: left;
+    cursor: pointer;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+    transition:
+        transform 150ms ease,
+        border-color 150ms ease,
+        box-shadow 150ms ease,
+        background 150ms ease;
+}
+
+.ventas-touch-product-card:hover {
+    border-color: var(--pos-profile-border, rgba(36, 79, 143, 0.24));
+    background: #ffffff;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+    transform: translateY(-1px);
+}
+
+.ventas-touch-product-card:active {
+    transform: scale(0.985);
+}
+
+.ventas-touch-product-card.is-disabled,
+.ventas-touch-product-card:disabled {
+    opacity: 0.52;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.ventas-touch-product-avatar {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
+    background: var(--pos-profile-soft, #eef5ff);
+    color: var(--pos-profile-accent, #244f8f);
+    font-size: 18px;
+    font-weight: 950;
+    letter-spacing: -0.02em;
+}
+
+.ventas-touch-product-body {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+}
+
+.ventas-touch-product-body strong {
+    overflow: hidden;
+    color: var(--vt);
+    font-size: 16px;
+    font-weight: 900;
+    line-height: 1.25;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.ventas-touch-product-body small {
+    overflow: hidden;
+    color: var(--vm);
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.ventas-touch-product-meta {
+    display: grid;
+    gap: 8px;
+    align-items: end;
+    justify-items: start;
+    min-width: 0;
+}
+
+.ventas-touch-product-meta em {
+    font-style: normal;
+    color: var(--vm);
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.ventas-touch-product-meta b {
+    color: var(--vt);
+    font-size: 20px;
+    font-weight: 950;
+    white-space: nowrap;
+}
+
+.ventas-touch-product-add {
+    display: grid;
+    place-items: center;
+    min-height: 42px;
+    border-radius: 14px;
+    background: var(--pos-profile-accent, #244f8f);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 950;
+    letter-spacing: 0.02em;
+}
+
+.ventas-touch-product-add::before {
+    content: "Agregar";
+}
+
+.ventas-touch-catalog-empty {
+    display: grid;
+    place-items: center;
+    gap: 5px;
+    min-height: 130px;
+    border: 1px dashed rgba(148, 163, 184, 0.32);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.72);
+    text-align: center;
+}
+
+.ventas-touch-catalog-empty strong {
+    color: var(--vt);
+    font-size: 14px;
+}
+
+.ventas-touch-catalog-empty span {
+    color: var(--vm);
+    font-size: 12px;
+}
+
+/* Catálogo más protagonista según perfil */
+.ventas-pos-shell[data-pos-mode="tactil"][data-pos-business="comidas"] .ventas-touch-product-card {
+    min-height: 104px;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"][data-pos-business="boutique"] .ventas-touch-product-avatar {
+    border-radius: 999px;
+}
+
+/* En pantallas amplias, el catálogo se siente como grid táctil */
+@media (min-width: 1320px) {
+    .ventas-touch-product-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 1100px) {
+    .ventas-touch-product-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 760px) {
+    .ventas-touch-catalog-head {
+        flex-direction: column;
+    }
+
+    .ventas-touch-product-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ventas-touch-product-card {
+        min-height: 154px;
+    }
+
+    .ventas-touch-product-meta b {
+        font-size: 18px;
+    }
+}
