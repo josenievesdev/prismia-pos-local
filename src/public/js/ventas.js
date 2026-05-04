@@ -2,8 +2,14 @@
     'use strict';
 
     const POS_MODE_STORAGE_KEY = 'prismia.pos.modoVista';
+    const POS_PROFILE_STORAGE_KEY = 'prismia.pos.perfilVista';
+
     const POS_MODE_CLASSIC = 'clasico';
     const POS_MODE_TOUCH = 'tactil';
+
+    const POS_PROFILE_GENERAL = 'general';
+    const POS_PROFILE_FOOD = 'comidas';
+    const POS_PROFILE_BOUTIQUE = 'boutique';
 
     document.addEventListener('DOMContentLoaded', iniciarPOSVentas);
 
@@ -18,6 +24,7 @@
         const ui = obtenerElementos();
 
         inicializarModoVistaPOS(ui);
+        inicializarPerfilVistaPOS(ui);
 
         inicializarFecha(ui);
         inicializarBusquedaClientes(ui);
@@ -38,6 +45,8 @@
             shell: document.querySelector('.ventas-pos-shell'),
             botonCambiarModoPOS: document.getElementById('btnCambiarModoPOS'),
             textoModoPOS: document.getElementById('textoModoPOS'),
+            selectorPerfilPOS: document.getElementById('selectorPerfilPOS'),
+            botonesPerfilPOS: document.querySelectorAll('[data-pos-business-option]'),
             facturaSugeridaElementos: document.querySelectorAll('[data-factura-sugerida]'),
 
             fechaVenta: document.getElementById('fechaVenta'),
@@ -95,6 +104,113 @@
             botonPendiente: document.getElementById('btnVentaPendiente'),
             botonCobrar: document.querySelector('.ventas-charge-button'),
         };
+    }
+
+    function obtenerPerfilVistaGuardado() {
+        try {
+            const perfilGuardado = window.localStorage.getItem(POS_PROFILE_STORAGE_KEY);
+
+            if ([POS_PROFILE_GENERAL, POS_PROFILE_FOOD, POS_PROFILE_BOUTIQUE].includes(perfilGuardado)) {
+                return perfilGuardado;
+            }
+
+            return POS_PROFILE_GENERAL;
+        } catch (error) {
+            return POS_PROFILE_GENERAL;
+        }
+    }
+
+    function guardarPerfilVistaPOS(perfil) {
+        try {
+            window.localStorage.setItem(POS_PROFILE_STORAGE_KEY, perfil);
+        } catch (error) {
+            // Si localStorage falla, el perfil vuelve a general. Sobreviviremos.
+        }
+    }
+
+    function obtenerConfigPerfilPOS(perfil) {
+        if (perfil === POS_PROFILE_FOOD) {
+            return {
+                label: 'Comidas',
+                placeholder: 'Buscar plato, bebida, combo, código o SKU...',
+                searchButton: 'Buscar',
+            };
+        }
+
+        if (perfil === POS_PROFILE_BOUTIQUE) {
+            return {
+                label: 'Boutique',
+                placeholder: 'Buscar prenda, referencia, talla, color o SKU...',
+                searchButton: 'Buscar',
+            };
+        }
+
+        return {
+            label: 'General',
+            placeholder: 'Buscar producto por nombre, código de barras o SKU...',
+            searchButton: 'Buscar',
+        };
+    }
+
+    function aplicarPerfilVistaPOS(ui, perfil) {
+        if (!ui.shell) {
+            return;
+        }
+
+        const perfilSeguro = [POS_PROFILE_GENERAL, POS_PROFILE_FOOD, POS_PROFILE_BOUTIQUE].includes(perfil)
+            ? perfil
+            : POS_PROFILE_GENERAL;
+
+        const config = obtenerConfigPerfilPOS(perfilSeguro);
+
+        ui.shell.dataset.posBusiness = perfilSeguro;
+
+        if (document.documentElement) {
+            document.documentElement.dataset.posBusiness = perfilSeguro;
+        }
+
+        if (ui.botonesPerfilPOS) {
+            ui.botonesPerfilPOS.forEach(function (boton) {
+                const activo = boton.dataset.posBusinessOption === perfilSeguro;
+                boton.classList.toggle('is-active', activo);
+                boton.setAttribute('aria-pressed', activo ? 'true' : 'false');
+            });
+        }
+
+        if (ui.inputBusqueda) {
+            ui.inputBusqueda.placeholder = config.placeholder;
+        }
+
+        if (ui.botonBuscar) {
+            ui.botonBuscar.textContent = config.searchButton;
+        }
+    }
+
+    function inicializarPerfilVistaPOS(ui) {
+        const perfilInicial = obtenerPerfilVistaGuardado();
+
+        aplicarPerfilVistaPOS(ui, perfilInicial);
+
+        if (!ui.botonesPerfilPOS || !ui.botonesPerfilPOS.length) {
+            return;
+        }
+
+        ui.botonesPerfilPOS.forEach(function (boton) {
+            boton.addEventListener('click', function () {
+                const perfil = boton.dataset.posBusinessOption || POS_PROFILE_GENERAL;
+
+                guardarPerfilVistaPOS(perfil);
+                aplicarPerfilVistaPOS(ui, perfil);
+
+                if (ui.shell) {
+                    ui.shell.classList.add('is-switching-mode');
+
+                    window.setTimeout(function () {
+                        ui.shell.classList.remove('is-switching-mode');
+                    }, 180);
+                }
+            });
+        });
     }
 
     function obtenerModoVistaGuardado() {

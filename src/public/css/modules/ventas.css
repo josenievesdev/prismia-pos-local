@@ -3170,3 +3170,168 @@
         border-radius: 0;
     }
 }
+
+/* ===== POS perfiles visuales: general / comidas / boutique ===== */
+
+.ventas-mode-tools {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-left: auto;
+    flex-wrap: wrap;
+}
+
+.ventas-mode-tools .ventas-mode-switch {
+    margin-left: 0;
+}
+
+.ventas-business-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 38px;
+    padding: 4px;
+    border: 1px solid rgba(148, 163, 184, 0.34);
+    border-radius: 999px;
+    background: #ffffff;
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.05);
+}
+
+.ventas-business-option {
+    min-height: 28px;
+    padding: 0 11px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 850;
+    cursor: pointer;
+    transition:
+        background 150ms ease,
+        color 150ms ease,
+        transform 150ms ease;
+}
+
+.ventas-business-option:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.ventas-business-option:active {
+    transform: scale(0.97);
+}
+
+.ventas-business-option.is-active {
+    background: #244f8f;
+    color: #ffffff;
+}
+
+/* En modo clásico los perfiles existen, pero no gritan */
+.ventas-pos-shell[data-pos-mode="clasico"] .ventas-business-switch {
+    opacity: 0.62;
+}
+
+/* En modo táctil los perfiles toman más sentido */
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-business-switch {
+    opacity: 1;
+    border-color: rgba(36, 79, 143, 0.24);
+}
+
+/* Acentos visuales por perfil */
+.ventas-pos-shell[data-pos-business="general"] {
+    --pos-profile-accent: #244f8f;
+    --pos-profile-soft: #eef5ff;
+    --pos-profile-border: rgba(36, 79, 143, 0.22);
+}
+
+.ventas-pos-shell[data-pos-business="comidas"] {
+    --pos-profile-accent: #b45309;
+    --pos-profile-soft: #fff7ed;
+    --pos-profile-border: rgba(180, 83, 9, 0.24);
+}
+
+.ventas-pos-shell[data-pos-business="boutique"] {
+    --pos-profile-accent: #7c3aed;
+    --pos-profile-soft: #f5f3ff;
+    --pos-profile-border: rgba(124, 58, 237, 0.24);
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"][data-pos-business="comidas"] .ventas-search-section,
+.ventas-pos-shell[data-pos-mode="tactil"][data-pos-business="boutique"] .ventas-search-section {
+    border-color: var(--pos-profile-border);
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-business-option.is-active {
+    background: var(--pos-profile-accent);
+    color: #ffffff;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-search-btn,
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-charge-button {
+    background: var(--pos-profile-accent);
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-qty button {
+    border-color: var(--pos-profile-border);
+    background: var(--pos-profile-soft);
+    color: var(--pos-profile-accent);
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-context-item:first-child {
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.94), var(--pos-profile-soft));
+    border-color: var(--pos-profile-border);
+}
+
+/* Micro etiqueta visual del perfil */
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-pos-header::after {
+    content: "General";
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 3px 10px;
+    border: 1px solid var(--pos-profile-border);
+    border-radius: 999px;
+    background: var(--pos-profile-soft);
+    color: var(--pos-profile-accent);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"][data-pos-business="comidas"] .ventas-pos-header::after {
+    content: "Comidas";
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"][data-pos-business="boutique"] .ventas-pos-header::after {
+    content: "Boutique";
+}
+
+/* Ajuste responsive */
+@media (max-width: 1180px) {
+    .ventas-mode-tools {
+        width: 100%;
+        justify-content: flex-start;
+        margin-left: 0;
+        order: 3;
+    }
+}
+
+@media (max-width: 760px) {
+    .ventas-mode-tools {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .ventas-business-switch {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .ventas-business-option {
+        flex: 1;
+    }
+}

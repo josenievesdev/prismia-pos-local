@@ -28,18 +28,35 @@
                     </div>
                 </div>
 
-                <div class="ventas-mode-switch">
-                    <button type="button" class="ventas-mode-toggle" id="btnCambiarModoPOS" aria-pressed="false"
-                        title="Cambiar modo de vista del POS">
-                        <span class="ventas-mode-toggle-track" aria-hidden="true">
-                            <span class="ventas-mode-toggle-thumb"></span>
-                        </span>
+                <div class="ventas-mode-tools">
+                    <div class="ventas-mode-switch">
+                        <button type="button" class="ventas-mode-toggle" id="btnCambiarModoPOS" aria-pressed="false"
+                            title="Cambiar modo de vista del POS">
+                            <span class="ventas-mode-toggle-track" aria-hidden="true">
+                                <span class="ventas-mode-toggle-thumb"></span>
+                            </span>
 
-                        <span class="ventas-mode-toggle-copy">
-                            <strong id="textoModoPOS">Modo clásico</strong>
-                            <small>Vista POS</small>
-                        </span>
-                    </button>
+                            <span class="ventas-mode-toggle-copy">
+                                <strong id="textoModoPOS">Modo clásico</strong>
+                                <small>Vista POS</small>
+                            </span>
+                        </button>
+                    </div>
+
+                    <div class="ventas-business-switch" id="selectorPerfilPOS" aria-label="Perfil visual del POS">
+                        <button type="button" class="ventas-business-option is-active"
+                            data-pos-business-option="general">
+                            General
+                        </button>
+
+                        <button type="button" class="ventas-business-option" data-pos-business-option="comidas">
+                            Comidas
+                        </button>
+
+                        <button type="button" class="ventas-business-option" data-pos-business-option="boutique">
+                            Boutique
+                        </button>
+                    </div>
                 </div>
 
                 <div class="ventas-header-status">
