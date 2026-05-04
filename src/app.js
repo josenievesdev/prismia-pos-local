@@ -22,6 +22,7 @@ const clientesRoutes = require('./modules/clientes/clientes.routes');
 const cotizacionesRoutes = require('./modules/cotizaciones/cotizaciones.routes');
 const remisionesRoutes = require('./modules/remisiones/remisiones.routes');
 const notasCreditoRoutes = require('./modules/notasCredito/notasCredito.routes');
+const reportesRoutes = require('./modules/reportes/reportes.routes');
 const catalogosRoutes = require('./modules/catalogos/catalogos.routes');
 
 const app = express();
@@ -110,6 +111,7 @@ app.use('/clientes', clientesRoutes);
 app.use('/cotizaciones', cotizacionesRoutes);
 app.use('/remisiones', remisionesRoutes);
 app.use('/notas-credito', notasCreditoRoutes);
+app.use('/reportes', reportesRoutes);
 app.use('/catalogos', catalogosRoutes);
 
 /**
