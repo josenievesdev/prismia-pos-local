@@ -2542,3 +2542,78 @@
         white-space: normal;
     }
 }
+
+/* ===== Pago mixto POS ===== */
+
+.ventas-payment-list {
+    display: grid;
+    gap: 8px;
+}
+
+.ventas-payment-row {
+    grid-template-columns: 1.15fr 0.7fr 0.8fr 34px;
+    align-items: end;
+}
+
+.ventas-payment-remove {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 39px;
+    border: 0;
+    border-radius: 11px;
+    background: #fee2e2;
+    color: #991b1b;
+    font-size: 18px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.ventas-payment-remove:hover {
+    background: #fecaca;
+}
+
+.ventas-payment-remove:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.ventas-payment-tools {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: -2px;
+}
+
+.ventas-payment-add {
+    min-height: 32px;
+    padding: 0 12px;
+    font-size: 11px;
+}
+
+.ventas-payment-tools small {
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+    text-align: right;
+}
+
+@media (max-width: 860px) {
+    .ventas-payment-row {
+        grid-template-columns: 1fr;
+    }
+
+    .ventas-payment-remove {
+        width: 100%;
+    }
+
+    .ventas-payment-tools {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .ventas-payment-tools small {
+        text-align: left;
+    }
+}

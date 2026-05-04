@@ -245,38 +245,60 @@
                                                     </small>
                                                 </div>
 
-                                                <div class="ventas-payment-fields">
-                                                    <label class="ventas-field">
-                                                        <span>Medio de pago</span>
+                                                <div class="ventas-payment-list" id="listaPagosVenta">
+                                                    <div class="ventas-payment-fields ventas-payment-row"
+                                                        data-payment-row>
+                                                        <label class="ventas-field">
+                                                            <span>Medio de pago</span>
 
-                                                        <select id="medioPagoPrincipal" name="medio_pago_principal">
-                                                            <% if (mediosPagoListado.length===0) { %>
-                                                                <option value="">Sin medios activos</option>
-                                                                <% } else { %>
-                                                                    <% mediosPagoListado.forEach((medio)=> { %>
-                                                                        <option value="<%= medio.id_medio_pago %>"
-                                                                            data-payment-type="<%= medio.tipo %>"
-                                                                            data-affects-cash="<%= medio.afecta_efectivo_caja %>"
-                                                                            data-requires-reference="<%= medio.requiere_referencia || 0 %>">
-                                                                            <%= medio.nombre %> · <%=
-                                                                                    nombreTipoMedio(medio.tipo) %>
-                                                                        </option>
-                                                                        <% }) %>
-                                                                            <% } %>
-                                                        </select>
-                                                    </label>
+                                                            <select id="medioPagoPrincipal" name="medio_pago_principal"
+                                                                class="ventas-pago-medio" data-pago-medio>
+                                                                <% if (mediosPagoListado.length===0) { %>
+                                                                    <option value="">Sin medios activos</option>
+                                                                    <% } else { %>
+                                                                        <% mediosPagoListado.forEach((medio)=> { %>
+                                                                            <option value="<%= medio.id_medio_pago %>"
+                                                                                data-payment-type="<%= medio.tipo %>"
+                                                                                data-affects-cash="<%= medio.afecta_efectivo_caja %>"
+                                                                                data-requires-reference="<%= medio.requiere_referencia || 0 %>">
+                                                                                <%= medio.nombre %> · <%=
+                                                                                        nombreTipoMedio(medio.tipo) %>
+                                                                            </option>
+                                                                            <% }) %>
+                                                                                <% } %>
+                                                            </select>
+                                                        </label>
 
-                                                    <label class="ventas-field">
-                                                        <span>Recibido</span>
-                                                        <input type="number" id="montoPagadoPrincipal" min="0" step="1"
-                                                            placeholder="0" disabled>
-                                                    </label>
+                                                        <label class="ventas-field">
+                                                            <span>Recibido</span>
+                                                            <input type="number" id="montoPagadoPrincipal"
+                                                                class="ventas-pago-monto" data-pago-monto min="0"
+                                                                step="1" placeholder="0" disabled>
+                                                        </label>
 
-                                                    <label class="ventas-field">
-                                                        <span>Referencia</span>
-                                                        <input type="text" id="referenciaPagoPrincipal"
-                                                            placeholder="Opcional" disabled>
-                                                    </label>
+                                                        <label class="ventas-field">
+                                                            <span>Referencia</span>
+                                                            <input type="text" id="referenciaPagoPrincipal"
+                                                                class="ventas-pago-referencia" data-pago-referencia
+                                                                placeholder="Opcional" disabled>
+                                                        </label>
+
+                                                        <button type="button" class="ventas-payment-remove"
+                                                            data-remove-payment hidden aria-label="Quitar pago">
+                                                            ×
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <div class="ventas-payment-tools">
+                                                    <button type="button" class="btn-secondary ventas-payment-add"
+                                                        id="btnAgregarPagoMixto" disabled>
+                                                        + Agregar pago mixto
+                                                    </button>
+
+                                                    <small id="resumenPagosMixtos">
+                                                        Un solo pago
+                                                    </small>
                                                 </div>
 
                                                 <div class="ventas-payment-info">
