@@ -62,12 +62,12 @@
             <span>Inventario</span>
         </a>
 
-        <a href="/caja" class="sidebar-link <%= rutaActual.startsWith('/caja') ? 'active' : '' %>">
+        <a href="/caja"
+            class="sidebar-link <%= rutaActual.startsWith('/caja') && !rutaActual.startsWith('/caja/gasto') ? 'active' : '' %>">
             <span class="sidebar-icon">$</span>
             <span>Caja</span>
         </a>
-
-        <a href="#" class="sidebar-link disabled">
+        <a href="/caja/gasto" class="sidebar-link <%= rutaActual.startsWith('/caja/gasto') ? 'active' : '' %>">
             <span class="sidebar-icon">◆</span>
             <span>Gastos</span>
         </a>
