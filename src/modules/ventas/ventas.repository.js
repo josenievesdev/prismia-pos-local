@@ -1442,11 +1442,40 @@ function anularVentaCompleta(datos) {
 
         const idAnulacionVenta = Number(resultadoAnulacion.lastInsertRowid);
 
+        const insertarMovimientoCajaAnulacion = db.prepare(`
+            INSERT INTO movimientos_caja (
+                id_turno_caja,
+                id_usuario,
+                tipo_movimiento,
+                metodo_pago,
+                monto,
+                descripcion,
+                referencia_tipo,
+                referencia_id,
+                id_medio_pago,
+                referencia_pago,
+                entidad_pago
+            ) VALUES (
+                @id_turno_caja,
+                @id_usuario,
+                'anulacion',
+                @metodo_pago,
+                @monto,
+                @descripcion,
+                'anulacion_venta',
+                @referencia_id,
+                @id_medio_pago,
+                @referencia_pago,
+                @entidad_pago
+            )
+        `);
+
         const ventaActualizada = db
             .prepare(`
                 UPDATE ventas
                 SET
                     estado = 'anulada',
+
                     anulado_en = CURRENT_TIMESTAMP,
                     anulado_por = @anulado_por,
                     motivo_anulacion = @motivo_anulacion,
@@ -1485,6 +1514,26 @@ function anularVentaCompleta(datos) {
         if (pagosActualizados.changes === 0 && pagos.length > 0) {
             throw new Error('No se pudieron anular los pagos de la venta.');
         }
+
+        pagos.forEach((pago) => {
+            const montoPago = Number(pago.monto || pago.monto_pago || 0);
+
+            if (montoPago <= 0) {
+                return;
+            }
+
+            insertarMovimientoCajaAnulacion.run({
+                id_turno_caja: venta.id_turno_caja,
+                id_usuario: datos.id_usuario,
+                metodo_pago: pago.medio_pago_tipo || pago.metodo_pago || 'otro',
+                monto: montoPago,
+                descripcion: `Anulación de venta ${venta.numero_venta}`,
+                referencia_id: idAnulacionVenta,
+                id_medio_pago: pago.id_medio_pago || null,
+                referencia_pago: pago.referencia || null,
+                entidad_pago: pago.medio_pago_nombre || pago.entidad || null,
+            });
+        });
 
         const actualizarProducto = db.prepare(`
             UPDATE productos
