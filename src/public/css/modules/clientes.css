@@ -1,16 +1,17 @@
 /* =========================================================
    Módulo Clientes · Prismia POS Local
+   Alineado al sistema de diseño global v2.0
    ========================================================= */
 
 .clientes-page {
-    gap: 16px;
+    gap: 14px;
 }
 
 .clientes-filter-card,
 .clientes-table-card,
 .clientes-form {
     display: grid;
-    gap: 16px;
+    gap: 14px;
 }
 
 .clientes-filter-card,
@@ -21,8 +22,8 @@
 
 .clientes-filter-form {
     display: grid;
-    grid-template-columns: minmax(260px, 1.6fr) repeat(4, minmax(150px, 1fr)) auto;
-    gap: 12px;
+    grid-template-columns: minmax(200px, 1.6fr) repeat(4, minmax(120px, 1fr)) auto;
+    gap: 10px;
     align-items: end;
 }
 
@@ -32,31 +33,31 @@
 
 .clientes-filter-actions {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     align-items: center;
 }
 
 .clientes-table-card-wide {
-    padding: 18px 20px;
+    padding: 16px 18px;
 }
 
 .clientes-section-head {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 18px;
-    padding-bottom: 14px;
-    margin-bottom: 8px;
-    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+    gap: 14px;
+    padding-bottom: 10px;
+    margin-bottom: 6px;
+    border-bottom: 1px solid var(--color-border);
 }
 
 .clientes-section-head h3,
 .clientes-form-card-head h3,
 .clientes-form-block-head h4 {
-    margin: 3px 0 5px;
+    margin: 2px 0 4px;
     color: var(--color-text);
     font-size: 15px;
-    font-weight: 800;
+    font-weight: 700;
     letter-spacing: -0.01em;
 }
 
@@ -66,17 +67,17 @@
     margin: 0;
     color: var(--color-muted);
     font-size: 12px;
-    font-weight: 500;
+    font-weight: 400;
     line-height: 1.45;
 }
 
 .clientes-section-eyebrow {
     display: inline-flex;
     margin-bottom: 2px;
-    color: var(--color-primary-dark);
+    color: var(--color-muted);
     font-size: 10px;
-    font-weight: 900;
-    letter-spacing: 0.08em;
+    font-weight: 700;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
 }
 
@@ -85,45 +86,45 @@
     align-items: center;
     gap: 5px;
     min-width: max-content;
-    padding: 6px 10px;
-    border: 1px solid rgba(148, 163, 184, 0.22);
+    padding: 4px 10px;
+    border: 1px solid var(--color-border);
     border-radius: 999px;
     background: var(--color-surface-soft);
     color: var(--color-muted);
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .clientes-section-count strong {
     color: var(--color-text);
-    font-weight: 900;
+    font-weight: 700;
 }
 
 .clientes-table-wrapper {
     overflow-x: auto;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
 }
 
 .clientes-table {
     margin: 0;
-    min-width: 980px;
+    min-width: 900px;
     width: 100%;
 }
 
 .clientes-table thead th {
-    background: var(--color-surface);
+    background: var(--color-surface-soft);
     color: var(--color-muted);
     font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.03em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
 }
 
 .clientes-table td {
     vertical-align: middle;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 400;
     line-height: 1.4;
 }
 
@@ -137,7 +138,7 @@
 .clientes-stack-cell strong {
     color: var(--color-text);
     font-size: 13px;
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .clientes-main-cell span,
@@ -145,7 +146,7 @@
 .clientes-stack-cell span {
     color: var(--color-muted);
     font-size: 11px;
-    font-weight: 500;
+    font-weight: 400;
     line-height: 1.35;
 }
 
@@ -153,30 +154,30 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 72px;
-    padding: 5px 9px;
+    min-width: 64px;
+    padding: 3px 8px;
     border-radius: 999px;
-    font-size: 10px;
-    font-weight: 900;
-    letter-spacing: 0.04em;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
     text-transform: uppercase;
 }
 
 .clientes-status.is-active {
-    background: #dcfce7;
+    background: var(--color-success-soft);
     color: #166534;
 }
 
 .clientes-status.is-inactive {
-    background: #fee2e2;
+    background: var(--color-danger-soft);
     color: #991b1b;
 }
 
 .clientes-actions {
     display: flex;
-    justify-content: center;
+    justify-content: flex-end;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     flex-wrap: wrap;
 }
 
@@ -184,69 +185,71 @@
     margin: 0;
 }
 
+/* Botones de acción: usan el sistema global btn-secondary / btn-danger */
 .clientes-action-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 92px;
-    padding: 8px 12px;
-    border-radius: 10px;
+    min-height: 30px;
+    padding: 0 10px;
+    border-radius: var(--radius-sm);
     border: 1px solid transparent;
     font-size: 12px;
-    font-weight: 700;
+    font-weight: 600;
     line-height: 1;
     text-decoration: none;
     cursor: pointer;
-    transition: all 0.18s ease;
+    transition: background 150ms ease, border-color 150ms ease;
 }
 
 .clientes-action-btn-secondary {
-    background: #ffffff;
-    border-color: rgba(148, 163, 184, 0.28);
+    background: var(--color-surface);
+    border-color: var(--color-border);
     color: var(--color-text);
 }
 
 .clientes-action-btn-secondary:hover {
     background: var(--color-surface-soft);
+    border-color: var(--color-border-strong);
 }
 
 .clientes-action-btn-danger {
-    background: #fff1f2;
-    border-color: #fecdd3;
-    color: #be123c;
+    background: var(--color-danger-soft);
+    border-color: #fecaca;
+    color: var(--color-danger);
 }
 
 .clientes-action-btn-danger:hover {
-    background: #ffe4e6;
+    background: #fecaca;
 }
 
 .clientes-muted-action {
     display: inline-flex;
-    padding: 6px 10px;
+    padding: 4px 10px;
     border-radius: 999px;
     background: var(--color-surface-soft);
     color: var(--color-muted);
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .clientes-pagination {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 14px;
-    padding-top: 14px;
+    gap: 12px;
+    padding-top: 12px;
     color: var(--color-muted);
     font-size: 12px;
 }
 
 .clientes-pagination div {
     display: flex;
-    gap: 8px;
+    gap: 6px;
 }
 
 .clientes-pagination .is-disabled {
-    opacity: 0.45;
+    opacity: 0.4;
     pointer-events: none;
 }
 
@@ -256,25 +259,25 @@
 
 .clientes-form-card {
     display: grid;
-    gap: 20px;
-    padding: 20px 22px;
+    gap: 16px;
+    padding: 16px 18px;
 }
 
 .clientes-form-card-head {
     padding-bottom: 10px;
-    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+    border-bottom: 1px solid var(--color-border);
 }
 
 .clientes-form-sections {
     display: grid;
-    gap: 18px;
+    gap: 14px;
 }
 
 .clientes-form-block {
     display: grid;
-    gap: 12px;
-    padding-bottom: 18px;
-    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+    gap: 10px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--color-border);
 }
 
 .clientes-form-block:last-child {
@@ -289,7 +292,7 @@
 
 .clientes-form-grid {
     display: grid;
-    gap: 12px;
+    gap: 10px;
 }
 
 .clientes-form-grid-4 {
@@ -306,9 +309,9 @@
 
 .clientes-form-actions {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     align-items: center;
-    padding-top: 6px;
+    padding-top: 4px;
 }
 
 @media (max-width: 1240px) {
@@ -367,25 +370,25 @@
 
 .clientes-location-results {
     position: absolute;
-    top: calc(100% + 6px);
+    top: calc(100% + 4px);
     left: 0;
     right: 0;
     z-index: 30;
-    max-height: 260px;
+    max-height: 240px;
     overflow-y: auto;
-    border: 1px solid rgba(148, 163, 184, 0.28);
-    border-radius: 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
     background: #ffffff;
-    box-shadow: 0 18px 42px rgba(15, 23, 42, 0.14);
+    box-shadow: var(--shadow-md);
 }
 
 .clientes-location-result {
     display: grid;
-    gap: 3px;
+    gap: 2px;
     width: 100%;
-    padding: 11px 13px;
+    padding: 8px 12px;
     border: 0;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+    border-bottom: 1px solid var(--color-border);
     background: transparent;
     text-align: left;
     cursor: pointer;
@@ -396,31 +399,31 @@
 }
 
 .clientes-location-result:hover {
-    background: #f8fafc;
+    background: var(--color-surface-soft);
 }
 
 .clientes-location-result strong {
     color: var(--color-text);
     font-size: 13px;
-    font-weight: 750;
+    font-weight: 600;
 }
 
 .clientes-location-result span {
     color: var(--color-muted);
     font-size: 11px;
-    font-weight: 500;
+    font-weight: 400;
 }
 
 .clientes-location-empty {
-    padding: 12px 14px;
+    padding: 10px 12px;
     color: var(--color-muted);
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 500;
 }
 
 .clientes-form input[readonly] {
-    background: #f8fafc;
-    color: #475569;
+    background: var(--color-surface-soft);
+    color: var(--color-muted);
     cursor: not-allowed;
 }
 
@@ -428,11 +431,11 @@
 
 .clientes-required-marker {
     color: #dc2626;
-    font-weight: 900;
+    font-weight: 700;
 }
 
 .clientes-form .form-group.has-error span {
-    color: #b91c1c;
+    color: var(--color-danger);
 }
 
 .clientes-form input.is-invalid,
@@ -440,14 +443,14 @@
 .clientes-form textarea.is-invalid {
     border-color: #ef4444 !important;
     background: #fff5f5;
-    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08);
 }
 
 .clientes-field-error {
     display: block;
-    margin-top: 6px;
-    color: #b91c1c;
+    margin-top: 4px;
+    color: var(--color-danger);
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 600;
     line-height: 1.35;
 }

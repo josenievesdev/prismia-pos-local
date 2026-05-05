@@ -1,10 +1,10 @@
 /* =========================================================
    Módulo Inventario · Prismia POS Local
-   Overrides específicos. Clases base en main.css.
+   Alineado al sistema de diseño global v2.0
    ========================================================= */
 
 .inventario-page {
-    gap: 16px;
+    gap: 14px;
 }
 
 /* ==============================
@@ -13,14 +13,14 @@
 
 .inventory-filters {
     display: grid;
-    gap: 14px;
-    padding: 18px 22px;
+    gap: 12px;
+    padding: 16px 18px;
 }
 
 .inventory-filters .form-group label {
     font-size: 12px;
-    font-weight: 750;
-    color: var(--color-text);
+    font-weight: 600;
+    color: var(--color-text-soft);
 }
 
 .inventory-filters .filter-grid {
@@ -51,42 +51,44 @@
 
 .inventory-product-card {
     display: grid;
-    gap: 14px;
+    gap: 12px;
     align-content: start;
 }
 
 .inventory-product-card h3 {
     margin: 0;
-    font-size: 20px;
-    letter-spacing: -0.03em;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
 }
 
 .inventory-product-meta {
     display: grid;
-    gap: 6px;
+    gap: 4px;
     color: var(--color-muted);
-    font-size: 13px;
+    font-size: 12px;
 }
 
 .inventory-stock-box {
     display: grid;
-    gap: 5px;
-    padding: 14px;
-    border-radius: var(--radius-md);
+    gap: 4px;
+    padding: 12px;
+    border-radius: var(--radius-sm);
     background: var(--color-primary-soft);
     color: var(--color-primary-dark);
 }
 
 .inventory-stock-box span {
-    font-size: 11px;
-    font-weight: 750;
+    font-size: 10px;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
 }
 
 .inventory-stock-box strong {
-    font-size: 22px;
-    letter-spacing: -0.04em;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
 }
 
 .inventory-stock-box.muted {
@@ -96,7 +98,7 @@
 }
 
 .inventory-adjust-form {
-    padding: 20px 22px;
+    padding: 16px 18px;
 }
 
 /* Responsive ajuste */
@@ -123,21 +125,22 @@
 
 .count-summary-card {
     display: grid;
-    gap: 5px;
-    padding: 14px;
+    gap: 4px;
+    padding: 12px;
 }
 
 .count-summary-card span {
     color: var(--color-muted);
-    font-size: 11px;
-    font-weight: 750;
+    font-size: 10px;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
 }
 
 .count-summary-card strong {
-    font-size: 18px;
-    letter-spacing: -0.03em;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
     word-break: break-word;
 }
 
@@ -151,12 +154,6 @@
     .inventory-count-summary {
         grid-template-columns: 1fr;
     }
-}
-
-.module-actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
 }
 
 /* ==============================
@@ -399,9 +396,9 @@
     width: min(92vw, 480px);
     margin: 12vh auto 0;
     background: #ffffff;
-    border: 1px solid #dbe3ef;
-    border-radius: 18px;
-    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.16);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
     padding: 1.25rem;
 }
 
@@ -555,37 +552,38 @@ body.modal-open {
 
 .inventory-valuation-card {
     display: grid;
-    gap: 16px;
-    padding: 18px 22px;
+    gap: 14px;
+    padding: 16px 18px;
 }
 
 .valuation-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
+    gap: 10px;
 }
 
 .valuation-item {
     display: grid;
-    gap: 5px;
-    padding: 14px;
+    gap: 4px;
+    padding: 12px;
     border: 1px solid var(--color-border);
-    border-radius: 16px;
-    background: #f8fafc;
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-soft);
 }
 
 .valuation-item span {
     color: var(--color-muted);
-    font-size: 10.5px;
-    font-weight: 800;
+    font-size: 10px;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
 }
 
 .valuation-item strong {
     color: var(--color-text);
-    font-size: 18px;
-    letter-spacing: -0.03em;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
 }
 
 .valuation-item small {
@@ -595,7 +593,7 @@ body.modal-open {
 }
 
 .valuation-item.strong {
-    background: #eff6ff;
+    background: var(--color-info-soft);
     border-color: #bfdbfe;
 }
 

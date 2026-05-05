@@ -1,14 +1,10 @@
 /* =========================================================
    Módulo Productos · Prismia POS Local
-   Overrides específicos del módulo. Clases base en main.css.
+   Alineado al sistema de diseño global v2.0
    ========================================================= */
 
-/* ==============================
-   Página general
-============================== */
-
 .productos-page {
-    gap: 16px;
+    gap: 14px;
 }
 
 /* ==============================
@@ -17,7 +13,7 @@
 
 .product-form {
     display: grid;
-    gap: 16px;
+    gap: 14px;
     padding: 0;
     background: transparent;
     border: none;
@@ -26,11 +22,11 @@
 
 .product-section {
     display: grid;
-    gap: 14px;
-    padding: 20px 22px;
+    gap: 12px;
+    padding: 16px 18px;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: 20px;
+    border-radius: var(--radius-lg);
     box-shadow: var(--shadow-soft);
 }
 
@@ -38,42 +34,43 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 14px;
+    gap: 12px;
     padding-bottom: 2px;
 }
 
 .section-title-row h3 {
     margin: 0;
-    font-size: 16px;
+    font-size: 15px;
+    font-weight: 700;
     line-height: 1.2;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em;
     color: var(--color-text);
 }
 
 .section-title-row p {
-    margin: 4px 0 0;
+    margin: 3px 0 0;
     max-width: 720px;
     color: var(--color-muted);
-    font-size: 13px;
+    font-size: 12px;
     line-height: 1.45;
 }
 
 /* Campos */
 
 .product-form .form-group label {
-    font-size: 13px;
-    font-weight: 750;
-    color: var(--color-text);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-text-soft);
 }
 
 .product-form .form-group input,
 .product-form .form-group select,
 .product-form .form-group textarea {
-    border-radius: 12px;
+    border-radius: var(--radius-sm);
 }
 
 .product-form textarea {
-    min-height: 80px;
+    min-height: 72px;
 }
 
 /* Cajas de ayuda internas */
@@ -81,12 +78,12 @@
 .module-hint {
     display: grid;
     align-content: center;
-    gap: 5px;
+    gap: 4px;
     min-height: auto;
-    padding: 12px 14px;
+    padding: 10px 12px;
     border: 1px solid var(--color-border);
-    border-radius: 14px;
-    background: #f8fafc;
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-soft);
 }
 
 .module-hint strong {
@@ -96,7 +93,7 @@
 
 .module-hint span {
     color: var(--color-muted);
-    font-size: 12px;
+    font-size: 11px;
     line-height: 1.45;
 }
 
@@ -104,19 +101,19 @@
 
 .product-checkbox-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
+    gap: 8px;
 }
 
 .product-form .check-option {
     min-height: auto;
     align-items: flex-start;
-    padding: 12px 14px;
-    border-radius: 14px;
-    background: #f8fafc;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-soft);
 }
 
 .product-form .check-option input {
-    margin-top: 3px;
+    margin-top: 2px;
     flex: 0 0 auto;
 }
 
@@ -126,8 +123,8 @@
 }
 
 .product-form .check-option small {
-    margin-top: 4px;
-    font-size: 12px;
+    margin-top: 3px;
+    font-size: 11px;
     line-height: 1.4;
 }
 
@@ -135,9 +132,9 @@
 
 .product-profit-preview {
     justify-content: flex-start;
-    gap: 10px;
+    gap: 8px;
     font-size: 13px;
-    border-radius: 14px;
+    border-radius: var(--radius-sm);
 }
 
 /* Acciones del formulario */
@@ -145,11 +142,11 @@
 .product-actions {
     display: flex;
     justify-content: flex-start;
-    gap: 10px;
-    padding: 18px 22px;
+    gap: 8px;
+    padding: 14px 18px;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: 20px;
+    border-radius: var(--radius-lg);
     box-shadow: var(--shadow-soft);
 }
 
@@ -158,19 +155,19 @@
 ============================== */
 
 .products-table {
-    min-width: 920px;
+    min-width: 900px;
 }
 
 .products-table th {
     padding-top: 0;
-    padding-bottom: 10px;
+    padding-bottom: 8px;
     font-size: 11px;
-    letter-spacing: 0.09em;
+    letter-spacing: 0.04em;
 }
 
 .products-table td {
-    padding-top: 10px;
-    padding-bottom: 10px;
+    padding-top: 8px;
+    padding-bottom: 8px;
     vertical-align: top;
 }
 
@@ -185,18 +182,10 @@
     white-space: normal;
 }
 
-.products-table td:nth-child(2) {
-    min-width: 200px;
-}
-
+.products-table td:nth-child(2) { min-width: 180px; }
 .products-table td:nth-child(4),
-.products-table td:nth-child(5) {
-    min-width: 130px;
-}
-
-.products-table td:nth-child(8) {
-    min-width: 100px;
-}
+.products-table td:nth-child(5) { min-width: 120px; }
+.products-table td:nth-child(8) { min-width: 90px; }
 
 .products-table .badge {
     white-space: nowrap;
@@ -208,8 +197,8 @@
 
 .products-filters {
     display: grid;
-    gap: 14px;
-    padding: 18px 22px;
+    gap: 12px;
+    padding: 16px 18px;
 }
 
 .products-filters .filter-grid {
@@ -218,14 +207,8 @@
 
 .products-filters .form-group label {
     font-size: 12px;
-    font-weight: 750;
-    color: var(--color-text);
-}
-
-.filter-grid {
-    display: grid;
-    grid-template-columns: 1.3fr 1fr 1fr 0.7fr;
-    gap: 12px;
+    font-weight: 600;
+    color: var(--color-text-soft);
 }
 
 /* ==============================
@@ -248,7 +231,7 @@
         grid-template-columns: 1fr;
     }
 
-    .filter-grid {
+    .products-filters .filter-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
@@ -261,8 +244,7 @@
 
     .product-section,
     .product-actions {
-        padding: 18px;
-        border-radius: 18px;
+        padding: 14px;
     }
 
     .section-title-row {
@@ -271,7 +253,7 @@
 }
 
 @media (max-width: 640px) {
-    .filter-grid {
+    .products-filters .filter-grid {
         grid-template-columns: 1fr;
     }
 

@@ -3,13 +3,13 @@
    ========================================================= */
 
 .cotizaciones-page {
-    gap: 16px;
+    gap: 14px;
 }
 
 .cotizaciones-filter-card,
 .cotizaciones-table-card {
     display: grid;
-    gap: 16px;
+    gap: 14px;
 }
 
 .cotizaciones-filter-form {
@@ -33,17 +33,17 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 18px;
-    padding-bottom: 14px;
-    margin-bottom: 8px;
-    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+    gap: 14px;
+    padding-bottom: 10px;
+    margin-bottom: 6px;
+    border-bottom: 1px solid var(--color-border);
 }
 
 .cotizaciones-section-head h3 {
-    margin: 3px 0 5px;
+    margin: 2px 0 4px;
     color: var(--color-text);
     font-size: 15px;
-    font-weight: 800;
+    font-weight: 700;
     letter-spacing: -0.01em;
 }
 
@@ -97,11 +97,11 @@
 }
 
 .cotizaciones-table thead th {
-    background: var(--color-surface);
+    background: var(--color-surface-soft);
     color: var(--color-muted);
     font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.03em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
 }
 
@@ -183,12 +183,12 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 82px;
-    padding: 5px 9px;
+    min-width: 72px;
+    padding: 3px 8px;
     border-radius: 999px;
     font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
+    font-weight: 600;
+    letter-spacing: 0.03em;
     text-transform: uppercase;
 }
 
