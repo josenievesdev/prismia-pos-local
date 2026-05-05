@@ -12,6 +12,16 @@ function prepararProductoParaFormulario(producto) {
     };
 }
 
+function prepararBodyConImagen(req) {
+    const datos = { ...req.body };
+
+    if (req.file) {
+        datos.imagen_url = `/uploads/productos/${req.file.filename}`;
+    }
+
+    return datos;
+}
+
 function listarProductos(req, res) {
     const resultado = productosService.listarProductos({
         busqueda: req.query.busqueda,
@@ -88,6 +98,8 @@ function mostrarFormularioCrear(req, res) {
             porcentaje_iva_visual: 0,
             precio_incluye_iva: 0,
             imagen_url: '',
+            mostrar_en_pos_tactil: 0,
+            orden_pos_tactil: '',
         },
         error: null,
         estilosModulo: estilosProductos,
@@ -98,13 +110,14 @@ function crearProducto(req, res) {
     const categorias = productosService.listarCategoriasDisponibles();
     const unidades = productosService.listarUnidadesMedida();
 
+    const datosFormulario = prepararBodyConImagen(req);
+
     const resultado = productosService.crearProducto({
-        datosFormulario: req.body,
+        datosFormulario,
         usuario: req.session?.usuario,
         ip: req.ip,
         userAgent: req.headers['user-agent'],
     });
-
     if (!resultado.ok) {
         return res.status(400).render('productos/formulario', {
             titulo: 'Nuevo producto',
@@ -112,7 +125,7 @@ function crearProducto(req, res) {
             categorias,
             unidades,
             producto: prepararProductoParaFormulario({
-                ...req.body,
+                ...datosFormulario,
                 controla_inventario: req.body.controla_inventario ? 1 : 0,
                 permite_venta_sin_stock: req.body.permite_venta_sin_stock ? 1 : 0,
                 maneja_iva: req.body.maneja_iva ? 1 : 0,
@@ -163,9 +176,11 @@ function actualizarProducto(req, res) {
     const categorias = productosService.listarCategoriasDisponibles();
     const unidades = productosService.listarUnidadesMedida();
 
+    const datosFormulario = prepararBodyConImagen(req);
+
     const resultado = productosService.actualizarProducto({
         idProducto: req.params.id,
-        datosFormulario: req.body,
+        datosFormulario,
         usuario: req.session?.usuario,
         ip: req.ip,
         userAgent: req.headers['user-agent'],
@@ -179,7 +194,7 @@ function actualizarProducto(req, res) {
             unidades,
             producto: prepararProductoParaFormulario({
                 ...productoActual,
-                ...req.body,
+                ...datosFormulario,
                 controla_inventario: req.body.controla_inventario ? 1 : 0,
                 permite_venta_sin_stock: req.body.permite_venta_sin_stock ? 1 : 0,
                 maneja_iva: req.body.maneja_iva ? 1 : 0,
