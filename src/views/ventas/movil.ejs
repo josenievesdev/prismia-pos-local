@@ -34,6 +34,39 @@
             </section>
             <% } %>
 
+                <section class="pos-movil-card pos-movil-client-card">
+                    <div class="pos-movil-section-head">
+                        <div>
+                            <span>Cliente</span>
+                            <h2>Cliente de la venta</h2>
+                        </div>
+
+                        <button type="button" class="pos-btn neutral small" id="btnClienteFinalMovil">
+                            Consumidor final
+                        </button>
+                    </div>
+
+                    <div class="pos-movil-client-search">
+                        <label>
+                            <span>Buscar cliente</span>
+                            <input type="search" id="buscarClienteMovil" autocomplete="off"
+                                placeholder="Nombre, documento, teléfono o correo..."
+                                data-search-clients-url="/ventas/clientes/buscar"
+                                data-selected-client-id="<%= clienteConsumidorFinal ? clienteConsumidorFinal.id_cliente || '' : '' %>"
+                                value="<%= clienteConsumidorFinal ? clienteConsumidorFinal.nombre || 'Consumidor final' : 'Consumidor final' %>"
+                                <%=puedeVender ? '' : 'disabled' %>
+                            >
+                        </label>
+
+                        <div class="pos-movil-client-results" id="resultadosClientesMovil" hidden></div>
+
+                        <small id="clienteActualMovil">
+                            <%= clienteConsumidorFinal ? (clienteConsumidorFinal.documento || 'Consumidor final' )
+                                : 'Consumidor final' %>
+                        </small>
+                    </div>
+                </section>
+
                 <section class="pos-movil-card">
                     <div class="pos-movil-section-head">
                         <div>
@@ -125,37 +158,56 @@
                         </div>
                     </div>
 
-                    <div class="pos-movil-payment">
-                        <label>
-                            <span>Medio de pago</span>
-                            <select id="medioPagoMovil" <%=puedeVender ? '' : 'disabled' %>>
-                                <% if (!Array.isArray(mediosPago) || mediosPago.length===0) { %>
-                                    <option value="">Sin medios activos</option>
-                                    <% } else { %>
-                                        <% mediosPago.forEach(function (medio) { %>
-                                            <option value="<%= medio.id_medio_pago %>"
-                                                data-payment-type="<%= medio.tipo %>"
-                                                data-requires-reference="<%= medio.requiere_referencia || 0 %>">
-                                                <%= medio.nombre %> · <%= medio.tipo %>
-                                            </option>
-                                            <% }) %>
-                                                <% } %>
-                            </select>
-                        </label>
+                    <div class="pos-movil-payment-list" id="listaPagosMovil">
+                        <div class="pos-movil-payment-row" data-mobile-payment-row>
+                            <label>
+                                <span>Medio de pago</span>
+                                <select id="medioPagoMovil" data-mobile-payment-method <%=puedeVender ? '' : 'disabled'
+                                    %>>
+                                    <% if (!Array.isArray(mediosPago) || mediosPago.length===0) { %>
+                                        <option value="">Sin medios activos</option>
+                                        <% } else { %>
+                                            <% mediosPago.forEach(function (medio) { %>
+                                                <option value="<%= medio.id_medio_pago %>"
+                                                    data-payment-type="<%= medio.tipo %>"
+                                                    data-affects-cash="<%= medio.afecta_efectivo_caja || 0 %>"
+                                                    data-requires-reference="<%= medio.requiere_referencia || 0 %>">
+                                                    <%= medio.nombre %> · <%= medio.tipo %>
+                                                </option>
+                                                <% }) %>
+                                                    <% } %>
+                                </select>
+                            </label>
 
-                        <label>
-                            <span>Recibido</span>
-                            <input type="number" id="montoRecibidoMovil" min="0" step="1" placeholder="0" <%=puedeVender
-                                ? '' : 'disabled' %>
-                            >
-                        </label>
+                            <label>
+                                <span>Recibido</span>
+                                <input type="number" id="montoRecibidoMovil" data-mobile-payment-amount min="0" step="1"
+                                    placeholder="0" <%=puedeVender ? '' : 'disabled' %>
+                                >
+                            </label>
 
-                        <label>
-                            <span>Referencia</span>
-                            <input type="text" id="referenciaPagoMovil" placeholder="Opcional" <%=puedeVender ? ''
-                                : 'disabled' %>
-                            >
-                        </label>
+                            <label>
+                                <span>Referencia</span>
+                                <input type="text" id="referenciaPagoMovil" data-mobile-payment-reference
+                                    placeholder="Opcional" <%=puedeVender ? '' : 'disabled' %>
+                                >
+                            </label>
+
+                            <button type="button" class="pos-mobile-payment-remove" data-mobile-payment-remove hidden
+                                <%=puedeVender ? '' : 'disabled' %>
+                                >
+                                Quitar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="pos-mobile-payment-tools">
+                        <button type="button" class="pos-btn neutral" id="btnAgregarPagoMovil" <%=puedeVender ? ''
+                            : 'disabled' %>>
+                            + Agregar pago
+                        </button>
+
+                        <small id="resumenPagosMovil">Un solo pago</small>
                     </div>
 
                     <button type="button" class="pos-btn cobrar" id="btnFacturarMovil" <%=puedeVender ? '' : 'disabled'

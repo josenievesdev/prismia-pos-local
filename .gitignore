@@ -32,3 +32,10 @@ src/database/data/*.sqlite-wal
 src/database/data/*.db
 src/database/data/*.db-shm
 src/database/data/*.db-wal
+
+# Certificados HTTPS locales
+certs/
+*.pem
+*.key
+*.crt
+*.p12

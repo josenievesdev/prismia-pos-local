@@ -15,6 +15,7 @@
     function iniciarPOSMovil() {
         const ui = obtenerUI();
 
+        inicializarClienteMovil(ui);
         inicializarBusqueda(ui);
         inicializarScanner(ui);
         inicializarCarrito(ui);
@@ -26,6 +27,12 @@
     function obtenerUI() {
         return {
             shell: document.querySelector('.pos-movil'),
+
+            inputCliente: document.getElementById('buscarClienteMovil'),
+            resultadosClientes: document.getElementById('resultadosClientesMovil'),
+            clienteActual: document.getElementById('clienteActualMovil'),
+            btnClienteFinal: document.getElementById('btnClienteFinalMovil'),
+
             formBuscar: document.getElementById('formBuscarCodigoMovil'),
             inputCodigo: document.getElementById('inputCodigoMovil'),
             resultados: document.getElementById('resultadosProductosMovil'),
@@ -45,6 +52,11 @@
             medioPago: document.getElementById('medioPagoMovil'),
             montoRecibido: document.getElementById('montoRecibidoMovil'),
             referencia: document.getElementById('referenciaPagoMovil'),
+
+            listaPagos: document.getElementById('listaPagosMovil'),
+            btnAgregarPago: document.getElementById('btnAgregarPagoMovil'),
+            resumenPagos: document.getElementById('resumenPagosMovil'),
+
             btnFacturar: document.getElementById('btnFacturarMovil'),
             mensaje: document.getElementById('mensajeMovil'),
         };
@@ -77,6 +89,178 @@
         ui.mensaje.hidden = true;
         ui.mensaje.textContent = '';
         ui.mensaje.className = 'pos-movil-message';
+    }
+
+    function inicializarClienteMovil(ui) {
+        if (!ui.inputCliente || !ui.resultadosClientes) {
+            return;
+        }
+
+        const nombreInicial = ui.inputCliente.value || 'Consumidor final';
+        const idInicial = ui.inputCliente.dataset.selectedClientId || '';
+        const documentoInicial = ui.clienteActual ? ui.clienteActual.textContent.trim() : 'Consumidor final';
+
+        ui.inputCliente.dataset.defaultName = nombreInicial;
+        ui.inputCliente.dataset.defaultClientId = idInicial;
+        ui.inputCliente.dataset.defaultDocument = documentoInicial;
+
+        let temporizador = null;
+        let abortController = null;
+
+        ui.inputCliente.addEventListener('input', function () {
+            clearTimeout(temporizador);
+
+            const termino = ui.inputCliente.value.trim();
+            ui.inputCliente.dataset.selectedClientId = '';
+
+            if (ui.clienteActual) {
+                ui.clienteActual.textContent = 'Sin cliente seleccionado. Se usará consumidor final si no eliges uno.';
+            }
+
+            if (!termino) {
+                ocultarClientesMovil(ui);
+                return;
+            }
+
+            temporizador = window.setTimeout(function () {
+                buscarClientesMovil(ui, termino, abortController, function (nuevoController) {
+                    abortController = nuevoController;
+                });
+            }, 180);
+        });
+
+        ui.inputCliente.addEventListener('keydown', function (evento) {
+            if (evento.key === 'Escape') {
+                ocultarClientesMovil(ui);
+                ui.inputCliente.blur();
+            }
+        });
+
+        ui.resultadosClientes.addEventListener('click', function (evento) {
+            const item = evento.target.closest('[data-mobile-client-id]');
+
+            if (!item) {
+                return;
+            }
+
+            seleccionarClienteMovil(ui, item);
+        });
+
+        if (ui.btnClienteFinal) {
+            ui.btnClienteFinal.addEventListener('click', function () {
+                ui.inputCliente.value = ui.inputCliente.dataset.defaultName || 'Consumidor final';
+                ui.inputCliente.dataset.selectedClientId = ui.inputCliente.dataset.defaultClientId || '';
+
+                if (ui.clienteActual) {
+                    ui.clienteActual.textContent = ui.inputCliente.dataset.defaultDocument || 'Consumidor final';
+                }
+
+                ocultarClientesMovil(ui);
+            });
+        }
+    }
+
+    async function buscarClientesMovil(ui, termino, abortControllerActual, setAbortController) {
+        if (abortControllerActual) {
+            abortControllerActual.abort();
+        }
+
+        const nuevoController = new AbortController();
+        setAbortController(nuevoController);
+
+        const url = ui.inputCliente.dataset.searchClientsUrl || '/ventas/clientes/buscar';
+
+        try {
+            const respuesta = await fetch(url + '?busqueda=' + encodeURIComponent(termino), {
+                signal: nuevoController.signal,
+            });
+
+            const data = await respuesta.json();
+
+            if (!respuesta.ok || !data.ok) {
+                throw new Error(data.mensaje || 'No se pudo buscar clientes.');
+            }
+
+            renderizarClientesMovil(ui, Array.isArray(data.clientes) ? data.clientes : []);
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                return;
+            }
+
+            renderizarClientesMovil(ui, []);
+        }
+    }
+
+    function renderizarClientesMovil(ui, clientes) {
+        if (!ui.resultadosClientes) {
+            return;
+        }
+
+        if (!clientes.length) {
+            ui.resultadosClientes.hidden = false;
+            ui.resultadosClientes.innerHTML = `
+            <div class="pos-movil-client-empty">
+                No se encontraron clientes.
+            </div>
+        `;
+            return;
+        }
+
+        ui.resultadosClientes.hidden = false;
+        ui.resultadosClientes.innerHTML = clientes.map(function (cliente) {
+            const nombre = escapar(cliente.nombre || cliente.razon_social || cliente.nombre_comercial || 'Cliente');
+            const documento = escapar(cliente.etiqueta_documento || cliente.documento || 'Sin documento');
+            const secundario = escapar(cliente.texto_secundario || cliente.telefono || cliente.correo || '');
+
+            return `
+            <button
+                type="button"
+                class="pos-movil-client-result"
+                data-mobile-client-id="${cliente.id_cliente}"
+                data-mobile-client-name="${nombre}"
+                data-mobile-client-document="${documento}"
+            >
+                <strong>${nombre}</strong>
+                <small>${documento}${secundario ? ' · ' + secundario : ''}</small>
+            </button>
+        `;
+        }).join('');
+    }
+
+    function seleccionarClienteMovil(ui, item) {
+        const idCliente = item.dataset.mobileClientId || '';
+        const nombre = item.dataset.mobileClientName || 'Cliente';
+        const documento = item.dataset.mobileClientDocument || '';
+
+        ui.inputCliente.value = nombre;
+        ui.inputCliente.dataset.selectedClientId = idCliente;
+
+        if (ui.clienteActual) {
+            ui.clienteActual.textContent = documento || 'Cliente seleccionado';
+        }
+
+        ocultarClientesMovil(ui);
+
+        if (ui.inputCodigo) {
+            ui.inputCodigo.focus();
+        }
+    }
+
+    function ocultarClientesMovil(ui) {
+        if (!ui.resultadosClientes) {
+            return;
+        }
+
+        ui.resultadosClientes.hidden = true;
+        ui.resultadosClientes.innerHTML = '';
+    }
+
+    function obtenerIdClienteMovil(ui) {
+        const idCliente = Number(ui.inputCliente && ui.inputCliente.dataset.selectedClientId || 0);
+
+        return Number.isInteger(idCliente) && idCliente > 0
+            ? idCliente
+            : null;
     }
 
     function inicializarBusqueda(ui) {
@@ -408,17 +592,342 @@
         ui.iva.textContent = formatearPesos(resumen.iva);
         ui.total.textContent = formatearPesos(resumen.total);
 
-        if (ui.montoRecibido && !ui.montoRecibido.dataset.editado) {
-            ui.montoRecibido.value = Math.round(resumen.total || 0);
-        }
+        actualizarMontoPrincipalMovil(ui, resumen.total);
     }
 
     function inicializarPago(ui) {
-        if (!ui.montoRecibido) return;
+        if (ui.listaPagos) {
+            ui.listaPagos.addEventListener('input', function (evento) {
+                const inputMonto = evento.target.closest('[data-mobile-payment-amount]');
 
-        ui.montoRecibido.addEventListener('input', function () {
-            ui.montoRecibido.dataset.editado = '1';
+                if (inputMonto) {
+                    inputMonto.dataset.editado = '1';
+                    actualizarResumenPagos(ui);
+                }
+            });
+
+            ui.listaPagos.addEventListener('change', function (evento) {
+                const selectMedio = evento.target.closest('[data-mobile-payment-method]');
+
+                if (selectMedio) {
+                    const fila = selectMedio.closest('[data-mobile-payment-row]');
+                    actualizarReferenciaPagoMovilFila(fila);
+                    actualizarResumenPagos(ui);
+                }
+            });
+
+            ui.listaPagos.addEventListener('click', function (evento) {
+                const botonQuitar = evento.target.closest('[data-mobile-payment-remove]');
+
+                if (!botonQuitar) {
+                    return;
+                }
+
+                const fila = botonQuitar.closest('[data-mobile-payment-row]');
+                const filas = obtenerFilasPagoMovil(ui);
+
+                if (!fila || filas.length <= 1) {
+                    return;
+                }
+
+                fila.remove();
+                actualizarPagosMovil(ui);
+            });
+        }
+
+        if (ui.btnAgregarPago) {
+            ui.btnAgregarPago.addEventListener('click', function () {
+                agregarFilaPagoMovil(ui);
+            });
+        }
+
+        actualizarPagosMovil(ui);
+    }
+
+    function obtenerFilasPagoMovil(ui) {
+        if (!ui.listaPagos) {
+            return [];
+        }
+
+        return Array.from(ui.listaPagos.querySelectorAll('[data-mobile-payment-row]'));
+    }
+
+    function obtenerCamposPagoMovilFila(fila) {
+        return {
+            medio: fila.querySelector('[data-mobile-payment-method]'),
+            monto: fila.querySelector('[data-mobile-payment-amount]'),
+            referencia: fila.querySelector('[data-mobile-payment-reference]'),
+            quitar: fila.querySelector('[data-mobile-payment-remove]'),
+        };
+    }
+
+    function obtenerPagosMovil(ui) {
+        return obtenerFilasPagoMovil(ui).map(function (fila) {
+            const campos = obtenerCamposPagoMovilFila(fila);
+            const opcion = campos.medio ? campos.medio.selectedOptions[0] : null;
+
+            return {
+                fila,
+                medio: campos.medio,
+                monto: campos.monto,
+                referencia: campos.referencia,
+                opcion,
+                id_medio_pago: Number(campos.medio ? campos.medio.value : 0),
+                monto_recibido: numero(campos.monto ? campos.monto.value : 0),
+                referencia_valor: campos.referencia ? campos.referencia.value.trim() : '',
+                tipo: opcion ? opcion.dataset.paymentType || '' : '',
+                afecta_efectivo: opcion ? opcion.dataset.affectsCash === '1' : false,
+                requiere_referencia: opcion ? opcion.dataset.requiresReference === '1' : false,
+                nombre: opcion ? opcion.textContent.trim() : 'Medio de pago',
+            };
         });
+    }
+
+    function actualizarReferenciaPagoMovilFila(fila) {
+        if (!fila) {
+            return;
+        }
+
+        const campos = obtenerCamposPagoMovilFila(fila);
+
+        if (!campos.medio || !campos.referencia) {
+            return;
+        }
+
+        const opcion = campos.medio.selectedOptions[0];
+
+        if (!opcion) {
+            campos.referencia.disabled = true;
+            campos.referencia.value = '';
+            return;
+        }
+
+        const tipo = opcion.dataset.paymentType || '';
+        const requiereReferencia = opcion.dataset.requiresReference === '1';
+
+        campos.referencia.disabled = !(requiereReferencia || tipo === 'transferencia' || tipo === 'tarjeta');
+
+        if (campos.referencia.disabled) {
+            campos.referencia.value = '';
+        }
+    }
+
+    function construirOpcionesPagoMovil(ui) {
+        if (!ui.medioPago) {
+            return '<option value="">Sin medios activos</option>';
+        }
+
+        return ui.medioPago.innerHTML;
+    }
+
+    function agregarFilaPagoMovil(ui) {
+        if (!ui.listaPagos || !ui.medioPago) {
+            return;
+        }
+
+        const fila = document.createElement('div');
+        fila.className = 'pos-movil-payment-row';
+        fila.setAttribute('data-mobile-payment-row', '');
+
+        fila.innerHTML = `
+        <label>
+            <span>Medio de pago</span>
+            <select data-mobile-payment-method>
+                ${construirOpcionesPagoMovil(ui)}
+            </select>
+        </label>
+
+        <label>
+            <span>Recibido</span>
+            <input
+                type="number"
+                data-mobile-payment-amount
+                min="0"
+                step="1"
+                placeholder="0"
+            >
+        </label>
+
+        <label>
+            <span>Referencia</span>
+            <input
+                type="text"
+                data-mobile-payment-reference
+                placeholder="Opcional"
+            >
+        </label>
+
+        <button
+            type="button"
+            class="pos-mobile-payment-remove"
+            data-mobile-payment-remove
+        >
+            Quitar
+        </button>
+    `;
+
+        ui.listaPagos.appendChild(fila);
+
+        const campos = obtenerCamposPagoMovilFila(fila);
+
+        if (campos.monto) {
+            campos.monto.focus();
+        }
+
+        actualizarReferenciaPagoMovilFila(fila);
+        actualizarPagosMovil(ui);
+    }
+
+    function actualizarPagosMovil(ui) {
+        const filas = obtenerFilasPagoMovil(ui);
+
+        filas.forEach(function (fila) {
+            const campos = obtenerCamposPagoMovilFila(fila);
+
+            if (campos.quitar) {
+                campos.quitar.hidden = filas.length <= 1;
+            }
+
+            actualizarReferenciaPagoMovilFila(fila);
+        });
+
+        actualizarResumenPagos(ui);
+    }
+
+    function actualizarResumenPagos(ui) {
+        if (!ui.resumenPagos) {
+            return;
+        }
+
+        const pagos = obtenerPagosMovil(ui);
+        const totalPagado = pagos.reduce(function (acumulado, pago) {
+            return acumulado + pago.monto_recibido;
+        }, 0);
+
+        ui.resumenPagos.textContent = pagos.length > 1
+            ? pagos.length + ' pagos · Recibido ' + formatearPesos(totalPagado)
+            : 'Un solo pago';
+    }
+
+    function limpiarPagosMovil(ui) {
+        const filas = obtenerFilasPagoMovil(ui);
+
+        filas.forEach(function (fila, indice) {
+            const campos = obtenerCamposPagoMovilFila(fila);
+
+            if (indice === 0) {
+                if (campos.monto) {
+                    campos.monto.value = '';
+                    campos.monto.dataset.editado = '';
+                }
+
+                if (campos.referencia) {
+                    campos.referencia.value = '';
+                }
+
+                return;
+            }
+
+            fila.remove();
+        });
+
+        actualizarPagosMovil(ui);
+    }
+
+    function actualizarMontoPrincipalMovil(ui, total) {
+        const filas = obtenerFilasPagoMovil(ui);
+
+        if (filas.length !== 1) {
+            actualizarResumenPagos(ui);
+            return;
+        }
+
+        const campos = obtenerCamposPagoMovilFila(filas[0]);
+
+        if (campos.monto && !campos.monto.dataset.editado) {
+            campos.monto.value = Math.round(total || 0);
+        }
+
+        actualizarResumenPagos(ui);
+    }
+
+    function validarPagosMovil(ui, totalVenta) {
+        const pagos = obtenerPagosMovil(ui);
+
+        if (!pagos.length) {
+            return {
+                ok: false,
+                mensaje: 'Registra al menos un pago.',
+            };
+        }
+
+        let totalRecibido = 0;
+        let totalEfectivo = 0;
+
+        for (const pago of pagos) {
+            if (!Number.isInteger(pago.id_medio_pago) || pago.id_medio_pago <= 0) {
+                return {
+                    ok: false,
+                    mensaje: 'Selecciona un medio de pago válido.',
+                };
+            }
+
+            if (!Number.isFinite(pago.monto_recibido) || pago.monto_recibido <= 0) {
+                return {
+                    ok: false,
+                    mensaje: 'Cada pago debe tener un monto mayor a cero.',
+                };
+            }
+
+            if (pago.requiere_referencia && !pago.referencia_valor) {
+                return {
+                    ok: false,
+                    mensaje: 'El medio de pago "' + pago.nombre + '" requiere referencia.',
+                };
+            }
+
+            totalRecibido += pago.monto_recibido;
+
+            if (pago.afecta_efectivo) {
+                totalEfectivo += pago.monto_recibido;
+            }
+        }
+
+        if (totalRecibido < totalVenta) {
+            return {
+                ok: false,
+                mensaje: 'El monto recibido es menor que el total.',
+            };
+        }
+
+        const cambio = totalRecibido - totalVenta;
+
+        if (cambio > 0 && totalEfectivo <= 0) {
+            return {
+                ok: false,
+                mensaje: 'El cambio solo puede generarse cuando existe pago en efectivo.',
+            };
+        }
+
+        if (cambio > totalEfectivo) {
+            return {
+                ok: false,
+                mensaje: 'El cambio no puede ser mayor al efectivo recibido.',
+            };
+        }
+
+        return {
+            ok: true,
+            pagos: pagos.map(function (pago) {
+                return {
+                    id_medio_pago: pago.id_medio_pago,
+                    monto_recibido: pago.monto_recibido,
+                    referencia: pago.referencia_valor,
+                };
+            }),
+            total_recibido: totalRecibido,
+            cambio,
+        };
     }
 
     function inicializarFacturacion(ui) {
@@ -440,16 +949,10 @@
         }
 
         const resumen = calcularResumen();
-        const idMedioPago = Number(ui.medioPago.value || 0);
-        const montoRecibido = numero(ui.montoRecibido.value);
+        const resultadoPagos = validarPagosMovil(ui, resumen.total);
 
-        if (!Number.isInteger(idMedioPago) || idMedioPago <= 0) {
-            mostrarMensaje(ui, 'error', 'Selecciona un medio de pago válido.');
-            return;
-        }
-
-        if (montoRecibido < resumen.total) {
-            mostrarMensaje(ui, 'error', 'El monto recibido es menor que el total.');
+        if (!resultadoPagos.ok) {
+            mostrarMensaje(ui, 'error', resultadoPagos.mensaje);
             return;
         }
 
@@ -460,7 +963,7 @@
         const hoy = new Date().toISOString().slice(0, 10);
 
         const payload = {
-            id_cliente: null,
+            id_cliente: obtenerIdClienteMovil(ui),
             fecha_venta: hoy,
             items: estado.carrito.map(function (item) {
                 return {
@@ -468,13 +971,7 @@
                     cantidad: item.cantidad,
                 };
             }),
-            pagos: [
-                {
-                    id_medio_pago: idMedioPago,
-                    monto_recibido: montoRecibido,
-                    referencia: ui.referencia.value.trim(),
-                },
-            ],
+            pagos: resultadoPagos.pagos,
         };
 
         try {
@@ -497,8 +994,7 @@
                 : null;
 
             estado.carrito = [];
-            ui.montoRecibido.dataset.editado = '';
-            ui.referencia.value = '';
+            limpiarPagosMovil(ui);
 
             renderizarCarrito(ui);
 
