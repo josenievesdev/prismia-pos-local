@@ -351,6 +351,70 @@ function buscarProductosParaVenta({ busqueda = '', limite = 30 } = {}) {
         });
 }
 
+function listarProductosPosTactil({ limite = 6 } = {}) {
+    const limiteSeguro = Number(limite || 6);
+
+    return db
+        .prepare(`
+            SELECT
+                p.id_producto,
+                p.id_categoria_producto,
+                cp.nombre AS categoria_nombre,
+
+                p.codigo_interno,
+                p.codigo_barras,
+                p.nombre,
+                p.descripcion,
+
+                p.precio_costo,
+                p.precio_venta,
+                p.costo_promedio,
+                p.ultimo_costo,
+
+                p.stock_actual,
+                p.stock_minimo,
+                p.stock_reservado,
+
+                p.controla_inventario,
+                p.permite_venta_sin_stock,
+                p.permite_cantidad_decimal,
+                p.venta_fraccionada_habilitada,
+
+                p.id_unidad_medida,
+                um.nombre AS unidad_nombre,
+                um.abreviatura AS unidad_abreviatura,
+                um.permite_decimales AS unidad_permite_decimales,
+
+                p.maneja_iva,
+                p.porcentaje_iva,
+                p.precio_incluye_iva,
+
+                p.imagen_url,
+                p.mostrar_en_pos_tactil,
+                p.orden_pos_tactil,
+                p.estado
+            FROM productos p
+            LEFT JOIN categorias_productos cp
+                ON cp.id_categoria_producto = p.id_categoria_producto
+            LEFT JOIN unidades_medida um
+                ON um.id_unidad_medida = p.id_unidad_medida
+            WHERE p.estado = 'activo'
+              AND p.eliminado_en IS NULL
+              AND p.mostrar_en_pos_tactil = 1
+            ORDER BY
+                CASE
+                    WHEN p.orden_pos_tactil IS NULL THEN 999999
+                    WHEN p.orden_pos_tactil <= 0 THEN 999999
+                    ELSE p.orden_pos_tactil
+                END ASC,
+                p.nombre COLLATE NOCASE ASC
+            LIMIT @limite
+        `)
+        .all({
+            limite: limiteSeguro > 0 ? limiteSeguro : 6,
+        });
+}
+
 function obtenerProductoParaVenta(idProducto) {
     return db
         .prepare(`
@@ -1894,6 +1958,7 @@ module.exports = {
     listarMediosPagoActivos,
     obtenerMedioPagoPorId,
     buscarProductosParaVenta,
+    listarProductosPosTactil,
     obtenerProductoParaVenta,
     listarVentasRecientes,
     listarHistorialVentas,

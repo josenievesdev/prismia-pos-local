@@ -368,6 +368,8 @@ function prepararDatosProducto(datos, { incluirStockInicial = false } = {}) {
             : 0,
         precio_incluye_iva: precioIncluyeIva,
         imagen_url: limpiarTexto(datos.imagen_url),
+        mostrar_en_pos_tactil: convertirCheckbox(datos.mostrar_en_pos_tactil),
+        orden_pos_tactil: convertirId(datos.orden_pos_tactil),
     };
 
     if (incluirStockInicial) {

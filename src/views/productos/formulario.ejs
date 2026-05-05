@@ -23,7 +23,7 @@
         </div>
         <% } %>
 
-            <form class="module-card form-panel product-form" method="POST" action="<%= modo === 'crear'
+            <form class="module-card form-panel product-form" method="POST" enctype="multipart/form-data" action="<%= modo === 'crear'
             ? '/productos/nuevo'
             : '/productos/' + producto.id_producto + '/editar'
         %>">
@@ -85,6 +85,63 @@
                         <textarea id="descripcion" name="descripcion" rows="3"
                             placeholder="Descripción corta del producto"><%= producto.descripcion || '' %></textarea>
                     </div>
+
+                    <div class="form-section product-section product-touch-section">
+                        <div class="section-title-row">
+                            <div>
+                                <h3>Imagen y POS táctil</h3>
+                                <p>Define cómo se verá este producto en los accesos rápidos del punto de venta.</p>
+                            </div>
+                        </div>
+
+                        <div class="product-touch-grid">
+                            <div class="product-image-preview">
+                                <% if (producto.imagen_url) { %>
+                                    <img src="<%= producto.imagen_url %>"
+                                        alt="Imagen de <%= producto.nombre || 'producto' %>">
+                                    <% } else { %>
+                                        <div class="product-image-placeholder">
+                                            <span>IMG</span>
+                                            <small>Sin imagen</small>
+                                        </div>
+                                        <% } %>
+                            </div>
+
+                            <div class="product-touch-fields">
+                                <div class="form-group">
+                                    <label for="imagen_producto">Imagen del producto</label>
+                                    <input type="file" id="imagen_producto" name="imagen_producto"
+                                        accept="image/png,image/jpeg,image/webp">
+                                    <small class="field-help">
+                                        Formatos permitidos: JPG, PNG o WEBP. Tamaño máximo: 2 MB.
+                                    </small>
+                                </div>
+
+                                <div class="checkbox-grid product-checkbox-grid">
+                                    <label class="check-option">
+                                        <input type="checkbox" name="mostrar_en_pos_tactil" value="1"
+                                            <%=Number(producto.mostrar_en_pos_tactil)===1 ? 'checked' : '' %>
+                                        >
+                                        <span>
+                                            <strong>Mostrar en POS táctil</strong>
+                                            <small>Este producto aparecerá en las cards rápidas del modo táctil.</small>
+                                        </span>
+                                    </label>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="orden_pos_tactil">Orden en POS táctil</label>
+                                    <input type="number" id="orden_pos_tactil" name="orden_pos_tactil" min="1" step="1"
+                                        value="<%= producto.orden_pos_tactil || '' %>" placeholder="Ej: 1">
+                                    <small class="field-help">
+                                        Usa números del 1 al 6 para ordenar las cards principales. Si queda vacío, se
+                                        ordena al final.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
                 <div class="form-section product-section">

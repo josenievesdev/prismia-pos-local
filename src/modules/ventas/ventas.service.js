@@ -289,6 +289,12 @@ function obtenerEstadoPOS({ busqueda = '' } = {}) {
         })
         .map(prepararProductoParaVenta);
 
+    const productosTactiles = ventasRepository
+        .listarProductosPosTactil({
+            limite: 6,
+        })
+        .map(prepararProductoParaVenta);
+
     const ventasRecientes = ventasRepository
         .listarVentasRecientes(10)
         .map(prepararVentaReciente);
@@ -301,6 +307,7 @@ function obtenerEstadoPOS({ busqueda = '' } = {}) {
         mediosPagoAgrupados,
         siguienteFactura,
         productos,
+        productosTactiles,
         ventasRecientes,
         carrito: obtenerCarritoInicial(),
         busqueda: limpiarTexto(busqueda),

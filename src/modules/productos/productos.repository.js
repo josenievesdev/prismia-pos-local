@@ -92,6 +92,8 @@ function listarProductos(filtros = {}) {
         p.porcentaje_iva,
         p.precio_incluye_iva,
         p.imagen_url,
+        p.mostrar_en_pos_tactil,
+        p.orden_pos_tactil,
         p.estado,
         p.creado_en,
         p.actualizado_en,
@@ -155,6 +157,8 @@ function buscarProductoPorId(idProducto) {
         p.porcentaje_iva,
         p.precio_incluye_iva,
         p.imagen_url,
+        p.mostrar_en_pos_tactil,
+        p.orden_pos_tactil,
         p.estado,
         p.creado_en,
         p.actualizado_en,
@@ -300,6 +304,8 @@ function crearProductoConMovimiento({ producto, usuario, ip, userAgent }) {
           porcentaje_iva,
           precio_incluye_iva,
           imagen_url,
+          mostrar_en_pos_tactil,
+          orden_pos_tactil,
           estado
         ) VALUES (
           @id_categoria_producto,
@@ -321,6 +327,8 @@ function crearProductoConMovimiento({ producto, usuario, ip, userAgent }) {
           @porcentaje_iva,
           @precio_incluye_iva,
           @imagen_url,
+          @mostrar_en_pos_tactil,
+          @orden_pos_tactil,
           'activo'
         )
       `)
@@ -421,6 +429,8 @@ function actualizarProducto(idProducto, datos) {
         porcentaje_iva = @porcentaje_iva,
         precio_incluye_iva = @precio_incluye_iva,
         imagen_url = @imagen_url,
+        mostrar_en_pos_tactil = @mostrar_en_pos_tactil,
+        orden_pos_tactil = @orden_pos_tactil,
         actualizado_en = CURRENT_TIMESTAMP
       WHERE id_producto = @id_producto
         AND eliminado_en IS NULL

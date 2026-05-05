@@ -1,11 +1,12 @@
 <section class="module-page ventas-page">
     <% const fechaHoy=new Date().toISOString().slice(0, 10); const productosListado=Array.isArray(productos) ? productos
-        : []; const mediosPagoListado=Array.isArray(mediosPago) ? mediosPago : []; const
-        categoriasCatalogoPOS=Array.from(new Set( productosListado .map(function (producto) { return
-        producto.categoria_nombre || 'Sin categoría' ; }) .filter(Boolean) )).slice(0, 10); const
-        clienteActual=clienteConsumidorFinal || { id_cliente: null, nombre: 'Consumidor final' , documento: '0000000000'
-        }; const nombreCajero=turnoAbierto ? (turnoAbierto.usuario_apertura_nombre || 'Usuario' ) : 'Sin caja abierta' ;
-        const facturaSugeridaPOS=siguienteFactura || { prefijo: 'FV' , siguiente_numero: 'FV-BORRADOR' }; const
+        : []; const productosTactilesListado=Array.isArray(productosTactiles) ? productosTactiles : []; const
+        mediosPagoListado=Array.isArray(mediosPago) ? mediosPago : []; const categoriasCatalogoPOS=Array.from(new Set(
+        productosListado .map(function (producto) { return producto.categoria_nombre || 'Sin categoría' ; })
+        .filter(Boolean) )).slice(0, 10); const clienteActual=clienteConsumidorFinal || { id_cliente: null,
+        nombre: 'Consumidor final' , documento: '0000000000' }; const nombreCajero=turnoAbierto ?
+        (turnoAbierto.usuario_apertura_nombre || 'Usuario' ) : 'Sin caja abierta' ; const
+        facturaSugeridaPOS=siguienteFactura || { prefijo: 'FV' , siguiente_numero: 'FV-BORRADOR' }; const
         prefijoFacturaPOS=facturaSugeridaPOS.prefijo || 'FV' ; const
         nomenclaturaFacturaPOS=facturaSugeridaPOS.siguiente_numero || (prefijoFacturaPOS + '-BORRADOR' ); function
         nombreTipoMedio(t) { if (t==='efectivo' ) return 'Efectivo' ; if (t==='transferencia' ) return 'Transferencia' ;
@@ -227,7 +228,7 @@
 
                                     <section class="ventas-touch-catalog ventas-quick-access" id="catalogoTactilPOS"
                                         aria-label="Accesos rápidos táctiles">
-                                        <% const productosRapidosTactil=productosListado.slice(0, 6); const
+                                        <% const productosRapidosTactil=productosTactilesListado.slice(0, 6); const
                                             espaciosVaciosTactil=Math.max(0, 6 - productosRapidosTactil.length); %>
 
                                             <header class="ventas-quick-head">
@@ -291,9 +292,16 @@
                                                                     : 'disabled' %>>
 
                                                                     <span class="ventas-quick-image">
-                                                                        <span>
-                                                                            <%= iniciales %>
-                                                                        </span>
+                                                                        <% if (producto.imagen_url) { %>
+                                                                            <img src="<%= producto.imagen_url %>"
+                                                                                alt="<%= producto.nombre %>"
+                                                                                loading="lazy">
+                                                                            <% } else { %>
+                                                                                <span>
+                                                                                    <%= iniciales %>
+                                                                                </span>
+                                                                                <% } %>
+                                                                    </span>
                                                                     </span>
 
                                                                     <span class="ventas-quick-info">
