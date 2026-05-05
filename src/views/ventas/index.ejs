@@ -225,129 +225,112 @@
                                         </div>
                                     </section>
 
-                                    <section class="ventas-touch-catalog" id="catalogoTactilPOS"
-                                        aria-label="Catálogo rápido táctil">
-                                        <header class="ventas-touch-catalog-head">
-                                            <div>
-                                                <span class="ventas-kicker">Catálogo rápido</span>
-                                                <h3>Productos táctiles</h3>
-                                                <p>Agrega productos con un toque. Usa categorías y paginación interna.
-                                                </p>
-                                            </div>
+                                    <section class="ventas-touch-catalog ventas-quick-access" id="catalogoTactilPOS"
+                                        aria-label="Accesos rápidos táctiles">
+                                        <% const productosRapidosTactil=productosListado.slice(0, 6); const
+                                            espaciosVaciosTactil=Math.max(0, 6 - productosRapidosTactil.length); %>
 
-                                            <strong class="ventas-touch-catalog-count" id="conteoCatalogoTactil">
-                                                <%= productosListado.length %> productos
-                                            </strong>
-                                        </header>
+                                            <header class="ventas-quick-head">
+                                                <div>
+                                                    <span class="ventas-kicker">Venta rápida</span>
+                                                    <h3>Accesos rápidos</h3>
+                                                    <p>Toca una card para agregar el producto al carrito. Usa el
+                                                        buscador para el resto del catálogo.</p>
+                                                </div>
 
-                                        <div class="ventas-touch-category-row" id="filtrosCatalogoTactil">
-                                            <button type="button" class="ventas-touch-category is-active"
-                                                data-touch-category-filter="todos">
-                                                Todos
-                                            </button>
+                                                <strong class="ventas-quick-count" id="conteoCatalogoTactil">
+                                                    <%= productosRapidosTactil.length %> activos
+                                                </strong>
+                                            </header>
 
-                                            <% categoriasCatalogoPOS.forEach(function (categoria) { %>
-                                                <button type="button" class="ventas-touch-category"
-                                                    data-touch-category-filter="<%= categoria %>">
-                                                    <%= categoria %>
-                                                </button>
-                                                <% }) %>
-                                        </div>
-
-                                        <% if (!productosListado.length) { %>
-                                            <div class="ventas-touch-catalog-empty">
-                                                <strong>Sin productos para mostrar</strong>
-                                                <span>Usa el buscador para encontrar productos activos.</span>
-                                            </div>
-                                            <% } else { %>
-                                                <div class="ventas-touch-product-grid" id="gridCatalogoTactil">
-                                                    <% productosListado.forEach(function (producto) { %>
-                                                        <% const stockDisponible=Number(producto.stock_disponible || 0);
-                                                            const controlaInventario=Number(producto.controla_inventario
-                                                            || 0)===1; const
-                                                            permiteDecimal=Number(producto.permite_cantidad_decimal ||
-                                                            0)===1; const manejaIva=Number(producto.maneja_iva ||
-                                                            0)===1; const
-                                                            puedeVenderProducto=Boolean(producto.puede_vender); const
-                                                            unidad=producto.unidad_abreviatura || 'und' ; const
-                                                            categoria=producto.categoria_nombre || 'Sin categoría' ;
-                                                            const stockTexto=controlaInventario ?
-                                                            stockDisponible.toLocaleString('es-CO') + ' ' + unidad
-                                                            : 'Libre' ; const nombreProducto=String(producto.nombre
-                                                            || 'Producto' ).trim(); const
-                                                            partesNombre=nombreProducto.split(' ');
+                                            <% if (!productosRapidosTactil.length) { %>
+                                                <div class="ventas-quick-empty">
+                                                    <strong>Sin accesos rápidos configurados</strong>
+                                                    <span>Cuando selecciones productos destacados, aparecerán aquí como
+                                                        venta rápida.</span>
+                                                </div>
+                                                <% } else { %>
+                                                    <div class="ventas-quick-grid" id="gridCatalogoTactil">
+                                                        <% productosRapidosTactil.forEach(function (producto) { %>
+                                                            <% const stockDisponible=Number(producto.stock_disponible ||
+                                                                0); const
+                                                                controlaInventario=Number(producto.controla_inventario
+                                                                || 0)===1; const
+                                                                permiteDecimal=Number(producto.permite_cantidad_decimal
+                                                                || 0)===1; const manejaIva=Number(producto.maneja_iva ||
+                                                                0)===1; const
+                                                                puedeVenderProducto=Boolean(producto.puede_vender);
+                                                                const unidad=producto.unidad_abreviatura || 'und' ;
+                                                                const categoria=producto.categoria_nombre
+                                                                || 'Sin categoría' ; const
+                                                                nombreProducto=String(producto.nombre || 'Producto'
+                                                                ).trim(); const partesNombre=nombreProducto.split(' ');
                     const inicialUno = partesNombre[0] ? partesNombre[0].charAt(0).toUpperCase() : ' P'; const
-                                                            inicialDos=partesNombre[1] ?
-                                                            partesNombre[1].charAt(0).toUpperCase() : '' ; const
-                                                            iniciales=inicialUno + inicialDos; %>
+                                                                inicialDos=partesNombre[1] ?
+                                                                partesNombre[1].charAt(0).toUpperCase() : '' ; const
+                                                                iniciales=inicialUno + inicialDos; const
+                                                                estadoStock=controlaInventario && stockDisponible <=0
+                                                                ? 'Sin stock' : 'Disponible' ; %>
 
-                                                            <button type="button"
-                                                                class="ventas-touch-product-card <%= puedeVenderProducto ? '' : 'is-disabled' %>"
-                                                                data-touch-product-card
-                                                                data-touch-category="<%= categoria %>"
-                                                                data-product-id="<%= producto.id_producto %>"
-                                                                data-product-name="<%= producto.nombre %>"
-                                                                data-product-price="<%= Number(producto.precio_venta || 0) %>"
-                                                                data-product-stock="<%= stockDisponible %>"
-                                                                data-product-controls-stock="<%= controlaInventario ? 1 : 0 %>"
-                                                                data-product-decimal="<%= permiteDecimal ? 1 : 0 %>"
-                                                                data-product-unit="<%= unidad %>"
-                                                                data-product-tax="<%= Number(producto.porcentaje_iva || 0) %>"
-                                                                data-product-has-tax="<%= manejaIva ? 1 : 0 %>"
-                                                                data-product-price-includes-tax="<%= Number(producto.precio_incluye_iva || 0) %>"
-                                                                data-product-can-sell="<%= puedeVenderProducto ? 1 : 0 %>"
-                                                                <%=puedeVenderProducto && puedeVender ? '' : 'disabled'
-                                                                %>>
-                                                                <span class="ventas-touch-product-top">
-                                                                    <span class="ventas-touch-product-avatar">
-                                                                        <%= iniciales %>
+                                                                <button type="button"
+                                                                    class="ventas-quick-card <%= puedeVenderProducto ? '' : 'is-disabled' %>"
+                                                                    data-touch-product-card
+                                                                    data-touch-category="<%= categoria %>"
+                                                                    data-product-id="<%= producto.id_producto %>"
+                                                                    data-product-name="<%= producto.nombre %>"
+                                                                    data-product-price="<%= Number(producto.precio_venta || 0) %>"
+                                                                    data-product-stock="<%= stockDisponible %>"
+                                                                    data-product-controls-stock="<%= controlaInventario ? 1 : 0 %>"
+                                                                    data-product-decimal="<%= permiteDecimal ? 1 : 0 %>"
+                                                                    data-product-unit="<%= unidad %>"
+                                                                    data-product-tax="<%= Number(producto.porcentaje_iva || 0) %>"
+                                                                    data-product-has-tax="<%= manejaIva ? 1 : 0 %>"
+                                                                    data-product-price-includes-tax="<%= Number(producto.precio_incluye_iva || 0) %>"
+                                                                    data-product-can-sell="<%= puedeVenderProducto ? 1 : 0 %>"
+                                                                    <%=puedeVenderProducto && puedeVender ? ''
+                                                                    : 'disabled' %>>
+
+                                                                    <span class="ventas-quick-image">
+                                                                        <span>
+                                                                            <%= iniciales %>
+                                                                        </span>
                                                                     </span>
 
-                                                                    <span class="ventas-touch-product-price">
+                                                                    <span class="ventas-quick-info">
+                                                                        <strong>
+                                                                            <%= producto.nombre %>
+                                                                        </strong>
+                                                                        <small>
+                                                                            <%= estadoStock %>
+                                                                        </small>
+                                                                    </span>
+
+                                                                    <span class="ventas-quick-price">
                                                                         $ <%= Number(producto.precio_venta ||
                                                                             0).toLocaleString('es-CO') %>
                                                                     </span>
-                                                                </span>
+                                                                </button>
+                                                                <% }) %>
 
-                                                                <span class="ventas-touch-product-body">
-                                                                    <strong>
-                                                                        <%= producto.nombre %>
-                                                                    </strong>
-                                                                    <small>
-                                                                        <%= categoria %> · <%= stockTexto %>
-                                                                    </small>
-                                                                </span>
+                                                                    <% for (let i=0; i < espaciosVaciosTactil; i++) { %>
+                                                                        <div
+                                                                            class="ventas-quick-card ventas-quick-card-empty">
+                                                                            <span class="ventas-quick-image">
+                                                                                <span>+</span>
+                                                                            </span>
 
-                                                                <span class="ventas-touch-product-meta">
-                                                                    <% if (manejaIva) { %>
-                                                                        <em>IVA <%= Number(producto.porcentaje_iva || 0)
-                                                                                %>%</em>
-                                                                        <% } else { %>
-                                                                            <em>Sin IVA</em>
-                                                                            <% } %>
+                                                                            <span class="ventas-quick-info">
+                                                                                <strong>Espacio disponible</strong>
+                                                                                <small>Producto rápido</small>
+                                                                            </span>
 
-                                                                                <b>Agregar</b>
-                                                                </span>
-                                                            </button>
-                                                            <% }) %>
-                                                </div>
-
-                                                <footer class="ventas-touch-pagination" id="paginacionCatalogoTactil">
-                                                    <button type="button" class="ventas-touch-page-btn"
-                                                        id="btnCatalogoTactilAnterior">
-                                                        ‹ Anterior
-                                                    </button>
-
-                                                    <span id="resumenPaginaCatalogoTactil">
-                                                        Página 1
-                                                    </span>
-
-                                                    <button type="button" class="ventas-touch-page-btn"
-                                                        id="btnCatalogoTactilSiguiente">
-                                                        Siguiente ›
-                                                    </button>
-                                                </footer>
-                                                <% } %>
+                                                                            <span class="ventas-quick-price">
+                                                                                Configurar
+                                                                            </span>
+                                                                        </div>
+                                                                        <% } %>
+                                                    </div>
+                                                    <% } %>
                                     </section>
 
                                     <section class="ventas-sale-card">

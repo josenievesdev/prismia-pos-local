@@ -913,6 +913,8 @@
             };
         }
 
+        reconstruirFiltrosCatalogoTactil(ui, estado);
+
         if (ui.gridCatalogoTactil) {
             ui.gridCatalogoTactil.addEventListener('click', function (evento) {
                 const tarjetaProducto = evento.target.closest('[data-touch-product-card]');
@@ -967,6 +969,51 @@
         }
 
         renderizarCatalogoTactil(ui, estado);
+    }
+
+    function reconstruirFiltrosCatalogoTactil(ui, estado) {
+        if (!ui.filtrosCatalogoTactil || !ui.gridCatalogoTactil) {
+            return;
+        }
+
+        const tarjetas = Array.from(
+            ui.gridCatalogoTactil.querySelectorAll('[data-touch-product-card]')
+        );
+
+        const categorias = Array.from(
+            new Set(
+                tarjetas
+                    .map(function (tarjeta) {
+                        return String(tarjeta.dataset.touchCategory || '').trim();
+                    })
+                    .filter(Boolean)
+            )
+        ).sort(function (a, b) {
+            return a.localeCompare(b, 'es');
+        });
+
+        const categoriaActual = estado.catalogoTactil?.categoria || 'todos';
+
+        ui.filtrosCatalogoTactil.innerHTML = '';
+
+        const crearBoton = function (texto, valor, activo) {
+            const boton = document.createElement('button');
+            boton.type = 'button';
+            boton.className = 'ventas-touch-category' + (activo ? ' is-active' : '');
+            boton.dataset.touchCategoryFilter = valor;
+            boton.textContent = texto;
+            return boton;
+        };
+
+        ui.filtrosCatalogoTactil.appendChild(
+            crearBoton('Todos', 'todos', categoriaActual === 'todos')
+        );
+
+        categorias.forEach(function (categoria) {
+            ui.filtrosCatalogoTactil.appendChild(
+                crearBoton(categoria, categoria, categoriaActual === categoria)
+            );
+        });
     }
 
     function obtenerTarjetasCatalogoTactil(ui, categoria) {
