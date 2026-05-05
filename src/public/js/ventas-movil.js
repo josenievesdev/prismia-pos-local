@@ -9,9 +9,9 @@
         scannerActivo: false,
         ultimoCodigo: '',
         ultimoCodigoEn: 0,
+        audioContext: null,
         enviando: false,
     };
-
     function iniciarPOSMovil() {
         const ui = obtenerUI();
 
@@ -524,12 +524,101 @@
         if (!ui.btnIniciarScanner || !ui.btnDetenerScanner) return;
 
         ui.btnIniciarScanner.addEventListener('click', function () {
+            prepararAudioEscaneo();
             iniciarScanner(ui);
         });
 
         ui.btnDetenerScanner.addEventListener('click', function () {
             detenerScanner(ui);
         });
+    }
+
+    function prepararAudioEscaneo() {
+        if (estado.audioContext) {
+            return;
+        }
+
+        const AudioContextSeguro = window.AudioContext || window.webkitAudioContext;
+
+        if (!AudioContextSeguro) {
+            return;
+        }
+
+        try {
+            estado.audioContext = new AudioContextSeguro();
+        } catch (error) {
+            estado.audioContext = null;
+        }
+    }
+
+    function emitirPitidoEscaneo() {
+        if (!estado.audioContext) {
+            return;
+        }
+
+        try {
+            if (estado.audioContext.state === 'suspended') {
+                estado.audioContext.resume();
+            }
+
+            const ahora = estado.audioContext.currentTime;
+
+            function crearTono(frecuencia, inicio, duracion, volumen) {
+                const oscilador = estado.audioContext.createOscillator();
+                const ganancia = estado.audioContext.createGain();
+
+                oscilador.type = 'square';
+                oscilador.frequency.setValueAtTime(frecuencia, ahora + inicio);
+
+                ganancia.gain.setValueAtTime(0.001, ahora + inicio);
+                ganancia.gain.exponentialRampToValueAtTime(volumen, ahora + inicio + 0.012);
+                ganancia.gain.exponentialRampToValueAtTime(0.001, ahora + inicio + duracion);
+
+                oscilador.connect(ganancia);
+                ganancia.connect(estado.audioContext.destination);
+
+                oscilador.start(ahora + inicio);
+                oscilador.stop(ahora + inicio + duracion + 0.02);
+            }
+
+            crearTono(980, 0, 0.11, 0.28);
+            crearTono(1320, 0.12, 0.12, 0.24);
+        } catch (error) {
+            // El pitido no debe romper el POS móvil.
+        }
+    }
+
+    function vibrarEscaneo() {
+        if (!navigator.vibrate) {
+            return;
+        }
+
+        try {
+            navigator.vibrate([120, 45, 120]);
+        } catch (error) {
+            // En iOS puede no sentirse o ser ignorado por el navegador.
+        }
+    }
+
+    function mostrarFeedbackEscaneo(ui, codigo) {
+        emitirPitidoEscaneo();
+        vibrarEscaneo();
+
+        if (ui.estadoScanner) {
+            ui.estadoScanner.textContent = 'Leído: ' + codigo;
+        }
+
+        if (ui.lector) {
+            ui.lector.classList.remove('is-scan-success');
+
+            window.requestAnimationFrame(function () {
+                ui.lector.classList.add('is-scan-success');
+
+                window.setTimeout(function () {
+                    ui.lector.classList.remove('is-scan-success');
+                }, 420);
+            });
+        }
     }
 
     async function iniciarScanner(ui) {
@@ -561,19 +650,31 @@
             });
 
             await estado.scanner.start(
-                { facingMode: 'environment' },
                 {
-                    fps: 8,
-                    qrbox: {
-                        width: 280,
-                        height: 140,
+                    facingMode: 'environment',
+                },
+                {
+                    fps: 15,
+                    qrbox: function (viewfinderWidth, viewfinderHeight) {
+                        const ancho = Math.floor(viewfinderWidth * 0.94);
+                        const alto = Math.max(110, Math.floor(viewfinderHeight * 0.24));
+
+                        return {
+                            width: ancho,
+                            height: alto,
+                        };
+                    },
+                    aspectRatio: 1.777,
+                    disableFlip: false,
+                    experimentalFeatures: {
+                        useBarCodeDetectorIfSupported: true,
                     },
                 },
                 function (decodedText) {
                     procesarCodigoEscaneado(ui, decodedText);
                 },
                 function () {
-                    // Ignoramos lecturas fallidas. Si mostráramos cada una, la UI parecería poseída.
+                    // Lecturas fallidas ignoradas. Si no, esto parecería consola de error con cámara.
                 }
             );
 
@@ -618,12 +719,14 @@
 
         if (!texto) return;
 
-        if (estado.ultimoCodigo === texto && ahora - estado.ultimoCodigoEn < 1500) {
+        if (estado.ultimoCodigo === texto && ahora - estado.ultimoCodigoEn < 1100) {
             return;
         }
 
         estado.ultimoCodigo = texto;
         estado.ultimoCodigoEn = ahora;
+
+        mostrarFeedbackEscaneo(ui, texto);
 
         ui.inputCodigo.value = texto;
         buscarYMostrarProductos(ui, texto, true);
