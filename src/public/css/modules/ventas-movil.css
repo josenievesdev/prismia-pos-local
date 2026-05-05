@@ -1,14 +1,22 @@
+/* =========================================================
+   POS Móvil · Prismia POS Local
+   Alineado al sistema de diseño global v2.0
+   ========================================================= */
+
 :root {
     --pm-primary: #244f8f;
     --pm-primary-dark: #1a3a6a;
-    --pm-bg: #eef3f8;
+    --pm-bg: #f1f3f6;
     --pm-surface: #ffffff;
-    --pm-soft: #f8fafc;
-    --pm-border: #dbe4ef;
+    --pm-soft: #f8f9fb;
+    --pm-border: #e5e7eb;
     --pm-text: #0f172a;
     --pm-muted: #64748b;
     --pm-danger: #dc2626;
     --pm-success: #15803d;
+    --pm-radius-lg: 12px;
+    --pm-radius-sm: 8px;
+    --pm-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
 * {
@@ -30,22 +38,22 @@ select {
 
 .pos-movil {
     display: grid;
-    gap: 14px;
+    gap: 12px;
     width: min(100%, 760px);
     margin: 0 auto;
-    padding: 14px;
+    padding: 12px;
 }
 
 .pos-movil-header {
     display: flex;
     justify-content: space-between;
-    gap: 12px;
+    gap: 10px;
     align-items: center;
-    padding: 16px;
+    padding: 14px 16px;
     border: 1px solid var(--pm-border);
-    border-radius: 22px;
+    border-radius: var(--pm-radius-lg);
     background: var(--pm-surface);
-    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+    box-shadow: var(--pm-shadow);
 }
 
 .pos-movil-header span,
@@ -54,26 +62,27 @@ select {
 .pos-movil-search span,
 .pos-movil-payment span {
     color: var(--pm-muted);
-    font-size: 11px;
-    font-weight: 850;
-    letter-spacing: 0.07em;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
 }
 
 .pos-movil-header h1,
 .pos-movil-section-head h2 {
-    margin: 3px 0;
-    letter-spacing: -0.03em;
+    margin: 2px 0;
+    letter-spacing: -0.02em;
 }
 
 .pos-movil-header h1 {
-    font-size: 21px;
+    font-size: 18px;
+    font-weight: 700;
 }
 
 .pos-movil-header p {
     margin: 0;
     color: var(--pm-muted);
-    font-size: 13px;
+    font-size: 12px;
 }
 
 .pos-movil-link,
@@ -81,23 +90,24 @@ select {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 36px;
+    min-height: 34px;
     padding: 0 12px;
     border: 1px solid var(--pm-border);
     border-radius: 999px;
     background: #fff;
     color: var(--pm-primary);
     font-size: 12px;
-    font-weight: 850;
+    font-weight: 700;
     text-decoration: none;
     white-space: nowrap;
 }
 
 .pos-movil-alert {
-    padding: 14px;
-    border: 1px solid rgba(220, 38, 38, 0.18);
-    border-radius: 18px;
+    padding: 12px;
+    border: 1px solid rgba(220, 38, 38, 0.15);
+    border-radius: var(--pm-radius-sm);
     background: #fff7ed;
+    font-size: 12px;
 }
 
 .pos-movil-alert strong {
@@ -105,38 +115,43 @@ select {
 }
 
 .pos-movil-alert p {
-    margin: 5px 0 10px;
+    margin: 4px 0 8px;
     color: #7f1d1d;
 }
 
 .pos-movil-card {
     display: grid;
-    gap: 12px;
+    gap: 10px;
     padding: 14px;
     border: 1px solid var(--pm-border);
-    border-radius: 22px;
+    border-radius: var(--pm-radius-lg);
     background: var(--pm-surface);
-    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+    box-shadow: var(--pm-shadow);
 }
 
 .pos-movil-section-head {
     display: flex;
     justify-content: space-between;
-    gap: 12px;
+    gap: 10px;
     align-items: flex-start;
-    padding-bottom: 10px;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--pm-border);
+}
+
+.pos-movil-section-head h2 {
+    font-size: 15px;
+    font-weight: 700;
 }
 
 .pos-movil-badge {
     display: inline-flex;
     min-width: max-content;
-    padding: 5px 10px;
+    padding: 3px 8px;
     border-radius: 999px;
     background: #eef5ff;
     color: var(--pm-primary);
     font-size: 11px;
-    font-weight: 900;
+    font-weight: 600;
 }
 
 .pos-movil-scan-actions {
@@ -146,15 +161,17 @@ select {
 }
 
 .pos-btn {
-    min-height: 46px;
+    min-height: 42px;
     border: 0;
-    border-radius: 15px;
-    font-weight: 900;
+    border-radius: var(--pm-radius-sm);
+    font-size: 13px;
+    font-weight: 700;
     cursor: pointer;
+    transition: background 150ms ease, transform 100ms ease;
 }
 
 .pos-btn:disabled {
-    opacity: 0.55;
+    opacity: 0.5;
     cursor: not-allowed;
 }
 
@@ -164,29 +181,35 @@ select {
 }
 
 .pos-btn.neutral {
-    background: #eef2f7;
+    background: var(--pm-soft);
+    border: 1px solid var(--pm-border);
     color: var(--pm-text);
 }
 
 .pos-btn.cobrar {
-    min-height: 54px;
+    min-height: 48px;
     background: var(--pm-primary);
     color: #fff;
-    font-size: 17px;
-    box-shadow: 0 14px 28px rgba(36, 79, 143, 0.22);
+    font-size: 16px;
+    font-weight: 700;
+    box-shadow: 0 8px 20px rgba(36, 79, 143, 0.18);
+}
+
+.pos-btn:active:not(:disabled) {
+    transform: scale(0.97);
 }
 
 .pos-movil-reader {
     overflow: hidden;
     border: 1px solid var(--pm-border);
-    border-radius: 18px;
+    border-radius: var(--pm-radius-lg);
     background: #000;
 }
 
 .pos-movil-search,
 .pos-movil-payment {
     display: grid;
-    gap: 10px;
+    gap: 8px;
 }
 
 .pos-movil-search {
@@ -197,20 +220,21 @@ select {
 .pos-movil-search label,
 .pos-movil-payment label {
     display: grid;
-    gap: 6px;
+    gap: 4px;
 }
 
 .pos-movil-search input,
 .pos-movil-payment input,
 .pos-movil-payment select {
     width: 100%;
-    min-height: 46px;
+    min-height: 42px;
     padding: 0 12px;
     border: 1px solid var(--pm-border);
-    border-radius: 15px;
+    border-radius: var(--pm-radius-sm);
     background: var(--pm-soft);
     color: var(--pm-text);
-    font-weight: 800;
+    font-size: 13px;
+    font-weight: 600;
     outline: none;
 }
 
@@ -219,32 +243,34 @@ select {
 .pos-movil-payment select:focus {
     border-color: var(--pm-primary);
     background: #fff;
-    box-shadow: 0 0 0 4px rgba(36, 79, 143, 0.1);
+    box-shadow: 0 0 0 3px rgba(36, 79, 143, 0.08);
 }
 
 .pos-movil-help {
     color: var(--pm-muted);
+    font-size: 12px;
     line-height: 1.4;
 }
 
 .pos-movil-results {
     display: grid;
-    gap: 8px;
+    gap: 6px;
 }
 
 .pos-product-result,
 .pos-cart-item {
     display: grid;
-    gap: 8px;
-    padding: 12px;
+    gap: 6px;
+    padding: 10px 12px;
     border: 1px solid var(--pm-border);
-    border-radius: 18px;
+    border-radius: var(--pm-radius-sm);
     background: #fff;
 }
 
 .pos-product-result strong,
 .pos-cart-main strong {
-    font-size: 15px;
+    font-size: 14px;
+    font-weight: 700;
 }
 
 .pos-product-result small,
@@ -258,86 +284,90 @@ select {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
+    gap: 8px;
 }
 
 .pos-product-price {
-    font-size: 18px;
-    font-weight: 950;
+    font-size: 16px;
+    font-weight: 700;
 }
 
 .pos-cart-qty {
     display: inline-grid;
-    grid-template-columns: 40px 60px 40px;
-    gap: 5px;
+    grid-template-columns: 38px 56px 38px;
+    gap: 4px;
     align-items: center;
 }
 
 .pos-cart-qty button {
-    min-height: 40px;
-    border: 1px solid rgba(36, 79, 143, 0.18);
-    border-radius: 13px;
+    min-height: 38px;
+    border: 1px solid rgba(36, 79, 143, 0.15);
+    border-radius: var(--pm-radius-sm);
     background: #eef5ff;
     color: var(--pm-primary);
-    font-weight: 950;
+    font-weight: 700;
+    cursor: pointer;
 }
 
 .pos-cart-qty input {
-    width: 60px;
-    min-height: 40px;
+    width: 56px;
+    min-height: 38px;
     border: 1px solid var(--pm-border);
-    border-radius: 13px;
+    border-radius: var(--pm-radius-sm);
     text-align: center;
-    font-weight: 900;
+    font-weight: 700;
 }
 
 .pos-cart-remove {
-    min-height: 40px;
-    padding: 0 12px;
+    min-height: 38px;
+    padding: 0 10px;
     border: 0;
-    border-radius: 13px;
+    border-radius: var(--pm-radius-sm);
     background: #fee2e2;
     color: #991b1b;
-    font-weight: 900;
+    font-weight: 700;
+    cursor: pointer;
 }
 
 .pos-movil-empty {
     display: grid;
     place-items: center;
-    min-height: 110px;
-    border: 1px dashed rgba(148, 163, 184, 0.35);
-    border-radius: 18px;
-    background: #f8fafc;
+    min-height: 100px;
+    border: 1px dashed rgba(148, 163, 184, 0.3);
+    border-radius: var(--pm-radius-sm);
+    background: var(--pm-soft);
     text-align: center;
 }
 
 .pos-movil-empty p {
-    margin: 4px 0 0;
+    margin: 3px 0 0;
     color: var(--pm-muted);
+    font-size: 12px;
 }
 
 .pos-movil-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    gap: 8px;
 }
 
 .pos-movil-total-card {
     display: grid;
-    gap: 5px;
-    padding: 12px;
+    gap: 4px;
+    padding: 10px;
     border: 1px solid var(--pm-border);
-    border-radius: 18px;
+    border-radius: var(--pm-radius-sm);
     background: var(--pm-surface);
 }
 
 .pos-movil-total-card strong {
-    font-size: 19px;
+    font-size: 17px;
+    font-weight: 700;
 }
 
 .pos-movil-total-card.total {
     background: #eef5ff;
-    border-color: rgba(36, 79, 143, 0.24);
+    border-color: rgba(36, 79, 143, 0.18);
 }
 
 .pos-movil-total-card.total strong {
@@ -345,10 +375,10 @@ select {
 }
 
 .pos-movil-message {
-    padding: 12px;
-    border-radius: 16px;
+    padding: 10px 12px;
+    border-radius: var(--pm-radius-sm);
     font-size: 13px;
-    font-weight: 750;
+    font-weight: 600;
     line-height: 1.45;
 }
 
@@ -364,14 +394,14 @@ select {
 
 .pos-ticket-link {
     display: inline-flex;
-    margin-top: 8px;
+    margin-top: 6px;
     color: inherit;
-    font-weight: 900;
+    font-weight: 700;
 }
 
 @media (max-width: 520px) {
     .pos-movil {
-        padding: 10px;
+        padding: 8px;
     }
 
     .pos-movil-header {
@@ -399,7 +429,7 @@ select {
     position: absolute;
     inset: 0;
     border: 3px solid transparent;
-    border-radius: 18px;
+    border-radius: var(--pm-radius-lg);
     pointer-events: none;
     opacity: 0;
     transition: opacity 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
@@ -408,69 +438,61 @@ select {
 .pos-movil-reader.is-scan-success::after {
     border-color: #22c55e;
     box-shadow:
-        0 0 0 4px rgba(34, 197, 94, 0.18),
-        inset 0 0 28px rgba(34, 197, 94, 0.22);
+        0 0 0 3px rgba(34, 197, 94, 0.15),
+        inset 0 0 20px rgba(34, 197, 94, 0.18);
     opacity: 1;
 }
 
 .pos-movil-reader.is-scan-success {
-    animation: scanSuccessPulse 420ms ease;
+    animation: scanSuccessPulse 380ms ease;
 }
 
 @keyframes scanSuccessPulse {
-    0% {
-        transform: scale(1);
-    }
-
-    45% {
-        transform: scale(1.012);
-    }
-
-    100% {
-        transform: scale(1);
-    }
+    0% { transform: scale(1); }
+    45% { transform: scale(1.01); }
+    100% { transform: scale(1); }
 }
 
 /* Pago mixto móvil */
 
 .pos-movil-payment-list {
     display: grid;
-    gap: 10px;
+    gap: 8px;
 }
 
 .pos-movil-payment-row {
     display: grid;
-    gap: 10px;
+    gap: 8px;
     padding: 10px;
     border: 1px solid var(--pm-border);
-    border-radius: 18px;
+    border-radius: var(--pm-radius-sm);
     background: var(--pm-soft);
 }
 
 .pos-movil-payment-row label {
     display: grid;
-    gap: 6px;
+    gap: 4px;
 }
 
 .pos-mobile-payment-tools {
     display: grid;
-    gap: 8px;
+    gap: 6px;
 }
 
 .pos-mobile-payment-tools small {
     color: var(--pm-muted);
     font-size: 12px;
-    font-weight: 800;
+    font-weight: 600;
     text-align: center;
 }
 
 .pos-mobile-payment-remove {
-    min-height: 40px;
+    min-height: 38px;
     border: 0;
-    border-radius: 14px;
+    border-radius: var(--pm-radius-sm);
     background: #fee2e2;
     color: #991b1b;
-    font-weight: 900;
+    font-weight: 700;
     cursor: pointer;
 }
 
@@ -485,15 +507,15 @@ select {
     }
 
     .pos-mobile-payment-remove {
-        min-width: 86px;
+        min-width: 80px;
     }
 }
 
 /* Cliente en POS móvil */
 
 .pos-btn.small {
-    min-height: 34px;
-    padding: 0 12px;
+    min-height: 32px;
+    padding: 0 10px;
     border-radius: 999px;
     font-size: 12px;
 }
@@ -505,36 +527,37 @@ select {
 .pos-movil-client-search {
     position: relative;
     display: grid;
-    gap: 8px;
+    gap: 6px;
 }
 
 .pos-movil-client-search label {
     display: grid;
-    gap: 6px;
+    gap: 4px;
 }
 
 .pos-movil-client-search input {
     width: 100%;
-    min-height: 46px;
+    min-height: 42px;
     padding: 0 12px;
     border: 1px solid var(--pm-border);
-    border-radius: 15px;
+    border-radius: var(--pm-radius-sm);
     background: var(--pm-soft);
     color: var(--pm-text);
-    font-weight: 800;
+    font-size: 13px;
+    font-weight: 600;
     outline: none;
 }
 
 .pos-movil-client-search input:focus {
     border-color: var(--pm-primary);
     background: #fff;
-    box-shadow: 0 0 0 4px rgba(36, 79, 143, 0.1);
+    box-shadow: 0 0 0 3px rgba(36, 79, 143, 0.08);
 }
 
 .pos-movil-client-search small {
     color: var(--pm-muted);
     font-size: 12px;
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .pos-movil-client-results {
@@ -544,12 +567,12 @@ select {
     right: 0;
     z-index: 30;
     display: grid;
-    max-height: 260px;
+    max-height: 240px;
     overflow-y: auto;
     border: 1px solid var(--pm-border);
-    border-radius: 16px;
+    border-radius: var(--pm-radius-sm);
     background: #fff;
-    box-shadow: 0 18px 36px rgba(15, 23, 42, 0.16);
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
 }
 
 .pos-movil-client-results[hidden] {
@@ -558,11 +581,11 @@ select {
 
 .pos-movil-client-result {
     display: grid;
-    gap: 4px;
+    gap: 3px;
     width: 100%;
-    padding: 12px;
+    padding: 10px 12px;
     border: 0;
-    border-bottom: 1px solid #edf2f7;
+    border-bottom: 1px solid var(--pm-border);
     background: #fff;
     color: var(--pm-text);
     text-align: left;
@@ -574,12 +597,12 @@ select {
 }
 
 .pos-movil-client-result:hover {
-    background: #eef5ff;
+    background: var(--pm-soft);
 }
 
 .pos-movil-client-result strong {
-    font-size: 14px;
-    font-weight: 900;
+    font-size: 13px;
+    font-weight: 700;
 }
 
 .pos-movil-client-result small,
@@ -589,6 +612,6 @@ select {
 }
 
 .pos-movil-client-empty {
-    padding: 14px;
+    padding: 12px;
     text-align: center;
 }

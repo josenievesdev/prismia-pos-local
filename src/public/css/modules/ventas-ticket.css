@@ -1,3 +1,8 @@
+/* =========================================================
+   Ticket de Venta · Prismia POS Local
+   Alineado al sistema de diseño global v2.0
+   ========================================================= */
+
 :root {
     --ticket-width: 80mm;
     --ticket-bg: #ffffff;
@@ -5,7 +10,7 @@
     --ticket-muted: #6b7280;
     --ticket-line: #d1d5db;
     --ticket-strong: #0f172a;
-    --ticket-accent: #1d4ed8;
+    --ticket-accent: #244f8f;
 }
 
 * {
@@ -16,7 +21,7 @@ html,
 body {
     margin: 0;
     padding: 0;
-    background: #e5e7eb;
+    background: #f1f3f6;
     color: var(--ticket-text);
     font-family: Arial, Helvetica, sans-serif;
 }
@@ -29,18 +34,18 @@ body {
 .ticket-page {
     width: 100%;
     min-height: 100vh;
-    padding: 24px 16px;
+    padding: 20px 14px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
 }
 
 .ticket-paper {
     width: var(--ticket-width);
     background: var(--ticket-bg);
     color: var(--ticket-text);
-    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
     padding: 14px 12px 16px;
     margin: 0 auto;
 }
@@ -55,9 +60,9 @@ body {
 .ticket-header h1 {
     margin: 0 0 4px;
     font-size: 14px;
-    font-weight: 900;
+    font-weight: 700;
     color: var(--ticket-strong);
-    letter-spacing: 0.4px;
+    letter-spacing: 0.3px;
 }
 
 .ticket-header p {
@@ -88,8 +93,8 @@ body {
 
 .ticket-title {
     font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.6px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
     color: var(--ticket-strong);
 }
 
@@ -101,8 +106,8 @@ body {
 
 .ticket-document-number strong {
     font-size: 14px;
-    font-weight: 900;
-    color: #001b52;
+    font-weight: 700;
+    color: var(--ticket-accent);
 }
 
 .ticket-document-state {
@@ -117,8 +122,8 @@ body {
 .ticket-block h2 {
     margin: 0 0 6px;
     font-size: 11px;
-    font-weight: 900;
-    letter-spacing: 0.6px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
     text-transform: uppercase;
     color: var(--ticket-strong);
 }
@@ -152,30 +157,22 @@ body {
     font-size: 9px;
     text-transform: uppercase;
     color: #4b5563;
-    font-weight: 800;
+    font-weight: 700;
     padding: 0 0 4px;
     border-bottom: 1px solid #e5e7eb;
 }
 
 .ticket-table th:nth-child(1),
-.ticket-table td:nth-child(1) {
-    width: 43%;
-}
+.ticket-table td:nth-child(1) { width: 43%; }
 
 .ticket-table th:nth-child(2),
-.ticket-table td:nth-child(2) {
-    width: 15%;
-}
+.ticket-table td:nth-child(2) { width: 15%; }
 
 .ticket-table th:nth-child(3),
-.ticket-table td:nth-child(3) {
-    width: 20%;
-}
+.ticket-table td:nth-child(3) { width: 20%; }
 
 .ticket-table th:nth-child(4),
-.ticket-table td:nth-child(4) {
-    width: 22%;
-}
+.ticket-table td:nth-child(4) { width: 22%; }
 
 .ticket-table tbody td {
     padding: 6px 0;
@@ -215,13 +212,13 @@ body {
 .ticket-total-main {
     margin-top: 4px;
     padding-top: 6px;
-    border-top: 1px solid #d1d5db;
+    border-top: 1px solid var(--ticket-line);
 }
 
 .ticket-total-main span,
 .ticket-total-main strong {
     font-size: 13px;
-    font-weight: 900;
+    font-weight: 700;
     color: #111827;
 }
 
@@ -247,16 +244,25 @@ body {
 .ticket-actions button {
     border: none;
     border-radius: 8px;
-    padding: 10px 18px;
-    font-size: 14px;
+    padding: 8px 16px;
+    font-size: 13px;
     font-weight: 700;
     cursor: pointer;
     color: white;
-    background: #2b5cab;
+    background: #244f8f;
+    transition: background 150ms ease;
+}
+
+.ticket-actions button:hover {
+    background: #1a3a6a;
 }
 
 .ticket-actions button:last-child {
     background: #64748b;
+}
+
+.ticket-actions button:last-child:hover {
+    background: #475569;
 }
 
 @page {
