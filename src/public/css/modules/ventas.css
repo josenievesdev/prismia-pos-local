@@ -3629,3 +3629,744 @@
         font-size: 18px;
     }
 }
+
+/* ===== POS táctil avanzado v2 · catálogo + carrito lateral ===== */
+
+.ventas-touch-pagination {
+    display: none;
+}
+
+.ventas-touch-product-card[hidden] {
+    display: none !important;
+}
+
+@media (min-width: 1181px) {
+    .ventas-pos-shell[data-pos-mode="tactil"] {
+        height: calc(100vh - 104px);
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(410px, 0.85fr);
+        grid-template-rows: auto auto 58px minmax(0, 1fr);
+        grid-template-areas:
+            "header header"
+            "context context"
+            "search sale"
+            "catalog sale";
+        gap: 8px;
+        overflow: hidden;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"]>.alert,
+    .ventas-pos-shell[data-pos-mode="tactil"]>.ventas-lock-banner {
+        grid-column: 1 / -1;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-pos-header {
+        grid-area: header;
+        min-height: 54px;
+        padding: 8px 12px;
+        border-radius: var(--radius-lg);
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-header-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-sm);
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-pos-header h2 {
+        font-size: 15px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-header-sub {
+        font-size: 11px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-mode-tools {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-business-switch {
+        min-height: 34px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-mode-toggle {
+        min-height: 34px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-pos-header::after {
+        min-height: 22px;
+        padding: 2px 8px;
+        font-size: 9px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-context-bar {
+        grid-area: context;
+        display: grid;
+        grid-template-columns: minmax(260px, 1fr) 130px 180px minmax(330px, 0.9fr);
+        gap: 8px;
+        min-height: 58px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-context-item {
+        min-height: 58px;
+        padding: 7px 10px;
+        border-radius: var(--radius-lg);
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-context-buttons {
+        grid-template-columns: 0.9fr 0.9fr 0.9fr 1.2fr;
+        gap: 6px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-context-buttons .btn-secondary,
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-context-buttons .btn-primary {
+        min-height: 38px;
+        padding-inline: 10px;
+        border-radius: var(--radius-sm);
+        font-size: 12px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-charge-button {
+        min-height: 38px;
+        padding-inline: 14px;
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-search-section {
+        grid-area: search;
+        min-height: 58px;
+        padding: 8px;
+        border-radius: var(--radius-lg);
+        border-color: var(--pos-profile-border);
+        background: #fff;
+        box-shadow: var(--shadow-soft);
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-search-form {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 104px;
+        gap: 8px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-search-input-wrap input {
+        min-height: 40px;
+        padding-left: 38px;
+        font-size: 13px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-search-btn {
+        min-height: 40px;
+        padding-inline: 14px;
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-search-loading-bar {
+        display: none;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-catalog {
+        grid-area: catalog;
+        min-height: 0;
+        display: grid;
+        grid-template-rows: auto auto minmax(0, 1fr) auto;
+        gap: 8px;
+        padding: 10px;
+        border-radius: var(--radius-lg);
+        border-color: var(--pos-profile-border);
+        background:
+            linear-gradient(135deg, rgba(255, 255, 255, 0.96), var(--pos-profile-soft)),
+            #fff;
+        box-shadow: var(--shadow-soft);
+        overflow: hidden;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-catalog-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding-bottom: 7px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-catalog-head h3 {
+        margin: 1px 0 0;
+        font-size: 15px;
+        font-weight: 800;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-catalog-head p {
+        margin-top: 2px;
+        font-size: 11px;
+        line-height: 1.25;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-catalog-count {
+        min-height: 24px;
+        padding: 4px 9px;
+        font-size: 10px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-category-row {
+        min-height: 34px;
+        gap: 6px;
+        overflow-x: auto;
+        padding-bottom: 2px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-category {
+        min-height: 30px;
+        padding-inline: 11px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-product-grid {
+        min-height: 0;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-auto-rows: minmax(112px, 1fr);
+        gap: 8px;
+        overflow: hidden;
+        padding: 0;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-product-card {
+        min-height: 0;
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        gap: 7px;
+        padding: 10px;
+        border-radius: var(--radius-lg);
+        box-shadow: none;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-product-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+    }
+
+    .ventas-touch-product-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-product-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .ventas-touch-product-price {
+        overflow: hidden;
+        color: var(--vt);
+        font-size: 13px;
+        font-weight: 800;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-product-body {
+        gap: 3px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-product-body strong {
+        font-size: 13px;
+        font-weight: 800;
+        line-height: 1.15;
+        -webkit-line-clamp: 2;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-product-body small {
+        font-size: 10.5px;
+        line-height: 1.2;
+        -webkit-line-clamp: 1;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-product-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-product-meta em {
+        color: var(--vm);
+        font-size: 10px;
+        font-weight: 700;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-product-meta b {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 28px;
+        padding: 0 10px;
+        border-radius: 999px;
+        background: var(--pos-profile-accent);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-product-add {
+        display: none;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-pagination {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        min-height: 34px;
+        padding-top: 6px;
+        border-top: 1px solid rgba(148, 163, 184, 0.24);
+    }
+
+    .ventas-touch-page-btn {
+        min-height: 30px;
+        padding: 0 11px;
+        border: 1px solid var(--pos-profile-border);
+        border-radius: 999px;
+        background: #fff;
+        color: var(--pos-profile-accent);
+        font-size: 11px;
+        font-weight: 800;
+        cursor: pointer;
+    }
+
+    .ventas-touch-page-btn:hover:not(:disabled) {
+        background: var(--pos-profile-soft);
+    }
+
+    .ventas-touch-page-btn:disabled {
+        opacity: 0.42;
+        cursor: not-allowed;
+    }
+
+    .ventas-touch-pagination span {
+        overflow: hidden;
+        color: var(--vm);
+        font-size: 11px;
+        font-weight: 700;
+        text-align: center;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-sale-card {
+        grid-area: sale;
+        min-height: 0;
+        height: 100%;
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        gap: 7px;
+        padding: 10px;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-sale-header {
+        min-height: 34px;
+        padding-bottom: 6px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-sale-header h3 {
+        font-size: 14px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table-wrap {
+        min-height: 0;
+        height: auto;
+        border-radius: var(--radius-sm);
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table thead th {
+        padding: 7px 8px;
+        font-size: 9.5px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table tbody td {
+        padding: 7px 8px;
+        font-size: 11px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-product strong {
+        font-size: 12px;
+        line-height: 1.15;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-product small {
+        font-size: 10px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-qty {
+        grid-template-columns: 28px 52px 28px;
+        gap: 3px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-qty button,
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-remove {
+        width: 28px;
+        height: 30px;
+        border-radius: var(--radius-sm);
+        font-size: 14px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-qty input {
+        width: 52px;
+        height: 30px;
+        border-radius: var(--radius-sm);
+        font-size: 11px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-sale-footer {
+        min-height: 0;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 7px;
+        padding-top: 7px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-payment-strip {
+        gap: 6px;
+        padding: 8px;
+        border-radius: var(--radius-sm);
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-payment-strip-header {
+        display: none;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-payment-fields {
+        grid-template-columns: 1.05fr 0.7fr 0.85fr auto;
+        gap: 6px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-payment-row {
+        gap: 6px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-field>span {
+        font-size: 8.5px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-field select,
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-field input {
+        min-height: 34px;
+        padding-inline: 8px;
+        font-size: 11px;
+        border-radius: var(--radius-sm);
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-payment-tools {
+        margin-top: 0;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-payment-add {
+        min-height: 32px;
+        border-radius: var(--radius-sm);
+        font-size: 11px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-payment-info {
+        display: none;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-totals-panel {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 5px;
+        padding: 7px;
+        border-radius: var(--radius-sm);
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-total-row {
+        min-height: 30px;
+        padding: 5px 7px;
+        border-radius: var(--radius-sm);
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-total-row span {
+        font-size: 9px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-total-row strong {
+        font-size: 12px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-total-row.is-total {
+        grid-column: 1 / -1;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-total-row.is-total strong {
+        font-size: 18px;
+    }
+}
+
+/* ===== Refinamiento táctil v3 · equilibrio catálogo / carrito ===== */
+
+@media (min-width: 1181px) {
+    .ventas-pos-shell[data-pos-mode="tactil"] {
+        grid-template-columns: minmax(0, 1.04fr) minmax(450px, 0.96fr);
+        grid-template-rows: auto auto 54px minmax(0, 1fr);
+        gap: 8px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-context-bar {
+        grid-template-columns: minmax(240px, 1fr) 112px 154px minmax(320px, 0.95fr);
+        min-height: 54px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-context-item {
+        min-height: 54px;
+        padding: 6px 9px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-context-buttons {
+        grid-template-columns: 0.82fr 0.82fr 0.82fr 1.15fr;
+        gap: 6px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-context-buttons .btn-secondary,
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-context-buttons .btn-primary,
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-charge-button {
+        min-height: 36px;
+        font-size: 12px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-catalog {
+        padding: 10px;
+        gap: 8px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-catalog-head {
+        padding-bottom: 6px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-catalog-head p {
+        margin-top: 1px;
+        max-width: 420px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-category-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 6px;
+        max-height: 66px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding-right: 4px;
+        padding-bottom: 2px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-category {
+        flex: 0 0 auto;
+        min-height: 30px;
+        padding: 0 11px;
+        font-size: 11px;
+        white-space: nowrap;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-product-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-auto-rows: minmax(156px, 1fr);
+        gap: 8px;
+        align-content: start;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-product-card {
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        gap: 8px;
+        padding: 10px 11px;
+        align-content: start;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-product-top {
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-product-avatar {
+        width: 54px;
+        height: 54px;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 800;
+        flex: 0 0 auto;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-product-price {
+        font-size: 14px;
+        font-weight: 800;
+        text-align: right;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-product-body {
+        display: grid;
+        gap: 4px;
+        min-width: 0;
+        align-content: start;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-product-body strong {
+        display: -webkit-box;
+        overflow: hidden;
+        min-height: 32px;
+        color: var(--vt);
+        font-size: 13px;
+        font-weight: 800;
+        line-height: 1.2;
+        text-overflow: ellipsis;
+        white-space: normal;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-product-body small {
+        display: -webkit-box;
+        overflow: hidden;
+        min-height: 26px;
+        color: var(--vm);
+        font-size: 10.5px;
+        line-height: 1.2;
+        text-overflow: ellipsis;
+        white-space: normal;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-product-meta {
+        min-height: 28px;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-product-meta em {
+        display: inline-flex;
+        align-items: center;
+        min-height: 22px;
+        font-size: 10px;
+        white-space: nowrap;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-product-meta b {
+        min-height: 28px;
+        padding: 0 10px;
+        font-size: 11px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-pagination {
+        padding-top: 5px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-sale-card {
+        grid-template-rows: auto minmax(220px, 1fr) auto;
+        gap: 6px;
+        padding: 10px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-sale-header {
+        min-height: 32px;
+        padding-bottom: 4px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-sale-header h3 {
+        font-size: 14px;
+        line-height: 1.15;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table-wrap {
+        min-height: 220px;
+        height: auto;
+        overflow: auto;
+        scrollbar-gutter: stable;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table thead th {
+        padding: 6px 7px;
+        font-size: 9.5px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table tbody td {
+        padding: 6px 7px;
+        font-size: 11px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-sale-footer {
+        gap: 6px;
+        padding-top: 6px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-payment-strip {
+        max-height: 128px;
+        overflow-y: auto;
+        padding: 7px;
+        gap: 6px;
+        scrollbar-gutter: stable;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-payment-fields {
+        grid-template-columns: minmax(0, 1fr) 84px minmax(0, 1fr) 40px;
+        gap: 6px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-payment-row {
+        gap: 6px;
+        align-items: center;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-field>span {
+        margin-bottom: 2px;
+        font-size: 8.5px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-field select,
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-field input {
+        min-height: 32px;
+        padding-inline: 8px;
+        font-size: 11px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-payment-add {
+        min-height: 30px;
+        font-size: 11px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-totals-panel {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 5px;
+        padding: 6px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-total-row {
+        min-height: 28px;
+        padding: 5px 7px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-total-row span {
+        font-size: 9px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-total-row strong {
+        font-size: 12px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-total-row.is-total strong {
+        font-size: 17px;
+    }
+}

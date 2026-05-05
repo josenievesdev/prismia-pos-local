@@ -11,6 +11,8 @@
     const POS_PROFILE_FOOD = 'comidas';
     const POS_PROFILE_BOUTIQUE = 'boutique';
 
+    const TOUCH_CATALOG_PAGE_SIZE = 6;
+
     document.addEventListener('DOMContentLoaded', iniciarPOSVentas);
 
     function iniciarPOSVentas() {
@@ -20,6 +22,11 @@
             usuarioEditoPago: false,
             enviandoVenta: false,
             contadorPagos: 1,
+            catalogoTactil: {
+                categoria: 'todos',
+                pagina: 1,
+                porPagina: TOUCH_CATALOG_PAGE_SIZE,
+            },
         };
         const ui = obtenerElementos();
 
@@ -79,6 +86,10 @@
             catalogoTactilPOS: document.getElementById('catalogoTactilPOS'),
             gridCatalogoTactil: document.getElementById('gridCatalogoTactil'),
             filtrosCatalogoTactil: document.getElementById('filtrosCatalogoTactil'),
+            conteoCatalogoTactil: document.getElementById('conteoCatalogoTactil'),
+            resumenPaginaCatalogoTactil: document.getElementById('resumenPaginaCatalogoTactil'),
+            botonCatalogoTactilAnterior: document.getElementById('btnCatalogoTactilAnterior'),
+            botonCatalogoTactilSiguiente: document.getElementById('btnCatalogoTactilSiguiente'),
 
             carritoItems: document.getElementById('ventasCarritoItems'),
 
@@ -894,6 +905,14 @@
     }
 
     function inicializarCatalogoTactil(ui, estado) {
+        if (!estado.catalogoTactil) {
+            estado.catalogoTactil = {
+                categoria: 'todos',
+                pagina: 1,
+                porPagina: TOUCH_CATALOG_PAGE_SIZE,
+            };
+        }
+
         if (ui.gridCatalogoTactil) {
             ui.gridCatalogoTactil.addEventListener('click', function (evento) {
                 const tarjetaProducto = evento.target.closest('[data-touch-product-card]');
@@ -926,24 +945,40 @@
                         boton.classList.toggle('is-active', boton === botonFiltro);
                     });
 
-                filtrarCatalogoTactil(ui, categoria);
+                estado.catalogoTactil.categoria = categoria;
+                estado.catalogoTactil.pagina = 1;
+
+                renderizarCatalogoTactil(ui, estado);
             });
         }
 
-        filtrarCatalogoTactil(ui, 'todos');
+        if (ui.botonCatalogoTactilAnterior) {
+            ui.botonCatalogoTactilAnterior.addEventListener('click', function () {
+                estado.catalogoTactil.pagina = Math.max(1, estado.catalogoTactil.pagina - 1);
+                renderizarCatalogoTactil(ui, estado);
+            });
+        }
+
+        if (ui.botonCatalogoTactilSiguiente) {
+            ui.botonCatalogoTactilSiguiente.addEventListener('click', function () {
+                estado.catalogoTactil.pagina += 1;
+                renderizarCatalogoTactil(ui, estado);
+            });
+        }
+
+        renderizarCatalogoTactil(ui, estado);
     }
 
-    function filtrarCatalogoTactil(ui, categoria) {
+    function obtenerTarjetasCatalogoTactil(ui, categoria) {
         if (!ui.gridCatalogoTactil) {
-            return;
+            return [];
         }
 
         const categoriaNormalizada = String(categoria || 'todos').trim().toLowerCase();
-        const tarjetas = Array.from(
-            ui.gridCatalogoTactil.querySelectorAll('[data-touch-product-card]')
-        );
 
-        const tarjetasFiltradas = tarjetas.filter(function (tarjeta) {
+        return Array.from(
+            ui.gridCatalogoTactil.querySelectorAll('[data-touch-product-card]')
+        ).filter(function (tarjeta) {
             const categoriaProducto = String(tarjeta.dataset.touchCategory || '')
                 .trim()
                 .toLowerCase();
@@ -951,14 +986,77 @@
             return categoriaNormalizada === 'todos'
                 || categoriaProducto === categoriaNormalizada;
         });
+    }
+
+    function renderizarCatalogoTactil(ui, estado) {
+        if (!ui.gridCatalogoTactil || !estado.catalogoTactil) {
+            return;
+        }
+
+        const tarjetas = Array.from(
+            ui.gridCatalogoTactil.querySelectorAll('[data-touch-product-card]')
+        );
+
+        const tarjetasFiltradas = obtenerTarjetasCatalogoTactil(
+            ui,
+            estado.catalogoTactil.categoria
+        );
+
+        const porPagina = estado.catalogoTactil.porPagina || TOUCH_CATALOG_PAGE_SIZE;
+        const totalProductos = tarjetasFiltradas.length;
+        const totalPaginas = Math.max(1, Math.ceil(totalProductos / porPagina));
+
+        estado.catalogoTactil.pagina = Math.min(
+            Math.max(1, estado.catalogoTactil.pagina),
+            totalPaginas
+        );
+
+        const paginaActual = estado.catalogoTactil.pagina;
+        const inicio = (paginaActual - 1) * porPagina;
+        const fin = inicio + porPagina;
 
         tarjetas.forEach(function (tarjeta) {
             tarjeta.hidden = true;
         });
 
-        tarjetasFiltradas.slice(0, 6).forEach(function (tarjeta) {
+        tarjetasFiltradas.slice(inicio, fin).forEach(function (tarjeta) {
             tarjeta.hidden = false;
         });
+
+        actualizarControlesCatalogoTactil(ui, {
+            totalProductos,
+            paginaActual,
+            totalPaginas,
+            categoria: estado.catalogoTactil.categoria,
+        });
+    }
+
+    function actualizarControlesCatalogoTactil(ui, datosCatalogo) {
+        const totalProductos = datosCatalogo.totalProductos || 0;
+        const paginaActual = datosCatalogo.paginaActual || 1;
+        const totalPaginas = datosCatalogo.totalPaginas || 1;
+        const categoria = datosCatalogo.categoria || 'todos';
+
+        if (ui.conteoCatalogoTactil) {
+            ui.conteoCatalogoTactil.textContent = totalProductos === 1
+                ? '1 producto'
+                : `${totalProductos} productos`;
+        }
+
+        if (ui.resumenPaginaCatalogoTactil) {
+            const nombreCategoria = categoria === 'todos' ? 'Todos' : categoria;
+
+            ui.resumenPaginaCatalogoTactil.textContent =
+                `${nombreCategoria} · Página ${paginaActual} de ${totalPaginas}`;
+        }
+
+        if (ui.botonCatalogoTactilAnterior) {
+            ui.botonCatalogoTactilAnterior.disabled = paginaActual <= 1;
+        }
+
+        if (ui.botonCatalogoTactilSiguiente) {
+            ui.botonCatalogoTactilSiguiente.disabled = paginaActual >= totalPaginas;
+        }
     }
 
     function inicializarCarrito(ui, estado) {

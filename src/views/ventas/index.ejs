@@ -231,11 +231,11 @@
                                             <div>
                                                 <span class="ventas-kicker">Catálogo rápido</span>
                                                 <h3>Productos táctiles</h3>
-                                                <p>Agrega productos con un toque, sin abandonar el flujo de facturación.
+                                                <p>Agrega productos con un toque. Usa categorías y paginación interna.
                                                 </p>
                                             </div>
 
-                                            <strong class="ventas-touch-catalog-count">
+                                            <strong class="ventas-touch-catalog-count" id="conteoCatalogoTactil">
                                                 <%= productosListado.length %> productos
                                             </strong>
                                         </header>
@@ -297,10 +297,16 @@
                                                                 data-product-price-includes-tax="<%= Number(producto.precio_incluye_iva || 0) %>"
                                                                 data-product-can-sell="<%= puedeVenderProducto ? 1 : 0 %>"
                                                                 <%=puedeVenderProducto && puedeVender ? '' : 'disabled'
-                                                                %>
-                                                                >
-                                                                <span class="ventas-touch-product-avatar">
-                                                                    <%= iniciales %>
+                                                                %>>
+                                                                <span class="ventas-touch-product-top">
+                                                                    <span class="ventas-touch-product-avatar">
+                                                                        <%= iniciales %>
+                                                                    </span>
+
+                                                                    <span class="ventas-touch-product-price">
+                                                                        $ <%= Number(producto.precio_venta ||
+                                                                            0).toLocaleString('es-CO') %>
+                                                                    </span>
                                                                 </span>
 
                                                                 <span class="ventas-touch-product-body">
@@ -320,17 +326,27 @@
                                                                             <em>Sin IVA</em>
                                                                             <% } %>
 
-                                                                                <b>$ <%= Number(producto.precio_venta ||
-                                                                                        0).toLocaleString('es-CO') %>
-                                                                                        </b>
-                                                                </span>
-
-                                                                <span class="ventas-touch-product-add">
-                                                                    +
+                                                                                <b>Agregar</b>
                                                                 </span>
                                                             </button>
                                                             <% }) %>
                                                 </div>
+
+                                                <footer class="ventas-touch-pagination" id="paginacionCatalogoTactil">
+                                                    <button type="button" class="ventas-touch-page-btn"
+                                                        id="btnCatalogoTactilAnterior">
+                                                        ‹ Anterior
+                                                    </button>
+
+                                                    <span id="resumenPaginaCatalogoTactil">
+                                                        Página 1
+                                                    </span>
+
+                                                    <button type="button" class="ventas-touch-page-btn"
+                                                        id="btnCatalogoTactilSiguiente">
+                                                        Siguiente ›
+                                                    </button>
+                                                </footer>
                                                 <% } %>
                                     </section>
 
