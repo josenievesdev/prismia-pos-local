@@ -213,6 +213,26 @@ function configurarAccesoRapidoPosTactil(req, res) {
     return res.json(resultado);
 }
 
+function quitarAccesoRapidoPosTactil(req, res) {
+    const resultado = ventasService.quitarAccesoRapidoPosTactil(req.body || {});
+
+    if (!resultado.ok) {
+        return res.status(resultado.codigoEstado || 400).json(resultado);
+    }
+
+    return res.json(resultado);
+}
+
+function moverAccesoRapidoPosTactil(req, res) {
+    const resultado = ventasService.moverAccesoRapidoPosTactil(req.body || {});
+
+    if (!resultado.ok) {
+        return res.status(resultado.codigoEstado || 400).json(resultado);
+    }
+
+    return res.json(resultado);
+}
+
 module.exports = {
     mostrarPOSMovil,
     mostrarPOS,
@@ -226,4 +246,6 @@ module.exports = {
     prepararAnulacionVenta,
     anularVentaCompleta,
     configurarAccesoRapidoPosTactil,
+    quitarAccesoRapidoPosTactil,
+    moverAccesoRapidoPosTactil,
 };

@@ -5689,3 +5689,265 @@
         padding-inline: 14px;
     }
 }
+
+/* ===== POS táctil v11 · modo configuración de accesos rápidos ===== */
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-quick-head-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-quick-config-toggle {
+    min-height: 28px;
+    padding: 0 11px;
+    border: 1px solid rgba(139, 92, 246, 0.22);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--pos-profile-accent, #7c3aed);
+    font-size: 10.5px;
+    font-weight: 800;
+    cursor: pointer;
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease,
+        transform 0.15s ease;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-quick-config-toggle:hover {
+    transform: translateY(-1px);
+    border-color: rgba(139, 92, 246, 0.42);
+    background: rgba(139, 92, 246, 0.08);
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-quick-config-toggle[aria-pressed="true"] {
+    border-color: var(--pos-profile-accent, #7c3aed);
+    background: var(--pos-profile-accent, #7c3aed);
+    color: #fff;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-quick-card {
+    position: relative;
+    overflow: hidden;
+    color: inherit;
+    text-align: left;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] article.ventas-quick-card {
+    cursor: pointer;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-quick-slot-badge {
+    position: absolute;
+    top: 9px;
+    left: 9px;
+    z-index: 3;
+    min-width: 24px;
+    min-height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 7px;
+    border: 1px solid rgba(255, 255, 255, 0.78);
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.62);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 850;
+    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.16);
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-quick-card-empty .ventas-quick-slot-badge {
+    background: rgba(100, 116, 139, 0.64);
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-quick-config-actions {
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    z-index: 5;
+    display: none;
+    grid-template-columns: 32px minmax(0, 1fr) minmax(0, 1fr) 32px;
+    gap: 5px;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-quick-access.is-configuring .ventas-quick-card:not(.ventas-quick-card-empty) {
+    padding-bottom: 45px;
+    border-color: rgba(139, 92, 246, 0.38);
+    box-shadow:
+        0 0 0 2px rgba(139, 92, 246, 0.08),
+        0 12px 28px rgba(15, 23, 42, 0.08);
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-quick-access.is-configuring .ventas-quick-config-actions {
+    display: grid;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-quick-config-actions button {
+    min-height: 28px;
+    border: 1px solid rgba(203, 213, 225, 0.9);
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.94);
+    color: #334155;
+    font-size: 10px;
+    font-weight: 850;
+    cursor: pointer;
+    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-quick-config-actions button:hover:not(:disabled) {
+    border-color: rgba(139, 92, 246, 0.38);
+    background: rgba(139, 92, 246, 0.08);
+    color: var(--pos-profile-accent, #7c3aed);
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-quick-config-actions button[data-touch-config-action="quitar"]:hover:not(:disabled) {
+    border-color: rgba(220, 38, 38, 0.32);
+    background: rgba(254, 226, 226, 0.86);
+    color: #b91c1c;
+}
+
+.ventas-pos-shell[data-pos-mode="tactil"] .ventas-quick-config-actions button:disabled {
+    opacity: 0.42;
+    cursor: not-allowed;
+}
+
+#modalAccesoRapidoTactil .ventas-modal-actions-split {
+    justify-content: space-between;
+}
+
+#modalAccesoRapidoTactil .ventas-modal-actions-group {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+#modalAccesoRapidoTactil .btn-danger-soft {
+    min-height: 36px;
+    padding: 0 14px;
+    border: 1px solid rgba(220, 38, 38, 0.22);
+    border-radius: 10px;
+    background: rgba(254, 226, 226, 0.82);
+    color: #b91c1c;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+#modalAccesoRapidoTactil .btn-danger-soft:hover {
+    border-color: rgba(220, 38, 38, 0.38);
+    background: rgba(254, 202, 202, 0.92);
+}
+
+#modalAccesoRapidoTactil .btn-danger-soft[hidden] {
+    display: none !important;
+}
+
+@media (max-width: 760px) {
+    #modalAccesoRapidoTactil .ventas-modal-actions-split {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    #modalAccesoRapidoTactil .ventas-modal-actions-group {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+
+/* ===== Confirmación visual POS ===== */
+.ventas-confirm-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(15, 23, 42, 0.46);
+    backdrop-filter: blur(7px);
+}
+
+.ventas-confirm-card {
+    width: min(420px, 100%);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.24);
+    overflow: hidden;
+}
+
+.ventas-confirm-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    padding: 20px 22px 16px;
+}
+
+.ventas-confirm-icon {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: rgba(239, 68, 68, 0.1);
+    color: #b91c1c;
+    font-size: 17px;
+    font-weight: 900;
+}
+
+.ventas-confirm-header h3 {
+    margin: 0 0 5px;
+    color: #0f172a;
+    font-size: 16px;
+    font-weight: 850;
+}
+
+.ventas-confirm-header p {
+    margin: 0;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.ventas-confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 9px;
+    padding: 14px 22px 18px;
+    border-top: 1px solid rgba(226, 232, 240, 0.86);
+    background: rgba(248, 250, 252, 0.92);
+}
+
+.ventas-confirm-actions .btn-danger-soft {
+    min-height: 36px;
+    padding: 0 14px;
+    border: 1px solid rgba(220, 38, 38, 0.24);
+    border-radius: 10px;
+    background: rgba(254, 226, 226, 0.9);
+    color: #b91c1c;
+    font-size: 12px;
+    font-weight: 850;
+    cursor: pointer;
+}
+
+.ventas-confirm-actions .btn-danger-soft:hover {
+    border-color: rgba(220, 38, 38, 0.42);
+    background: rgba(254, 202, 202, 0.96);
+}
+
+@media (max-width: 520px) {
+    .ventas-confirm-actions {
+        flex-direction: column-reverse;
+    }
+
+    .ventas-confirm-actions button {
+        width: 100%;
+    }
+}

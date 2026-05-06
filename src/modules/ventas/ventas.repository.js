@@ -1979,6 +1979,106 @@ function configurarProductoPosTactil({ idProducto, posicion }) {
     return asignar();
 }
 
+function obtenerProductoPosTactilPorPosicion(posicion) {
+    return db
+        .prepare(`
+            SELECT
+                id_producto,
+                nombre,
+                mostrar_en_pos_tactil,
+                orden_pos_tactil
+            FROM productos
+            WHERE estado = 'activo'
+              AND eliminado_en IS NULL
+              AND mostrar_en_pos_tactil = 1
+              AND orden_pos_tactil = ?
+            LIMIT 1
+        `)
+        .get(posicion);
+}
+
+function quitarProductoPosTactil({ posicion }) {
+    return db
+        .prepare(`
+            UPDATE productos
+            SET
+                mostrar_en_pos_tactil = 0,
+                orden_pos_tactil = NULL,
+                actualizado_en = CURRENT_TIMESTAMP
+            WHERE estado = 'activo'
+              AND eliminado_en IS NULL
+              AND mostrar_en_pos_tactil = 1
+              AND orden_pos_tactil = @posicion
+        `)
+        .run({
+            posicion,
+        });
+}
+
+function moverProductoPosTactil({ posicionOrigen, posicionDestino }) {
+    const mover = db.transaction(function () {
+        const productoOrigen = obtenerProductoPosTactilPorPosicion(posicionOrigen);
+
+        if (!productoOrigen) {
+            return {
+                changes: 0,
+                motivo: 'origen_vacio',
+            };
+        }
+
+        if (posicionOrigen === posicionDestino) {
+            return {
+                changes: 1,
+                motivo: 'sin_cambios',
+            };
+        }
+
+        const productoDestino = obtenerProductoPosTactilPorPosicion(posicionDestino);
+
+        db.prepare(`
+            UPDATE productos
+            SET
+                orden_pos_tactil = -999,
+                actualizado_en = CURRENT_TIMESTAMP
+            WHERE id_producto = @id_producto
+        `).run({
+            id_producto: productoOrigen.id_producto,
+        });
+
+        if (productoDestino) {
+            db.prepare(`
+                UPDATE productos
+                SET
+                    orden_pos_tactil = @posicion_origen,
+                    actualizado_en = CURRENT_TIMESTAMP
+                WHERE id_producto = @id_producto
+            `).run({
+                id_producto: productoDestino.id_producto,
+                posicion_origen: posicionOrigen,
+            });
+        }
+
+        db.prepare(`
+            UPDATE productos
+            SET
+                mostrar_en_pos_tactil = 1,
+                orden_pos_tactil = @posicion_destino,
+                actualizado_en = CURRENT_TIMESTAMP
+            WHERE id_producto = @id_producto
+        `).run({
+            id_producto: productoOrigen.id_producto,
+            posicion_destino: posicionDestino,
+        });
+
+        return {
+            changes: 1,
+            motivo: productoDestino ? 'intercambiado' : 'movido',
+        };
+    });
+
+    return mover();
+}
+
 module.exports = {
     obtenerTurnoAbierto,
     obtenerConfiguracionNegocio,
@@ -1993,6 +2093,8 @@ module.exports = {
     listarProductosPosTactil,
     obtenerProductoParaVenta,
     configurarProductoPosTactil,
+    quitarProductoPosTactil,
+    moverProductoPosTactil,
     listarVentasRecientes,
     listarHistorialVentas,
     contarHistorialVentas,

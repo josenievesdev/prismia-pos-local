@@ -1798,6 +1798,72 @@ function configurarAccesoRapidoPosTactil(payload = {}) {
     };
 }
 
+function quitarAccesoRapidoPosTactil(payload = {}) {
+    const posicion = normalizarEntero(payload.posicion);
+
+    if (!Number.isInteger(posicion) || posicion < 1 || posicion > 6) {
+        return {
+            ok: false,
+            codigoEstado: 400,
+            mensaje: 'La posición del acceso rápido debe estar entre 1 y 6.',
+        };
+    }
+
+    const resultado = ventasRepository.quitarProductoPosTactil({ posicion });
+
+    if (!resultado || resultado.changes === 0) {
+        return {
+            ok: false,
+            codigoEstado: 404,
+            mensaje: 'No hay un acceso rápido activo en esa posición.',
+        };
+    }
+
+    return {
+        ok: true,
+        mensaje: 'Acceso rápido quitado correctamente.',
+    };
+}
+
+function moverAccesoRapidoPosTactil(payload = {}) {
+    const posicionOrigen = normalizarEntero(payload.posicion_origen);
+    const posicionDestino = normalizarEntero(payload.posicion_destino);
+
+    if (!Number.isInteger(posicionOrigen) || posicionOrigen < 1 || posicionOrigen > 6) {
+        return {
+            ok: false,
+            codigoEstado: 400,
+            mensaje: 'La posición origen debe estar entre 1 y 6.',
+        };
+    }
+
+    if (!Number.isInteger(posicionDestino) || posicionDestino < 1 || posicionDestino > 6) {
+        return {
+            ok: false,
+            codigoEstado: 400,
+            mensaje: 'La posición destino debe estar entre 1 y 6.',
+        };
+    }
+
+    const resultado = ventasRepository.moverProductoPosTactil({
+        posicionOrigen,
+        posicionDestino,
+    });
+
+    if (!resultado || resultado.changes === 0) {
+        return {
+            ok: false,
+            codigoEstado: 404,
+            mensaje: 'No hay un producto configurado en la posición origen.',
+        };
+    }
+
+    return {
+        ok: true,
+        mensaje: 'Acceso rápido reordenado correctamente.',
+    };
+}
+
 module.exports = {
     obtenerEstadoPOS,
     buscarProductos,
@@ -1814,4 +1880,6 @@ module.exports = {
     prepararAnulacionVenta,
     anularVentaCompleta,
     configurarAccesoRapidoPosTactil,
+    quitarAccesoRapidoPosTactil,
+    moverAccesoRapidoPosTactil,
 };

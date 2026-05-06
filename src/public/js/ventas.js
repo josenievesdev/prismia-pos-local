@@ -86,14 +86,17 @@
 
             catalogoTactilPOS: document.getElementById('catalogoTactilPOS'),
             gridCatalogoTactil: document.getElementById('gridCatalogoTactil'),
+            botonModoConfigAccesosRapidos: document.getElementById('btnModoConfigAccesosRapidos'),
             modalAccesoRapidoTactil: document.getElementById('modalAccesoRapidoTactil'),
             formAccesoRapidoTactil: document.getElementById('formAccesoRapidoTactil'),
             botonCerrarAccesoRapidoTactil: document.getElementById('btnCerrarAccesoRapidoTactil'),
             botonCancelarAccesoRapidoTactil: document.getElementById('btnCancelarAccesoRapidoTactil'),
             botonGuardarAccesoRapidoTactil: document.getElementById('btnGuardarAccesoRapidoTactil'),
+            botonQuitarAccesoRapidoTactil: document.getElementById('btnQuitarAccesoRapidoTactil'),
             inputBuscarProductoAccesoRapido: document.getElementById('buscarProductoAccesoRapido'),
             inputSlotAccesoRapidoTactil: document.getElementById('slotAccesoRapidoTactil'),
             inputProductoAccesoRapidoTactil: document.getElementById('productoAccesoRapidoTactil'),
+            inputProductoActualAccesoRapidoTactil: document.getElementById('productoActualAccesoRapidoTactil'),
             productoAccesoRapidoSeleccionado: document.getElementById('productoAccesoRapidoSeleccionado'),
             resultadosAccesoRapidoTactil: document.getElementById('resultadosAccesoRapidoTactil'),
             filtrosCatalogoTactil: document.getElementById('filtrosCatalogoTactil'),
@@ -927,8 +930,26 @@ data-product-image="${escaparHtml(producto.imagen_url || '')}"
 
         reconstruirFiltrosCatalogoTactil(ui, estado);
 
+        if (ui.botonModoConfigAccesosRapidos && ui.catalogoTactilPOS) {
+            ui.botonModoConfigAccesosRapidos.addEventListener('click', function () {
+                const estaActivo = ui.catalogoTactilPOS.classList.toggle('is-configuring');
+
+                ui.botonModoConfigAccesosRapidos.setAttribute('aria-pressed', estaActivo ? 'true' : 'false');
+                ui.botonModoConfigAccesosRapidos.textContent = estaActivo ? 'Terminar' : 'Configurar';
+            });
+        }
+
         if (ui.gridCatalogoTactil) {
             ui.gridCatalogoTactil.addEventListener('click', function (evento) {
+                const accionConfig = evento.target.closest('[data-touch-config-action]');
+
+                if (accionConfig) {
+                    evento.preventDefault();
+                    evento.stopPropagation();
+                    manejarAccionConfigAccesoRapido(accionConfig, ui);
+                    return;
+                }
+
                 const slotVacio = evento.target.closest('[data-touch-empty-slot]');
 
                 if (slotVacio) {
@@ -942,6 +963,14 @@ data-product-image="${escaparHtml(producto.imagen_url || '')}"
                     return;
                 }
 
+                if (estaConfigurandoAccesosRapidos(ui)) {
+                    abrirModalAccesoRapidoTactil(tarjetaProducto.dataset.slotPosition, ui, {
+                        idProductoActual: tarjetaProducto.dataset.productId || '',
+                        nombreProductoActual: tarjetaProducto.dataset.productName || 'Producto',
+                    });
+                    return;
+                }
+
                 if (tarjetaProducto.disabled || tarjetaProducto.classList.contains('is-disabled')) {
                     return;
                 }
@@ -949,7 +978,6 @@ data-product-image="${escaparHtml(producto.imagen_url || '')}"
                 agregarProductoDesdeElemento(tarjetaProducto, ui, estado);
             });
         }
-
         if (ui.filtrosCatalogoTactil) {
             ui.filtrosCatalogoTactil.addEventListener('click', function (evento) {
                 const botonFiltro = evento.target.closest('[data-touch-category-filter]');
@@ -1303,16 +1331,106 @@ data-product-image="${escaparHtml(producto.imagen_url || '')}"
         recalcularTodo(ui, estado);
     }
 
-    function obtenerInicialesProducto(nombre) {
-        const partes = String(nombre || 'P')
-            .trim()
-            .split(/\s+/)
-            .filter(Boolean);
+    function confirmarAccionVentas({
+        titulo = 'Confirmar acción',
+        mensaje = '¿Deseas continuar?',
+        textoConfirmar = 'Confirmar',
+        textoCancelar = 'Cancelar',
+        tipo = 'default',
+    } = {}) {
+        return new Promise(function (resolve) {
+            const modalAnterior = document.getElementById('ventasConfirmacionAccion');
 
-        const primera = partes[0] ? partes[0].charAt(0).toUpperCase() : 'P';
-        const segunda = partes[1] ? partes[1].charAt(0).toUpperCase() : '';
+            if (modalAnterior) {
+                modalAnterior.remove();
+            }
 
-        return primera + segunda;
+            const modal = document.createElement('div');
+            modal.id = 'ventasConfirmacionAccion';
+            modal.className = 'ventas-confirm-backdrop';
+            modal.innerHTML = `
+            <div class="ventas-confirm-card ${tipo === 'danger' ? 'is-danger' : ''}" role="dialog" aria-modal="true">
+                <header class="ventas-confirm-header">
+                    <span class="ventas-confirm-icon">${tipo === 'danger' ? '!' : '?'}</span>
+                    <div>
+                        <h3>${escaparHtml(titulo)}</h3>
+                        <p>${escaparHtml(mensaje)}</p>
+                    </div>
+                </header>
+
+                <footer class="ventas-confirm-actions">
+                    <button type="button" class="btn-secondary" data-confirm-cancel>
+                        ${escaparHtml(textoCancelar)}
+                    </button>
+
+                    <button type="button" class="btn-danger-soft" data-confirm-ok>
+                        ${escaparHtml(textoConfirmar)}
+                    </button>
+                </footer>
+            </div>
+        `;
+
+            function cerrar(resultado) {
+                modal.remove();
+                document.body.classList.remove('ventas-modal-open');
+                resolve(resultado);
+            }
+
+            modal.addEventListener('click', function (evento) {
+                if (evento.target === modal || evento.target.closest('[data-confirm-cancel]')) {
+                    cerrar(false);
+                    return;
+                }
+
+                if (evento.target.closest('[data-confirm-ok]')) {
+                    cerrar(true);
+                }
+            });
+
+            document.body.appendChild(modal);
+            document.body.classList.add('ventas-modal-open');
+
+            window.requestAnimationFrame(function () {
+                modal.querySelector('[data-confirm-cancel]')?.focus();
+            });
+        });
+    }
+
+    function estaConfigurandoAccesosRapidos(ui) {
+        return Boolean(ui.catalogoTactilPOS?.classList.contains('is-configuring'));
+    }
+
+    function manejarAccionConfigAccesoRapido(boton, ui) {
+        const accion = boton.dataset.touchConfigAction || '';
+        const posicion = Number(boton.dataset.slotPosition || 0);
+
+        if (!posicion) {
+            return;
+        }
+
+        if (accion === 'editar') {
+            const tarjeta = boton.closest('[data-touch-product-card]');
+
+            abrirModalAccesoRapidoTactil(posicion, ui, {
+                idProductoActual: tarjeta?.dataset.productId || '',
+                nombreProductoActual: tarjeta?.dataset.productName || 'Producto',
+            });
+            return;
+        }
+
+        if (accion === 'quitar') {
+            quitarAccesoRapidoTactil(posicion, ui);
+            return;
+        }
+
+        if (accion === 'mover-izquierda') {
+            moverAccesoRapidoTactil(posicion, posicion - 1, ui);
+            return;
+        }
+
+        if (accion === 'mover-derecha') {
+            moverAccesoRapidoTactil(posicion, posicion + 1, ui);
+        }
     }
 
     function inicializarConfiguracionAccesosRapidos(ui) {
@@ -1328,6 +1446,12 @@ data-product-image="${escaparHtml(producto.imagen_url || '')}"
 
         ui.botonCancelarAccesoRapidoTactil?.addEventListener('click', function () {
             cerrarModalAccesoRapidoTactil(ui);
+        });
+
+        ui.botonQuitarAccesoRapidoTactil?.addEventListener('click', async function () {
+            const posicion = Number(ui.inputSlotAccesoRapidoTactil?.value || 0);
+
+            await quitarAccesoRapidoTactil(posicion, ui);
         });
 
         ui.modalAccesoRapidoTactil.addEventListener('click', function (evento) {
@@ -1366,11 +1490,30 @@ data-product-image="${escaparHtml(producto.imagen_url || '')}"
         });
     }
 
-    function abrirModalAccesoRapidoTactil(posicion, ui) {
+    function abrirModalAccesoRapidoTactil(posicion, ui, opciones = {}) {
         limpiarModalAccesoRapidoTactil(ui);
 
         if (ui.inputSlotAccesoRapidoTactil) {
             ui.inputSlotAccesoRapidoTactil.value = posicion || '';
+        }
+
+        if (ui.inputProductoActualAccesoRapidoTactil) {
+            ui.inputProductoActualAccesoRapidoTactil.value = opciones.idProductoActual || '';
+        }
+
+        if (opciones.idProductoActual && ui.productoAccesoRapidoSeleccionado) {
+            ui.productoAccesoRapidoSeleccionado.hidden = false;
+            ui.productoAccesoRapidoSeleccionado.textContent = `Acceso actual: ${opciones.nombreProductoActual || 'Producto'}`;
+        }
+
+        if (ui.botonQuitarAccesoRapidoTactil) {
+            ui.botonQuitarAccesoRapidoTactil.hidden = !opciones.idProductoActual;
+        }
+
+        if (ui.botonGuardarAccesoRapidoTactil) {
+            ui.botonGuardarAccesoRapidoTactil.textContent = opciones.idProductoActual
+                ? 'Cambiar acceso'
+                : 'Guardar acceso';
         }
 
         ui.modalAccesoRapidoTactil.hidden = false;
@@ -1395,15 +1538,23 @@ data-product-image="${escaparHtml(producto.imagen_url || '')}"
             ui.inputProductoAccesoRapidoTactil.value = '';
         }
 
+        if (ui.inputProductoActualAccesoRapidoTactil) {
+            ui.inputProductoActualAccesoRapidoTactil.value = '';
+        }
+
         if (ui.productoAccesoRapidoSeleccionado) {
             ui.productoAccesoRapidoSeleccionado.hidden = true;
             ui.productoAccesoRapidoSeleccionado.textContent = '';
         }
 
-        if (ui.botonGuardarAccesoRapidoTactil) {
-            ui.botonGuardarAccesoRapidoTactil.disabled = true;
+        if (ui.botonQuitarAccesoRapidoTactil) {
+            ui.botonQuitarAccesoRapidoTactil.hidden = true;
         }
 
+        if (ui.botonGuardarAccesoRapidoTactil) {
+            ui.botonGuardarAccesoRapidoTactil.disabled = true;
+            ui.botonGuardarAccesoRapidoTactil.textContent = 'Guardar acceso';
+        }
         if (ui.resultadosAccesoRapidoTactil) {
             ui.resultadosAccesoRapidoTactil.innerHTML = `
             <div class="ventas-quick-config-empty">
@@ -1423,10 +1574,10 @@ data-product-image="${escaparHtml(producto.imagen_url || '')}"
 
         if (termino.length < 1) {
             ui.resultadosAccesoRapidoTactil.innerHTML = `
-        <div class="ventas-quick-config-empty">
-            Escribe para buscar un producto.
-        </div>
-    `;
+            <div class="ventas-quick-config-empty">
+                Escribe para buscar un producto.
+            </div>
+        `;
             return;
         }
 
@@ -1437,7 +1588,39 @@ data-product-image="${escaparHtml(producto.imagen_url || '')}"
     `;
 
         try {
-            const respuesta = await fetch(`${url}?busqueda=${encodeURIComponent(termino)}`);
+            const respuesta = await fetch(`${url}?busqueda=${encodeURIComponent(termino)}`, {
+                method: 'GET',
+                headers: {
+                    Accept: 'application/json',
+                },
+            });
+
+            const tipoContenido = respuesta.headers.get('content-type') || '';
+
+            if (!respuesta.ok) {
+                const textoError = await respuesta.text();
+                console.error('Error HTTP buscando productos:', respuesta.status, textoError);
+
+                ui.resultadosAccesoRapidoTactil.innerHTML = `
+                <div class="ventas-quick-config-empty">
+                    No se pudo buscar productos. Revisa la consola del navegador.
+                </div>
+            `;
+                return;
+            }
+
+            if (!tipoContenido.includes('application/json')) {
+                const textoRespuesta = await respuesta.text();
+                console.error('Respuesta inesperada buscando productos:', textoRespuesta);
+
+                ui.resultadosAccesoRapidoTactil.innerHTML = `
+                <div class="ventas-quick-config-empty">
+                    La búsqueda no devolvió datos válidos.
+                </div>
+            `;
+                return;
+            }
+
             const datos = await respuesta.json();
 
             if (!datos.ok || !Array.isArray(datos.productos) || datos.productos.length === 0) {
@@ -1457,10 +1640,22 @@ data-product-image="${escaparHtml(producto.imagen_url || '')}"
 
             ui.resultadosAccesoRapidoTactil.innerHTML = `
             <div class="ventas-quick-config-empty">
-                No se pudo buscar productos.
+                No se pudo buscar productos. Revisa la consola del navegador.
             </div>
         `;
         }
+    }
+
+    function obtenerInicialesProducto(nombre) {
+        const partes = String(nombre || 'Producto')
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean);
+
+        const primera = partes[0] ? partes[0].charAt(0).toUpperCase() : 'P';
+        const segunda = partes[1] ? partes[1].charAt(0).toUpperCase() : '';
+
+        return primera + segunda;
     }
 
     function construirResultadoAccesoRapido(producto) {
@@ -1549,6 +1744,87 @@ data-product-image="${escaparHtml(producto.imagen_url || '')}"
                 ui.botonGuardarAccesoRapidoTactil.textContent = textoOriginal;
                 ui.botonGuardarAccesoRapidoTactil.disabled = false;
             }
+        }
+    }
+
+    async function quitarAccesoRapidoTactil(posicion, ui) {
+        const posicionSegura = Number(posicion || 0);
+        const url = ui.formAccesoRapidoTactil?.dataset.removeUrl || '/ventas/pos-tactil/acceso-rapido/quitar';
+
+        if (!posicionSegura) {
+            mostrarAviso('No se pudo identificar la posición del acceso rápido.', 'error');
+            return;
+        }
+
+        const confirmado = await confirmarAccionVentas({
+            titulo: 'Quitar acceso rápido',
+            mensaje: 'Este producto dejará de aparecer en los accesos rápidos del POS táctil.',
+            textoConfirmar: 'Quitar acceso',
+            textoCancelar: 'Cancelar',
+            tipo: 'danger',
+        });
+
+        if (!confirmado) {
+            return;
+        }
+
+        try {
+            const respuesta = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    posicion: posicionSegura,
+                }),
+            });
+
+            const datos = await respuesta.json();
+
+            if (!datos.ok) {
+                mostrarAviso(datos.mensaje || 'No se pudo quitar el acceso rápido.', 'error');
+                return;
+            }
+
+            window.location.reload();
+        } catch (error) {
+            console.error('Error quitando acceso rápido:', error);
+            mostrarAviso('No se pudo quitar el acceso rápido.', 'error');
+        }
+    }
+
+    async function moverAccesoRapidoTactil(posicionOrigen, posicionDestino, ui) {
+        const origen = Number(posicionOrigen || 0);
+        const destino = Number(posicionDestino || 0);
+        const url = ui.formAccesoRapidoTactil?.dataset.moveUrl || '/ventas/pos-tactil/acceso-rapido/mover';
+
+        if (origen < 1 || origen > 6 || destino < 1 || destino > 6) {
+            return;
+        }
+
+        try {
+            const respuesta = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    posicion_origen: origen,
+                    posicion_destino: destino,
+                }),
+            });
+
+            const datos = await respuesta.json();
+
+            if (!datos.ok) {
+                mostrarAviso(datos.mensaje || 'No se pudo mover el acceso rápido.', 'error');
+                return;
+            }
+
+            window.location.reload();
+        } catch (error) {
+            console.error('Error moviendo acceso rápido:', error);
+            mostrarAviso('No se pudo mover el acceso rápido.', 'error');
         }
     }
 

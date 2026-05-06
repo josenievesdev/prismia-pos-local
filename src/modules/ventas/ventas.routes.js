@@ -19,6 +19,8 @@ router.get('/productos/buscar', ventasController.buscarProductos);
 router.get('/clientes/buscar', ventasController.buscarClientes);
 
 router.post('/pos-tactil/acceso-rapido', ventasController.configurarAccesoRapidoPosTactil);
+router.post('/pos-tactil/acceso-rapido/quitar', ventasController.quitarAccesoRapidoPosTactil);
+router.post('/pos-tactil/acceso-rapido/mover', ventasController.moverAccesoRapidoPosTactil);
 
 router.get('/productos/:id', ventasController.obtenerProducto);
 
