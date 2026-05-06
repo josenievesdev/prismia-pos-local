@@ -203,6 +203,16 @@ function anularVentaCompleta(req, res) {
     return res.json(resultado);
 }
 
+function configurarAccesoRapidoPosTactil(req, res) {
+    const resultado = ventasService.configurarAccesoRapidoPosTactil(req.body || {});
+
+    if (!resultado.ok) {
+        return res.status(resultado.codigoEstado || 400).json(resultado);
+    }
+
+    return res.json(resultado);
+}
+
 module.exports = {
     mostrarPOSMovil,
     mostrarPOS,
@@ -215,4 +225,5 @@ module.exports = {
     imprimirTicket,
     prepararAnulacionVenta,
     anularVentaCompleta,
+    configurarAccesoRapidoPosTactil,
 };

@@ -38,6 +38,7 @@
         inicializarClienteRapido(ui);
         inicializarBusqueda(ui, estado);
         inicializarCatalogoTactil(ui, estado);
+        inicializarConfiguracionAccesosRapidos(ui);
         inicializarCarrito(ui, estado);
         inicializarPago(ui, estado);
         inicializarAcciones(ui, estado);
@@ -85,6 +86,16 @@
 
             catalogoTactilPOS: document.getElementById('catalogoTactilPOS'),
             gridCatalogoTactil: document.getElementById('gridCatalogoTactil'),
+            modalAccesoRapidoTactil: document.getElementById('modalAccesoRapidoTactil'),
+            formAccesoRapidoTactil: document.getElementById('formAccesoRapidoTactil'),
+            botonCerrarAccesoRapidoTactil: document.getElementById('btnCerrarAccesoRapidoTactil'),
+            botonCancelarAccesoRapidoTactil: document.getElementById('btnCancelarAccesoRapidoTactil'),
+            botonGuardarAccesoRapidoTactil: document.getElementById('btnGuardarAccesoRapidoTactil'),
+            inputBuscarProductoAccesoRapido: document.getElementById('buscarProductoAccesoRapido'),
+            inputSlotAccesoRapidoTactil: document.getElementById('slotAccesoRapidoTactil'),
+            inputProductoAccesoRapidoTactil: document.getElementById('productoAccesoRapidoTactil'),
+            productoAccesoRapidoSeleccionado: document.getElementById('productoAccesoRapidoSeleccionado'),
+            resultadosAccesoRapidoTactil: document.getElementById('resultadosAccesoRapidoTactil'),
             filtrosCatalogoTactil: document.getElementById('filtrosCatalogoTactil'),
             conteoCatalogoTactil: document.getElementById('conteoCatalogoTactil'),
             resumenPaginaCatalogoTactil: document.getElementById('resumenPaginaCatalogoTactil'),
@@ -881,6 +892,7 @@
                 data-product-has-tax="${manejaIva ? 1 : 0}"
                 data-product-price-includes-tax="${numero(producto.precio_incluye_iva)}"
                 data-product-can-sell="${puedeVenderProducto ? 1 : 0}"
+data-product-image="${escaparHtml(producto.imagen_url || '')}"
             >
                 <div class="ventas-result-info">
                     <span class="ventas-result-name">${escaparHtml(producto.nombre)}</span>
@@ -917,6 +929,13 @@
 
         if (ui.gridCatalogoTactil) {
             ui.gridCatalogoTactil.addEventListener('click', function (evento) {
+                const slotVacio = evento.target.closest('[data-touch-empty-slot]');
+
+                if (slotVacio) {
+                    abrirModalAccesoRapidoTactil(slotVacio.dataset.slotPosition, ui);
+                    return;
+                }
+
                 const tarjetaProducto = evento.target.closest('[data-touch-product-card]');
 
                 if (!tarjetaProducto) {
@@ -1211,6 +1230,7 @@
             manejaIva: elemento.dataset.productHasTax === '1',
             precioIncluyeIva: elemento.dataset.productPriceIncludesTax === '1',
             puedeVender: elemento.dataset.productCanSell === '1',
+            imagenUrl: elemento.dataset.productImage || '',
         };
     }
 
@@ -1283,6 +1303,255 @@
         recalcularTodo(ui, estado);
     }
 
+    function obtenerInicialesProducto(nombre) {
+        const partes = String(nombre || 'P')
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean);
+
+        const primera = partes[0] ? partes[0].charAt(0).toUpperCase() : 'P';
+        const segunda = partes[1] ? partes[1].charAt(0).toUpperCase() : '';
+
+        return primera + segunda;
+    }
+
+    function inicializarConfiguracionAccesosRapidos(ui) {
+        if (!ui.modalAccesoRapidoTactil || !ui.formAccesoRapidoTactil) {
+            return;
+        }
+
+        let temporizadorBusqueda = null;
+
+        ui.botonCerrarAccesoRapidoTactil?.addEventListener('click', function () {
+            cerrarModalAccesoRapidoTactil(ui);
+        });
+
+        ui.botonCancelarAccesoRapidoTactil?.addEventListener('click', function () {
+            cerrarModalAccesoRapidoTactil(ui);
+        });
+
+        ui.modalAccesoRapidoTactil.addEventListener('click', function (evento) {
+            if (evento.target === ui.modalAccesoRapidoTactil) {
+                cerrarModalAccesoRapidoTactil(ui);
+            }
+        });
+
+        ui.inputBuscarProductoAccesoRapido?.addEventListener('input', function () {
+            window.clearTimeout(temporizadorBusqueda);
+
+            temporizadorBusqueda = window.setTimeout(function () {
+                buscarProductosAccesoRapido(ui);
+            }, 260);
+        });
+
+        ui.resultadosAccesoRapidoTactil?.addEventListener('click', function (evento) {
+            const item = evento.target.closest('[data-config-product-id]');
+
+            if (!item) {
+                return;
+            }
+
+            seleccionarProductoAccesoRapido(item, ui);
+        });
+
+        ui.formAccesoRapidoTactil.addEventListener('submit', async function (evento) {
+            evento.preventDefault();
+            await guardarAccesoRapidoTactil(ui);
+        });
+
+        document.addEventListener('keydown', function (evento) {
+            if (evento.key === 'Escape' && !ui.modalAccesoRapidoTactil.hidden) {
+                cerrarModalAccesoRapidoTactil(ui);
+            }
+        });
+    }
+
+    function abrirModalAccesoRapidoTactil(posicion, ui) {
+        limpiarModalAccesoRapidoTactil(ui);
+
+        if (ui.inputSlotAccesoRapidoTactil) {
+            ui.inputSlotAccesoRapidoTactil.value = posicion || '';
+        }
+
+        ui.modalAccesoRapidoTactil.hidden = false;
+        document.body.classList.add('ventas-modal-open');
+
+        window.requestAnimationFrame(function () {
+            ui.inputBuscarProductoAccesoRapido?.focus();
+        });
+    }
+
+    function cerrarModalAccesoRapidoTactil(ui) {
+        ui.modalAccesoRapidoTactil.hidden = true;
+        document.body.classList.remove('ventas-modal-open');
+    }
+
+    function limpiarModalAccesoRapidoTactil(ui) {
+        if (ui.formAccesoRapidoTactil) {
+            ui.formAccesoRapidoTactil.reset();
+        }
+
+        if (ui.inputProductoAccesoRapidoTactil) {
+            ui.inputProductoAccesoRapidoTactil.value = '';
+        }
+
+        if (ui.productoAccesoRapidoSeleccionado) {
+            ui.productoAccesoRapidoSeleccionado.hidden = true;
+            ui.productoAccesoRapidoSeleccionado.textContent = '';
+        }
+
+        if (ui.botonGuardarAccesoRapidoTactil) {
+            ui.botonGuardarAccesoRapidoTactil.disabled = true;
+        }
+
+        if (ui.resultadosAccesoRapidoTactil) {
+            ui.resultadosAccesoRapidoTactil.innerHTML = `
+            <div class="ventas-quick-config-empty">
+                Escribe para buscar un producto.
+            </div>
+        `;
+        }
+    }
+
+    async function buscarProductosAccesoRapido(ui) {
+        const termino = ui.inputBuscarProductoAccesoRapido?.value.trim() || '';
+        const url = ui.inputBuscarProductoAccesoRapido?.dataset.searchUrl || '/ventas/productos/buscar';
+
+        if (!ui.resultadosAccesoRapidoTactil) {
+            return;
+        }
+
+        if (termino.length < 1) {
+            ui.resultadosAccesoRapidoTactil.innerHTML = `
+        <div class="ventas-quick-config-empty">
+            Escribe para buscar un producto.
+        </div>
+    `;
+            return;
+        }
+
+        ui.resultadosAccesoRapidoTactil.innerHTML = `
+        <div class="ventas-quick-config-empty">
+            Buscando productos...
+        </div>
+    `;
+
+        try {
+            const respuesta = await fetch(`${url}?busqueda=${encodeURIComponent(termino)}`);
+            const datos = await respuesta.json();
+
+            if (!datos.ok || !Array.isArray(datos.productos) || datos.productos.length === 0) {
+                ui.resultadosAccesoRapidoTactil.innerHTML = `
+                <div class="ventas-quick-config-empty">
+                    No se encontraron productos.
+                </div>
+            `;
+                return;
+            }
+
+            ui.resultadosAccesoRapidoTactil.innerHTML = datos.productos
+                .map(construirResultadoAccesoRapido)
+                .join('');
+        } catch (error) {
+            console.error('Error buscando producto para acceso rápido:', error);
+
+            ui.resultadosAccesoRapidoTactil.innerHTML = `
+            <div class="ventas-quick-config-empty">
+                No se pudo buscar productos.
+            </div>
+        `;
+        }
+    }
+
+    function construirResultadoAccesoRapido(producto) {
+        const iniciales = obtenerInicialesProducto(producto.nombre);
+        const imagen = producto.imagen_url
+            ? `<img src="${escaparHtml(producto.imagen_url)}" alt="${escaparHtml(producto.nombre)}">`
+            : `<b>${escaparHtml(iniciales)}</b>`;
+
+        return `
+        <button type="button"
+            class="ventas-quick-config-item"
+            data-config-product-id="${producto.id_producto}"
+            data-config-product-name="${escaparHtml(producto.nombre)}">
+            <span class="ventas-quick-config-thumb">
+                ${imagen}
+            </span>
+
+            <span>
+                <strong>${escaparHtml(producto.nombre)}</strong>
+                <small>${formatearPesos(producto.precio_venta)} · ${escaparHtml(producto.codigo_interno || 'Sin código')}</small>
+            </span>
+        </button>
+    `;
+    }
+
+    function seleccionarProductoAccesoRapido(item, ui) {
+        const idProducto = item.dataset.configProductId || '';
+        const nombreProducto = item.dataset.configProductName || 'Producto';
+
+        if (ui.inputProductoAccesoRapidoTactil) {
+            ui.inputProductoAccesoRapidoTactil.value = idProducto;
+        }
+
+        if (ui.productoAccesoRapidoSeleccionado) {
+            ui.productoAccesoRapidoSeleccionado.hidden = false;
+            ui.productoAccesoRapidoSeleccionado.textContent = `Seleccionado: ${nombreProducto}`;
+        }
+
+        if (ui.botonGuardarAccesoRapidoTactil) {
+            ui.botonGuardarAccesoRapidoTactil.disabled = false;
+        }
+    }
+
+    async function guardarAccesoRapidoTactil(ui) {
+        const idProducto = ui.inputProductoAccesoRapidoTactil?.value || '';
+        const posicion = ui.inputSlotAccesoRapidoTactil?.value || '';
+        const url = ui.formAccesoRapidoTactil?.dataset.configUrl || '/ventas/pos-tactil/acceso-rapido';
+
+        if (!idProducto || !posicion) {
+            mostrarAviso('Selecciona un producto para el acceso rápido.', 'error');
+            return;
+        }
+
+        const textoOriginal = ui.botonGuardarAccesoRapidoTactil?.textContent || 'Guardar acceso';
+
+        if (ui.botonGuardarAccesoRapidoTactil) {
+            ui.botonGuardarAccesoRapidoTactil.disabled = true;
+            ui.botonGuardarAccesoRapidoTactil.textContent = 'Guardando...';
+        }
+
+        try {
+            const respuesta = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id_producto: idProducto,
+                    posicion,
+                }),
+            });
+
+            const datos = await respuesta.json();
+
+            if (!datos.ok) {
+                mostrarAviso(datos.mensaje || 'No se pudo configurar el acceso rápido.', 'error');
+                return;
+            }
+
+            window.location.reload();
+        } catch (error) {
+            console.error('Error configurando acceso rápido:', error);
+            mostrarAviso('No se pudo configurar el acceso rápido.', 'error');
+        } finally {
+            if (ui.botonGuardarAccesoRapidoTactil) {
+                ui.botonGuardarAccesoRapidoTactil.textContent = textoOriginal;
+                ui.botonGuardarAccesoRapidoTactil.disabled = false;
+            }
+        }
+    }
+
     function renderizarCarrito(ui, estado) {
         if (!ui.carritoItems) return;
 
@@ -1312,12 +1581,21 @@
                         <span class="ventas-line-index">${indice + 1}</span>
                     </td>
 
-                    <td>
-                        <div class="ventas-cart-product">
-                            <strong>${escaparHtml(item.nombre)}</strong>
-                            <small>${escaparHtml(item.unidad)} · ${item.manejaIva ? `IVA ${item.porcentajeIva}%` : 'Sin IVA'}</small>
-                        </div>
-                    </td>
+<td>
+    <div class="ventas-cart-product ventas-cart-product-visual">
+        <span class="ventas-cart-product-image">
+            ${item.imagenUrl
+                    ? `<img src="${escaparHtml(item.imagenUrl)}" alt="${escaparHtml(item.nombre)}">`
+                    : `<b>${escaparHtml(obtenerInicialesProducto(item.nombre))}</b>`
+                }
+        </span>
+
+        <span class="ventas-cart-product-copy">
+            <strong>${escaparHtml(item.nombre)}</strong>
+            <small>${escaparHtml(item.unidad)} · ${item.manejaIva ? `IVA ${item.porcentajeIva}%` : 'Sin IVA'}</small>
+        </span>
+    </div>
+</td>
 
                     <td class="text-center">
                         <div class="ventas-cart-qty">

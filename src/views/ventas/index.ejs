@@ -288,6 +288,7 @@
                                                                     data-product-has-tax="<%= manejaIva ? 1 : 0 %>"
                                                                     data-product-price-includes-tax="<%= Number(producto.precio_incluye_iva || 0) %>"
                                                                     data-product-can-sell="<%= puedeVenderProducto ? 1 : 0 %>"
+                                                                    data-product-image="<%= producto.imagen_url || '' %>"
                                                                     <%=puedeVenderProducto && puedeVender ? ''
                                                                     : 'disabled' %>>
 
@@ -321,8 +322,10 @@
                                                                 <% }) %>
 
                                                                     <% for (let i=0; i < espaciosVaciosTactil; i++) { %>
-                                                                        <div
-                                                                            class="ventas-quick-card ventas-quick-card-empty">
+                                                                        <button type="button"
+                                                                            class="ventas-quick-card ventas-quick-card-empty"
+                                                                            data-touch-empty-slot
+                                                                            data-slot-position="<%= productosRapidosTactil.length + i + 1 %>">
                                                                             <span class="ventas-quick-image">
                                                                                 <span>+</span>
                                                                             </span>
@@ -335,7 +338,7 @@
                                                                             <span class="ventas-quick-price">
                                                                                 Configurar
                                                                             </span>
-                                                                        </div>
+                                                                        </button>
                                                                         <% } %>
                                                     </div>
                                                     <% } %>
@@ -523,6 +526,54 @@
                                             </div>
                                         </section>
                                     </section>
+        </div>
+
+        <div class="ventas-modal-backdrop" id="modalAccesoRapidoTactil" hidden>
+            <section class="ventas-modal ventas-quick-config-modal" role="dialog" aria-modal="true">
+                <header class="ventas-modal-header">
+                    <div>
+                        <span class="ventas-kicker">POS táctil</span>
+                        <h3>Configurar acceso rápido</h3>
+                        <p>Selecciona un producto existente para ocupar este espacio.</p>
+                    </div>
+
+                    <button type="button" class="ventas-modal-close" id="btnCerrarAccesoRapidoTactil">
+                        ×
+                    </button>
+                </header>
+
+                <form id="formAccesoRapidoTactil" class="ventas-quick-config-form"
+                    data-config-url="/ventas/pos-tactil/acceso-rapido">
+                    <input type="hidden" id="slotAccesoRapidoTactil" name="posicion">
+                    <input type="hidden" id="productoAccesoRapidoTactil" name="id_producto">
+
+                    <label class="ventas-field">
+                        <span>Buscar producto</span>
+                        <input type="search" id="buscarProductoAccesoRapido" placeholder="Nombre, código o SKU..."
+                            autocomplete="off" data-search-url="/ventas/productos/buscar">
+                    </label>
+
+                    <div class="ventas-quick-config-selected" id="productoAccesoRapidoSeleccionado" hidden>
+                        Producto seleccionado
+                    </div>
+
+                    <div class="ventas-quick-config-results" id="resultadosAccesoRapidoTactil">
+                        <div class="ventas-quick-config-empty">
+                            Escribe para buscar un producto.
+                        </div>
+                    </div>
+
+                    <footer class="ventas-modal-actions">
+                        <button type="button" class="btn-secondary" id="btnCancelarAccesoRapidoTactil">
+                            Cancelar
+                        </button>
+
+                        <button type="submit" class="btn-primary" id="btnGuardarAccesoRapidoTactil" disabled>
+                            Guardar acceso
+                        </button>
+                    </footer>
+                </form>
+            </section>
         </div>
 
         <div class="ventas-modal-backdrop" id="modalClienteRapido" hidden>

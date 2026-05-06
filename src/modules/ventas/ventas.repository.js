@@ -1947,6 +1947,38 @@ function anularVentaCompleta(datos) {
     return transaccion();
 }
 
+function configurarProductoPosTactil({ idProducto, posicion }) {
+    const asignar = db.transaction(function () {
+        db.prepare(`
+            UPDATE productos
+            SET
+                mostrar_en_pos_tactil = 0,
+                orden_pos_tactil = NULL,
+                actualizado_en = CURRENT_TIMESTAMP
+            WHERE eliminado_en IS NULL
+              AND orden_pos_tactil = @posicion
+        `).run({
+            posicion,
+        });
+
+        return db.prepare(`
+            UPDATE productos
+            SET
+                mostrar_en_pos_tactil = 1,
+                orden_pos_tactil = @posicion,
+                actualizado_en = CURRENT_TIMESTAMP
+            WHERE id_producto = @id_producto
+              AND eliminado_en IS NULL
+              AND estado = 'activo'
+        `).run({
+            id_producto: idProducto,
+            posicion,
+        });
+    });
+
+    return asignar();
+}
+
 module.exports = {
     obtenerTurnoAbierto,
     obtenerConfiguracionNegocio,
@@ -1960,6 +1992,7 @@ module.exports = {
     buscarProductosParaVenta,
     listarProductosPosTactil,
     obtenerProductoParaVenta,
+    configurarProductoPosTactil,
     listarVentasRecientes,
     listarHistorialVentas,
     contarHistorialVentas,

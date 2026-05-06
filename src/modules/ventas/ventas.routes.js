@@ -17,6 +17,9 @@ router.get('/historial', ventasController.mostrarHistorial);
 
 router.get('/productos/buscar', ventasController.buscarProductos);
 router.get('/clientes/buscar', ventasController.buscarClientes);
+
+router.post('/pos-tactil/acceso-rapido', ventasController.configurarAccesoRapidoPosTactil);
+
 router.get('/productos/:id', ventasController.obtenerProducto);
 
 router.get('/:id/anular/preparar', ventasController.prepararAnulacionVenta);

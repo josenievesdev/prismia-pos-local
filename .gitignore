@@ -1,3 +1,4 @@
+# Dependencias
 node_modules/
 
 # Variables de entorno
@@ -8,30 +9,50 @@ node_modules/
 # Logs
 logs/
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # Builds / distribución
 dist/
 build/
 coverage/
+out/
+release/
 
-# Sistema operativo
+# Sistema operativo / editores
 .DS_Store
 Thumbs.db
+desktop.ini
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
 
-# Uploads futuros
-public/uploads/*
+# Uploads generales
+public/uploads/**
+!public/uploads/
 !public/uploads/.gitkeep
 
-src/public/uploads/*
+src/public/uploads/**
+!src/public/uploads/
 !src/public/uploads/.gitkeep
+!src/public/uploads/productos/
+!src/public/uploads/productos/.gitkeep
 
 # Base de datos local SQLite
 src/database/data/*.sqlite
 src/database/data/*.sqlite-shm
 src/database/data/*.sqlite-wal
+src/database/data/*.sqlite-journal
 src/database/data/*.db
 src/database/data/*.db-shm
 src/database/data/*.db-wal
+src/database/data/*.db-journal
+
+# Backups locales de base de datos
+src/database/data/*backup*
+src/database/data/*respaldo*
+src/database/data/*.bak
 
 # Certificados HTTPS locales
 certs/
@@ -39,3 +60,10 @@ certs/
 *.key
 *.crt
 *.p12
+
+# Archivos temporales
+tmp/
+temp/
+*.tmp
+*.swp
+*.swo

@@ -1749,6 +1749,55 @@ function anularVentaCompleta({ idVenta, idUsuario, payload = {} } = {}) {
     }
 }
 
+function configurarAccesoRapidoPosTactil(payload = {}) {
+    const idProducto = normalizarId(payload.id_producto);
+    const posicion = normalizarEntero(payload.posicion);
+
+    if (!idProducto) {
+        return {
+            ok: false,
+            codigoEstado: 400,
+            mensaje: 'Selecciona un producto válido.',
+        };
+    }
+
+    if (!Number.isInteger(posicion) || posicion < 1 || posicion > 6) {
+        return {
+            ok: false,
+            codigoEstado: 400,
+            mensaje: 'La posición del acceso rápido debe estar entre 1 y 6.',
+        };
+    }
+
+    const producto = ventasRepository.obtenerProductoParaVenta(idProducto);
+
+    if (!producto) {
+        return {
+            ok: false,
+            codigoEstado: 404,
+            mensaje: 'No se encontró el producto o no está activo.',
+        };
+    }
+
+    const resultado = ventasRepository.configurarProductoPosTactil({
+        idProducto,
+        posicion,
+    });
+
+    if (!resultado || resultado.changes === 0) {
+        return {
+            ok: false,
+            codigoEstado: 400,
+            mensaje: 'No se pudo asignar el producto al POS táctil.',
+        };
+    }
+
+    return {
+        ok: true,
+        mensaje: 'Acceso rápido actualizado correctamente.',
+    };
+}
+
 module.exports = {
     obtenerEstadoPOS,
     buscarProductos,
@@ -1764,4 +1813,5 @@ module.exports = {
 
     prepararAnulacionVenta,
     anularVentaCompleta,
+    configurarAccesoRapidoPosTactil,
 };
