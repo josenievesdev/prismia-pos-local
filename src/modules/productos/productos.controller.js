@@ -1,4 +1,14 @@
+const fs = require('fs');
+const path = require('path');
+
 const productosService = require('./productos.service');
+
+const carpetaUploadsProductos = path.join(
+    __dirname,
+    '../../public/uploads/productos'
+);
+
+const prefijoPublicoImagenesProducto = '/uploads/productos/';
 
 const estilosProductos = ['/css/modules/productos.css'];
 
@@ -12,16 +22,67 @@ function prepararProductoParaFormulario(producto) {
     };
 }
 
+function obtenerRutaFisicaImagenProducto(imagenUrl) {
+    const valor = String(imagenUrl || '').trim();
+
+    if (!valor.startsWith(prefijoPublicoImagenesProducto)) {
+        return null;
+    }
+
+    const nombreArchivo = path.basename(valor);
+
+    if (!nombreArchivo || nombreArchivo === '.' || nombreArchivo === '..') {
+        return null;
+    }
+
+    const carpetaSegura = path.resolve(carpetaUploadsProductos);
+    const rutaFisica = path.resolve(carpetaSegura, nombreArchivo);
+
+    if (!rutaFisica.startsWith(`${carpetaSegura}${path.sep}`)) {
+        return null;
+    }
+
+    return rutaFisica;
+}
+
+function eliminarImagenProductoSegura(imagenUrl) {
+    const rutaFisica = obtenerRutaFisicaImagenProducto(imagenUrl);
+
+    if (!rutaFisica) {
+        return;
+    }
+
+    try {
+        if (fs.existsSync(rutaFisica)) {
+            fs.unlinkSync(rutaFisica);
+        }
+    } catch (error) {
+        console.warn('No se pudo eliminar la imagen del producto:', error.message);
+    }
+}
+
+function eliminarImagenSubidaTemporal(req) {
+    if (!req.file?.filename) {
+        return;
+    }
+
+    eliminarImagenProductoSegura(`${prefijoPublicoImagenesProducto}${req.file.filename}`);
+}
+
 function prepararBodyConImagen(req) {
     const datos = { ...req.body };
 
     if (req.file) {
-        datos.imagen_url = `/uploads/productos/${req.file.filename}`;
+        datos.imagen_url = `${prefijoPublicoImagenesProducto}${req.file.filename}`;
+        return datos;
+    }
+
+    if (datos.quitar_imagen_producto) {
+        datos.imagen_url = '';
     }
 
     return datos;
 }
-
 function listarProductos(req, res) {
     const resultado = productosService.listarProductos({
         busqueda: req.query.busqueda,
@@ -119,6 +180,8 @@ function crearProducto(req, res) {
         userAgent: req.headers['user-agent'],
     });
     if (!resultado.ok) {
+        eliminarImagenSubidaTemporal(req);
+
         return res.status(400).render('productos/formulario', {
             titulo: 'Nuevo producto',
             modo: 'crear',
@@ -126,6 +189,7 @@ function crearProducto(req, res) {
             unidades,
             producto: prepararProductoParaFormulario({
                 ...datosFormulario,
+                imagen_url: '',
                 controla_inventario: req.body.controla_inventario ? 1 : 0,
                 permite_venta_sin_stock: req.body.permite_venta_sin_stock ? 1 : 0,
                 maneja_iva: req.body.maneja_iva ? 1 : 0,
@@ -187,6 +251,12 @@ function actualizarProducto(req, res) {
     });
 
     if (!resultado.ok) {
+        eliminarImagenSubidaTemporal(req);
+
+        const imagenFormulario = req.file
+            ? productoActual.imagen_url
+            : datosFormulario.imagen_url;
+
         return res.status(400).render('productos/formulario', {
             titulo: 'Editar producto',
             modo: 'editar',
@@ -195,6 +265,7 @@ function actualizarProducto(req, res) {
             producto: prepararProductoParaFormulario({
                 ...productoActual,
                 ...datosFormulario,
+                imagen_url: imagenFormulario,
                 controla_inventario: req.body.controla_inventario ? 1 : 0,
                 permite_venta_sin_stock: req.body.permite_venta_sin_stock ? 1 : 0,
                 maneja_iva: req.body.maneja_iva ? 1 : 0,
@@ -203,6 +274,13 @@ function actualizarProducto(req, res) {
             error: resultado.mensaje,
             estilosModulo: estilosProductos,
         });
+    }
+
+    if (
+        productoActual.imagen_url &&
+        productoActual.imagen_url !== datosFormulario.imagen_url
+    ) {
+        eliminarImagenProductoSegura(productoActual.imagen_url);
     }
 
     return res.redirect(

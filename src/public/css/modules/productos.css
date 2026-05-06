@@ -347,6 +347,19 @@
     font-size: 13px;
 }
 
+.product-remove-image-option {
+    border-color: rgba(220, 38, 38, 0.22);
+    background: rgba(254, 242, 242, 0.72);
+}
+
+.product-remove-image-option strong {
+    color: #991b1b;
+}
+
+.product-remove-image-option small {
+    color: #7f1d1d;
+}
+
 @media (max-width: 820px) {
     .product-touch-grid {
         grid-template-columns: 1fr;

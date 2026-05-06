@@ -117,27 +117,43 @@
                                     </small>
                                 </div>
 
-                                <div class="checkbox-grid product-checkbox-grid">
-                                    <label class="check-option">
-                                        <input type="checkbox" name="mostrar_en_pos_tactil" value="1"
-                                            <%=Number(producto.mostrar_en_pos_tactil)===1 ? 'checked' : '' %>
-                                        >
+                                <% if (modo==='editar' && producto.imagen_url) { %>
+                                    <label class="check-option product-remove-image-option">
+                                        <input type="checkbox" name="quitar_imagen_producto" value="1">
                                         <span>
-                                            <strong>Mostrar en POS táctil</strong>
-                                            <small>Este producto aparecerá en las cards rápidas del modo táctil.</small>
+                                            <strong>Quitar imagen actual</strong>
+                                            <small>
+                                                La imagen se eliminará del producto y del almacenamiento local al
+                                                guardar.
+                                            </small>
                                         </span>
                                     </label>
-                                </div>
+                                    <% } %>
 
-                                <div class="form-group">
-                                    <label for="orden_pos_tactil">Orden en POS táctil</label>
-                                    <input type="number" id="orden_pos_tactil" name="orden_pos_tactil" min="1" step="1"
-                                        value="<%= producto.orden_pos_tactil || '' %>" placeholder="Ej: 1">
-                                    <small class="field-help">
-                                        Usa números del 1 al 6 para ordenar las cards principales. Si queda vacío, se
-                                        ordena al final.
-                                    </small>
-                                </div>
+                                        <div class="checkbox-grid product-checkbox-grid">
+                                            <label class="check-option">
+                                                <input type="checkbox" name="mostrar_en_pos_tactil" value="1"
+                                                    <%=Number(producto.mostrar_en_pos_tactil)===1 ? 'checked' : '' %>
+                                                >
+                                                <span>
+                                                    <strong>Mostrar en POS táctil</strong>
+                                                    <small>Este producto aparecerá en las cards rápidas del modo
+                                                        táctil.</small>
+                                                </span>
+                                            </label>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="orden_pos_tactil">Orden en POS táctil</label>
+                                            <input type="number" id="orden_pos_tactil" name="orden_pos_tactil" min="1"
+                                                step="1" value="<%= producto.orden_pos_tactil || '' %>"
+                                                placeholder="Ej: 1">
+                                            <small class="field-help">
+                                                Usa números del 1 al 6 para ordenar las cards principales. Si queda
+                                                vacío, se
+                                                ordena al final.
+                                            </small>
+                                        </div>
                             </div>
                         </div>
                     </div>
