@@ -11,6 +11,7 @@ router.use(requiereRol('administrador'));
 
 router.get('/', backupsController.mostrarBackups);
 router.post('/crear', backupsController.crearBackupManual);
+router.post('/abrir-carpeta', backupsController.abrirCarpetaBackups);
 router.get('/descargar/:archivo', backupsController.descargarBackup);
 
 module.exports = router;

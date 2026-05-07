@@ -43,6 +43,16 @@ async function crearBackupManual(req, res) {
     return res.redirect(`/backups?exito=${encodeURIComponent(mensajeExito)}`);
 }
 
+function abrirCarpetaBackups(req, res) {
+    const resultado = backupsService.abrirCarpetaBackups();
+
+    if (!resultado.ok) {
+        return res.redirect(`/backups?error=${encodeURIComponent(resultado.mensaje)}`);
+    }
+
+    return res.redirect(`/backups?exito=${encodeURIComponent(resultado.mensaje)}`);
+}
+
 function descargarBackup(req, res) {
     const rutaBackup = backupsService.obtenerRutaBackupDescarga(req.params.archivo);
 
@@ -66,5 +76,6 @@ function descargarBackup(req, res) {
 module.exports = {
     mostrarBackups,
     crearBackupManual,
+    abrirCarpetaBackups,
     descargarBackup,
 };

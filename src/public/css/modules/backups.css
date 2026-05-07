@@ -41,6 +41,13 @@
     line-height: 1.55;
 }
 
+.backups-actions-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
 .backups-actions-form {
     display: flex;
     align-items: center;

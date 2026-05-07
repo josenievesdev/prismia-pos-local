@@ -40,11 +40,20 @@
                                         </div>
                                     </div>
 
-                                    <form method="POST" action="/backups/crear" class="backups-actions-form">
-                                        <button type="submit" class="btn-primary">
-                                            Crear backup ahora
-                                        </button>
-                                    </form>
+                                    <div class="backups-actions-row">
+                                        <form method="POST" action="/backups/crear" class="backups-actions-form">
+                                            <button type="submit" class="btn-primary">
+                                                Crear backup ahora
+                                            </button>
+                                        </form>
+
+                                        <form method="POST" action="/backups/abrir-carpeta"
+                                            class="backups-actions-form">
+                                            <button type="submit" class="btn-secondary">
+                                                Abrir carpeta
+                                            </button>
+                                        </form>
+                                    </div>
 
                                     <div class="backups-note">
                                         Durante esta primera fase el backup se guarda localmente. Si configuraste

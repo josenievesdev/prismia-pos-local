@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { spawn } = require('child_process');
 const archiver = require('archiver');
 
 const db = require('../../config/db');
@@ -70,6 +71,10 @@ function copiarDirectorio(origen, destino) {
     const entradas = fs.readdirSync(origen, { withFileTypes: true });
 
     entradas.forEach((entrada) => {
+        if (entrada.name === '.gitkeep') {
+            return;
+        }
+
         const rutaOrigen = path.join(origen, entrada.name);
         const rutaDestino = path.join(destino, entrada.name);
 
@@ -347,6 +352,47 @@ function obtenerEstadoBackups() {
     };
 }
 
+function abrirRutaEnSistema(ruta) {
+    try {
+        asegurarCarpeta(ruta);
+
+        let comando;
+        let argumentos;
+
+        if (process.platform === 'win32') {
+            comando = 'explorer';
+            argumentos = [ruta];
+        } else if (process.platform === 'darwin') {
+            comando = 'open';
+            argumentos = [ruta];
+        } else {
+            comando = 'xdg-open';
+            argumentos = [ruta];
+        }
+
+        const proceso = spawn(comando, argumentos, {
+            detached: true,
+            stdio: 'ignore',
+        });
+
+        proceso.unref();
+
+        return {
+            ok: true,
+            mensaje: 'Carpeta de backups abierta correctamente.',
+        };
+    } catch (error) {
+        return {
+            ok: false,
+            mensaje: `No se pudo abrir la carpeta: ${error.message}`,
+        };
+    }
+}
+
+function abrirCarpetaBackups() {
+    return abrirRutaEnSistema(carpetaBackupsManuales);
+}
+
 function obtenerRutaBackupDescarga(nombreArchivo) {
     const archivoSeguro = path.basename(String(nombreArchivo || ''));
 
@@ -372,4 +418,5 @@ module.exports = {
     crearBackupManual,
     obtenerEstadoBackups,
     obtenerRutaBackupDescarga,
+    abrirCarpetaBackups,
 };
