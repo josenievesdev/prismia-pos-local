@@ -72,3 +72,8 @@ temp/
 storage/backups/
 storage/tmp/
 *.zip.tmp
+
+# Reinicio técnico local de desarrollo
+.restart-dev.json
+src/.restart-dev.json
+src/restart-dev-trigger.json

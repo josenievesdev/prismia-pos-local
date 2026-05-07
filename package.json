@@ -25,6 +25,7 @@
   "author": "Nieves Systems",
   "license": "ISC",
   "dependencies": {
+    "adm-zip": "^0.5.17",
     "archiver": "^7.0.1",
     "bcryptjs": "^2.4.3",
     "better-sqlite3": "^12.9.0",

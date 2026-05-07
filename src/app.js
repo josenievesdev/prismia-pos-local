@@ -1,3 +1,4 @@
+const fs = require('fs');
 const express = require('express');
 const path = require('path');
 const helmet = require('helmet');
@@ -27,6 +28,8 @@ const catalogosRoutes = require('./modules/catalogos/catalogos.routes');
 const backupsRoutes = require('./modules/backups/backups.routes');
 
 const app = express();
+
+app.locals.restauracionPendiente = false;
 
 /**
  * Configuración del motor de vistas
@@ -71,10 +74,197 @@ app.use(
  */
 app.use(express.static(path.join(__dirname, 'public')));
 
+function renderPantallaReinicioPendiente(res) {
+    return res.status(503).send(`
+        <!doctype html>
+        <html lang="es">
+        <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>Reinicio requerido · Prismia POS Local</title>
+            <style>
+                :root {
+                    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+                    background: #f8fafc;
+                    color: #0f172a;
+                }
+
+                * {
+                    box-sizing: border-box;
+                }
+
+                body {
+                    min-height: 100vh;
+                    margin: 0;
+                    display: grid;
+                    place-items: center;
+                    padding: 24px;
+                    background:
+                        radial-gradient(circle at top left, rgba(79, 70, 229, 0.12), transparent 34%),
+                        linear-gradient(135deg, #f8fafc, #eef2ff);
+                }
+
+                .card {
+                    width: min(620px, 100%);
+                    padding: 30px;
+                    border: 1px solid rgba(226, 232, 240, 0.95);
+                    border-radius: 24px;
+                    background: rgba(255, 255, 255, 0.96);
+                    box-shadow: 0 24px 80px rgba(15, 23, 42, 0.16);
+                }
+
+                .badge {
+                    width: 46px;
+                    height: 46px;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 999px;
+                    background: rgba(245, 158, 11, 0.13);
+                    color: #b45309;
+                    font-size: 24px;
+                    font-weight: 900;
+                    margin-bottom: 16px;
+                }
+
+                h1 {
+                    margin: 0 0 10px;
+                    font-size: 26px;
+                    letter-spacing: -0.03em;
+                }
+
+                p {
+                    margin: 0 0 14px;
+                    color: #475569;
+                    line-height: 1.6;
+                    font-size: 15px;
+                }
+
+                .warning {
+                    margin-top: 18px;
+                    padding: 14px 16px;
+                    border: 1px solid rgba(245, 158, 11, 0.26);
+                    border-radius: 16px;
+                    background: rgba(255, 251, 235, 0.92);
+                    color: #78350f;
+                    font-size: 14px;
+                    line-height: 1.55;
+                }
+
+                .meta {
+                    margin-top: 18px;
+                    display: grid;
+                    gap: 8px;
+                    padding: 14px 16px;
+                    border-radius: 16px;
+                    background: #f8fafc;
+                    border: 1px solid rgba(226, 232, 240, 0.9);
+                    font-size: 13px;
+                    color: #334155;
+                }
+
+                .meta strong {
+                    color: #0f172a;
+                }
+
+                code {
+                    padding: 2px 6px;
+                    border-radius: 8px;
+                    background: rgba(15, 23, 42, 0.06);
+                    color: #334155;
+                }
+            </style>
+        </head>
+        <body>
+            <main class="card">
+                <div class="badge">!</div>
+
+                <h1>Reinicio requerido</h1>
+
+                <p>
+                    La restauración ya fue aplicada y la conexión SQLite fue cerrada para proteger la base de datos.
+                </p>
+
+                <div class="warning">
+                    <strong>No sigas usando esta ventana.</strong><br>
+                    Prismia necesita reiniciarse para abrir nuevamente la base restaurada.
+                </div>
+
+                <div class="meta">
+                    <div>
+                        <strong>En desarrollo:</strong>
+                        si nodemon no reinicia solo, escribe <code>rs</code> en la terminal.
+                    </div>
+                    <div>
+                        <strong>Alternativa:</strong>
+                        presiona <code>Ctrl + C</code> y ejecuta <code>npm run dev:https</code>.
+                    </div>
+                </div>
+            </main>
+        </body>
+        </html>
+    `);
+}
+
+/**
+ * Bloqueo seguro después de restaurar.
+ * Evita errores 500 cuando la base ya fue cerrada y el proceso aún no reinicia.
+ */
+app.use((req, res, next) => {
+    if (!app.locals.restauracionPendiente) {
+        return next();
+    }
+
+    const rutasPermitidas = [
+        '/__restauracion-finalizada',
+        '/favicon.ico',
+    ];
+
+    if (rutasPermitidas.includes(req.path)) {
+        return next();
+    }
+
+    if (
+        req.path.startsWith('/css/') ||
+        req.path.startsWith('/js/') ||
+        req.path.startsWith('/img/') ||
+        req.path.startsWith('/uploads/')
+    ) {
+        return next();
+    }
+
+    return renderPantallaReinicioPendiente(res);
+});
+
 /**
  * Variables disponibles en todas las vistas
  */
 app.use(localsMiddleware);
+
+/**
+ * Ruta técnica para finalizar restauración.
+ * En desarrollo escribe un archivo dentro de src para que nodemon reinicie.
+ */
+app.get('/__restauracion-finalizada', (req, res) => {
+    app.locals.restauracionPendiente = true;
+
+    res.status(204).end();
+
+    setTimeout(() => {
+        try {
+            fs.writeFileSync(
+                path.resolve(process.cwd(), 'src/restart-dev-trigger.json'),
+                JSON.stringify({
+                    motivo: 'restauracion_backup',
+                    fecha: new Date().toISOString(),
+                }, null, 2),
+                'utf8'
+            );
+        } catch (error) {
+            console.warn('No se pudo marcar reinicio técnico:', error.message);
+        }
+    }, 300);
+});
 
 /**
  * Ruta de salud del sistema

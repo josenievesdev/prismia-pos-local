@@ -4,7 +4,7 @@
             <p class="eyebrow">Seguridad de datos</p>
             <h2>Backups</h2>
             <p>
-                Crea respaldos completos de la base SQLite y de las imágenes de productos.
+                Crea, descarga y restaura respaldos completos de la base SQLite y de las imágenes de productos.
             </p>
         </div>
     </div>
@@ -56,7 +56,7 @@
                                     </div>
 
                                     <div class="backups-note">
-                                        Durante esta primera fase el backup se guarda localmente. Si configuraste
+                                        El backup se guarda localmente. Si configuraste
                                         <code>BACKUP_EXTERNAL_PATH</code>, también se copia a esa ruta externa.
                                     </div>
                                 </article>
@@ -102,11 +102,61 @@
                                 </article>
                             </section>
 
+                            <article class="module-card backups-card backups-restore-card">
+                                <div class="backups-card-head">
+                                    <div>
+                                        <span class="eyebrow">Restauración</span>
+                                        <h3>Restaurar desde backup ZIP</h3>
+                                        <p>
+                                            Valida el ZIP, verifica hashes, crea un backup de emergencia y reemplaza la
+                                            base de datos
+                                            y las imágenes de productos por las del respaldo seleccionado.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="backups-danger-note">
+                                    <strong>Atención:</strong>
+                                    restaurar un backup reemplaza los datos actuales. Prismia creará primero un backup
+                                    de emergencia
+                                    del estado actual antes de aplicar la restauración.
+                                </div>
+
+                                <form method="POST" action="/backups/restaurar" enctype="multipart/form-data"
+                                    class="backups-restore-form">
+                                    <div class="form-group">
+                                        <label for="archivo_backup">Archivo ZIP de backup</label>
+                                        <input class="backup-file-input" type="file" id="archivo_backup"
+                                            name="archivo_backup" accept=".zip" required>
+                                        <small class="field-help">
+                                            Usa un archivo generado desde Prismia. No uses ZIPs editados manualmente.
+                                        </small>
+                                    </div>
+
+                                    <label class="check-option restore-confirm-option">
+                                        <input type="checkbox" name="confirmar_restauracion" value="1" required>
+                                        <span>
+                                            <strong>Entiendo que esta acción reemplazará los datos actuales.</strong>
+                                            <small>
+                                                Antes de restaurar, Prismia creará un backup de emergencia del estado
+                                                actual.
+                                            </small>
+                                        </span>
+                                    </label>
+
+                                    <div class="backups-actions-row">
+                                        <button type="submit" class="btn-danger-soft">
+                                            Restaurar backup
+                                        </button>
+                                    </div>
+                                </form>
+                            </article>
+
                             <article class="module-card backups-card">
                                 <div class="backups-card-head backups-card-head-row">
                                     <div>
                                         <span class="eyebrow">Historial</span>
-                                        <h3>Backups manuales</h3>
+                                        <h3>Backups disponibles</h3>
                                         <p>Archivos generados desde Prismia en esta instalación local.</p>
                                     </div>
                                 </div>

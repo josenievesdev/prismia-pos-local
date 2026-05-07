@@ -165,3 +165,68 @@
         gap: 4px;
     }
 }
+
+/* ===== Restauración de backups ===== */
+.backups-restore-card {
+    border-color: rgba(220, 38, 38, 0.18);
+    background: linear-gradient(135deg, rgba(254, 226, 226, 0.72), #fff 42%);
+}
+
+.backups-danger-note {
+    padding: 13px 14px;
+    border: 1px solid rgba(220, 38, 38, 0.2);
+    border-radius: 14px;
+    background: rgba(254, 242, 242, 0.86);
+    color: #7f1d1d;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.backups-danger-note strong {
+    color: #991b1b;
+}
+
+.backups-restore-form {
+    display: grid;
+    gap: 14px;
+}
+
+.backup-file-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px dashed rgba(148, 163, 184, 0.8);
+    border-radius: 12px;
+    background: rgba(248, 250, 252, 0.84);
+    color: #334155;
+    font-size: 13px;
+}
+
+.restore-confirm-option {
+    border-color: rgba(220, 38, 38, 0.22);
+    background: rgba(254, 242, 242, 0.72);
+}
+
+.restore-confirm-option strong {
+    color: #991b1b;
+}
+
+.restore-confirm-option small {
+    color: #7f1d1d;
+}
+
+.btn-danger-soft {
+    min-height: 38px;
+    padding: 0 15px;
+    border: 1px solid rgba(220, 38, 38, 0.26);
+    border-radius: 10px;
+    background: rgba(254, 226, 226, 0.92);
+    color: #b91c1c;
+    font-size: 13px;
+    font-weight: 850;
+    cursor: pointer;
+}
+
+.btn-danger-soft:hover {
+    border-color: rgba(220, 38, 38, 0.42);
+    background: rgba(254, 202, 202, 0.96);
+}
