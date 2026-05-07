@@ -19,6 +19,11 @@ const env = {
         secret: process.env.SESSION_SECRET || 'prismia_pos_local_dev_secret',
     },
 
+    backups: {
+        baseDir: process.env.BACKUP_BASE_DIR || 'storage/backups',
+        externalPath: process.env.BACKUP_EXTERNAL_PATH || '',
+    },
+
     admin: {
         name: process.env.ADMIN_NAME || 'Administrador',
         email: process.env.ADMIN_EMAIL || 'admin@prismia.local',

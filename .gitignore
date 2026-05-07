@@ -67,3 +67,8 @@ temp/
 *.tmp
 *.swp
 *.swo
+
+# Backups generados por Prismia
+storage/backups/
+storage/tmp/
+*.zip.tmp

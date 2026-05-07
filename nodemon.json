@@ -1,0 +1,19 @@
+{
+    "ignore": [
+        "storage/**",
+        "src/database/data/**",
+        "src/public/uploads/**",
+        "public/uploads/**",
+        "certs/**",
+        "logs/**",
+        "*.sqlite",
+        "*.sqlite-wal",
+        "*.sqlite-shm",
+        "*.db",
+        "*.zip"
+    ],
+    "ext": "js,json,ejs,css",
+    "watch": [
+        "src"
+    ]
+}

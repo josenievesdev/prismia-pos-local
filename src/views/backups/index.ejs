@@ -1,0 +1,163 @@
+<section class="module-page backups-page">
+    <div class="module-header module-header-actions">
+        <div>
+            <p class="eyebrow">Seguridad de datos</p>
+            <h2>Backups</h2>
+            <p>
+                Crea respaldos completos de la base SQLite y de las imágenes de productos.
+            </p>
+        </div>
+    </div>
+
+    <% if (exito) { %>
+        <div class="alert alert-success">
+            <%= exito %>
+        </div>
+        <% } %>
+
+            <% if (alerta) { %>
+                <div class="alert alert-warning">
+                    <%= alerta %>
+                </div>
+                <% } %>
+
+                    <% if (error) { %>
+                        <div class="alert alert-danger">
+                            <%= error %>
+                        </div>
+                        <% } %>
+
+                            <section class="backups-grid">
+                                <article class="module-card backups-card backups-card-primary">
+                                    <div class="backups-card-head">
+                                        <div>
+                                            <span class="eyebrow">Backup manual</span>
+                                            <h3>Crear respaldo completo</h3>
+                                            <p>
+                                                Genera un archivo ZIP con la base de datos, imágenes de productos,
+                                                metadata y manifest de integridad.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <form method="POST" action="/backups/crear" class="backups-actions-form">
+                                        <button type="submit" class="btn-primary">
+                                            Crear backup ahora
+                                        </button>
+                                    </form>
+
+                                    <div class="backups-note">
+                                        Durante esta primera fase el backup se guarda localmente. Si configuraste
+                                        <code>BACKUP_EXTERNAL_PATH</code>, también se copia a esa ruta externa.
+                                    </div>
+                                </article>
+
+                                <article class="module-card backups-card">
+                                    <div class="backups-card-head">
+                                        <div>
+                                            <span class="eyebrow">Estado</span>
+                                            <h3>Resumen de respaldos</h3>
+                                            <p>Información del último backup y rutas activas.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="backups-status-list">
+                                        <div>
+                                            <span>Total backups</span>
+                                            <strong>
+                                                <%= totalBackups %>
+                                            </strong>
+                                        </div>
+
+                                        <div>
+                                            <span>Último backup</span>
+                                            <strong>
+                                                <%= ultimoBackup ? ultimoBackup.fecha_legible : 'Sin backups' %>
+                                            </strong>
+                                        </div>
+
+                                        <div>
+                                            <span>Ruta interna</span>
+                                            <code><%= rutasBackups.internos %></code>
+                                        </div>
+
+                                        <div>
+                                            <span>Ruta externa</span>
+                                            <% if (rutasBackups.externa_activa) { %>
+                                                <code><%= rutasBackups.externa_configurada %></code>
+                                                <% } else { %>
+                                                    <strong class="backups-muted">No configurada</strong>
+                                                    <% } %>
+                                        </div>
+                                    </div>
+                                </article>
+                            </section>
+
+                            <article class="module-card backups-card">
+                                <div class="backups-card-head backups-card-head-row">
+                                    <div>
+                                        <span class="eyebrow">Historial</span>
+                                        <h3>Backups manuales</h3>
+                                        <p>Archivos generados desde Prismia en esta instalación local.</p>
+                                    </div>
+                                </div>
+
+                                <% if (!Array.isArray(backups) || backups.length===0) { %>
+                                    <div class="empty-state">
+                                        <h3>No hay backups todavía</h3>
+                                        <p>Crea el primer respaldo para proteger la base de datos y las imágenes.</p>
+                                    </div>
+                                    <% } else { %>
+                                        <div class="table-wrapper backups-table-wrapper">
+                                            <table class="data-table backups-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Archivo</th>
+                                                        <th>Tipo</th>
+                                                        <th>Fecha</th>
+                                                        <th class="text-right">Tamaño</th>
+                                                        <th class="text-right">Acción</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <% backups.forEach(function (backup) { %>
+                                                        <tr>
+                                                            <td>
+                                                                <strong>
+                                                                    <%= backup.archivo %>
+                                                                </strong>
+                                                            </td>
+                                                            <td>
+                                                                <%= backup.tipo %>
+                                                            </td>
+                                                            <td>
+                                                                <%= backup.fecha_legible %>
+                                                            </td>
+                                                            <td class="text-right">
+                                                                <%= backup.tamano %>
+                                                            </td>
+                                                            <td class="text-right">
+                                                                <a class="btn-secondary btn-small"
+                                                                    href="/backups/descargar/<%= encodeURIComponent(backup.archivo) %>">
+                                                                    Descargar
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                        <% }) %>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <% } %>
+                            </article>
+
+                            <article class="module-card backups-card backups-warning-card">
+                                <span class="eyebrow">Importante</span>
+                                <h3>Un backup local no protege contra robo del equipo</h3>
+                                <p>
+                                    Para proteger datos de clientes reales, configura una ruta externa: USB,
+                                    disco externo, carpeta de red, OneDrive, Google Drive o Dropbox instalado en
+                                    Windows.
+                                    Prismia copiará el ZIP a esa ruta cuando exista <code>BACKUP_EXTERNAL_PATH</code>.
+                                </p>
+                            </article>
+</section>

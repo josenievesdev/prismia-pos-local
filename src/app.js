@@ -24,6 +24,7 @@ const remisionesRoutes = require('./modules/remisiones/remisiones.routes');
 const notasCreditoRoutes = require('./modules/notasCredito/notasCredito.routes');
 const reportesRoutes = require('./modules/reportes/reportes.routes');
 const catalogosRoutes = require('./modules/catalogos/catalogos.routes');
+const backupsRoutes = require('./modules/backups/backups.routes');
 
 const app = express();
 
@@ -113,6 +114,7 @@ app.use('/remisiones', remisionesRoutes);
 app.use('/notas-credito', notasCreditoRoutes);
 app.use('/reportes', reportesRoutes);
 app.use('/catalogos', catalogosRoutes);
+app.use('/backups', backupsRoutes);
 
 /**
  * Ruta 404
