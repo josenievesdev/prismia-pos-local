@@ -65,464 +65,495 @@
             </div>
             <% } %>
 
-                <% if (error) { %>
-                    <div class="alert alert-error">
-                        <%= error %>
+                <% if (alertaBackup) { %>
+                    <div class="alert alert-warning">
+                        <%= alertaBackup %>
                     </div>
                     <% } %>
 
-                        <% if (!turnoAbierto) { %>
-                            <article class="module-card caja-empty-card">
-                                <div>
-                                    <p class="eyebrow">Sin turno activo</p>
-                                    <h3>No hay caja abierta</h3>
-                                    <p>
-                                        Para vender o registrar movimientos de efectivo, primero debes abrir caja con
-                                        una base inicial.
-                                    </p>
-                                </div>
+                        <% if (error) { %>
+                            <div class="alert alert-error">
+                                <%= error %>
+                            </div>
+                            <% } %>
 
-                                <a href="/caja/abrir" class="btn-primary">Abrir caja ahora</a>
-                            </article>
-                            <% } else { %>
-                                <section class="caja-active-grid">
-                                    <article class="module-card caja-status-card">
-                                        <div class="caja-status-top">
-                                            <div>
-                                                <p class="eyebrow">Turno activo</p>
-                                                <h3>Caja #<%= turnoAbierto.id_turno_caja %>
-                                                </h3>
-                                            </div>
-
-                                            <span class="badge badge-success">Abierta</span>
-                                        </div>
-
-                                        <div class="caja-meta-grid">
-                                            <div>
-                                                <span>Abierta por</span>
-                                                <strong>
-                                                    <%= turnoAbierto.usuario_apertura_nombre || 'Usuario' %>
-                                                </strong>
-                                            </div>
-
-                                            <div>
-                                                <span>Fecha de apertura</span>
-                                                <strong>
-                                                    <%= formatearFecha(turnoAbierto.fecha_apertura) %>
-                                                </strong>
-                                            </div>
-                                        </div>
-
-                                        <% if (turnoAbierto.observaciones_apertura) { %>
-                                            <div class="caja-note">
-                                                <span>Observación</span>
-                                                <p>
-                                                    <%= turnoAbierto.observaciones_apertura %>
-                                                </p>
-                                            </div>
-                                            <% } %>
-                                    </article>
-
-                                    <article class="module-card caja-summary-card">
-                                        <p class="eyebrow">Resumen del efectivo</p>
-
-                                        <div class="caja-summary-grid">
-                                            <div>
-                                                <span>Base inicial</span>
-                                                <strong>
-                                                    <%= formatearPesos(turnoAbierto.monto_inicial) %>
-                                                </strong>
-                                            </div>
-
-                                            <div>
-                                                <span>Ventas en efectivo</span>
-                                                <strong>
-                                                    <%= formatearPesos(turnoAbierto.total_efectivo) %>
-                                                </strong>
-                                            </div>
-
-                                            <div>
-                                                <span>Ingresos manuales</span>
-                                                <strong>
-                                                    <%= formatearPesos(turnoAbierto.total_ingresos_manuales) %>
-                                                </strong>
-                                            </div>
-
-                                            <div>
-                                                <span>Egresos manuales</span>
-                                                <strong>
-                                                    <%= formatearPesos(turnoAbierto.total_egresos_manuales) %>
-                                                </strong>
-                                            </div>
-                                        </div>
-
-                                        <div class="caja-expected-box">
-                                            <span>Efectivo esperado actual</span>
-                                            <strong>
-                                                <%= formatearPesos(turnoAbierto.monto_esperado_calculado) %>
-                                            </strong>
-                                        </div>
-                                    </article>
-                                </section>
-
-                                <article class="module-card caja-operativo-card">
-                                    <div class="caja-section-head">
+                                <% if (!turnoAbierto) { %>
+                                    <article class="module-card caja-empty-card">
                                         <div>
-                                            <span class="caja-section-eyebrow">Resumen operativo</span>
-                                            <h3>Ingresos y egresos por medio de pago</h3>
+                                            <p class="eyebrow">Sin turno activo</p>
+                                            <h3>No hay caja abierta</h3>
                                             <p>
-                                                Consolidado del turno actual agrupado por efectivo, transferencias,
-                                                tarjetas y otros medios.
+                                                Para vender o registrar movimientos de efectivo, primero debes abrir
+                                                caja con
+                                                una base inicial.
                                             </p>
                                         </div>
 
-                                        <span class="caja-section-count">
-                                            <strong>
-                                                <%= totalesResumen.cantidad_operaciones %>
-                                            </strong>
-                                            operaciones
-                                        </span>
-                                    </div>
+                                        <a href="/caja/abrir" class="btn-primary">Abrir caja ahora</a>
+                                    </article>
+                                    <% } else { %>
+                                        <section class="caja-active-grid">
+                                            <article class="module-card caja-status-card">
+                                                <div class="caja-status-top">
+                                                    <div>
+                                                        <p class="eyebrow">Turno activo</p>
+                                                        <h3>Caja #<%= turnoAbierto.id_turno_caja %>
+                                                        </h3>
+                                                    </div>
 
-                                    <div class="caja-operativo-totales">
-                                        <div class="caja-operativo-total-box">
-                                            <span>Total ingresos</span>
-                                            <strong>
-                                                <%= formatearPesos(totalesResumen.total_ingresos) %>
-                                            </strong>
-                                        </div>
+                                                    <span class="badge badge-success">Abierta</span>
+                                                </div>
 
-                                        <div class="caja-operativo-total-box">
-                                            <span>Total egresos</span>
-                                            <strong>
-                                                <%= formatearPesos(totalesResumen.total_egresos) %>
-                                            </strong>
-                                        </div>
+                                                <div class="caja-meta-grid">
+                                                    <div>
+                                                        <span>Abierta por</span>
+                                                        <strong>
+                                                            <%= turnoAbierto.usuario_apertura_nombre || 'Usuario' %>
+                                                        </strong>
+                                                    </div>
 
-                                        <div class="caja-operativo-total-box">
-                                            <span>Saldo neto operativo</span>
-                                            <strong>
-                                                <%= formatearPesos(totalesResumen.saldo_neto) %>
-                                            </strong>
-                                        </div>
+                                                    <div>
+                                                        <span>Fecha de apertura</span>
+                                                        <strong>
+                                                            <%= formatearFecha(turnoAbierto.fecha_apertura) %>
+                                                        </strong>
+                                                    </div>
+                                                </div>
 
-                                        <div class="caja-operativo-total-box">
-                                            <span>Medios activos</span>
-                                            <strong>
-                                                <%= totalMediosPago %>
-                                            </strong>
-                                        </div>
-                                    </div>
+                                                <% if (turnoAbierto.observaciones_apertura) { %>
+                                                    <div class="caja-note">
+                                                        <span>Observación</span>
+                                                        <p>
+                                                            <%= turnoAbierto.observaciones_apertura %>
+                                                        </p>
+                                                    </div>
+                                                    <% } %>
+                                            </article>
 
-                                    <div class="table-wrapper caja-operativo-table-wrapper">
-                                        <table class="data-table caja-table caja-operativo-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Grupo</th>
-                                                    <th>Medio</th>
-                                                    <th class="text-center">Ops.</th>
-                                                    <th class="text-right">Ingresos</th>
-                                                    <th class="text-right">Egresos</th>
-                                                    <th class="text-right">Neto</th>
-                                                </tr>
-                                            </thead>
+                                            <article class="module-card caja-summary-card">
+                                                <p class="eyebrow">Resumen del efectivo</p>
 
-                                            <tbody>
-                                                <% resumenMediosTabla.forEach((medio)=> { %>
-                                                    <% const totalIngresos=Number(medio.total_ingresos || 0); const
-                                                        totalEgresos=Number(medio.total_egresos || 0); const
-                                                        saldoNeto=Number(medio.saldo_neto || 0); const
-                                                        claseNeto=saldoNeto> 0
-                                                        ? 'caja-neto-positivo'
-                                                        : saldoNeto < 0 ? 'caja-neto-negativo' : 'caja-neto-cero' ;
-                                                            const signoNeto=saldoNeto> 0
-                                                            ? '+'
-                                                            : saldoNeto < 0 ? '-' : '' ; %>
+                                                <div class="caja-summary-grid">
+                                                    <div>
+                                                        <span>Base inicial</span>
+                                                        <strong>
+                                                            <%= formatearPesos(turnoAbierto.monto_inicial) %>
+                                                        </strong>
+                                                    </div>
 
-                                                                <tr
-                                                                    class="<%= medio.cantidad_operaciones > 0 ? 'caja-operativo-row-activa' : 'caja-operativo-row-vacia' %>">
-                                                                    <td>
-                                                                        <span class="caja-operativo-grupo-badge">
-                                                                            <%= medio.grupo %>
-                                                                        </span>
-                                                                    </td>
+                                                    <div>
+                                                        <span>Ventas en efectivo</span>
+                                                        <strong>
+                                                            <%= formatearPesos(turnoAbierto.total_efectivo) %>
+                                                        </strong>
+                                                    </div>
 
-                                                                    <td>
-                                                                        <div class="caja-operativo-medio-cell">
-                                                                            <strong>
-                                                                                <%= medio.nombre %>
-                                                                            </strong>
+                                                    <div>
+                                                        <span>Ingresos manuales</span>
+                                                        <strong>
+                                                            <%= formatearPesos(turnoAbierto.total_ingresos_manuales) %>
+                                                        </strong>
+                                                    </div>
 
-                                                                            <% if (Number(medio.afecta_efectivo_caja ||
-                                                                                0)===1) { %>
-                                                                                <span>Afecta efectivo físico</span>
-                                                                                <% } else { %>
-                                                                                    <span>No afecta efectivo
-                                                                                        físico</span>
-                                                                                    <% } %>
-                                                                        </div>
-                                                                    </td>
+                                                    <div>
+                                                        <span>Egresos manuales</span>
+                                                        <strong>
+                                                            <%= formatearPesos(turnoAbierto.total_egresos_manuales) %>
+                                                        </strong>
+                                                    </div>
+                                                </div>
 
-                                                                    <td class="text-center">
-                                                                        <strong>
-                                                                            <%= medio.cantidad_operaciones %>
-                                                                        </strong>
-                                                                    </td>
+                                                <div class="caja-expected-box">
+                                                    <span>Efectivo esperado actual</span>
+                                                    <strong>
+                                                        <%= formatearPesos(turnoAbierto.monto_esperado_calculado) %>
+                                                    </strong>
+                                                </div>
+                                            </article>
+                                        </section>
 
-                                                                    <td class="text-right">
-                                                                        <span
-                                                                            class="<%= totalIngresos > 0 ? 'caja-operativo-ingreso' : 'caja-operativo-cero' %>">
-                                                                            <%= totalIngresos> 0 ? '+ ' : '' %><%=
-                                                                                    formatearPesos(totalIngresos) %>
-                                                                        </span>
-                                                                    </td>
+                                        <article class="module-card caja-operativo-card">
+                                            <div class="caja-section-head">
+                                                <div>
+                                                    <span class="caja-section-eyebrow">Resumen operativo</span>
+                                                    <h3>Ingresos y egresos por medio de pago</h3>
+                                                    <p>
+                                                        Consolidado del turno actual agrupado por efectivo,
+                                                        transferencias,
+                                                        tarjetas y otros medios.
+                                                    </p>
+                                                </div>
 
-                                                                    <td class="text-right">
-                                                                        <span
-                                                                            class="<%= totalEgresos > 0 ? 'caja-operativo-egreso' : 'caja-operativo-cero' %>">
-                                                                            <%= totalEgresos> 0 ? '- ' : '' %><%=
-                                                                                    formatearPesos(totalEgresos) %>
-                                                                        </span>
-                                                                    </td>
+                                                <span class="caja-section-count">
+                                                    <strong>
+                                                        <%= totalesResumen.cantidad_operaciones %>
+                                                    </strong>
+                                                    operaciones
+                                                </span>
+                                            </div>
 
-                                                                    <td class="text-right">
-                                                                        <strong
-                                                                            class="caja-operativo-neto <%= claseNeto %>">
-                                                                            <%= signoNeto %>
-                                                                                <%= formatearPesos(Math.abs(saldoNeto))
-                                                                                    %>
-                                                                        </strong>
-                                                                    </td>
-                                                                </tr>
-                                                                <% }) %>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </article>
+                                            <div class="caja-operativo-totales">
+                                                <div class="caja-operativo-total-box">
+                                                    <span>Total ingresos</span>
+                                                    <strong>
+                                                        <%= formatearPesos(totalesResumen.total_ingresos) %>
+                                                    </strong>
+                                                </div>
 
-                                <article class="module-card caja-movimientos-card caja-scroll-card">
-                                    <div class="caja-section-head">
-                                        <div>
-                                            <span class="caja-section-eyebrow">Detalle operativo</span>
-                                            <h3>Movimientos registrados en este turno</h3>
-                                            <p>
-                                                Listado cronológico de ventas, ingresos, egresos y soportes generados
-                                                durante la caja.
-                                            </p>
-                                        </div>
+                                                <div class="caja-operativo-total-box">
+                                                    <span>Total egresos</span>
+                                                    <strong>
+                                                        <%= formatearPesos(totalesResumen.total_egresos) %>
+                                                    </strong>
+                                                </div>
 
-                                        <span class="caja-section-count">
-                                            <strong>
-                                                <%= movimientosListado.length %>
-                                            </strong>
-                                            registrados
-                                        </span>
-                                    </div>
+                                                <div class="caja-operativo-total-box">
+                                                    <span>Saldo neto operativo</span>
+                                                    <strong>
+                                                        <%= formatearPesos(totalesResumen.saldo_neto) %>
+                                                    </strong>
+                                                </div>
 
-                                    <% if (movimientosListado.length===0) { %>
-                                        <div class="empty-state">
-                                            <h3>Sin movimientos todavía</h3>
-                                            <p>
-                                                Por ahora solo quedó activa la apertura. En la siguiente fase se agregan
-                                                ingresos, egresos y gastos desde caja.
-                                            </p>
-                                        </div>
-                                        <% } else { %>
-                                            <div class="table-wrapper">
-                                                <table class="data-table caja-table caja-movimientos-table">
+                                                <div class="caja-operativo-total-box">
+                                                    <span>Medios activos</span>
+                                                    <strong>
+                                                        <%= totalMediosPago %>
+                                                    </strong>
+                                                </div>
+                                            </div>
+
+                                            <div class="table-wrapper caja-operativo-table-wrapper">
+                                                <table class="data-table caja-table caja-operativo-table">
                                                     <thead>
                                                         <tr>
-                                                            <th>Fecha</th>
-                                                            <th>Movimiento</th>
-                                                            <th>Medio / soporte</th>
-                                                            <th>Descripción</th>
-                                                            <th>Usuario</th>
-                                                            <th class="text-right">Monto</th>
+                                                            <th>Grupo</th>
+                                                            <th>Medio</th>
+                                                            <th class="text-center">Ops.</th>
+                                                            <th class="text-right">Ingresos</th>
+                                                            <th class="text-right">Egresos</th>
+                                                            <th class="text-right">Neto</th>
                                                         </tr>
                                                     </thead>
 
                                                     <tbody>
-                                                        <% movimientosListado.forEach((movimiento)=> { %>
-                                                            <% const esEgreso=[ 'egreso_manual' , 'devolucion'
-                                                                , 'anulacion' ].includes(movimiento.tipo_movimiento);
-                                                                const claseMonto=esEgreso ? 'monto-egreso'
-                                                                : 'monto-ingreso' ; const signoMonto=esEgreso ? '-'
-                                                                : '+' ; %>
+                                                        <% resumenMediosTabla.forEach((medio)=> { %>
+                                                            <% const totalIngresos=Number(medio.total_ingresos || 0);
+                                                                const totalEgresos=Number(medio.total_egresos || 0);
+                                                                const saldoNeto=Number(medio.saldo_neto || 0); const
+                                                                claseNeto=saldoNeto> 0
+                                                                ? 'caja-neto-positivo'
+                                                                : saldoNeto < 0 ? 'caja-neto-negativo'
+                                                                    : 'caja-neto-cero' ; const signoNeto=saldoNeto> 0
+                                                                    ? '+'
+                                                                    : saldoNeto < 0 ? '-' : '' ; %>
 
-                                                                <tr>
-                                                                    <td>
-                                                                        <span class="caja-table-date">
-                                                                            <%= formatearFecha(movimiento.creado_en) %>
-                                                                        </span>
-                                                                    </td>
-
-                                                                    <td>
-                                                                        <span
-                                                                            class="badge <%= esEgreso ? 'badge-error-soft' : 'badge-success' %>">
-                                                                            <%= movimiento.tipo_movimiento_texto %>
-                                                                        </span>
-                                                                    </td>
-
-                                                                    <td>
-                                                                        <div class="caja-payment-cell">
-                                                                            <strong>
-                                                                                <%= movimiento.metodo_pago_texto %>
-                                                                            </strong>
-
-                                                                            <% if (movimiento.referencia_pago ||
-                                                                                movimiento.entidad_pago) { %>
-                                                                                <span>
-                                                                                    <% if (movimiento.entidad_pago) { %>
-                                                                                        <%= movimiento.entidad_pago %>
-                                                                                            <% } %>
-
-                                                                                                <% if
-                                                                                                    (movimiento.entidad_pago
-                                                                                                    &&
-                                                                                                    movimiento.referencia_pago)
-                                                                                                    { %>
-                                                                                                    ·
-                                                                                                    <% } %>
-
-                                                                                                        <% if
-                                                                                                            (movimiento.referencia_pago)
-                                                                                                            { %>
-                                                                                                            Ref. <%=
-                                                                                                                movimiento.referencia_pago
-                                                                                                                %>
-                                                                                                                <% } %>
+                                                                        <tr
+                                                                            class="<%= medio.cantidad_operaciones > 0 ? 'caja-operativo-row-activa' : 'caja-operativo-row-vacia' %>">
+                                                                            <td>
+                                                                                <span
+                                                                                    class="caja-operativo-grupo-badge">
+                                                                                    <%= medio.grupo %>
                                                                                 </span>
-                                                                                <% } else { %>
-                                                                                    <span>Sin referencia</span>
-                                                                                    <% } %>
-                                                                        </div>
-                                                                    </td>
+                                                                            </td>
 
-                                                                    <td>
-                                                                        <span class="caja-description-cell">
-                                                                            <%= movimiento.descripcion
-                                                                                || 'Sin descripción' %>
-                                                                        </span>
-                                                                    </td>
+                                                                            <td>
+                                                                                <div class="caja-operativo-medio-cell">
+                                                                                    <strong>
+                                                                                        <%= medio.nombre %>
+                                                                                    </strong>
 
-                                                                    <td>
-                                                                        <%= movimiento.usuario_nombre || 'Usuario' %>
-                                                                    </td>
+                                                                                    <% if
+                                                                                        (Number(medio.afecta_efectivo_caja
+                                                                                        || 0)===1) { %>
+                                                                                        <span>Afecta efectivo
+                                                                                            físico</span>
+                                                                                        <% } else { %>
+                                                                                            <span>No afecta efectivo
+                                                                                                físico</span>
+                                                                                            <% } %>
+                                                                                </div>
+                                                                            </td>
 
-                                                                    <td class="text-right">
-                                                                        <strong class="<%= claseMonto %>">
-                                                                            <%= signoMonto %>
-                                                                                <%= formatearPesos(movimiento.monto) %>
-                                                                        </strong>
-                                                                    </td>
-                                                                </tr>
-                                                                <% }) %>
+                                                                            <td class="text-center">
+                                                                                <strong>
+                                                                                    <%= medio.cantidad_operaciones %>
+                                                                                </strong>
+                                                                            </td>
+
+                                                                            <td class="text-right">
+                                                                                <span
+                                                                                    class="<%= totalIngresos > 0 ? 'caja-operativo-ingreso' : 'caja-operativo-cero' %>">
+                                                                                    <%= totalIngresos> 0 ? '+ ' : '' %>
+                                                                                        <%= formatearPesos(totalIngresos)
+                                                                                            %>
+                                                                                </span>
+                                                                            </td>
+
+                                                                            <td class="text-right">
+                                                                                <span
+                                                                                    class="<%= totalEgresos > 0 ? 'caja-operativo-egreso' : 'caja-operativo-cero' %>">
+                                                                                    <%= totalEgresos> 0 ? '- ' : '' %>
+                                                                                        <%= formatearPesos(totalEgresos)
+                                                                                            %>
+                                                                                </span>
+                                                                            </td>
+
+                                                                            <td class="text-right">
+                                                                                <strong
+                                                                                    class="caja-operativo-neto <%= claseNeto %>">
+                                                                                    <%= signoNeto %>
+                                                                                        <%= formatearPesos(Math.abs(saldoNeto))
+                                                                                            %>
+                                                                                </strong>
+                                                                            </td>
+                                                                        </tr>
+                                                                        <% }) %>
                                                     </tbody>
                                                 </table>
                                             </div>
-                                            <% } %>
-                                </article>
-                                <% } %>
+                                        </article>
 
-                                    <article class="module-card caja-historial-card caja-scroll-card">
-                                        <div class="caja-section-head">
-                                            <div>
-                                                <span class="caja-section-eyebrow">Historial de caja</span>
-                                                <h3>Últimos turnos registrados</h3>
-                                                <p>
-                                                    Consulta rápida de aperturas, cierres, valores esperados, conteos y
-                                                    diferencias.
-                                                </p>
-                                            </div>
-
-                                            <span class="caja-section-count">
-                                                <strong>
-                                                    <%= turnosListado.length %>
-                                                </strong>
-                                                turnos
-                                            </span>
-                                        </div>
-
-                                        <% if (turnosListado.length===0) { %>
-                                            <div class="empty-state">
-                                                <h3>No hay turnos registrados</h3>
-                                                <p>
-                                                    Cuando abras y cierres caja, aparecerá aquí el historial operativo.
-                                                </p>
-                                            </div>
-                                            <% } else { %>
-                                                <div class="table-wrapper caja-historial-wrapper">
-                                                    <table class="data-table caja-table caja-historial-table">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Turno</th>
-                                                                <th>Estado</th>
-                                                                <th>Apertura</th>
-                                                                <th>Cierre</th>
-                                                                <th>Usuario</th>
-                                                                <th class="text-right">Esperado</th>
-                                                                <th class="text-right">Contado</th>
-                                                                <th class="text-right">Diferencia</th>
-                                                            </tr>
-                                                        </thead>
-
-                                                        <tbody>
-                                                            <% turnosListado.forEach((turno)=> { %>
-                                                                <tr>
-                                                                    <td>
-                                                                        <div class="caja-turno-cell">
-                                                                            <strong>#<%= turno.id_turno_caja %></strong>
-
-                                                                            <a href="/caja/turnos/<%= turno.id_turno_caja %>"
-                                                                                class="btn-table-action">
-                                                                                Ver arqueo
-                                                                            </a>
-                                                                        </div>
-                                                                    </td>
-
-                                                                    <td>
-                                                                        <% if (turno.estado==='abierto' ) { %>
-                                                                            <span
-                                                                                class="badge badge-success">Abierto</span>
-                                                                            <% } else { %>
-                                                                                <span
-                                                                                    class="badge badge-muted">Cerrado</span>
-                                                                                <% } %>
-                                                                    </td>
-
-                                                                    <td>
-                                                                        <%= formatearFecha(turno.fecha_apertura) %>
-                                                                    </td>
-
-                                                                    <td>
-                                                                        <%= turno.fecha_cierre ?
-                                                                            formatearFecha(turno.fecha_cierre) : '—' %>
-                                                                    </td>
-
-                                                                    <td>
-                                                                        <%= turno.usuario_apertura_nombre || 'Usuario'
-                                                                            %>
-                                                                    </td>
-
-                                                                    <td class="text-right">
-                                                                        <%= formatearPesos(turno.monto_esperado_calculado)
-                                                                            %>
-                                                                    </td>
-
-                                                                    <td class="text-right">
-                                                                        <%= turno.monto_contado===null ? '—' :
-                                                                            formatearPesos(turno.monto_contado) %>
-                                                                    </td>
-
-                                                                    <td class="text-right">
-                                                                        <%= turno.diferencia===null ? '—' :
-                                                                            formatearPesos(turno.diferencia) %>
-                                                                    </td>
-                                                                </tr>
-                                                                <% }) %>
-                                                        </tbody>
-                                                    </table>
+                                        <article class="module-card caja-movimientos-card caja-scroll-card">
+                                            <div class="caja-section-head">
+                                                <div>
+                                                    <span class="caja-section-eyebrow">Detalle operativo</span>
+                                                    <h3>Movimientos registrados en este turno</h3>
+                                                    <p>
+                                                        Listado cronológico de ventas, ingresos, egresos y soportes
+                                                        generados
+                                                        durante la caja.
+                                                    </p>
                                                 </div>
-                                                <% } %>
-                                    </article>
+
+                                                <span class="caja-section-count">
+                                                    <strong>
+                                                        <%= movimientosListado.length %>
+                                                    </strong>
+                                                    registrados
+                                                </span>
+                                            </div>
+
+                                            <% if (movimientosListado.length===0) { %>
+                                                <div class="empty-state">
+                                                    <h3>Sin movimientos todavía</h3>
+                                                    <p>
+                                                        Por ahora solo quedó activa la apertura. En la siguiente fase se
+                                                        agregan
+                                                        ingresos, egresos y gastos desde caja.
+                                                    </p>
+                                                </div>
+                                                <% } else { %>
+                                                    <div class="table-wrapper">
+                                                        <table class="data-table caja-table caja-movimientos-table">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Fecha</th>
+                                                                    <th>Movimiento</th>
+                                                                    <th>Medio / soporte</th>
+                                                                    <th>Descripción</th>
+                                                                    <th>Usuario</th>
+                                                                    <th class="text-right">Monto</th>
+                                                                </tr>
+                                                            </thead>
+
+                                                            <tbody>
+                                                                <% movimientosListado.forEach((movimiento)=> { %>
+                                                                    <% const esEgreso=[ 'egreso_manual' , 'devolucion'
+                                                                        , 'anulacion'
+                                                                        ].includes(movimiento.tipo_movimiento); const
+                                                                        claseMonto=esEgreso ? 'monto-egreso'
+                                                                        : 'monto-ingreso' ; const signoMonto=esEgreso
+                                                                        ? '-' : '+' ; %>
+
+                                                                        <tr>
+                                                                            <td>
+                                                                                <span class="caja-table-date">
+                                                                                    <%= formatearFecha(movimiento.creado_en)
+                                                                                        %>
+                                                                                </span>
+                                                                            </td>
+
+                                                                            <td>
+                                                                                <span
+                                                                                    class="badge <%= esEgreso ? 'badge-error-soft' : 'badge-success' %>">
+                                                                                    <%= movimiento.tipo_movimiento_texto
+                                                                                        %>
+                                                                                </span>
+                                                                            </td>
+
+                                                                            <td>
+                                                                                <div class="caja-payment-cell">
+                                                                                    <strong>
+                                                                                        <%= movimiento.metodo_pago_texto
+                                                                                            %>
+                                                                                    </strong>
+
+                                                                                    <% if (movimiento.referencia_pago ||
+                                                                                        movimiento.entidad_pago) { %>
+                                                                                        <span>
+                                                                                            <% if
+                                                                                                (movimiento.entidad_pago)
+                                                                                                { %>
+                                                                                                <%= movimiento.entidad_pago
+                                                                                                    %>
+                                                                                                    <% } %>
+
+                                                                                                        <% if
+                                                                                                            (movimiento.entidad_pago
+                                                                                                            &&
+                                                                                                            movimiento.referencia_pago)
+                                                                                                            { %>
+                                                                                                            ·
+                                                                                                            <% } %>
+
+                                                                                                                <% if
+                                                                                                                    (movimiento.referencia_pago)
+                                                                                                                    { %>
+                                                                                                                    Ref.
+                                                                                                                    <%= movimiento.referencia_pago
+                                                                                                                        %>
+                                                                                                                        <% }
+                                                                                                                            %>
+                                                                                        </span>
+                                                                                        <% } else { %>
+                                                                                            <span>Sin referencia</span>
+                                                                                            <% } %>
+                                                                                </div>
+                                                                            </td>
+
+                                                                            <td>
+                                                                                <span class="caja-description-cell">
+                                                                                    <%= movimiento.descripcion
+                                                                                        || 'Sin descripción' %>
+                                                                                </span>
+                                                                            </td>
+
+                                                                            <td>
+                                                                                <%= movimiento.usuario_nombre
+                                                                                    || 'Usuario' %>
+                                                                            </td>
+
+                                                                            <td class="text-right">
+                                                                                <strong class="<%= claseMonto %>">
+                                                                                    <%= signoMonto %>
+                                                                                        <%= formatearPesos(movimiento.monto)
+                                                                                            %>
+                                                                                </strong>
+                                                                            </td>
+                                                                        </tr>
+                                                                        <% }) %>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                    <% } %>
+                                        </article>
+                                        <% } %>
+
+                                            <article class="module-card caja-historial-card caja-scroll-card">
+                                                <div class="caja-section-head">
+                                                    <div>
+                                                        <span class="caja-section-eyebrow">Historial de caja</span>
+                                                        <h3>Últimos turnos registrados</h3>
+                                                        <p>
+                                                            Consulta rápida de aperturas, cierres, valores esperados,
+                                                            conteos y
+                                                            diferencias.
+                                                        </p>
+                                                    </div>
+
+                                                    <span class="caja-section-count">
+                                                        <strong>
+                                                            <%= turnosListado.length %>
+                                                        </strong>
+                                                        turnos
+                                                    </span>
+                                                </div>
+
+                                                <% if (turnosListado.length===0) { %>
+                                                    <div class="empty-state">
+                                                        <h3>No hay turnos registrados</h3>
+                                                        <p>
+                                                            Cuando abras y cierres caja, aparecerá aquí el historial
+                                                            operativo.
+                                                        </p>
+                                                    </div>
+                                                    <% } else { %>
+                                                        <div class="table-wrapper caja-historial-wrapper">
+                                                            <table class="data-table caja-table caja-historial-table">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>Turno</th>
+                                                                        <th>Estado</th>
+                                                                        <th>Apertura</th>
+                                                                        <th>Cierre</th>
+                                                                        <th>Usuario</th>
+                                                                        <th class="text-right">Esperado</th>
+                                                                        <th class="text-right">Contado</th>
+                                                                        <th class="text-right">Diferencia</th>
+                                                                    </tr>
+                                                                </thead>
+
+                                                                <tbody>
+                                                                    <% turnosListado.forEach((turno)=> { %>
+                                                                        <tr>
+                                                                            <td>
+                                                                                <div class="caja-turno-cell">
+                                                                                    <strong>#<%= turno.id_turno_caja %>
+                                                                                            </strong>
+
+                                                                                    <a href="/caja/turnos/<%= turno.id_turno_caja %>"
+                                                                                        class="btn-table-action">
+                                                                                        Ver arqueo
+                                                                                    </a>
+                                                                                </div>
+                                                                            </td>
+
+                                                                            <td>
+                                                                                <% if (turno.estado==='abierto' ) { %>
+                                                                                    <span
+                                                                                        class="badge badge-success">Abierto</span>
+                                                                                    <% } else { %>
+                                                                                        <span
+                                                                                            class="badge badge-muted">Cerrado</span>
+                                                                                        <% } %>
+                                                                            </td>
+
+                                                                            <td>
+                                                                                <%= formatearFecha(turno.fecha_apertura)
+                                                                                    %>
+                                                                            </td>
+
+                                                                            <td>
+                                                                                <%= turno.fecha_cierre ?
+                                                                                    formatearFecha(turno.fecha_cierre)
+                                                                                    : '—' %>
+                                                                            </td>
+
+                                                                            <td>
+                                                                                <%= turno.usuario_apertura_nombre
+                                                                                    || 'Usuario' %>
+                                                                            </td>
+
+                                                                            <td class="text-right">
+                                                                                <%= formatearPesos(turno.monto_esperado_calculado)
+                                                                                    %>
+                                                                            </td>
+
+                                                                            <td class="text-right">
+                                                                                <%= turno.monto_contado===null ? '—' :
+                                                                                    formatearPesos(turno.monto_contado)
+                                                                                    %>
+                                                                            </td>
+
+                                                                            <td class="text-right">
+                                                                                <%= turno.diferencia===null ? '—' :
+                                                                                    formatearPesos(turno.diferencia) %>
+                                                                            </td>
+                                                                        </tr>
+                                                                        <% }) %>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                        <% } %>
+                                            </article>
 </section>

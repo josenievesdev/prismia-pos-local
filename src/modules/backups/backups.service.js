@@ -22,6 +22,7 @@ const carpetaBackupsBase = path.resolve(
 );
 
 const carpetaBackupsManuales = path.join(carpetaBackupsBase, 'manuales');
+const carpetaBackupsAutomaticos = path.join(carpetaBackupsBase, 'automaticos');
 const carpetaBackupsEmergencia = path.join(carpetaBackupsBase, 'emergencia');
 const carpetaBackupsTemporales = path.join(carpetaBackupsBase, 'tmp');
 const carpetaRestauracionesTemporales = path.join(carpetaBackupsBase, 'restore-tmp');
@@ -398,6 +399,21 @@ async function crearBackupManual() {
     });
 }
 
+async function crearBackupAutomaticoCierreTurno(turno = {}) {
+    const idTurno = Number(turno.id_turno_caja || turno.idTurnoCaja || 0);
+    const prefijoTurno = idTurno > 0
+        ? `prismia-backup-auto-cierre-turno-${idTurno}`
+        : 'prismia-backup-auto-cierre-turno';
+
+    return crearBackupCompleto({
+        tipo: 'automatico_cierre_turno',
+        prefijo: prefijoTurno,
+        carpetaDestino: carpetaBackupsAutomaticos,
+        copiarExterno: true,
+        mensajeOk: 'Backup automático por cierre de caja creado correctamente.',
+    });
+}
+
 async function crearBackupEmergenciaRestauracion() {
     return crearBackupCompleto({
         tipo: 'emergencia_restauracion',
@@ -433,6 +449,7 @@ function listarBackupsEnCarpeta(carpeta, tipoVisible) {
 function listarBackupsGenerados() {
     return [
         ...listarBackupsEnCarpeta(carpetaBackupsManuales, 'Manual'),
+        ...listarBackupsEnCarpeta(carpetaBackupsAutomaticos, 'Automático'),
         ...listarBackupsEnCarpeta(carpetaBackupsEmergencia, 'Emergencia'),
     ].sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
 }
@@ -448,6 +465,7 @@ function obtenerEstadoBackups() {
         rutas: {
             internos: carpetaBackupsBase,
             manuales: carpetaBackupsManuales,
+            automaticos: carpetaBackupsAutomaticos,
             emergencias: carpetaBackupsEmergencia,
             externa_configurada: rutaExterna,
             externa_activa: Boolean(rutaExterna),
@@ -505,6 +523,7 @@ function obtenerRutaBackupDescarga(nombreArchivo) {
 
     const carpetasPermitidas = [
         carpetaBackupsManuales,
+        carpetaBackupsAutomaticos,
         carpetaBackupsEmergencia,
     ];
 
@@ -802,6 +821,7 @@ async function restaurarBackupDesdeArchivo(rutaZip) {
 
 module.exports = {
     crearBackupManual,
+    crearBackupAutomaticoCierreTurno,
     obtenerEstadoBackups,
     obtenerRutaBackupDescarga,
     abrirCarpetaBackups,

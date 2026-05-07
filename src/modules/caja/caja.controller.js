@@ -1,4 +1,5 @@
 const cajaService = require('./caja.service');
+const backupsService = require('../backups/backups.service');
 
 const estilosCaja = ['/css/modules/caja.css'];
 
@@ -16,6 +17,7 @@ function mostrarCaja(req, res) {
         mediosPago: estadoCaja.mediosPago,
         mediosPagoAgrupados: estadoCaja.mediosPagoAgrupados,
         mensajeExito: req.query.exito || null,
+        alertaBackup: req.query.alertaBackup || null,
         error: req.query.error || null,
         estilosModulo: estilosCaja,
     });
@@ -186,7 +188,7 @@ function mostrarFormularioCerrar(req, res) {
     });
 }
 
-function cerrarCaja(req, res) {
+async function cerrarCaja(req, res) {
     const resultado = cajaService.cerrarCaja({
         datosFormulario: req.body,
         usuario: req.session?.usuario,
@@ -210,7 +212,38 @@ function cerrarCaja(req, res) {
         });
     }
 
-    return res.redirect(`/caja?exito=${encodeURIComponent(resultado.mensaje)}`);
+    try {
+        const backup = await backupsService.crearBackupAutomaticoCierreTurno(
+            resultado.turnoCerrado
+        );
+
+        if (!backup.ok) {
+            return res.redirect(
+                `/caja?exito=${encodeURIComponent(resultado.mensaje)}&alertaBackup=${encodeURIComponent(backup.mensaje)}`
+            );
+        }
+
+        const copiaExterna = backup.backup?.copia_externa;
+        let mensajeBackup = `Backup automático creado: ${backup.backup.archivo}`;
+
+        if (copiaExterna?.habilitada && copiaExterna.ok) {
+            mensajeBackup += '. Copia externa creada.';
+        }
+
+        if (copiaExterna?.habilitada && !copiaExterna.ok) {
+            mensajeBackup += `. No se pudo crear copia externa: ${copiaExterna.mensaje}`;
+        }
+
+        return res.redirect(
+            `/caja?exito=${encodeURIComponent(resultado.mensaje)}&alertaBackup=${encodeURIComponent(mensajeBackup)}`
+        );
+    } catch (error) {
+        console.error('Error creando backup automático al cerrar caja:', error);
+
+        return res.redirect(
+            `/caja?exito=${encodeURIComponent(resultado.mensaje)}&alertaBackup=${encodeURIComponent('La caja se cerró, pero no se pudo crear el backup automático.')}`
+        );
+    }
 }
 
 function mostrarDetalleTurno(req, res) {
