@@ -23,6 +23,7 @@ const carpetaBackupsBase = path.resolve(
 
 const carpetaBackupsManuales = path.join(carpetaBackupsBase, 'manuales');
 const carpetaBackupsAutomaticos = path.join(carpetaBackupsBase, 'automaticos');
+const carpetaBackupsProgramados = path.join(carpetaBackupsBase, 'programados');
 const carpetaBackupsEmergencia = path.join(carpetaBackupsBase, 'emergencia');
 const carpetaBackupsTemporales = path.join(carpetaBackupsBase, 'tmp');
 const carpetaRestauracionesTemporales = path.join(carpetaBackupsBase, 'restore-tmp');
@@ -65,6 +66,16 @@ function formatearFechaHumana(fecha = new Date()) {
         dateStyle: 'medium',
         timeStyle: 'short',
     }).format(fecha);
+}
+
+function leerEnteroConfig(valor, defecto, minimo = 1) {
+    const numero = Number(valor);
+
+    if (!Number.isFinite(numero) || numero < minimo) {
+        return defecto;
+    }
+
+    return Math.floor(numero);
 }
 
 function formatearBytes(bytes = 0) {
@@ -241,6 +252,45 @@ function eliminarArchivoSeguro(rutaArchivo) {
     }
 }
 
+function obtenerConfiguracionRetencion() {
+    return {
+        automaticos: leerEnteroConfig(env.backups?.retentionAutomaticos, 30, 1),
+        programados: leerEnteroConfig(env.backups?.retentionProgramados, 8, 1),
+        emergencia: leerEnteroConfig(env.backups?.retentionEmergencia, 10, 1),
+    };
+}
+
+function eliminarBackupsExcedentes(carpeta, maximoConservar) {
+    asegurarCarpeta(carpeta);
+
+    const backups = fs
+        .readdirSync(carpeta, { withFileTypes: true })
+        .filter((entrada) => entrada.isFile() && entrada.name.endsWith('.zip'))
+        .map((entrada) => {
+            const ruta = path.join(carpeta, entrada.name);
+            const stats = fs.statSync(ruta);
+
+            return {
+                archivo: entrada.name,
+                ruta,
+                fecha: stats.mtime,
+            };
+        })
+        .sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
+
+    backups.slice(maximoConservar).forEach((backup) => {
+        eliminarArchivoSeguro(backup.ruta);
+    });
+}
+
+function aplicarRetencionBackups() {
+    const retencion = obtenerConfiguracionRetencion();
+
+    eliminarBackupsExcedentes(carpetaBackupsAutomaticos, retencion.automaticos);
+    eliminarBackupsExcedentes(carpetaBackupsProgramados, retencion.programados);
+    eliminarBackupsExcedentes(carpetaBackupsEmergencia, retencion.emergencia);
+}
+
 function obtenerRutaExternaConfigurada() {
     const valor = String(env.backups?.externalPath || '').trim();
 
@@ -364,6 +414,7 @@ async function crearBackupCompleto({
             };
 
         eliminarDirectorioSeguro(carpetaTrabajo);
+        aplicarRetencionBackups();
 
         return {
             ok: true,
@@ -414,6 +465,60 @@ async function crearBackupAutomaticoCierreTurno(turno = {}) {
     });
 }
 
+function obtenerUltimoBackupProgramado() {
+    return listarBackupsEnCarpeta(carpetaBackupsProgramados, 'Programado')
+        .sort((a, b) => b.fecha.getTime() - a.fecha.getTime())[0] || null;
+}
+
+function debeCrearBackupProgramado() {
+    const intervaloDias = leerEnteroConfig(env.backups?.scheduledIntervalDays, 7, 1);
+    const ultimoProgramado = obtenerUltimoBackupProgramado();
+
+    if (!ultimoProgramado) {
+        return {
+            debeCrear: true,
+            intervaloDias,
+            motivo: 'No existe backup programado previo.',
+        };
+    }
+
+    const milisegundosIntervalo = intervaloDias * 24 * 60 * 60 * 1000;
+    const tiempoTranscurrido = Date.now() - ultimoProgramado.fecha.getTime();
+
+    return {
+        debeCrear: tiempoTranscurrido >= milisegundosIntervalo,
+        intervaloDias,
+        motivo: tiempoTranscurrido >= milisegundosIntervalo
+            ? `Ya pasaron ${intervaloDias} días desde el último backup programado.`
+            : 'Aún no corresponde crear backup programado.',
+    };
+}
+
+async function crearBackupProgramadoSiCorresponde() {
+    const decision = debeCrearBackupProgramado();
+
+    if (!decision.debeCrear) {
+        return {
+            ok: true,
+            creado: false,
+            mensaje: decision.motivo,
+        };
+    }
+
+    const resultado = await crearBackupCompleto({
+        tipo: 'programado_periodico',
+        prefijo: `prismia-backup-programado-${decision.intervaloDias}d`,
+        carpetaDestino: carpetaBackupsProgramados,
+        copiarExterno: true,
+        mensajeOk: 'Backup programado creado correctamente.',
+    });
+
+    return {
+        ...resultado,
+        creado: resultado.ok,
+    };
+}
+
 async function crearBackupEmergenciaRestauracion() {
     return crearBackupCompleto({
         tipo: 'emergencia_restauracion',
@@ -450,6 +555,7 @@ function listarBackupsGenerados() {
     return [
         ...listarBackupsEnCarpeta(carpetaBackupsManuales, 'Manual'),
         ...listarBackupsEnCarpeta(carpetaBackupsAutomaticos, 'Automático'),
+        ...listarBackupsEnCarpeta(carpetaBackupsProgramados, 'Programado'),
         ...listarBackupsEnCarpeta(carpetaBackupsEmergencia, 'Emergencia'),
     ].sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
 }
@@ -466,6 +572,7 @@ function obtenerEstadoBackups() {
             internos: carpetaBackupsBase,
             manuales: carpetaBackupsManuales,
             automaticos: carpetaBackupsAutomaticos,
+            programados: carpetaBackupsProgramados,
             emergencias: carpetaBackupsEmergencia,
             externa_configurada: rutaExterna,
             externa_activa: Boolean(rutaExterna),
@@ -524,6 +631,7 @@ function obtenerRutaBackupDescarga(nombreArchivo) {
     const carpetasPermitidas = [
         carpetaBackupsManuales,
         carpetaBackupsAutomaticos,
+        carpetaBackupsProgramados,
         carpetaBackupsEmergencia,
     ];
 
@@ -822,6 +930,7 @@ async function restaurarBackupDesdeArchivo(rutaZip) {
 module.exports = {
     crearBackupManual,
     crearBackupAutomaticoCierreTurno,
+    crearBackupProgramadoSiCorresponde,
     obtenerEstadoBackups,
     obtenerRutaBackupDescarga,
     abrirCarpetaBackups,

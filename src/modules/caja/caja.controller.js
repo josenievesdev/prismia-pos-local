@@ -213,29 +213,52 @@ async function cerrarCaja(req, res) {
     }
 
     try {
+        const mensajesBackup = [];
+
         const backup = await backupsService.crearBackupAutomaticoCierreTurno(
             resultado.turnoCerrado
         );
 
         if (!backup.ok) {
-            return res.redirect(
-                `/caja?exito=${encodeURIComponent(resultado.mensaje)}&alertaBackup=${encodeURIComponent(backup.mensaje)}`
-            );
+            mensajesBackup.push(backup.mensaje);
+        } else {
+            const copiaExterna = backup.backup?.copia_externa;
+
+            let mensajeBackup = `Backup automático creado: ${backup.backup.archivo}`;
+
+            if (copiaExterna?.habilitada && copiaExterna.ok) {
+                mensajeBackup += '. Copia externa creada.';
+            }
+
+            if (copiaExterna?.habilitada && !copiaExterna.ok) {
+                mensajeBackup += `. No se pudo crear copia externa: ${copiaExterna.mensaje}`;
+            }
+
+            mensajesBackup.push(mensajeBackup);
         }
 
-        const copiaExterna = backup.backup?.copia_externa;
-        let mensajeBackup = `Backup automático creado: ${backup.backup.archivo}`;
+        const backupProgramado = await backupsService.crearBackupProgramadoSiCorresponde();
 
-        if (copiaExterna?.habilitada && copiaExterna.ok) {
-            mensajeBackup += '. Copia externa creada.';
-        }
+        if (!backupProgramado.ok) {
+            mensajesBackup.push(`No se pudo crear backup programado: ${backupProgramado.mensaje}`);
+        } else if (backupProgramado.creado) {
+            const copiaExternaProgramada = backupProgramado.backup?.copia_externa;
 
-        if (copiaExterna?.habilitada && !copiaExterna.ok) {
-            mensajeBackup += `. No se pudo crear copia externa: ${copiaExterna.mensaje}`;
+            let mensajeProgramado = `Backup programado creado: ${backupProgramado.backup.archivo}`;
+
+            if (copiaExternaProgramada?.habilitada && copiaExternaProgramada.ok) {
+                mensajeProgramado += '. Copia externa creada.';
+            }
+
+            if (copiaExternaProgramada?.habilitada && !copiaExternaProgramada.ok) {
+                mensajeProgramado += `. No se pudo crear copia externa: ${copiaExternaProgramada.mensaje}`;
+            }
+
+            mensajesBackup.push(mensajeProgramado);
         }
 
         return res.redirect(
-            `/caja?exito=${encodeURIComponent(resultado.mensaje)}&alertaBackup=${encodeURIComponent(mensajeBackup)}`
+            `/caja?exito=${encodeURIComponent(resultado.mensaje)}&alertaBackup=${encodeURIComponent(mensajesBackup.join(' '))}`
         );
     } catch (error) {
         console.error('Error creando backup automático al cerrar caja:', error);

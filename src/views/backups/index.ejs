@@ -30,6 +30,8 @@
                             <% const backupsLista=Array.isArray(backups) ? backups : []; const
                                 totalAutomaticos=backupsLista.filter(function (backup) { return
                                 backup.tipo==='Automático' ; }).length; const
+                                totalProgramados=backupsLista.filter(function (backup) { return
+                                backup.tipo==='Programado' ; }).length; const
                                 totalEmergencias=backupsLista.filter(function (backup) { return
                                 backup.tipo==='Emergencia' ; }).length; const totalManuales=backupsLista.filter(function
                                 (backup) { return backup.tipo==='Manual' ; }).length; %>
@@ -83,11 +85,17 @@
                                                     <%= totalBackups %>
                                                 </strong>
                                             </div>
-
                                             <div>
                                                 <span>Automáticos</span>
                                                 <strong>
                                                     <%= totalAutomaticos %>
+                                                </strong>
+                                            </div>
+
+                                            <div>
+                                                <span>Programados</span>
+                                                <strong>
+                                                    <%= totalProgramados %>
                                                 </strong>
                                             </div>
 

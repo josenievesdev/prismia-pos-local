@@ -26,6 +26,10 @@ const env = {
         supportContactName: process.env.SUPPORT_CONTACT_NAME || 'Nieves Systems',
         supportContactEmail: process.env.SUPPORT_CONTACT_EMAIL || 'soporte@tudominio.com',
         supportContactPhone: process.env.SUPPORT_CONTACT_PHONE || '',
+        scheduledIntervalDays: Number(process.env.BACKUP_SCHEDULED_INTERVAL_DAYS || 7),
+        retentionAutomaticos: Number(process.env.BACKUP_RETENTION_AUTOMATICOS || 30),
+        retentionProgramados: Number(process.env.BACKUP_RETENTION_PROGRAMADOS || 8),
+        retentionEmergencia: Number(process.env.BACKUP_RETENTION_EMERGENCIA || 10),
     },
 
     admin: {
