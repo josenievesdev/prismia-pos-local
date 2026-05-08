@@ -22,6 +22,10 @@ const env = {
     backups: {
         baseDir: process.env.BACKUP_BASE_DIR || 'storage/backups',
         externalPath: process.env.BACKUP_EXTERNAL_PATH || '',
+        supportKey: process.env.SUPPORT_BACKUP_KEY || '',
+        supportContactName: process.env.SUPPORT_CONTACT_NAME || 'Nieves Systems',
+        supportContactEmail: process.env.SUPPORT_CONTACT_EMAIL || 'soporte@tudominio.com',
+        supportContactPhone: process.env.SUPPORT_CONTACT_PHONE || '',
     },
 
     admin: {

@@ -20,6 +20,16 @@ function asegurarCarpeta(ruta) {
     }
 }
 
+function requiereSoporteBackups(req, res, next) {
+    if (req.session?.soporteBackupsAutorizado) {
+        return next();
+    }
+
+    return res.redirect(
+        `/backups/soporte?error=${encodeURIComponent('Debes desbloquear el modo soporte para usar esta acción.')}`
+    );
+}
+
 const storageRestauracion = multer.diskStorage({
     destination: function (req, file, cb) {
         asegurarCarpeta(carpetaUploadsRestauracion);
@@ -44,9 +54,19 @@ router.use(requiereAutenticacion);
 router.use(requiereRol('administrador'));
 
 router.get('/', backupsController.mostrarBackups);
-router.post('/crear', backupsController.crearBackupManual);
-router.post('/abrir-carpeta', backupsController.abrirCarpetaBackups);
-router.post('/restaurar', uploadRestauracion.single('archivo_backup'), backupsController.restaurarBackup);
-router.get('/descargar/:archivo', backupsController.descargarBackup);
+
+router.get('/soporte', backupsController.mostrarBackupsSoporte);
+router.post('/soporte/desbloquear', backupsController.desbloquearSoporteBackups);
+router.post('/soporte/cerrar', backupsController.cerrarSoporteBackups);
+
+router.post('/soporte/crear', requiereSoporteBackups, backupsController.crearBackupManual);
+router.post('/soporte/abrir-carpeta', requiereSoporteBackups, backupsController.abrirCarpetaBackups);
+router.post(
+    '/soporte/restaurar',
+    requiereSoporteBackups,
+    uploadRestauracion.single('archivo_backup'),
+    backupsController.restaurarBackup
+);
+router.get('/soporte/descargar/:archivo', requiereSoporteBackups, backupsController.descargarBackup);
 
 module.exports = router;

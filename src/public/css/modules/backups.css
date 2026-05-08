@@ -230,3 +230,117 @@
     border-color: rgba(220, 38, 38, 0.42);
     background: rgba(254, 202, 202, 0.96);
 }
+
+/* ===== Backups públicos y soporte ===== */
+.backups-protection-state {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px;
+    border: 1px solid rgba(34, 197, 94, 0.22);
+    border-radius: 18px;
+    background: rgba(240, 253, 244, 0.78);
+}
+
+.backups-protection-icon {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: rgba(22, 163, 74, 0.12);
+    color: #15803d;
+    font-size: 22px;
+    font-weight: 900;
+}
+
+.backups-protection-state strong {
+    display: block;
+    color: #14532d;
+    font-size: 16px;
+}
+
+.backups-protection-state small {
+    display: block;
+    margin-top: 3px;
+    color: #166534;
+    font-size: 13px;
+}
+
+.backups-support-card {
+    border-color: rgba(59, 130, 246, 0.2);
+    background: linear-gradient(135deg, rgba(219, 234, 254, 0.78), #fff 42%);
+}
+
+.backups-contact-box {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.backups-contact-box>div {
+    padding: 12px;
+    border: 1px solid rgba(191, 219, 254, 0.85);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.78);
+}
+
+.backups-contact-box span {
+    display: block;
+    margin-bottom: 4px;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.backups-contact-box strong {
+    color: #0f172a;
+    font-size: 13px;
+    word-break: break-word;
+}
+
+.backups-small-note {
+    margin-top: 12px !important;
+    color: #64748b;
+    font-size: 13px;
+}
+
+.backups-support-lock-card {
+    max-width: 620px;
+    border-color: rgba(79, 70, 229, 0.18);
+    background: linear-gradient(135deg, rgba(238, 242, 255, 0.92), #fff 48%);
+}
+
+.support-unlock-form {
+    display: grid;
+    gap: 14px;
+    margin-top: 14px;
+}
+
+.support-unlock-form input[type="password"] {
+    width: 100%;
+    min-height: 40px;
+    padding: 0 12px;
+    border: 1px solid rgba(203, 213, 225, 0.95);
+    border-radius: 10px;
+    background: #fff;
+    color: #0f172a;
+    font-size: 14px;
+}
+
+.support-unlock-form input[type="password"]:focus {
+    outline: none;
+    border-color: rgba(79, 70, 229, 0.5);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+}
+
+@media (max-width: 780px) {
+    .backups-contact-box {
+        grid-template-columns: 1fr;
+    }
+}

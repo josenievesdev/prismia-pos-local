@@ -2,9 +2,9 @@
     <div class="module-header module-header-actions">
         <div>
             <p class="eyebrow">Seguridad de datos</p>
-            <h2>Backups</h2>
+            <h2>Protección de respaldos</h2>
             <p>
-                Crea, descarga y restaura respaldos completos de la base SQLite y de las imágenes de productos.
+                Prismia crea respaldos automáticos para proteger la información del negocio.
             </p>
         </div>
     </div>
@@ -27,201 +27,141 @@
                         </div>
                         <% } %>
 
-                            <section class="backups-grid">
-                                <article class="module-card backups-card backups-card-primary">
-                                    <div class="backups-card-head">
-                                        <div>
-                                            <span class="eyebrow">Backup manual</span>
-                                            <h3>Crear respaldo completo</h3>
-                                            <p>
-                                                Genera un archivo ZIP con la base de datos, imágenes de productos,
-                                                metadata y manifest de integridad.
-                                            </p>
+                            <% const backupsLista=Array.isArray(backups) ? backups : []; const
+                                totalAutomaticos=backupsLista.filter(function (backup) { return
+                                backup.tipo==='Automático' ; }).length; const
+                                totalEmergencias=backupsLista.filter(function (backup) { return
+                                backup.tipo==='Emergencia' ; }).length; const totalManuales=backupsLista.filter(function
+                                (backup) { return backup.tipo==='Manual' ; }).length; %>
+
+                                <section class="backups-grid">
+                                    <article class="module-card backups-card backups-card-primary">
+                                        <div class="backups-card-head">
+                                            <div>
+                                                <span class="eyebrow">Estado</span>
+                                                <h3>Información protegida</h3>
+                                                <p>
+                                                    Los respaldos se generan automáticamente al cerrar caja y antes de
+                                                    restaurar datos.
+                                                </p>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <div class="backups-actions-row">
-                                        <form method="POST" action="/backups/crear" class="backups-actions-form">
-                                            <button type="submit" class="btn-primary">
-                                                Crear backup ahora
-                                            </button>
-                                        </form>
-
-                                        <form method="POST" action="/backups/abrir-carpeta"
-                                            class="backups-actions-form">
-                                            <button type="submit" class="btn-secondary">
-                                                Abrir carpeta
-                                            </button>
-                                        </form>
-                                    </div>
-
-                                    <div class="backups-note">
-                                        El backup se guarda localmente. Si configuraste
-                                        <code>BACKUP_EXTERNAL_PATH</code>, también se copia a esa ruta externa.
-                                    </div>
-                                </article>
-
-                                <article class="module-card backups-card">
-                                    <div class="backups-card-head">
-                                        <div>
-                                            <span class="eyebrow">Estado</span>
-                                            <h3>Resumen de respaldos</h3>
-                                            <p>Información del último backup y rutas activas.</p>
+                                        <div class="backups-protection-state">
+                                            <span class="backups-protection-icon">✓</span>
+                                            <div>
+                                                <strong>
+                                                    <%= ultimoBackup ? 'Backups activos' : 'Sin backups registrados' %>
+                                                </strong>
+                                                <small>
+                                                    <%= ultimoBackup ? `Último respaldo: ${ultimoBackup.fecha_legible}`
+                                                        : 'Aún no se ha generado un respaldo.' %>
+                                                </small>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <div class="backups-status-list">
+                                        <div class="backups-note">
+                                            Por seguridad, las copias completas, restauraciones y traslados de
+                                            información
+                                            son gestionados por soporte técnico autorizado.
+                                        </div>
+                                    </article>
+
+                                    <article class="module-card backups-card">
+                                        <div class="backups-card-head">
+                                            <div>
+                                                <span class="eyebrow">Resumen</span>
+                                                <h3>Respaldos locales</h3>
+                                                <p>Vista general del estado de protección.</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="backups-status-list">
+                                            <div>
+                                                <span>Total respaldos</span>
+                                                <strong>
+                                                    <%= totalBackups %>
+                                                </strong>
+                                            </div>
+
+                                            <div>
+                                                <span>Automáticos</span>
+                                                <strong>
+                                                    <%= totalAutomaticos %>
+                                                </strong>
+                                            </div>
+
+                                            <div>
+                                                <span>Emergencia</span>
+                                                <strong>
+                                                    <%= totalEmergencias %>
+                                                </strong>
+                                            </div>
+
+                                            <div>
+                                                <span>Manuales soporte</span>
+                                                <strong>
+                                                    <%= totalManuales %>
+                                                </strong>
+                                            </div>
+
+                                            <div>
+                                                <span>Copia externa</span>
+                                                <% if (rutasBackups.externa_activa) { %>
+                                                    <strong>Configurada</strong>
+                                                    <% } else { %>
+                                                        <strong class="backups-muted">No configurada</strong>
+                                                        <% } %>
+                                            </div>
+                                        </div>
+                                    </article>
+                                </section>
+
+                                <article class="module-card backups-card backups-support-card">
+                                    <span class="eyebrow">Soporte autorizado</span>
+                                    <h3>¿Necesitas una copia completa, restaurar datos o trasladar Prismia?</h3>
+                                    <p>
+                                        Para proteger la información del negocio y evitar manipulaciones incorrectas,
+                                        estas acciones se realizan mediante soporte técnico autorizado.
+                                    </p>
+
+                                    <div class="backups-contact-box">
                                         <div>
-                                            <span>Total backups</span>
+                                            <span>Soporte</span>
                                             <strong>
-                                                <%= totalBackups %>
+                                                <%= contactoSoporte.nombre %>
                                             </strong>
                                         </div>
 
                                         <div>
-                                            <span>Último backup</span>
+                                            <span>Correo</span>
                                             <strong>
-                                                <%= ultimoBackup ? ultimoBackup.fecha_legible : 'Sin backups' %>
+                                                <%= contactoSoporte.correo %>
                                             </strong>
                                         </div>
 
-                                        <div>
-                                            <span>Ruta interna</span>
-                                            <code><%= rutasBackups.internos %></code>
-                                        </div>
-
-                                        <div>
-                                            <span>Ruta automáticos</span>
-                                            <code><%= rutasBackups.automaticos || 'No disponible' %></code>
-                                        </div>
-
-                                        <div>
-                                            <span>Ruta externa</span>
-                                            <% if (rutasBackups.externa_activa) { %>
-                                                <code><%= rutasBackups.externa_configurada %></code>
-                                                <% } else { %>
-                                                    <strong class="backups-muted">No configurada</strong>
-                                                    <% } %>
-                                        </div>
+                                        <% if (contactoSoporte.telefono) { %>
+                                            <div>
+                                                <span>Teléfono</span>
+                                                <strong>
+                                                    <%= contactoSoporte.telefono %>
+                                                </strong>
+                                            </div>
+                                            <% } %>
                                     </div>
+
+                                    <p class="backups-small-note">
+                                        Las funciones avanzadas de respaldo están reservadas para soporte técnico.
+                                    </p>
                                 </article>
-                            </section>
 
-                            <article class="module-card backups-card backups-restore-card">
-                                <div class="backups-card-head">
-                                    <div>
-                                        <span class="eyebrow">Restauración</span>
-                                        <h3>Restaurar desde backup ZIP</h3>
-                                        <p>
-                                            Valida el ZIP, verifica hashes, crea un backup de emergencia y reemplaza la
-                                            base de datos
-                                            y las imágenes de productos por las del respaldo seleccionado.
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div class="backups-danger-note">
-                                    <strong>Atención:</strong>
-                                    restaurar un backup reemplaza los datos actuales. Prismia creará primero un backup
-                                    de emergencia
-                                    del estado actual antes de aplicar la restauración.
-                                </div>
-
-                                <form method="POST" action="/backups/restaurar" enctype="multipart/form-data"
-                                    class="backups-restore-form">
-                                    <div class="form-group">
-                                        <label for="archivo_backup">Archivo ZIP de backup</label>
-                                        <input class="backup-file-input" type="file" id="archivo_backup"
-                                            name="archivo_backup" accept=".zip" required>
-                                        <small class="field-help">
-                                            Usa un archivo generado desde Prismia. No uses ZIPs editados manualmente.
-                                        </small>
-                                    </div>
-
-                                    <label class="check-option restore-confirm-option">
-                                        <input type="checkbox" name="confirmar_restauracion" value="1" required>
-                                        <span>
-                                            <strong>Entiendo que esta acción reemplazará los datos actuales.</strong>
-                                            <small>
-                                                Antes de restaurar, Prismia creará un backup de emergencia del estado
-                                                actual.
-                                            </small>
-                                        </span>
-                                    </label>
-
-                                    <div class="backups-actions-row">
-                                        <button type="submit" class="btn-danger-soft">
-                                            Restaurar backup
-                                        </button>
-                                    </div>
-                                </form>
-                            </article>
-
-                            <article class="module-card backups-card">
-                                <div class="backups-card-head backups-card-head-row">
-                                    <div>
-                                        <span class="eyebrow">Historial</span>
-                                        <h3>Backups disponibles</h3>
-                                        <p>Archivos generados desde Prismia en esta instalación local.</p>
-                                    </div>
-                                </div>
-
-                                <% if (!Array.isArray(backups) || backups.length===0) { %>
-                                    <div class="empty-state">
-                                        <h3>No hay backups todavía</h3>
-                                        <p>Crea el primer respaldo para proteger la base de datos y las imágenes.</p>
-                                    </div>
-                                    <% } else { %>
-                                        <div class="table-wrapper backups-table-wrapper">
-                                            <table class="data-table backups-table">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Archivo</th>
-                                                        <th>Tipo</th>
-                                                        <th>Fecha</th>
-                                                        <th class="text-right">Tamaño</th>
-                                                        <th class="text-right">Acción</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <% backups.forEach(function (backup) { %>
-                                                        <tr>
-                                                            <td>
-                                                                <strong>
-                                                                    <%= backup.archivo %>
-                                                                </strong>
-                                                            </td>
-                                                            <td>
-                                                                <%= backup.tipo %>
-                                                            </td>
-                                                            <td>
-                                                                <%= backup.fecha_legible %>
-                                                            </td>
-                                                            <td class="text-right">
-                                                                <%= backup.tamano %>
-                                                            </td>
-                                                            <td class="text-right">
-                                                                <a class="btn-secondary btn-small"
-                                                                    href="/backups/descargar/<%= encodeURIComponent(backup.archivo) %>">
-                                                                    Descargar
-                                                                </a>
-                                                            </td>
-                                                        </tr>
-                                                        <% }) %>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        <% } %>
-                            </article>
-
-                            <article class="module-card backups-card backups-warning-card">
-                                <span class="eyebrow">Importante</span>
-                                <h3>Un backup local no protege contra robo del equipo</h3>
-                                <p>
-                                    Para proteger datos de clientes reales, configura una ruta externa: USB,
-                                    disco externo, carpeta de red, OneDrive, Google Drive o Dropbox instalado en
-                                    Windows.
-                                    Prismia copiará el ZIP a esa ruta cuando exista <code>BACKUP_EXTERNAL_PATH</code>.
-                                </p>
-                            </article>
+                                <article class="module-card backups-card backups-warning-card">
+                                    <span class="eyebrow">Importante</span>
+                                    <h3>Un backup local no protege contra robo del equipo</h3>
+                                    <p>
+                                        Para protección completa, se recomienda configurar una ruta externa:
+                                        USB, disco externo, carpeta de red, OneDrive, Google Drive o Dropbox instalado
+                                        en Windows.
+                                    </p>
+                                </article>
 </section>

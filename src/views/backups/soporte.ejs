@@ -1,0 +1,268 @@
+<section class="module-page backups-page">
+    <div class="module-header module-header-actions">
+        <div>
+            <p class="eyebrow">Modo soporte</p>
+            <h2>Backups técnicos</h2>
+            <p>
+                Herramientas sensibles para soporte autorizado: crear, descargar, restaurar y revisar respaldos
+                completos.
+            </p>
+        </div>
+
+        <a href="/backups" class="btn-secondary">Volver al estado</a>
+    </div>
+
+    <% if (exito) { %>
+        <div class="alert alert-success">
+            <%= exito %>
+        </div>
+        <% } %>
+
+            <% if (alerta) { %>
+                <div class="alert alert-warning">
+                    <%= alerta %>
+                </div>
+                <% } %>
+
+                    <% if (error) { %>
+                        <div class="alert alert-danger">
+                            <%= error %>
+                        </div>
+                        <% } %>
+
+                            <% if (!soporteAutorizado) { %>
+                                <article class="module-card backups-card backups-support-lock-card">
+                                    <span class="eyebrow">Acceso restringido</span>
+                                    <h3>Desbloquear modo soporte</h3>
+                                    <p>
+                                        Esta sección permite descargar y restaurar copias completas de la información.
+                                        Solo debe ser usada por soporte técnico autorizado.
+                                    </p>
+
+                                    <form method="POST" action="/backups/soporte/desbloquear"
+                                        class="support-unlock-form">
+                                        <div class="form-group">
+                                            <label for="clave_soporte">Clave técnica</label>
+                                            <input type="password" id="clave_soporte" name="clave_soporte" required
+                                                autocomplete="off">
+                                            <small class="field-help">
+                                                Solicita esta clave al equipo de soporte.
+                                            </small>
+                                        </div>
+
+                                        <button type="submit" class="btn-primary">
+                                            Desbloquear soporte
+                                        </button>
+                                    </form>
+                                </article>
+                                <% } else { %>
+                                    <section class="backups-grid">
+                                        <article class="module-card backups-card backups-card-primary">
+                                            <div class="backups-card-head">
+                                                <div>
+                                                    <span class="eyebrow">Backup manual soporte</span>
+                                                    <h3>Crear respaldo completo</h3>
+                                                    <p>
+                                                        Genera un ZIP con base SQLite, imágenes de productos, metadata y
+                                                        manifest de integridad.
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div class="backups-actions-row">
+                                                <form method="POST" action="/backups/soporte/crear"
+                                                    class="backups-actions-form">
+                                                    <button type="submit" class="btn-primary">
+                                                        Crear backup soporte
+                                                    </button>
+                                                </form>
+
+                                                <form method="POST" action="/backups/soporte/abrir-carpeta"
+                                                    class="backups-actions-form">
+                                                    <button type="submit" class="btn-secondary">
+                                                        Abrir carpeta
+                                                    </button>
+                                                </form>
+
+                                                <form method="POST" action="/backups/soporte/cerrar"
+                                                    class="backups-actions-form">
+                                                    <button type="submit" class="btn-secondary">
+                                                        Bloquear soporte
+                                                    </button>
+                                                </form>
+                                            </div>
+
+                                            <div class="backups-note">
+                                                Esta acción debe usarse para soporte, migraciones, diagnóstico o
+                                                traslado controlado.
+                                            </div>
+                                        </article>
+
+                                        <article class="module-card backups-card">
+                                            <div class="backups-card-head">
+                                                <div>
+                                                    <span class="eyebrow">Estado</span>
+                                                    <h3>Resumen técnico</h3>
+                                                    <p>Rutas internas y estado de respaldo.</p>
+                                                </div>
+                                            </div>
+
+                                            <div class="backups-status-list">
+                                                <div>
+                                                    <span>Total backups</span>
+                                                    <strong>
+                                                        <%= totalBackups %>
+                                                    </strong>
+                                                </div>
+
+                                                <div>
+                                                    <span>Último backup</span>
+                                                    <strong>
+                                                        <%= ultimoBackup ? ultimoBackup.fecha_legible : 'Sin backups' %>
+                                                    </strong>
+                                                </div>
+
+                                                <div>
+                                                    <span>Ruta interna</span>
+                                                    <code><%= rutasBackups.internos %></code>
+                                                </div>
+
+                                                <% if (rutasBackups.automaticos) { %>
+                                                    <div>
+                                                        <span>Ruta automáticos</span>
+                                                        <code><%= rutasBackups.automaticos %></code>
+                                                    </div>
+                                                    <% } %>
+
+                                                        <div>
+                                                            <span>Ruta externa</span>
+                                                            <% if (rutasBackups.externa_activa) { %>
+                                                                <code><%= rutasBackups.externa_configurada %></code>
+                                                                <% } else { %>
+                                                                    <strong class="backups-muted">No
+                                                                        configurada</strong>
+                                                                    <% } %>
+                                                        </div>
+                                            </div>
+                                        </article>
+                                    </section>
+
+                                    <article class="module-card backups-card backups-restore-card">
+                                        <div class="backups-card-head">
+                                            <div>
+                                                <span class="eyebrow">Restauración</span>
+                                                <h3>Restaurar desde backup ZIP</h3>
+                                                <p>
+                                                    Valida el ZIP, verifica hashes, crea backup de emergencia y
+                                                    reemplaza la base de datos
+                                                    y las imágenes de productos.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div class="backups-danger-note">
+                                            <strong>Atención:</strong>
+                                            restaurar un backup reemplaza los datos actuales. Prismia creará primero un
+                                            backup de emergencia.
+                                        </div>
+
+                                        <form method="POST" action="/backups/soporte/restaurar"
+                                            enctype="multipart/form-data" class="backups-restore-form">
+                                            <div class="form-group">
+                                                <label for="archivo_backup">Archivo ZIP de backup</label>
+                                                <input class="backup-file-input" type="file" id="archivo_backup"
+                                                    name="archivo_backup" accept=".zip" required>
+                                                <small class="field-help">
+                                                    Usa un archivo generado desde Prismia. No uses ZIPs editados
+                                                    manualmente.
+                                                </small>
+                                            </div>
+
+                                            <label class="check-option restore-confirm-option">
+                                                <input type="checkbox" name="confirmar_restauracion" value="1" required>
+                                                <span>
+                                                    <strong>Entiendo que esta acción reemplazará los datos
+                                                        actuales.</strong>
+                                                    <small>
+                                                        Antes de restaurar, Prismia creará un backup de emergencia.
+                                                    </small>
+                                                </span>
+                                            </label>
+
+                                            <div class="backups-actions-row">
+                                                <button type="submit" class="btn-danger-soft">
+                                                    Restaurar backup
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </article>
+
+                                    <article class="module-card backups-card">
+                                        <div class="backups-card-head backups-card-head-row">
+                                            <div>
+                                                <span class="eyebrow">Historial técnico</span>
+                                                <h3>Backups disponibles</h3>
+                                                <p>Archivos generados desde Prismia en esta instalación local.</p>
+                                            </div>
+                                        </div>
+
+                                        <% if (!Array.isArray(backups) || backups.length===0) { %>
+                                            <div class="empty-state">
+                                                <h3>No hay backups todavía</h3>
+                                                <p>Crea el primer respaldo para proteger la base de datos y las
+                                                    imágenes.</p>
+                                            </div>
+                                            <% } else { %>
+                                                <div class="table-wrapper backups-table-wrapper">
+                                                    <table class="data-table backups-table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Archivo</th>
+                                                                <th>Tipo</th>
+                                                                <th>Fecha</th>
+                                                                <th class="text-right">Tamaño</th>
+                                                                <th class="text-right">Acción</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <% backups.forEach(function (backup) { %>
+                                                                <tr>
+                                                                    <td>
+                                                                        <strong>
+                                                                            <%= backup.archivo %>
+                                                                        </strong>
+                                                                    </td>
+                                                                    <td>
+                                                                        <%= backup.tipo %>
+                                                                    </td>
+                                                                    <td>
+                                                                        <%= backup.fecha_legible %>
+                                                                    </td>
+                                                                    <td class="text-right">
+                                                                        <%= backup.tamano %>
+                                                                    </td>
+                                                                    <td class="text-right">
+                                                                        <a class="btn-secondary btn-small"
+                                                                            href="/backups/soporte/descargar/<%= encodeURIComponent(backup.archivo) %>">
+                                                                            Descargar
+                                                                        </a>
+                                                                    </td>
+                                                                </tr>
+                                                                <% }) %>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                <% } %>
+                                    </article>
+                                    <% } %>
+
+                                        <article class="module-card backups-card backups-warning-card">
+                                            <span class="eyebrow">Responsabilidad</span>
+                                            <h3>Los datos son del cliente, las herramientas críticas son de soporte</h3>
+                                            <p>
+                                                Esta sección existe para recuperación, traslado y diagnóstico técnico
+                                                controlado.
+                                                No debe usarse como flujo diario de operación.
+                                            </p>
+                                        </article>
+</section>
