@@ -1,0 +1,125 @@
+<section class="module-page usuarios-page">
+    <div class="module-header module-header-actions">
+        <div>
+            <p class="eyebrow">Seguridad operativa</p>
+            <h2>
+                <%= modo==='crear' ? 'Nuevo usuario' : 'Editar usuario' %>
+            </h2>
+            <p>
+                Define acceso, rol y estado del usuario dentro de Prismia.
+            </p>
+        </div>
+
+        <a href="/usuarios" class="btn-secondary">
+            Volver
+        </a>
+    </div>
+
+    <% if (error) { %>
+        <div class="alert alert-error">
+            <%= error %>
+        </div>
+        <% } %>
+
+            <form method="POST" action="<%= action %>" class="module-card usuarios-form-card">
+                <section class="usuarios-form-section">
+                    <div>
+                        <span class="eyebrow">Datos del usuario</span>
+                        <h3>Información básica</h3>
+                    </div>
+
+                    <div class="usuarios-form-grid">
+                        <label class="form-group">
+                            <span>Nombre</span>
+                            <input type="text" name="nombre" value="<%= usuarioFormulario.nombre || '' %>" required>
+                        </label>
+
+                        <label class="form-group">
+                            <span>Correo</span>
+                            <input type="email" name="correo" value="<%= usuarioFormulario.correo || '' %>" required>
+                        </label>
+
+                        <label class="form-group">
+                            <span>Teléfono</span>
+                            <input type="text" name="telefono" value="<%= usuarioFormulario.telefono || '' %>">
+                        </label>
+
+                        <label class="form-group">
+                            <span>Estado</span>
+                            <select name="estado">
+                                <option value="activo" <%=usuarioFormulario.estado==='activo' ? 'selected' : '' %>>
+                                    Activo
+                                </option>
+                                <option value="inactivo" <%=usuarioFormulario.estado==='inactivo' ? 'selected' : '' %>>
+                                    Inactivo
+                                </option>
+                                <option value="bloqueado" <%=usuarioFormulario.estado==='bloqueado' ? 'selected' : '' %>
+                                    >
+                                    Bloqueado
+                                </option>
+                            </select>
+                        </label>
+                    </div>
+                </section>
+
+                <section class="usuarios-form-section">
+                    <div>
+                        <span class="eyebrow">Permisos</span>
+                        <h3>Rol operativo</h3>
+                    </div>
+
+                    <div class="usuarios-role-grid">
+                        <% roles.forEach(function (rol) { %>
+                            <label class="usuarios-role-option">
+                                <input type="radio" name="rol" value="<%= rol.nombre %>"
+                                    <%=usuarioFormulario.rol_principal===rol.nombre ? 'checked' : '' %>
+                                required>
+
+                                <span>
+                                    <strong>
+                                        <%= rol.etiqueta %>
+                                    </strong>
+                                    <small>
+                                        <%= rol.descripcion || '' %>
+                                    </small>
+                                </span>
+                            </label>
+                            <% }) %>
+                    </div>
+                </section>
+
+                <section class="usuarios-form-section">
+                    <div>
+                        <span class="eyebrow">Acceso</span>
+                        <h3>Contraseña</h3>
+                        <% if (modo==='editar' ) { %>
+                            <p class="usuarios-help">
+                                Deja los campos vacíos si no quieres cambiar la contraseña.
+                            </p>
+                            <% } %>
+                    </div>
+
+                    <div class="usuarios-form-grid">
+                        <label class="form-group">
+                            <span>Contraseña</span>
+                            <input type="password" name="contrasena" <%=modo==='crear' ? 'required' : '' %>>
+                        </label>
+
+                        <label class="form-group">
+                            <span>Repetir contraseña</span>
+                            <input type="password" name="repetir_contrasena" <%=modo==='crear' ? 'required' : '' %>>
+                        </label>
+                    </div>
+                </section>
+
+                <footer class="usuarios-form-actions">
+                    <a href="/usuarios" class="btn-secondary">
+                        Cancelar
+                    </a>
+
+                    <button type="submit" class="btn-primary">
+                        <%= modo==='crear' ? 'Crear usuario' : 'Guardar cambios' %>
+                    </button>
+                </footer>
+            </form>
+</section>
