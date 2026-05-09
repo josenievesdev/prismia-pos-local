@@ -4,10 +4,10 @@
         notaCreditoActual=typeof notaCredito !=='undefined' ? notaCredito : null; var
         detalleNotaCreditoListado=Array.isArray(detalleNotaCredito) ? detalleNotaCredito : []; var mensajeOk=typeof
         mensajeExito !=='undefined' ? mensajeExito : null; var mensajeError=typeof error !=='undefined' ? error : null;
-        var estadoVenta=ventaActual.estado || 'pagada' ; var puedeMostrarAnulacion=estadoVenta==='pagada' ; var
-        ventaAnulada=estadoVenta==='anulada' ; var numeroFactura=comprobanteActual.numero || ventaActual.numero_venta
-        || 'FV-SIN-NUMERO' ; var clienteNombre=ventaActual.cliente_nombre || 'Consumidor final' ; var
-        clienteTipoDocumento=ventaActual.cliente_tipo_documento || 'CF' ; var
+        var estadoVenta=ventaActual.estado || 'pagada' ; var puedeMostrarAnulacion=estadoVenta==='pagada' &&
+        esAdministrador ; var ventaAnulada=estadoVenta==='anulada' ; var numeroFactura=comprobanteActual.numero ||
+        ventaActual.numero_venta || 'FV-SIN-NUMERO' ; var clienteNombre=ventaActual.cliente_nombre || 'Consumidor final'
+        ; var clienteTipoDocumento=ventaActual.cliente_tipo_documento || 'CF' ; var
         clienteDocumento=ventaActual.cliente_documento || '0000000000' ; var claseEstado='' ; if (estadoVenta==='pagada'
         ) claseEstado='is-paid' ; if (estadoVenta==='pendiente' ) claseEstado='is-pending' ; if (estadoVenta==='anulada'
         ) claseEstado='is-cancelled' ; function dinero(valor) { return new Intl.NumberFormat('es-CO', {

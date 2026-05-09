@@ -7,7 +7,7 @@ const { requiereRol } = require('../../middlewares/role.middleware');
 const router = express.Router();
 
 router.use(requiereAutenticacion);
-router.use(requiereRol('administrador', 'cajero'));
+router.use(requiereRol('administrador'));
 
 router.get('/', reportesController.mostrarReportes);
 

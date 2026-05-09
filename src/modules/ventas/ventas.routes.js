@@ -18,14 +18,37 @@ router.get('/historial', ventasController.mostrarHistorial);
 router.get('/productos/buscar', ventasController.buscarProductos);
 router.get('/clientes/buscar', ventasController.buscarClientes);
 
-router.post('/pos-tactil/acceso-rapido', ventasController.configurarAccesoRapidoPosTactil);
-router.post('/pos-tactil/acceso-rapido/quitar', ventasController.quitarAccesoRapidoPosTactil);
-router.post('/pos-tactil/acceso-rapido/mover', ventasController.moverAccesoRapidoPosTactil);
+router.post(
+    '/pos-tactil/acceso-rapido',
+    requiereRol('administrador'),
+    ventasController.configurarAccesoRapidoPosTactil
+);
+
+router.post(
+    '/pos-tactil/acceso-rapido/quitar',
+    requiereRol('administrador'),
+    ventasController.quitarAccesoRapidoPosTactil
+);
+
+router.post(
+    '/pos-tactil/acceso-rapido/mover',
+    requiereRol('administrador'),
+    ventasController.moverAccesoRapidoPosTactil
+);
 
 router.get('/productos/:id', ventasController.obtenerProducto);
 
-router.get('/:id/anular/preparar', ventasController.prepararAnulacionVenta);
-router.post('/:id/anular', ventasController.anularVentaCompleta);
+router.get(
+    '/:id/anular/preparar',
+    requiereRol('administrador'),
+    ventasController.prepararAnulacionVenta
+);
+
+router.post(
+    '/:id/anular',
+    requiereRol('administrador'),
+    ventasController.anularVentaCompleta
+);
 router.get('/:id/ticket', ventasController.imprimirTicket);
 router.get('/:id', ventasController.mostrarDetalleVenta);
 

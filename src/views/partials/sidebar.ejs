@@ -66,99 +66,100 @@
             <span>Notas crédito</span>
         </a>
 
-        <div class="sidebar-section-label">Catálogo</div>
+        <% if (esAdministrador) { %>
+            <div class="sidebar-section-label">Catálogo</div>
 
-        <a href="/productos" class="sidebar-link <%= rutaActual.startsWith('/productos') ? 'active' : '' %>">
-            <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path
-                        d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                    <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-                    <line x1="12" y1="22.08" x2="12" y2="12" />
-                </svg></span>
-            <span>Productos</span>
-        </a>
+            <a href="/productos" class="sidebar-link <%= rutaActual.startsWith('/productos') ? 'active' : '' %>">
+                <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path
+                            d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                        <line x1="12" y1="22.08" x2="12" y2="12" />
+                    </svg></span>
+                <span>Productos</span>
+            </a>
 
-        <a href="/categorias-productos"
-            class="sidebar-link <%= rutaActual.startsWith('/categorias-productos') ? 'active' : '' %>">
-            <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="7" height="7" />
-                    <rect x="14" y="3" width="7" height="7" />
-                    <rect x="3" y="14" width="7" height="7" />
-                    <rect x="14" y="14" width="7" height="7" />
-                </svg></span>
-            <span>Categorías</span>
-        </a>
+            <a href="/categorias-productos"
+                class="sidebar-link <%= rutaActual.startsWith('/categorias-productos') ? 'active' : '' %>">
+                <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7" />
+                        <rect x="14" y="3" width="7" height="7" />
+                        <rect x="3" y="14" width="7" height="7" />
+                        <rect x="14" y="14" width="7" height="7" />
+                    </svg></span>
+                <span>Categorías</span>
+            </a>
 
-        <a href="/clientes" class="sidebar-link <%= rutaActual.startsWith('/clientes') ? 'active' : '' %>">
-            <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                    <circle cx="9" cy="7" r="4" />
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                </svg></span>
-            <span>Clientes</span>
-        </a>
+            <a href="/inventario" class="sidebar-link <%= rutaActual.startsWith('/inventario') ? 'active' : '' %>">
+                <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
+                        <path
+                            d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+                    </svg></span>
+                <span>Inventario</span>
+            </a>
+            <% } %>
 
-        <a href="/inventario" class="sidebar-link <%= rutaActual.startsWith('/inventario') ? 'active' : '' %>">
-            <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
-                    <path
-                        d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
-                </svg></span>
-            <span>Inventario</span>
-        </a>
+                <div class="sidebar-section-label">Operación</div>
 
-        <div class="sidebar-section-label">Finanzas</div>
-
-        <a href="/caja"
-            class="sidebar-link <%= rutaActual.startsWith('/caja') && !rutaActual.startsWith('/caja/gasto') ? 'active' : '' %>">
-            <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="12" y1="1" x2="12" y2="23" />
-                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                </svg></span>
-            <span>Caja</span>
-        </a>
-        <a href="/caja/gasto" class="sidebar-link <%= rutaActual.startsWith('/caja/gasto') ? 'active' : '' %>">
-            <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10" />
-                    <line x1="8" y1="12" x2="16" y2="12" />
-                </svg></span>
-            <span>Gastos</span>
-        </a>
-
-        <a href="/reportes" class="sidebar-link <%= rutaActual.startsWith('/reportes') ? 'active' : '' %>">
-            <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="18" y1="20" x2="18" y2="10" />
-                    <line x1="12" y1="20" x2="12" y2="4" />
-                    <line x1="6" y1="20" x2="6" y2="14" />
-                </svg></span>
-            <span>Reportes</span>
-        </a>
-
-        <div class="sidebar-section-label">Sistema</div>
-
-        <% const rolesSidebar=Array.isArray(usuario?.roles) ? usuario.roles : []; const
-            esAdministradorSidebar=rolesSidebar.includes('administrador'); %>
-
-            <% if (esAdministradorSidebar) { %>
-                <a href="/usuarios" class="sidebar-link <%= rutaActual.startsWith('/usuarios') ? 'active' : '' %>">
+                <a href="/clientes" class="sidebar-link <%= rutaActual.startsWith('/clientes') ? 'active' : '' %>">
                     <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                             <circle cx="9" cy="7" r="4" />
-                            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
                             <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                         </svg></span>
-                    <span>Usuarios</span>
+                    <span>Clientes</span>
                 </a>
-                <% } %>
+
+                <a href="/caja"
+                    class="sidebar-link <%= rutaActual.startsWith('/caja') && !rutaActual.startsWith('/caja/gasto') ? 'active' : '' %>">
+                    <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="1" x2="12" y2="23" />
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                        </svg></span>
+                    <span>Caja</span>
+                </a>
+
+                <a href="/caja/gasto" class="sidebar-link <%= rutaActual.startsWith('/caja/gasto') ? 'active' : '' %>">
+                    <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="8" y1="12" x2="16" y2="12" />
+                        </svg></span>
+                    <span>Gastos</span>
+                </a>
+
+                <% if (esAdministrador) { %>
+                    <a href="/reportes" class="sidebar-link <%= rutaActual.startsWith('/reportes') ? 'active' : '' %>">
+                        <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <line x1="18" y1="20" x2="18" y2="10" />
+                                <line x1="12" y1="20" x2="12" y2="4" />
+                                <line x1="6" y1="20" x2="6" y2="14" />
+                            </svg></span>
+                        <span>Reportes</span>
+                    </a>
+
+                    <div class="sidebar-section-label">Sistema</div>
+
+                    <a href="/usuarios" class="sidebar-link <%= rutaActual.startsWith('/usuarios') ? 'active' : '' %>">
+                        <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                            </svg></span>
+                        <span>Usuarios</span>
+                    </a>
 
                     <a href="/backups" class="sidebar-link <%= rutaActual.startsWith('/backups') ? 'active' : '' %>">
                         <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
@@ -182,6 +183,7 @@
                             </svg></span>
                         <span>Configuración</span>
                     </a>
+                    <% } %>
     </nav>
 
     <div class="sidebar-footer">
