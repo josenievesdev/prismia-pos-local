@@ -1,0 +1,178 @@
+<section class="module-page compras-page">
+    <div class="module-header module-header-actions">
+        <div>
+            <p class="eyebrow">Compras e inventario</p>
+            <h2>Compras a proveedores</h2>
+            <p>
+                Registra compras operativas para entradas de inventario, trazabilidad de costos y control por proveedor.
+            </p>
+        </div>
+
+        <span class="btn-secondary disabled-button">
+            Nueva compra · siguiente bloque
+        </span>
+    </div>
+
+    <div class="info-strip">
+        <strong>Regla operativa:</strong>
+        <span>
+            Las compras serán la entrada formal de mercancía. Los ajustes de inventario seguirán existiendo para conteos
+            físicos y correcciones.
+        </span>
+    </div>
+
+    <% if (mensajeExito) { %>
+        <div class="alert alert-success">
+            <%= mensajeExito %>
+        </div>
+        <% } %>
+
+            <% if (error) { %>
+                <div class="alert alert-error">
+                    <%= error %>
+                </div>
+                <% } %>
+
+                    <form method="GET" action="/compras" class="module-card compras-filters">
+                        <div class="form-group">
+                            <label for="busqueda">Buscar</label>
+                            <input type="search" id="busqueda" name="busqueda" value="<%= filtros.busqueda || '' %>"
+                                placeholder="Proveedor, documento, número interno o soporte">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="estado">Estado</label>
+                            <select id="estado" name="estado">
+                                <option value="" <%=!filtros.estado ? 'selected' : '' %>>Todos</option>
+                                <option value="borrador" <%=filtros.estado==='borrador' ? 'selected' : '' %>>Borrador
+                                </option>
+                                <option value="registrada" <%=filtros.estado==='registrada' ? 'selected' : '' %>
+                                    >Registrada</option>
+                                <option value="anulada" <%=filtros.estado==='anulada' ? 'selected' : '' %>>Anulada
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="compras-filters-actions">
+                            <button type="submit" class="btn-primary">
+                                Filtrar
+                            </button>
+
+                            <a href="/compras" class="btn-secondary">
+                                Limpiar
+                            </a>
+                        </div>
+                    </form>
+
+                    <article class="module-card">
+                        <div class="table-summary">
+                            <span>Compras registradas</span>
+                            <span>
+                                <strong>
+                                    <%= totalResultados || 0 %>
+                                </strong> resultado(s)
+                            </span>
+                        </div>
+
+                        <% if (!Array.isArray(compras) || compras.length===0) { %>
+                            <div class="empty-state">
+                                <h3>No hay compras registradas</h3>
+                                <p>
+                                    El módulo ya tiene base de datos, rutas y listado. El formulario se activa en el
+                                    siguiente bloque.
+                                </p>
+                            </div>
+                            <% } else { %>
+                                <div class="table-wrapper">
+                                    <table class="data-table compras-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Compra</th>
+                                                <th>Proveedor</th>
+                                                <th>Soporte</th>
+                                                <th>Fecha</th>
+                                                <th class="text-right">IVA</th>
+                                                <th class="text-right">Total</th>
+                                                <th>Estado</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            <% compras.forEach(function (compra) { %>
+                                                <tr>
+                                                    <td>
+                                                        <strong>
+                                                            <%= compra.numero_compra %>
+                                                        </strong>
+                                                        <span class="table-subtext">
+                                                            <%= compra.usuario_nombre || 'Sin usuario' %>
+                                                        </span>
+                                                    </td>
+
+                                                    <td>
+                                                        <strong>
+                                                            <%= compra.proveedor_nombre %>
+                                                        </strong>
+                                                        <span class="table-subtext">
+                                                            <%= compra.proveedor_documento_mostrar %>
+                                                        </span>
+                                                    </td>
+
+                                                    <td>
+                                                        <%= compra.soporte_mostrar %>
+                                                    </td>
+
+                                                    <td>
+                                                        <%= compra.fecha_compra_mostrar %>
+                                                    </td>
+
+                                                    <td class="text-right">
+                                                        <%= compra.iva_total_mostrar %>
+                                                    </td>
+
+                                                    <td class="text-right">
+                                                        <strong>
+                                                            <%= compra.total_mostrar %>
+                                                        </strong>
+                                                    </td>
+
+                                                    <td>
+                                                        <span
+                                                            class="badge <%= compra.estado === 'registrada' ? 'badge-success' : compra.estado === 'anulada' ? 'badge-danger' : 'badge-muted' %>">
+                                                            <%= compra.estado_etiqueta || compra.estado %>
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                                <% }) %>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <% if (Number(totalPaginas || 1)> 1) { %>
+                                    <div class="pagination">
+                                        <% if (tienePaginaAnterior) { %>
+                                            <a class="btn-secondary btn-small"
+                                                href="/compras?pagina=<%= paginaAnterior %><%= queryPaginacion ? '&' + queryPaginacion : '' %>">
+                                                Anterior
+                                            </a>
+                                            <% } %>
+
+                                                <span class="pagination-info">
+                                                    Página <strong>
+                                                        <%= paginaActual %>
+                                                    </strong> de <strong>
+                                                        <%= totalPaginas %>
+                                                    </strong>
+                                                </span>
+
+                                                <% if (tienePaginaSiguiente) { %>
+                                                    <a class="btn-secondary btn-small"
+                                                        href="/compras?pagina=<%= paginaSiguiente %><%= queryPaginacion ? '&' + queryPaginacion : '' %>">
+                                                        Siguiente
+                                                    </a>
+                                                    <% } %>
+                                    </div>
+                                    <% } %>
+                                        <% } %>
+                    </article>
+</section>

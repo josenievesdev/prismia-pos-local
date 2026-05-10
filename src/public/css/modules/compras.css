@@ -1,0 +1,23 @@
+.compras-filters {
+    display: grid;
+    grid-template-columns: minmax(260px, 1fr) minmax(160px, 220px) auto;
+    gap: 12px;
+    align-items: end;
+}
+
+.compras-filters-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+@media (max-width: 720px) {
+    .compras-filters {
+        grid-template-columns: 1fr;
+    }
+
+    .compras-filters-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+}
