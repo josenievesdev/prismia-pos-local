@@ -93,12 +93,12 @@
                 <div class="dashboard-title-box">
                     <span>Monitor operativo</span>
                     <h2>Dashboard del día</h2>
-                    <p>Ventas, caja, pagos e inventario en una sola pantalla.</p>
+                    <p>Resumen diario de ventas, pagos e inventario. La caja muestra solo el turno abierto.</p>
                 </div>
 
                 <div class="dashboard-quick-kpis">
                     <article class="dash-kpi tone-blue">
-                        <span>Ventas netas</span>
+                        <span>Ventas netas hoy</span>
                         <strong>
                             <%= moneda(resumenHoy.total_neto) %>
                         </strong>
@@ -108,7 +108,7 @@
                     </article>
 
                     <article class="dash-kpi tone-teal">
-                        <span>Tickets</span>
+                        <span>Tickets hoy</span>
                         <strong>
                             <%= numero(resumenHoy.ventas_pagadas) %>
                         </strong>
@@ -118,7 +118,7 @@
                     </article>
 
                     <article class="dash-kpi tone-amber">
-                        <span>Ticket promedio</span>
+                        <span>Ticket promedio hoy</span>
                         <strong>
                             <%= moneda(resumenHoy.ticket_promedio) %>
                         </strong>
@@ -128,7 +128,7 @@
                     </article>
 
                     <article class="dash-kpi tone-red">
-                        <span>Anulado</span>
+                        <span>Anulado hoy</span>
                         <strong>
                             <%= moneda(resumenHoy.total_anulado) %>
                         </strong>
@@ -143,7 +143,7 @@
                 <article class="dash-panel panel-sales">
                     <div class="dash-panel-head">
                         <div>
-                            <span>Ventas</span>
+                            <span>Ventas del día</span>
                             <h3>Ritmo por hora</h3>
                         </div>
                         <strong>
@@ -167,13 +167,13 @@
 
                         <div class="dash-mini-row">
                             <div>
-                                <span>Bruto</span>
+                                <span>Bruto del día</span>
                                 <strong>
                                     <%= moneda(resumenHoy.total_bruto) %>
                                 </strong>
                             </div>
                             <div>
-                                <span>Utilidad bruta</span>
+                                <span>Utilidad bruta del día</span>
                                 <strong>
                                     <%= moneda(resumenHoy.utilidad_bruta) %>
                                 </strong>
@@ -203,37 +203,37 @@
 
                     <% if (turnoActual.abierto) { %>
                         <div class="cash-main">
-                            <span>Efectivo esperado</span>
+                            <span>Efectivo esperado del turno</span>
                             <strong>
                                 <%= moneda(turnoActual.efectivo_esperado) %>
                             </strong>
                             <small>
-                                Base <%= moneda(turnoActual.monto_inicial) %> · <%= turnoActual.usuario_apertura_nombre
-                                        %>
+                                Solo turno abierto · Base <%= moneda(turnoActual.monto_inicial) %> · <%=
+                                        turnoActual.usuario_apertura_nombre %>
                             </small>
                         </div>
 
                         <div class="cash-grid">
                             <div>
-                                <span>Ventas</span>
+                                <span>Ventas turno</span>
                                 <strong>
                                     <%= moneda(turnoActual.ventas_turno) %>
                                 </strong>
                             </div>
                             <div>
-                                <span>Anulaciones</span>
+                                <span>Anulaciones turno</span>
                                 <strong>
                                     <%= moneda(turnoActual.anulaciones_turno) %>
                                 </strong>
                             </div>
                             <div>
-                                <span>Ingresos</span>
+                                <span>Ingresos turno</span>
                                 <strong>
                                     <%= moneda(turnoActual.ingresos_manuales) %>
                                 </strong>
                             </div>
                             <div>
-                                <span>Egresos</span>
+                                <span>Egresos turno</span>
                                 <strong>
                                     <%= moneda(turnoActual.egresos_manuales) %>
                                 </strong>
@@ -242,7 +242,7 @@
                         <% } else { %>
                             <div class="dash-empty">
                                 <strong>No hay turno abierto</strong>
-                                <span>Abre caja para iniciar el control operativo.</span>
+                                <span>El resumen diario se conserva. Abre caja para iniciar un nuevo turno.</span>
                                 <a href="/caja/abrir" class="btn-primary btn-sm">Abrir caja</a>
                             </div>
                             <% } %>
@@ -251,7 +251,7 @@
                 <article class="dash-panel panel-payments">
                     <div class="dash-panel-head">
                         <div>
-                            <span>Pagos</span>
+                            <span>Pagos del día</span>
                             <h3>Medios de pago</h3>
                         </div>
                         <strong>
@@ -277,7 +277,7 @@
                                     </div>
 
                                     <small>
-                                        <%= numero(pago.operaciones) %> operaciones
+                                        <%= numero(pago.operaciones) %> operaciones del día
                                     </small>
                                 </div>
                                 <% }) %>
@@ -293,7 +293,7 @@
                 <article class="dash-panel panel-products">
                     <div class="dash-panel-head">
                         <div>
-                            <span>Productos</span>
+                            <span>Productos del día</span>
                             <h3>Top vendidos</h3>
                         </div>
                         <strong>Hoy</strong>
@@ -332,7 +332,7 @@
                         <% } else { %>
                             <div class="dash-empty">
                                 <strong>Sin productos vendidos</strong>
-                                <span>El ranking se llenará con ventas pagadas.</span>
+                                <span>El ranking se llenará con ventas pagadas del día.</span>
                             </div>
                             <% } %>
                 </article>
@@ -340,7 +340,7 @@
                 <article class="dash-panel panel-activity">
                     <div class="dash-panel-head">
                         <div>
-                            <span>Actividad</span>
+                            <span>Actividad del día</span>
                             <h3>Últimas ventas</h3>
                         </div>
                         <a href="/ventas/historial" class="btn-secondary btn-sm">Historial</a>
@@ -373,7 +373,7 @@
                         <% } else { %>
                             <div class="dash-empty">
                                 <strong>Sin ventas hoy</strong>
-                                <span>La actividad reciente aparecerá aquí.</span>
+                                <span>La actividad reciente del día aparecerá aquí.</span>
                             </div>
                             <% } %>
                 </article>
@@ -381,8 +381,8 @@
                 <article class="dash-panel panel-alerts">
                     <div class="dash-panel-head">
                         <div>
-                            <span>Control</span>
-                            <h3>Alertas</h3>
+                            <span>Control operativo</span>
+                            <h3>Alertas generales</h3>
                         </div>
 
                         <span class="badge <%= totalAlertas > 0 ? 'badge-warning' : 'badge-success' %>">
@@ -417,7 +417,7 @@
                         </div>
 
                         <div class="alerts-block">
-                            <strong>Anulaciones</strong>
+                            <strong>Anulaciones del día</strong>
 
                             <% if (ultimasAnulacionesVista.length> 0) { %>
                                 <% ultimasAnulacionesVista.forEach((anulacion)=> { %>
