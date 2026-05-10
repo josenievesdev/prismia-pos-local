@@ -1,0 +1,167 @@
+<section class="module-page proveedores-page">
+    <div class="module-header module-header-actions">
+        <div>
+            <p class="eyebrow">Compras e inventario</p>
+            <h2>
+                <%= modo==='crear' ? 'Nuevo proveedor' : 'Editar proveedor' %>
+            </h2>
+            <p>
+                Registra datos comerciales y de contacto del proveedor.
+            </p>
+        </div>
+
+        <a href="/proveedores" class="btn-secondary">
+            Volver
+        </a>
+    </div>
+
+    <% if (error) { %>
+        <div class="alert alert-error">
+            <%= error %>
+        </div>
+        <% } %>
+
+            <form method="POST" action="<%= action %>" class="module-card proveedores-form-card">
+                <section class="proveedores-form-section">
+                    <div>
+                        <span class="eyebrow">Identificación</span>
+                        <h3>Datos principales</h3>
+                    </div>
+
+                    <div class="proveedores-form-grid">
+                        <label class="form-group">
+                            <span>Nombre comercial *</span>
+                            <input type="text" name="nombre_comercial" minlength="3"
+                                value="<%= proveedorFormulario.nombre_comercial || '' %>" required>
+                        </label>
+
+                        <label class="form-group">
+                            <span>Razón social</span>
+                            <input type="text" name="razon_social"
+                                value="<%= proveedorFormulario.razon_social || '' %>">
+                        </label>
+
+                        <label class="form-group">
+                            <span>Tipo de documento</span>
+                            <select name="tipo_documento">
+                                <option value="NIT" <%=proveedorFormulario.tipo_documento==='NIT' ? 'selected' : '' %>
+                                    >NIT</option>
+                                <option value="CC" <%=proveedorFormulario.tipo_documento==='CC' ? 'selected' : '' %>
+                                    >Cédula</option>
+                                <option value="CE" <%=proveedorFormulario.tipo_documento==='CE' ? 'selected' : '' %>
+                                    >Cédula de extranjería</option>
+                                <option value="PAS" <%=proveedorFormulario.tipo_documento==='PAS' ? 'selected' : '' %>
+                                    >Pasaporte</option>
+                                <option value="OTRO" <%=proveedorFormulario.tipo_documento==='OTRO' ? 'selected' : '' %>
+                                    >Otro</option>
+                            </select>
+                        </label>
+
+                        <label class="form-group">
+                            <span>Documento</span>
+                            <input type="text" name="documento" value="<%= proveedorFormulario.documento || '' %>">
+                        </label>
+
+                        <label class="form-group">
+                            <span>Dígito de verificación</span>
+                            <input type="text" name="digito_verificacion" maxlength="1"
+                                value="<%= proveedorFormulario.digito_verificacion || '' %>">
+                        </label>
+
+                        <label class="form-group">
+                            <span>Estado</span>
+                            <select name="estado">
+                                <option value="activo" <%=proveedorFormulario.estado==='activo' ? 'selected' : '' %>
+                                    >Activo</option>
+                                <option value="inactivo" <%=proveedorFormulario.estado==='inactivo' ? 'selected' : '' %>
+                                    >Inactivo</option>
+                            </select>
+                        </label>
+                    </div>
+                </section>
+
+                <section class="proveedores-form-section">
+                    <div>
+                        <span class="eyebrow">Contacto</span>
+                        <h3>Datos de comunicación</h3>
+                    </div>
+
+                    <div class="proveedores-form-grid">
+                        <label class="form-group">
+                            <span>Teléfono</span>
+                            <input type="text" name="telefono" value="<%= proveedorFormulario.telefono || '' %>">
+                        </label>
+
+                        <label class="form-group">
+                            <span>Celular</span>
+                            <input type="text" name="celular" value="<%= proveedorFormulario.celular || '' %>">
+                        </label>
+
+                        <label class="form-group">
+                            <span>Correo</span>
+                            <input type="email" name="correo" value="<%= proveedorFormulario.correo || '' %>">
+                        </label>
+
+                        <label class="form-group">
+                            <span>Contacto principal</span>
+                            <input type="text" name="contacto_nombre"
+                                value="<%= proveedorFormulario.contacto_nombre || '' %>">
+                        </label>
+
+                        <label class="form-group">
+                            <span>Teléfono contacto</span>
+                            <input type="text" name="contacto_telefono"
+                                value="<%= proveedorFormulario.contacto_telefono || '' %>">
+                        </label>
+                    </div>
+                </section>
+
+                <section class="proveedores-form-section">
+                    <div>
+                        <span class="eyebrow">Ubicación</span>
+                        <h3>Dirección</h3>
+                    </div>
+
+                    <div class="proveedores-form-grid">
+                        <label class="form-group proveedores-field-wide">
+                            <span>Dirección</span>
+                            <input type="text" name="direccion" value="<%= proveedorFormulario.direccion || '' %>">
+                        </label>
+
+                        <label class="form-group">
+                            <span>Ciudad</span>
+                            <input type="text" name="ciudad" value="<%= proveedorFormulario.ciudad || '' %>">
+                        </label>
+
+                        <label class="form-group">
+                            <span>Departamento</span>
+                            <input type="text" name="departamento"
+                                value="<%= proveedorFormulario.departamento || '' %>">
+                        </label>
+                    </div>
+                </section>
+
+                <section class="proveedores-form-section">
+                    <div>
+                        <span class="eyebrow">Notas internas</span>
+                        <h3>Observaciones</h3>
+                    </div>
+
+                    <label class="form-group">
+                        <span>Observaciones</span>
+                        <textarea name="observaciones"
+                            rows="4"><%= proveedorFormulario.observaciones || '' %></textarea>
+                    </label>
+                </section>
+
+                <footer class="proveedores-form-actions">
+                    <a href="/proveedores" class="btn-secondary">
+                        Cancelar
+                    </a>
+
+                    <button type="submit" class="btn-primary">
+                        <%= modo==='crear' ? 'Crear proveedor' : 'Guardar cambios' %>
+                    </button>
+                </footer>
+            </form>
+</section>

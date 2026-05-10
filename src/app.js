@@ -27,6 +27,7 @@ const reportesRoutes = require('./modules/reportes/reportes.routes');
 const catalogosRoutes = require('./modules/catalogos/catalogos.routes');
 const backupsRoutes = require('./modules/backups/backups.routes');
 const usuariosRoutes = require('./modules/usuarios/usuarios.routes');
+const proveedoresRoutes = require('./modules/proveedores/proveedores.routes');
 
 const app = express();
 
@@ -307,6 +308,7 @@ app.use('/reportes', reportesRoutes);
 app.use('/catalogos', catalogosRoutes);
 app.use('/backups', backupsRoutes);
 app.use('/usuarios', usuariosRoutes);
+app.use('/proveedores', proveedoresRoutes);
 
 /**
  * Ruta 404

@@ -1,0 +1,210 @@
+<section class="module-page proveedores-page">
+    <div class="module-header module-header-actions">
+        <div>
+            <p class="eyebrow">Compras e inventario</p>
+            <h2>Proveedores</h2>
+            <p>
+                Administra proveedores para futuras compras, entradas de inventario y trazabilidad de costos.
+            </p>
+        </div>
+
+        <a href="/proveedores/nuevo" class="btn-primary">
+            Nuevo proveedor
+        </a>
+    </div>
+
+    <% if (mensajeExito) { %>
+        <div class="alert alert-success">
+            <%= mensajeExito %>
+        </div>
+        <% } %>
+
+            <% if (error) { %>
+                <div class="alert alert-error">
+                    <%= error %>
+                </div>
+                <% } %>
+
+                    <form method="GET" action="/proveedores" class="module-card proveedores-filters">
+                        <div class="form-group">
+                            <label for="busqueda">Buscar</label>
+                            <input type="search" id="busqueda" name="busqueda"
+                                value="<%= filtros && filtros.busqueda ? filtros.busqueda : '' %>"
+                                placeholder="Nombre, documento, contacto o correo">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="estado">Estado</label>
+                            <select id="estado" name="estado">
+                                <option value="" <%=!filtros || !filtros.estado ? 'selected' : '' %>>
+                                    Todos
+                                </option>
+
+                                <option value="activo" <%=filtros && filtros.estado==='activo' ? 'selected' : '' %>>
+                                    Activos
+                                </option>
+
+                                <option value="inactivo" <%=filtros && filtros.estado==='inactivo' ? 'selected' : '' %>>
+                                    Inactivos
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="proveedores-filters-actions">
+                            <button type="submit" class="btn-primary">
+                                Filtrar
+                            </button>
+
+                            <a href="/proveedores" class="btn-secondary">
+                                Limpiar
+                            </a>
+                        </div>
+                    </form>
+
+                    <article class="module-card proveedores-card">
+                        <div class="table-summary">
+                            <span>Proveedores registrados</span>
+                            <span>
+                                <strong>
+                                    <%= totalResultados || 0 %>
+                                </strong> resultado(s)
+                            </span>
+                        </div>
+
+                        <% if (!Array.isArray(proveedores) || proveedores.length===0) { %>
+                            <div class="empty-state">
+                                <h3>No hay proveedores registrados</h3>
+                                <p>
+                                    Crea el primer proveedor para preparar el modulo de compras.
+                                </p>
+
+                                <a href="/proveedores/nuevo" class="btn-primary">
+                                    Crear proveedor
+                                </a>
+                            </div>
+                            <% } else { %>
+                                <div class="table-wrapper">
+                                    <table class="data-table proveedores-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Proveedor</th>
+                                                <th>Documento</th>
+                                                <th>Contacto</th>
+                                                <th>Ubicacion</th>
+                                                <th>Estado</th>
+                                                <th class="text-right">Acciones</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            <% proveedores.forEach(function (proveedor) { %>
+                                                <tr>
+                                                    <td>
+                                                        <div class="proveedores-main-cell">
+                                                            <strong>
+                                                                <%= proveedor.nombre_mostrar ||
+                                                                    proveedor.nombre_comercial || 'Proveedor' %>
+                                                            </strong>
+
+                                                            <% if (proveedor.razon_social) { %>
+                                                                <span>
+                                                                    <%= proveedor.razon_social %>
+                                                                </span>
+                                                                <% } %>
+
+                                                                    <% if (proveedor.contacto_nombre) { %>
+                                                                        <span>
+                                                                            Contacto: <%= proveedor.contacto_nombre %>
+                                                                        </span>
+                                                                        <% } %>
+                                                        </div>
+                                                    </td>
+
+                                                    <td>
+                                                        <%= proveedor.documento_mostrar || 'Sin documento' %>
+                                                    </td>
+
+                                                    <td>
+                                                        <%= proveedor.contacto_mostrar || 'Sin contacto' %>
+                                                    </td>
+
+                                                    <td>
+                                                        <% if (proveedor.ciudad || proveedor.departamento) { %>
+                                                            <%= proveedor.ciudad || '' %>
+                                                                <% if (proveedor.ciudad && proveedor.departamento) { %>
+                                                                    -
+                                                                    <% } %>
+                                                                        <%= proveedor.departamento || '' %>
+                                                                            <% } else { %>
+                                                                                Sin ubicacion
+                                                                                <% } %>
+                                                    </td>
+
+                                                    <td>
+                                                        <span
+                                                            class="proveedor-status proveedor-status-<%= proveedor.estado || 'inactivo' %>">
+                                                            <%= proveedor.estado_etiqueta || proveedor.estado
+                                                                || 'Inactivo' %>
+                                                        </span>
+                                                    </td>
+
+                                                    <td class="text-right">
+                                                        <div class="proveedores-actions">
+                                                            <a href="/proveedores/<%= proveedor.id_proveedor %>/editar"
+                                                                class="btn-secondary btn-small">
+                                                                Editar
+                                                            </a>
+
+                                                            <% if (proveedor.estado==='activo' ) { %>
+                                                                <form method="POST"
+                                                                    action="/proveedores/<%= proveedor.id_proveedor %>/desactivar">
+                                                                    <button type="submit"
+                                                                        class="btn-danger-soft btn-small">
+                                                                        Desactivar
+                                                                    </button>
+                                                                </form>
+                                                                <% } else { %>
+                                                                    <form method="POST"
+                                                                        action="/proveedores/<%= proveedor.id_proveedor %>/activar">
+                                                                        <button type="submit"
+                                                                            class="btn-secondary btn-small">
+                                                                            Activar
+                                                                        </button>
+                                                                    </form>
+                                                                    <% } %>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <% }) %>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <% if (Number(totalPaginas || 1)> 1) { %>
+                                    <div class="pagination">
+                                        <% if (tienePaginaAnterior) { %>
+                                            <a class="btn-secondary btn-small"
+                                                href="/proveedores?pagina=<%= paginaAnterior %><%= queryPaginacion ? '&' + queryPaginacion : '' %>">
+                                                Anterior
+                                            </a>
+                                            <% } %>
+
+                                                <span>
+                                                    Pagina <strong>
+                                                        <%= paginaActual %>
+                                                    </strong> de <strong>
+                                                        <%= totalPaginas %>
+                                                    </strong>
+                                                </span>
+
+                                                <% if (tienePaginaSiguiente) { %>
+                                                    <a class="btn-secondary btn-small"
+                                                        href="/proveedores?pagina=<%= paginaSiguiente %><%= queryPaginacion ? '&' + queryPaginacion : '' %>">
+                                                        Siguiente
+                                                    </a>
+                                                    <% } %>
+                                    </div>
+                                    <% } %>
+                                        <% } %>
+                    </article>
+</section>
