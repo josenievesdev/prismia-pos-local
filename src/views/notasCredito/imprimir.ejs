@@ -155,14 +155,37 @@
 </head>
 
 <body>
-    <% var items=Array.isArray(detalle) ? detalle : []; %>
+
+    <body>
+        <% var items=Array.isArray(detalle) ? detalle : []; var negocio=typeof configuracionNegocio !=='undefined' &&
+            configuracionNegocio ? configuracionNegocio : {}; function texto(valor, defecto) { if (valor===null ||
+            valor===undefined) { return defecto || '' ; } var limpio=String(valor).trim(); return limpio || (defecto
+            || '' ); } var nombreComercio=texto(negocio.nombre_negocio ||
+            negocio.nombre_comercial, 'Comercio sin nombre' ); var
+            tipoDocumentoComercio=texto(negocio.tipo_documento, 'NIT' ); var
+            documentoComercio=texto(negocio.documento, '' ); var direccionComercio=texto(negocio.direccion, '' ); var
+            telefonoComercio=texto(negocio.telefono, '' ); var correoComercio=texto(negocio.correo, '' ); var
+            lineaDocumentoComercio=documentoComercio ? tipoDocumentoComercio + ': ' + documentoComercio : '' ; var
+            lineaContactoComercio=[ direccionComercio, telefonoComercio, correoComercio, ].filter(Boolean).join(' · ');
+    %>
 
         <div class="ticket-wrap">
             <header class="center">
                 <h1 class="ticket-title">
-                    <%= typeof empresa !=='undefined' && empresa.software ? empresa.software.nombre
-                        : 'Prismia POS Local' %>
+                    <%= nombreComercio %>
                 </h1>
+
+                <% if (lineaDocumentoComercio) { %>
+                    <p class="ticket-subtitle">
+                        <%= lineaDocumentoComercio %>
+                    </p>
+                <% } %>
+
+                <% if (lineaContactoComercio) { %>
+                    <p class="ticket-subtitle">
+                        <%= lineaContactoComercio %>
+                    </p>
+                <% } %>
 
                 <p class="ticket-subtitle">
                     Nota crédito interna<br>
@@ -177,8 +200,8 @@
             <div class="row">
                 <span>Fecha</span>
                 <strong>
-                    <%= notaCredito.fecha_nota ? String(notaCredito.fecha_nota).slice(0, 19) : 'Sin fecha' %>
-                </strong>
+                    <%= notaCredito.fecha_nota ? String(notaCredito.fecha_nota).slice(0, 19) : ' Sin fecha' %>
+            </strong>
             </div>
 
             <div class="row">
@@ -287,11 +310,11 @@
             <div class="notice">
                 Esta nota crédito es interna y no representa validación electrónica DIAN.
             </div>
-        </div>
+            </div>
 
-        <div class="actions">
-            <button type="button" onclick="window.print()">Imprimir</button>
-        </div>
-</body>
+            <div class="actions">
+                <button type="button" onclick="window.print()">Imprimir</button>
+            </div>
+    </body>
 
 </html>

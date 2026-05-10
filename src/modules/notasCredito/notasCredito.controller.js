@@ -1,4 +1,5 @@
 const notasCreditoService = require('./notasCredito.service');
+const configuracionService = require('../configuracion/configuracion.service');
 
 const estilosNotasCredito = ['/css/modules/notas-credito.css'];
 
@@ -61,6 +62,7 @@ function mostrarImprimirNotaCredito(req, res) {
     return res.render('notasCredito/imprimir', {
         layout: false,
         titulo: `Nota crédito ${resultado.notaCredito.numero_nota_credito}`,
+        configuracionNegocio: configuracionService.obtenerConfiguracionNegocio(),
         notaCredito: resultado.notaCredito,
         detalle: resultado.detalle,
     });

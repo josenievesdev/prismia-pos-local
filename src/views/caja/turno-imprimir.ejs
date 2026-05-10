@@ -465,14 +465,23 @@
 </head>
 
 <body>
-    <% const gruposResumenMedios=resumenMediosPagoAgrupado || { efectivo: [], transferencias: [], tarjetas: [], otros:
+    <% const negocio=typeof configuracionNegocio !=='undefined' && configuracionNegocio ? configuracionNegocio : {};
+        function textoComercio(valor, defecto) { if (valor===null || valor===undefined) { return defecto || '' ; } const
+        limpio=String(valor).trim(); return limpio || (defecto || '' ); } const nombreComercio=textoComercio(
+        negocio.nombre_negocio || negocio.nombre_comercial, 'Comercio sin nombre' ); const
+        tipoDocumentoComercio=textoComercio(negocio.tipo_documento, 'NIT' ); const
+        documentoComercio=textoComercio(negocio.documento, '' ); const
+        direccionComercio=textoComercio(negocio.direccion, '' ); const
+        telefonoComercio=textoComercio(negocio.telefono, '' ); const correoComercio=textoComercio(negocio.correo, '' );
+        const lineaDocumentoComercio=documentoComercio ? `${tipoDocumentoComercio}: ${documentoComercio}` : '' ; const
+        lineaContactoComercio=[ direccionComercio, telefonoComercio, correoComercio, ].filter(Boolean).join(' · ');
+
+        const gruposResumenMedios=resumenMediosPagoAgrupado || { efectivo: [], transferencias: [], tarjetas: [], otros:
         [] }; const totalesResumen=totalesResumenMediosPago || { cantidad_operaciones: 0, total_ingresos: 0,
         total_egresos: 0, saldo_neto: 0 }; const resumenMediosTabla=[ ...(gruposResumenMedios.efectivo ||
         []).map((medio)=> ({
         ...medio,
-        grupo: 'Efectivo'
-        })),
-        ...(gruposResumenMedios.transferencias || []).map((medio) => ({
+        grupo: ' Efectivo' })), ...(gruposResumenMedios.transferencias || []).map((medio)=> ({
         ...medio,
         grupo: 'Transferencias'
         })),
@@ -506,11 +515,26 @@
 
                     <header class="print-header">
                         <div class="brand">
-                            <span class="brand-small">Prismia POS Local</span>
-                            <h1>Arqueo de caja</h1>
-                            <p class="muted">
-                                Resumen operativo del turno, movimientos, gastos y medios de pago.
-                            </p>
+                            <span class="brand-small">Arqueo de caja</span>
+                            <h1>
+                                <%= nombreComercio %>
+                            </h1>
+
+                            <% if (lineaDocumentoComercio) { %>
+                                <p class="muted">
+                                    <%= lineaDocumentoComercio %>
+                                </p>
+                                <% } %>
+
+                                    <% if (lineaContactoComercio) { %>
+                                        <p class="muted">
+                                            <%= lineaContactoComercio %>
+                                        </p>
+                                        <% } %>
+
+                                            <p class="muted">
+                                                Resumen operativo del turno, movimientos, gastos y medios de pago.
+                                            </p>
                         </div>
 
                         <div class="turno-box">

@@ -1,5 +1,6 @@
 const cajaService = require('./caja.service');
 const backupsService = require('../backups/backups.service');
+const configuracionService = require('../configuracion/configuracion.service');
 
 const estilosCaja = ['/css/modules/caja.css'];
 
@@ -312,6 +313,7 @@ function mostrarArqueoImprimible(req, res) {
     return res.render('caja/turno-imprimir', {
         layout: false,
         titulo: `Arqueo caja #${arqueo.turno.id_turno_caja}`,
+        configuracionNegocio: configuracionService.obtenerConfiguracionNegocio(),
         arqueo,
         turno: arqueo.turno,
         movimientos: arqueo.movimientos,
