@@ -92,7 +92,113 @@ function contarCompras(filtros = {}) {
     return Number(resultado?.total || 0);
 }
 
+function listarProveedoresActivos({ limite = 300 } = {}) {
+    return db
+        .prepare(`
+            SELECT
+                id_proveedor,
+                nombre_comercial,
+                razon_social,
+                tipo_documento,
+                documento,
+                estado
+            FROM proveedores
+            WHERE estado = 'activo'
+              AND eliminado_en IS NULL
+            ORDER BY nombre_comercial ASC
+            LIMIT ?
+        `)
+        .all(Number(limite || 300));
+}
+
+function buscarProductosParaCompra({ busqueda = '', limite = 20 } = {}) {
+    const termino = limpiarTexto(busqueda);
+    const limiteSeguro = Number(limite || 20);
+
+    if (!termino) {
+        return db
+            .prepare(`
+                SELECT
+                    p.id_producto,
+                    p.codigo_interno,
+                    p.codigo_barras,
+                    p.nombre,
+                    p.precio_costo,
+                    p.precio_venta,
+                    p.costo_promedio,
+                    p.ultimo_costo,
+                    p.stock_actual,
+                    p.controla_inventario,
+                    p.maneja_iva,
+                    p.porcentaje_iva,
+                    p.precio_incluye_iva,
+                    p.id_unidad_medida,
+                    u.nombre AS unidad_nombre,
+                    u.abreviatura AS unidad_abreviatura,
+                    u.permite_decimales AS unidad_permite_decimales
+                FROM productos p
+                LEFT JOIN unidades_medida u
+                    ON u.id_unidad_medida = p.id_unidad_medida
+                WHERE p.estado = 'activo'
+                  AND p.eliminado_en IS NULL
+                ORDER BY p.nombre ASC
+                LIMIT ?
+            `)
+            .all(limiteSeguro);
+    }
+
+    const patron = `%${termino}%`;
+
+    return db
+        .prepare(`
+            SELECT
+                p.id_producto,
+                p.codigo_interno,
+                p.codigo_barras,
+                p.nombre,
+                p.precio_costo,
+                p.precio_venta,
+                p.costo_promedio,
+                p.ultimo_costo,
+                p.stock_actual,
+                p.controla_inventario,
+                p.maneja_iva,
+                p.porcentaje_iva,
+                p.precio_incluye_iva,
+                p.id_unidad_medida,
+                u.nombre AS unidad_nombre,
+                u.abreviatura AS unidad_abreviatura,
+                u.permite_decimales AS unidad_permite_decimales
+            FROM productos p
+            LEFT JOIN unidades_medida u
+                ON u.id_unidad_medida = p.id_unidad_medida
+            WHERE p.estado = 'activo'
+              AND p.eliminado_en IS NULL
+              AND (
+                    p.nombre LIKE @patron
+                 OR p.codigo_interno LIKE @patron
+                 OR COALESCE(p.codigo_barras, '') LIKE @patron
+              )
+            ORDER BY
+                CASE
+                    WHEN p.codigo_barras = @termino THEN 1
+                    WHEN p.codigo_interno = @termino THEN 2
+                    WHEN p.nombre LIKE @patron THEN 3
+                    ELSE 4
+                END,
+                p.nombre ASC
+            LIMIT @limite
+        `)
+        .all({
+            termino,
+            patron,
+            limite: limiteSeguro,
+        });
+}
+
 module.exports = {
     listarCompras,
     contarCompras,
+    listarProveedoresActivos,
+    buscarProductosParaCompra,
 };

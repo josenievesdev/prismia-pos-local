@@ -74,6 +74,16 @@
         return Math.max(0, numero);
     }
 
+    function normalizarPorcentajeIva(valor, defecto = 0) {
+        const numero = limpiarNumero(valor, defecto);
+
+        if (numero > 0 && numero <= 1) {
+            return Math.min(numero * 100, 100);
+        }
+
+        return Math.min(numero, 100);
+    }
+
     function redondearDinero(valor) {
         return Math.round(limpiarNumero(valor));
     }
@@ -348,7 +358,7 @@
             cantidad: 1,
             costo_unitario: Number(producto.costo_referencia_compra || producto.precio_costo || 0),
             descuento_porcentaje: 0,
-            porcentaje_iva: Number(producto.iva_compra_sugerido || 0),
+            porcentaje_iva: normalizarPorcentajeIva(producto.iva_compra_sugerido || 0),
             precio_venta_actual: Number(producto.precio_venta || 0),
             ganancia_sobre_costo_porcentaje: 0,
             actualizar_precio_venta: false,
@@ -368,7 +378,7 @@
         const cantidad = limpiarNumero(linea.cantidad, 1);
         const costoUnitario = redondearDinero(linea.costo_unitario);
         const descuentoPorcentaje = Math.min(limpiarNumero(linea.descuento_porcentaje), 100);
-        const porcentajeIva = limpiarNumero(linea.porcentaje_iva);
+        const porcentajeIva = normalizarPorcentajeIva(linea.porcentaje_iva);
         const gananciaPorcentaje = limpiarNumero(linea.ganancia_sobre_costo_porcentaje);
 
         const descuentoUnitario = costoUnitario * (descuentoPorcentaje / 100);
@@ -444,6 +454,10 @@
     function renderizarLineas(foco = null) {
         ui.contadorLineas.textContent = String(estado.lineas.length);
 
+        if (ui.btnGuardar) {
+            ui.btnGuardar.disabled = estado.lineas.length === 0;
+        }
+
         if (!estado.lineas.length) {
             ui.lineasBody.innerHTML = `
     <tr class="ventas-cart-empty-row">
@@ -465,7 +479,7 @@
                 const calculo = calcularLinea(linea);
 
                 return `
-    <tr>
+    <tr data-linea-index="${indice}">
         <td>
             <div class="ventas-cart-product compras-cart-product">
                 <strong>${indice + 1}. ${escaparHtml(linea.nombre)}</strong>
@@ -517,14 +531,14 @@
         </td>
 
         <td class="text-right">
-            <strong>${formatearMoneda(calculo.costoUnitarioFinal)}</strong>
-            <small class="compras-line-muted">
-                Total: ${formatearMoneda(calculo.totalLinea)}
-            </small>
+<strong data-calculo="costo_final">${formatearMoneda(calculo.costoUnitarioFinal)}</strong>
+<small class="compras-line-muted" data-calculo="total_linea">
+    Total: ${formatearMoneda(calculo.totalLinea)}
+</small>
         </td>
 
         <td class="text-right">
-            <strong>${formatearMoneda(calculo.precioVentaSugerido)}</strong>
+<strong data-calculo="precio_sugerido">${formatearMoneda(calculo.precioVentaSugerido)}</strong>
 
             <div class="compras-price-tools">
                 <label>
@@ -558,6 +572,54 @@
 
         renderizarTotales();
         restaurarFoco(foco);
+    }
+
+    function actualizarCalculosLinea(indice) {
+        const linea = estado.lineas[indice];
+
+        if (!linea) {
+            return;
+        }
+
+        const fila = ui.lineasBody.querySelector(`[data-linea-index="${indice}"]`);
+
+        if (!fila) {
+            return;
+        }
+
+        const calculo = calcularLinea(linea);
+
+        const costoFinal = fila.querySelector('[data-calculo="costo_final"]');
+        const totalLinea = fila.querySelector('[data-calculo="total_linea"]');
+        const precioSugerido = fila.querySelector('[data-calculo="precio_sugerido"]');
+
+        const hiddenCostoNeto = fila.querySelector(`[name="lineas[${indice}][costo_unitario_neto]"]`);
+        const hiddenIvaUnitario = fila.querySelector(`[name="lineas[${indice}][iva_unitario]"]`);
+        const hiddenCostoFinal = fila.querySelector(`[name="lineas[${indice}][costo_unitario_final]"]`);
+        const hiddenSubtotal = fila.querySelector(`[name="lineas[${indice}][subtotal_linea]"]`);
+        const hiddenIvaLinea = fila.querySelector(`[name="lineas[${indice}][iva_linea]"]`);
+        const hiddenTotalLinea = fila.querySelector(`[name="lineas[${indice}][total_linea]"]`);
+        const hiddenPrecioSugerido = fila.querySelector(`[name="lineas[${indice}][precio_venta_sugerido]"]`);
+
+        if (costoFinal) {
+            costoFinal.textContent = formatearMoneda(calculo.costoUnitarioFinal);
+        }
+
+        if (totalLinea) {
+            totalLinea.textContent = `Total: ${formatearMoneda(calculo.totalLinea)}`;
+        }
+
+        if (precioSugerido) {
+            precioSugerido.textContent = formatearMoneda(calculo.precioVentaSugerido);
+        }
+
+        if (hiddenCostoNeto) hiddenCostoNeto.value = calculo.costoUnitarioNeto;
+        if (hiddenIvaUnitario) hiddenIvaUnitario.value = calculo.ivaUnitario;
+        if (hiddenCostoFinal) hiddenCostoFinal.value = calculo.costoUnitarioFinal;
+        if (hiddenSubtotal) hiddenSubtotal.value = calculo.subtotalLinea;
+        if (hiddenIvaLinea) hiddenIvaLinea.value = calculo.ivaLinea;
+        if (hiddenTotalLinea) hiddenTotalLinea.value = calculo.totalLinea;
+        if (hiddenPrecioSugerido) hiddenPrecioSugerido.value = calculo.precioVentaSugerido;
     }
 
     function renderizarTotales() {
@@ -595,15 +657,79 @@
             return;
         }
 
-        const foco = capturarFocoActual();
-
         if (campo === 'actualizar_precio_venta') {
             estado.lineas[indice][campo] = input.checked;
-        } else {
-            estado.lineas[indice][campo] = input.value;
+            renderizarLineas();
+            return;
         }
 
-        renderizarLineas(foco);
+        estado.lineas[indice][campo] = input.value;
+
+        actualizarCalculosLinea(indice);
+        renderizarTotales();
+    }
+
+    function construirPayloadCompra() {
+        return {
+            id_proveedor: ui.idProveedor.value,
+            fecha_compra: document.getElementById('fechaCompra')?.value || '',
+            tipo_soporte: document.getElementById('tipoSoporteCompra')?.value || 'factura_proveedor',
+            numero_soporte: document.getElementById('numeroSoporteCompra')?.value || '',
+            observaciones: document.getElementById('observacionesCompra')?.value || '',
+            lineas: estado.lineas.map((linea) => {
+                const calculo = calcularLinea(linea);
+
+                return {
+                    id_producto: linea.id_producto,
+                    cantidad: linea.cantidad,
+                    costo_unitario: linea.costo_unitario,
+                    descuento_porcentaje: linea.descuento_porcentaje,
+                    porcentaje_iva: linea.porcentaje_iva,
+                    ganancia_sobre_costo_porcentaje: linea.ganancia_sobre_costo_porcentaje,
+
+                    descuento_linea: calculo.descuentoLinea,
+                    costo_unitario_neto: calculo.costoUnitarioNeto,
+                    iva_unitario: calculo.ivaUnitario,
+                    costo_unitario_final: calculo.costoUnitarioFinal,
+                    subtotal_linea: calculo.subtotalLinea,
+                    iva_linea: calculo.ivaLinea,
+                    total_linea: calculo.totalLinea,
+
+                    precio_venta_anterior: linea.precio_venta_actual,
+                    precio_venta_sugerido: calculo.precioVentaSugerido,
+                    actualizar_precio_venta: linea.actualizar_precio_venta ? 1 : 0,
+                    precio_venta_nuevo: calculo.precioVentaSugerido,
+                };
+            }),
+        };
+    }
+
+    async function validarCompraEnBackend() {
+        limpiarAlerta();
+
+        try {
+            const respuesta = await fetch('/compras/api/validar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(construirPayloadCompra()),
+            });
+
+            const resultado = await respuesta.json();
+
+            if (!resultado.ok) {
+                mostrarAlerta((resultado.errores || []).join(' '));
+                return;
+            }
+
+            mostrarAlerta(
+                `Validación correcta. Total calculado por backend: ${formatearMoneda(resultado.compra.total)}. El guardado real se activará en el siguiente bloque.`
+            );
+        } catch (error) {
+            console.error('Error validando compra:', error);
+            mostrarAlerta('No se pudo validar la compra en el backend.');
+        }
     }
 
     function limpiarCompra() {
@@ -678,7 +804,7 @@
 
     ui.form.addEventListener('submit', function (evento) {
         evento.preventDefault();
-        mostrarAlerta('El guardado real de compras se activará en el siguiente bloque.');
+        validarCompraEnBackend();
     });
 
     document.addEventListener('click', function (evento) {
