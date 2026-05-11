@@ -1,0 +1,283 @@
+<section class="module-page ventas-page compras-pos-page">
+    <script type="application/json" id="proveedoresCompraJson">
+        <%- JSON.stringify(proveedores || []).replace(/</g, '\\u003c') %>
+    </script>
+
+    <form id="formNuevaCompra" class="ventas-pos-shell compras-pos-shell" data-url="/compras" novalidate>
+        <header class="ventas-pos-header">
+            <div class="ventas-header-left">
+                <div class="ventas-header-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.2">
+                        <path d="M6 2l1.5 4L12 7.5 16.5 6 18 2" />
+                        <path d="M4 6h16l-1.5 14h-13L4 6z" />
+                        <path d="M9 11h6" />
+                        <path d="M9 15h4" />
+                    </svg>
+                </div>
+
+                <div>
+                    <h2>Compra</h2>
+                    <span class="ventas-header-sub">Factura interna de proveedor</span>
+                </div>
+            </div>
+
+            <div class="ventas-header-status">
+                <span class="ventas-status-chip is-open compras-status-chip">
+                    <span class="ventas-status-dot"></span>
+                    Sin afectar inventario todavía
+                </span>
+
+                <span class="ventas-header-meta">
+                    Documento <strong>CP-BORRADOR</strong>
+                </span>
+            </div>
+        </header>
+
+        <% if (error) { %>
+            <div class="alert alert-error">
+                <%= error %>
+            </div>
+            <% } %>
+
+                <div class="compras-form-alert" id="alertaCompra" hidden></div>
+
+                <section class="ventas-context-bar compras-context-bar">
+                    <div class="ventas-context-item is-client ventas-client-search-box compras-provider-box">
+                        <div class="ventas-client-clean-head">
+                            <span>Proveedor</span>
+
+                            <div class="ventas-client-clean-actions">
+                                <strong id="resumenProveedorCompra">Sin seleccionar</strong>
+                            </div>
+                        </div>
+
+                        <div class="ventas-client-search-wrap ventas-client-clean-search">
+                            <input type="search" id="buscarProveedorCompra"
+                                placeholder="Buscar proveedor por nombre, documento o razón social..."
+                                autocomplete="off">
+
+                            <input type="hidden" id="idProveedorCompra" name="id_proveedor">
+
+                            <div class="ventas-client-results compras-provider-results" id="resultadosProveedoresCompra"
+                                hidden>
+                                <div class="ventas-client-result-empty">
+                                    Escribe para buscar un proveedor.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="compras-selected-box" id="proveedorSeleccionadoBox" hidden>
+                            <span>Proveedor seleccionado</span>
+                            <strong id="proveedorSeleccionadoNombre"></strong>
+                            <p id="proveedorSeleccionadoDetalle"></p>
+
+                            <div class="compras-provider-actions">
+                                <button type="button" class="compras-link-button" id="btnCambiarProveedorCompra">
+                                    Cambiar
+                                </button>
+
+                                <button type="button" class="compras-link-button is-danger"
+                                    id="btnQuitarProveedorCompra">
+                                    Quitar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <label class="ventas-context-item ventas-date-item" for="fechaCompra">
+                        <span>Fecha</span>
+                        <input type="date" id="fechaCompra" name="fecha_compra" value="<%= fechaCompra %>" required>
+                    </label>
+
+                    <div class="ventas-context-item compras-support-box">
+                        <span>Soporte</span>
+                        <input type="text" id="numeroSoporteCompra" name="numero_soporte"
+                            placeholder="Ej: FE-1025, RM-442">
+                        <small>Número del documento del proveedor</small>
+                    </div>
+
+                    <div class="ventas-context-item ventas-context-actions">
+                        <span>Acciones</span>
+
+                        <div class="ventas-context-buttons compras-context-buttons">
+                            <a href="/compras" class="btn-secondary">
+                                Listado
+                            </a>
+
+                            <button type="button" class="btn-secondary" id="btnLimpiarCompra">
+                                Limpiar
+                            </button>
+
+                            <button type="submit" class="btn-primary ventas-charge-button" id="btnGuardarCompra"
+                                disabled>
+                                Guardar compra
+                            </button>
+                        </div>
+
+                        <small>El guardado se activa en el siguiente bloque</small>
+                    </div>
+                </section>
+
+                <section class="compras-support-strip">
+                    <label class="ventas-field">
+                        <span>Tipo de soporte</span>
+                        <select id="tipoSoporteCompra" name="tipo_soporte">
+                            <% tiposSoporte.forEach(function (tipo) { %>
+                                <option value="<%= tipo.valor %>">
+                                    <%= tipo.etiqueta %>
+                                </option>
+                                <% }) %>
+                        </select>
+                    </label>
+
+                    <label class="ventas-field compras-observaciones-field">
+                        <span>Observaciones</span>
+                        <input type="text" id="observacionesCompra" name="observaciones"
+                            placeholder="Notas internas de la compra">
+                    </label>
+                </section>
+
+                <section class="ventas-search-section">
+                    <div class="ventas-search-form">
+                        <div class="ventas-search-input-wrap">
+                            <span class="ventas-search-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5">
+                                    <circle cx="11" cy="11" r="8" />
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                                </svg>
+                            </span>
+
+                            <input type="search" id="busquedaProductoCompra"
+                                placeholder="Buscar producto por nombre, código de barras o SKU…" autocomplete="off"
+                                autofocus>
+
+                            <div class="ventas-results-panel compras-product-results" id="resultadosProductosCompra"
+                                hidden>
+                                <div class="ventas-empty-results">
+                                    <strong>Escribe para buscar</strong>
+                                    <span>Los productos aparecerán aquí.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="button" class="ventas-search-btn" id="btnBuscarProductoCompra">
+                            Buscar
+                        </button>
+                    </div>
+                </section>
+
+                <section class="ventas-sale-card compras-sale-card">
+                    <header class="ventas-sale-header">
+                        <div>
+                            <span class="ventas-kicker">Compra</span>
+                            <h3>Detalle de productos</h3>
+                        </div>
+
+                        <span class="ventas-ticket-state">
+                            CP-BORRADOR
+                        </span>
+                    </header>
+
+                    <div class="ventas-invoice-table-wrap compras-invoice-table-wrap">
+                        <table class="ventas-invoice-table compras-invoice-table">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th class="text-center">Cant.</th>
+                                    <th class="text-right">Costo base</th>
+                                    <th class="text-center">Desc. / IVA</th>
+                                    <th class="text-right">Costo final</th>
+                                    <th class="text-right">Precio sugerido</th>
+                                    <th class="text-center">Acción</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="lineasCompraBody">
+                                <tr class="ventas-cart-empty-row">
+                                    <td colspan="7">
+                                        <div class="ventas-cart-empty">
+                                            <strong>Compra vacía</strong>
+                                            <span>Busca un producto y agrégalo a la compra.</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <section class="ventas-sale-footer compras-sale-footer">
+                        <div class="ventas-payment-strip compras-info-strip">
+                            <div class="ventas-payment-strip-header">
+                                <div>
+                                    <span class="ventas-kicker">Datos operativos</span>
+                                    <h4>Compra interna</h4>
+                                </div>
+
+                                <small class="ventas-payment-note">
+                                    Todavía no descuenta ni suma inventario.
+                                </small>
+                            </div>
+
+                            <div class="ventas-payment-info compras-payment-info">
+                                <div class="ventas-payment-info-card">
+                                    <span>Proveedor</span>
+                                    <strong id="resumenProveedorInfoCompra">Sin seleccionar</strong>
+                                    <small>Proveedor de la compra</small>
+                                </div>
+
+                                <div class="ventas-payment-info-card">
+                                    <span>Líneas</span>
+                                    <strong id="contadorLineasCompra">0</strong>
+                                    <small>Productos agregados</small>
+                                </div>
+
+                                <div class="ventas-payment-info-card">
+                                    <span>Documento</span>
+                                    <strong>CP-BORRADOR</strong>
+                                    <small>Se confirma al guardar</small>
+                                </div>
+                            </div>
+
+                            <div class="compras-note-box">
+                                <strong>Regla de costos</strong>
+                                <span>
+                                    El IVA de compra calcula el costo final de entrada. No modifica el IVA de venta del
+                                    producto.
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="ventas-totals-panel">
+                            <div class="ventas-total-row">
+                                <span>Subtotal neto</span>
+                                <strong id="subtotalCompra">$ 0</strong>
+                            </div>
+
+                            <div class="ventas-total-row">
+                                <span>Descuento</span>
+                                <strong id="descuentoCompra">$ 0</strong>
+                            </div>
+
+                            <div class="ventas-total-row">
+                                <span>IVA compra</span>
+                                <strong id="ivaCompra">$ 0</strong>
+                            </div>
+
+                            <div class="ventas-total-row">
+                                <span>Total compra</span>
+                                <strong id="totalCompra">$ 0</strong>
+                            </div>
+
+                            <div class="ventas-total-row is-total">
+                                <span>Total</span>
+                                <strong id="totalCompraPrincipal">$ 0</strong>
+                            </div>
+                        </div>
+                    </section>
+                </section>
+    </form>
+
+    <script src="/js/compras-formulario.js"></script>
+</section>
