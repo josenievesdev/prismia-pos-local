@@ -45,6 +45,16 @@ function validarCompra(req, res) {
     });
 }
 
+function guardarCompra(req, res) {
+    const resultado = comprasService.guardarCompra(req.body || {}, {
+        usuario: req.session?.usuario || null,
+        ip: req.ip || 'local',
+        userAgent: req.get('user-agent') || '',
+    });
+
+    return res.status(resultado.ok ? 201 : resultado.codigoEstado || 400).json(resultado);
+}
+
 function listarCompras(req, res) {
     const resultado = comprasService.listarCompras(req.query || {});
 
@@ -75,4 +85,5 @@ module.exports = {
     mostrarFormularioNuevaCompra,
     buscarProductosParaCompra,
     validarCompra,
+    guardarCompra,
 };

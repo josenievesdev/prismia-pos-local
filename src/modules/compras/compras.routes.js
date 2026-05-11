@@ -13,6 +13,7 @@ router.get('/nueva', comprasController.mostrarFormularioNuevaCompra);
 router.get('/api/productos/buscar', comprasController.buscarProductosParaCompra);
 router.post('/api/validar', comprasController.validarCompra);
 
+router.post('/', comprasController.guardarCompra);
 router.get('/', comprasController.listarCompras);
 
 module.exports = router;

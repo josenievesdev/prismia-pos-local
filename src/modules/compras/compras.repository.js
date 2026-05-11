@@ -4,6 +4,28 @@ function limpiarTexto(valor) {
     return String(valor || '').trim();
 }
 
+function normalizarNumero(valor, defecto = 0) {
+    const numero = Number(String(valor ?? '').replace(',', '.'));
+
+    if (!Number.isFinite(numero)) {
+        return defecto;
+    }
+
+    return Math.max(0, numero);
+}
+
+function normalizarEntero(valor, defecto = 0) {
+    return Math.max(0, Math.round(normalizarNumero(valor, defecto)));
+}
+
+function formatearNumeroDocumento(prefijo, consecutivo, longitudConsecutivo = 6) {
+    const prefijoSeguro = limpiarTexto(prefijo) || 'CP';
+    const consecutivoSeguro = Number(consecutivo || 0);
+    const longitudSegura = Number(longitudConsecutivo || 6);
+
+    return `${prefijoSeguro}-${String(consecutivoSeguro).padStart(longitudSegura, '0')}`;
+}
+
 function construirFiltrosCompras(filtros = {}) {
     const condiciones = ['1 = 1'];
     const parametros = [];
@@ -196,9 +218,422 @@ function buscarProductosParaCompra({ busqueda = '', limite = 20 } = {}) {
         });
 }
 
+function obtenerNumeracionCompra() {
+    return db
+        .prepare(`
+            SELECT
+                id_numeracion,
+                codigo_documento,
+                nombre_documento,
+                prefijo,
+                longitud_consecutivo,
+                ultimo_consecutivo,
+                activo
+            FROM numeraciones_documentos
+            WHERE codigo_documento = 'compra_proveedor'
+              AND activo = 1
+            LIMIT 1
+        `)
+        .get();
+}
+
+function obtenerUltimoConsecutivoCompra(prefijo) {
+    const resultado = db
+        .prepare(`
+            SELECT COALESCE(
+                MAX(CAST(SUBSTR(numero_compra, LENGTH(@prefijo) + 2) AS INTEGER)),
+                0
+            ) AS ultimo_consecutivo
+            FROM compras
+            WHERE numero_compra LIKE @patron
+        `)
+        .get({
+            prefijo,
+            patron: `${prefijo}-%`,
+        });
+
+    return Number(resultado?.ultimo_consecutivo || 0);
+}
+
+function registrarCompraConInventario({ compra, lineas, usuario, ip, userAgent }) {
+    const transaccion = db.transaction(() => {
+        const numeracion = obtenerNumeracionCompra();
+
+        if (!numeracion) {
+            throw new Error('No existe numeración activa para compras a proveedores.');
+        }
+
+        const prefijo = limpiarTexto(numeracion.prefijo) || 'CP';
+        const longitudConsecutivo = normalizarEntero(numeracion.longitud_consecutivo, 6);
+        const ultimoDocumento = obtenerUltimoConsecutivoCompra(prefijo);
+
+        const consecutivo = Math.max(
+            normalizarEntero(numeracion.ultimo_consecutivo),
+            ultimoDocumento
+        ) + 1;
+
+        const numeroCompra = formatearNumeroDocumento(
+            prefijo,
+            consecutivo,
+            longitudConsecutivo
+        );
+
+        const resultadoCompra = db
+            .prepare(`
+                INSERT INTO compras (
+                    numero_compra,
+                    id_proveedor,
+                    id_usuario,
+                    numero_soporte,
+                    tipo_soporte,
+                    fecha_compra,
+                    subtotal,
+                    iva_total,
+                    total,
+                    estado,
+                    observaciones
+                ) VALUES (
+                    @numero_compra,
+                    @id_proveedor,
+                    @id_usuario,
+                    @numero_soporte,
+                    @tipo_soporte,
+                    @fecha_compra,
+                    @subtotal,
+                    @iva_total,
+                    @total,
+                    'registrada',
+                    @observaciones
+                )
+            `)
+            .run({
+                numero_compra: numeroCompra,
+                id_proveedor: compra.id_proveedor,
+                id_usuario: usuario?.id_usuario || null,
+                numero_soporte: compra.numero_soporte || null,
+                tipo_soporte: compra.tipo_soporte,
+                fecha_compra: compra.fecha_compra,
+                subtotal: compra.subtotal,
+                iva_total: compra.iva_total,
+                total: compra.total,
+                observaciones: compra.observaciones || null,
+            });
+
+        const idCompra = Number(resultadoCompra.lastInsertRowid);
+
+        const obtenerProducto = db.prepare(`
+            SELECT
+                p.id_producto,
+                p.id_unidad_medida,
+                p.codigo_interno,
+                p.codigo_barras,
+                p.nombre,
+                p.precio_costo,
+                p.precio_venta,
+                p.costo_promedio,
+                p.ultimo_costo,
+                p.stock_actual,
+                p.controla_inventario,
+                p.estado,
+                p.eliminado_en,
+                u.abreviatura AS unidad_abreviatura
+            FROM productos p
+            LEFT JOIN unidades_medida u
+                ON u.id_unidad_medida = p.id_unidad_medida
+            WHERE p.id_producto = ?
+              AND p.estado = 'activo'
+              AND p.eliminado_en IS NULL
+            LIMIT 1
+        `);
+
+        const insertarDetalle = db.prepare(`
+            INSERT INTO compras_detalle (
+                id_compra,
+                id_producto,
+                cantidad,
+                costo_unitario,
+                porcentaje_iva,
+                subtotal_linea,
+                iva_linea,
+                total_linea,
+                stock_anterior,
+                stock_nuevo,
+                ultimo_costo_anterior,
+                costo_promedio_anterior,
+                costo_promedio_nuevo,
+                descuento_porcentaje,
+                descuento_linea,
+                costo_unitario_neto,
+                iva_unitario,
+                costo_unitario_final,
+                precio_venta_anterior,
+                ganancia_sobre_costo_porcentaje,
+                precio_venta_sugerido,
+                actualizar_precio_venta,
+                precio_venta_nuevo
+            ) VALUES (
+                @id_compra,
+                @id_producto,
+                @cantidad,
+                @costo_unitario,
+                @porcentaje_iva,
+                @subtotal_linea,
+                @iva_linea,
+                @total_linea,
+                @stock_anterior,
+                @stock_nuevo,
+                @ultimo_costo_anterior,
+                @costo_promedio_anterior,
+                @costo_promedio_nuevo,
+                @descuento_porcentaje,
+                @descuento_linea,
+                @costo_unitario_neto,
+                @iva_unitario,
+                @costo_unitario_final,
+                @precio_venta_anterior,
+                @ganancia_sobre_costo_porcentaje,
+                @precio_venta_sugerido,
+                @actualizar_precio_venta,
+                @precio_venta_nuevo
+            )
+        `);
+
+        const actualizarProductoConPrecio = db.prepare(`
+            UPDATE productos
+            SET
+                stock_actual = @stock_nuevo,
+                ultimo_costo = @ultimo_costo,
+                costo_promedio = @costo_promedio,
+                precio_venta = @precio_venta,
+                actualizado_en = CURRENT_TIMESTAMP
+            WHERE id_producto = @id_producto
+              AND eliminado_en IS NULL
+        `);
+
+        const actualizarProductoSinPrecio = db.prepare(`
+            UPDATE productos
+            SET
+                stock_actual = @stock_nuevo,
+                ultimo_costo = @ultimo_costo,
+                costo_promedio = @costo_promedio,
+                actualizado_en = CURRENT_TIMESTAMP
+            WHERE id_producto = @id_producto
+              AND eliminado_en IS NULL
+        `);
+
+        const insertarMovimientoInventario = db.prepare(`
+            INSERT INTO movimientos_inventario (
+                id_producto,
+                id_usuario,
+                id_unidad_medida,
+                unidad_abreviatura,
+                tipo_movimiento,
+                cantidad,
+                stock_anterior,
+                stock_nuevo,
+                costo_unitario,
+                costo_total,
+                motivo,
+                referencia_tipo,
+                referencia_id
+            ) VALUES (
+                @id_producto,
+                @id_usuario,
+                @id_unidad_medida,
+                @unidad_abreviatura,
+                'compra',
+                @cantidad,
+                @stock_anterior,
+                @stock_nuevo,
+                @costo_unitario,
+                @costo_total,
+                @motivo,
+                'compra',
+                @referencia_id
+            )
+        `);
+
+        const insertarAuditoria = db.prepare(`
+            INSERT INTO auditoria (
+                id_usuario,
+                accion,
+                tabla_afectada,
+                id_registro_afectado,
+                datos_anteriores,
+                datos_nuevos,
+                ip,
+                user_agent
+            ) VALUES (
+                @id_usuario,
+                @accion,
+                @tabla_afectada,
+                @id_registro_afectado,
+                @datos_anteriores,
+                @datos_nuevos,
+                @ip,
+                @user_agent
+            )
+        `);
+
+        for (const linea of lineas) {
+            const producto = obtenerProducto.get(linea.id_producto);
+
+            if (!producto) {
+                throw new Error(`No se encontró el producto de la línea ${linea.id_producto}.`);
+            }
+
+            const stockAnterior = normalizarNumero(producto.stock_actual);
+            const controlaInventario = Number(producto.controla_inventario || 0) === 1;
+            const cantidad = normalizarNumero(linea.cantidad);
+
+            const stockNuevo = controlaInventario
+                ? stockAnterior + cantidad
+                : stockAnterior;
+
+            const ultimoCostoAnterior = normalizarEntero(producto.ultimo_costo);
+            const costoPromedioAnterior =
+                normalizarEntero(producto.costo_promedio) ||
+                normalizarEntero(producto.ultimo_costo) ||
+                normalizarEntero(producto.precio_costo);
+
+            const valorInventarioAnterior = stockAnterior * costoPromedioAnterior;
+            const valorCompra = cantidad * normalizarEntero(linea.costo_unitario_final);
+
+            const costoPromedioNuevo = controlaInventario && stockNuevo > 0
+                ? normalizarEntero((valorInventarioAnterior + valorCompra) / stockNuevo)
+                : normalizarEntero(linea.costo_unitario_final);
+
+            const precioVentaAnterior = normalizarEntero(producto.precio_venta);
+            const debeActualizarPrecio = Number(linea.actualizar_precio_venta || 0) === 1;
+            const precioVentaNuevo = debeActualizarPrecio
+                ? normalizarEntero(linea.precio_venta_nuevo || linea.precio_venta_sugerido)
+                : precioVentaAnterior;
+
+            insertarDetalle.run({
+                id_compra: idCompra,
+                id_producto: producto.id_producto,
+                cantidad,
+                costo_unitario: linea.costo_unitario,
+                porcentaje_iva: linea.porcentaje_iva,
+                subtotal_linea: linea.subtotal_linea,
+                iva_linea: linea.iva_linea,
+                total_linea: linea.total_linea,
+                stock_anterior: stockAnterior,
+                stock_nuevo: stockNuevo,
+                ultimo_costo_anterior: ultimoCostoAnterior,
+                costo_promedio_anterior: costoPromedioAnterior,
+                costo_promedio_nuevo: costoPromedioNuevo,
+                descuento_porcentaje: linea.descuento_porcentaje,
+                descuento_linea: linea.descuento_linea,
+                costo_unitario_neto: linea.costo_unitario_neto,
+                iva_unitario: linea.iva_unitario,
+                costo_unitario_final: linea.costo_unitario_final,
+                precio_venta_anterior: precioVentaAnterior,
+                ganancia_sobre_costo_porcentaje: linea.ganancia_sobre_costo_porcentaje,
+                precio_venta_sugerido: linea.precio_venta_sugerido,
+                actualizar_precio_venta: debeActualizarPrecio ? 1 : 0,
+                precio_venta_nuevo: precioVentaNuevo,
+            });
+
+            const actualizacion = debeActualizarPrecio
+                ? actualizarProductoConPrecio.run({
+                    id_producto: producto.id_producto,
+                    stock_nuevo: stockNuevo,
+                    ultimo_costo: linea.costo_unitario_final,
+                    costo_promedio: costoPromedioNuevo,
+                    precio_venta: precioVentaNuevo,
+                })
+                : actualizarProductoSinPrecio.run({
+                    id_producto: producto.id_producto,
+                    stock_nuevo: stockNuevo,
+                    ultimo_costo: linea.costo_unitario_final,
+                    costo_promedio: costoPromedioNuevo,
+                });
+
+            if (actualizacion.changes === 0) {
+                throw new Error(`No se pudo actualizar el producto ${producto.nombre}.`);
+            }
+
+            if (controlaInventario) {
+                insertarMovimientoInventario.run({
+                    id_producto: producto.id_producto,
+                    id_usuario: usuario?.id_usuario || 1,
+                    id_unidad_medida: producto.id_unidad_medida,
+                    unidad_abreviatura: producto.unidad_abreviatura || null,
+                    cantidad,
+                    stock_anterior: stockAnterior,
+                    stock_nuevo: stockNuevo,
+                    costo_unitario: linea.costo_unitario_final,
+                    costo_total: linea.total_linea,
+                    motivo: `Compra ${numeroCompra}`,
+                    referencia_id: idCompra,
+                });
+            }
+
+            insertarAuditoria.run({
+                id_usuario: usuario?.id_usuario || null,
+                accion: 'registrar_compra_producto',
+                tabla_afectada: 'productos',
+                id_registro_afectado: producto.id_producto,
+                datos_anteriores: JSON.stringify({
+                    stock_actual: stockAnterior,
+                    ultimo_costo: ultimoCostoAnterior,
+                    costo_promedio: costoPromedioAnterior,
+                    precio_venta: precioVentaAnterior,
+                }),
+                datos_nuevos: JSON.stringify({
+                    id_compra: idCompra,
+                    numero_compra: numeroCompra,
+                    stock_actual: stockNuevo,
+                    ultimo_costo: linea.costo_unitario_final,
+                    costo_promedio: costoPromedioNuevo,
+                    precio_venta: precioVentaNuevo,
+                    actualizar_precio_venta: debeActualizarPrecio ? 1 : 0,
+                }),
+                ip: ip || 'local',
+                user_agent: userAgent || '',
+            });
+        }
+
+        db.prepare(`
+            UPDATE numeraciones_documentos
+            SET ultimo_consecutivo = @consecutivo,
+                actualizado_en = CURRENT_TIMESTAMP
+            WHERE id_numeracion = @id_numeracion
+        `).run({
+            id_numeracion: numeracion.id_numeracion,
+            consecutivo,
+        });
+
+        insertarAuditoria.run({
+            id_usuario: usuario?.id_usuario || null,
+            accion: 'registrar_compra',
+            tabla_afectada: 'compras',
+            id_registro_afectado: idCompra,
+            datos_anteriores: null,
+            datos_nuevos: JSON.stringify({
+                id_compra: idCompra,
+                numero_compra: numeroCompra,
+                total: compra.total,
+                lineas: lineas.length,
+            }),
+            ip: ip || 'local',
+            user_agent: userAgent || '',
+        });
+
+        return {
+            id_compra: idCompra,
+            numero_compra: numeroCompra,
+        };
+    });
+
+    return transaccion();
+}
+
 module.exports = {
     listarCompras,
     contarCompras,
     listarProveedoresActivos,
     buscarProductosParaCompra,
+    registrarCompraConInventario,
 };

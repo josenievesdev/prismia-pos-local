@@ -704,11 +704,16 @@
         };
     }
 
-    async function validarCompraEnBackend() {
+    async function guardarCompraEnBackend() {
         limpiarAlerta();
 
+        if (ui.btnGuardar) {
+            ui.btnGuardar.disabled = true;
+            ui.btnGuardar.textContent = 'Guardando...';
+        }
+
         try {
-            const respuesta = await fetch('/compras/api/validar', {
+            const respuesta = await fetch('/compras', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -719,16 +724,26 @@
             const resultado = await respuesta.json();
 
             if (!resultado.ok) {
-                mostrarAlerta((resultado.errores || []).join(' '));
+                mostrarAlerta((resultado.errores || [resultado.mensaje || 'No se pudo registrar la compra.']).join(' '));
+
+                if (ui.btnGuardar) {
+                    ui.btnGuardar.disabled = estado.lineas.length === 0;
+                    ui.btnGuardar.textContent = 'Guardar compra';
+                }
+
                 return;
             }
 
-            mostrarAlerta(
-                `Validación correcta. Total calculado por backend: ${formatearMoneda(resultado.compra.total)}. El guardado real se activará en el siguiente bloque.`
-            );
+            const mensaje = encodeURIComponent(resultado.mensaje || 'Compra registrada correctamente.');
+            window.location.href = `/compras?exito=${mensaje}`;
         } catch (error) {
-            console.error('Error validando compra:', error);
-            mostrarAlerta('No se pudo validar la compra en el backend.');
+            console.error('Error guardando compra:', error);
+            mostrarAlerta('No se pudo registrar la compra.');
+
+            if (ui.btnGuardar) {
+                ui.btnGuardar.disabled = estado.lineas.length === 0;
+                ui.btnGuardar.textContent = 'Guardar compra';
+            }
         }
     }
 
@@ -804,7 +819,7 @@
 
     ui.form.addEventListener('submit', function (evento) {
         evento.preventDefault();
-        validarCompraEnBackend();
+        guardarCompraEnBackend();
     });
 
     document.addEventListener('click', function (evento) {

@@ -365,6 +365,44 @@ function prepararCompraVista(compra) {
     };
 }
 
+function guardarCompra(datos = {}, contexto = {}) {
+    const resultadoValidacion = validarYCalcularCompra(datos);
+
+    if (!resultadoValidacion.valido) {
+        return {
+            ok: false,
+            codigoEstado: 422,
+            errores: resultadoValidacion.errores,
+        };
+    }
+
+    try {
+        const resultado = comprasRepository.registrarCompraConInventario({
+            compra: resultadoValidacion.compra,
+            lineas: resultadoValidacion.lineas,
+            usuario: contexto.usuario,
+            ip: contexto.ip,
+            userAgent: contexto.userAgent,
+        });
+
+        return {
+            ok: true,
+            compra: {
+                id_compra: resultado.id_compra,
+                numero_compra: resultado.numero_compra,
+                total: resultadoValidacion.compra.total,
+            },
+            mensaje: `Compra ${resultado.numero_compra} registrada correctamente.`,
+        };
+    } catch (error) {
+        return {
+            ok: false,
+            codigoEstado: 400,
+            errores: [error.message || 'No se pudo registrar la compra.'],
+        };
+    }
+}
+
 function listarCompras(query = {}) {
     const filtrosIniciales = prepararFiltros(query);
     const totalResultados = comprasRepository.contarCompras(filtrosIniciales);
@@ -400,4 +438,5 @@ module.exports = {
     obtenerDatosFormularioNuevaCompra,
     buscarProductosParaCompra,
     validarYCalcularCompra,
+    guardarCompra,
 };
