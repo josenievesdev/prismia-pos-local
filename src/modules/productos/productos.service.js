@@ -448,6 +448,9 @@ function actualizarProducto({
         incluirStockInicial: false,
     });
 
+    producto.costo_promedio = Number(productoActual.costo_promedio || 0);
+    producto.ultimo_costo = Number(productoActual.ultimo_costo || 0);
+
     productosRepository.actualizarProducto(productoActual.id_producto, producto);
 
     productosRepository.registrarAuditoria({

@@ -211,11 +211,18 @@
 
                     <div class="form-grid">
                         <div class="form-group">
-                            <label for="precio_costo">Costo unitario inicial</label>
+                            <label for="precio_costo">
+                                <%= modo==='crear' ? 'Costo unitario inicial' : 'Costo de referencia' %>
+                            </label>
                             <input type="number" id="precio_costo" name="precio_costo" min="0" step="1"
                                 value="<%= producto.precio_costo || 0 %>">
                             <small class="field-help">
-                                Costo por unidad de medida.
+                                <% if (modo==='crear' ) { %>
+                                    Se usará como costo inicial, último costo y costo promedio al crear el producto.
+                                    <% } else { %>
+                                        Este valor es solo una referencia manual. El costo promedio y el último costo se
+                                        actualizarán desde compras.
+                                        <% } %>
                             </small>
                         </div>
 
@@ -231,9 +238,9 @@
 
                     <% if (modo==='editar' ) { %>
                         <div class="info-strip product-profit-preview">
-                            <span>Costo promedio:</span>
+                            <span>Costo promedio real:</span>
                             <strong>
-                                <%= formatearPesos(producto.costo_referencia || producto.precio_costo || 0) %>
+                                <%= formatearPesos(producto.costo_promedio || 0) %>
                             </strong>
 
                             <span>Ganancia estimada:</span>

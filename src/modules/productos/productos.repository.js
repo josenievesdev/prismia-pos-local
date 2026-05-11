@@ -419,8 +419,6 @@ function actualizarProducto(idProducto, datos) {
         descripcion = @descripcion,
         precio_costo = @precio_costo,
         precio_venta = @precio_venta,
-        costo_promedio = @costo_promedio,
-        ultimo_costo = @ultimo_costo,
         stock_minimo = @stock_minimo,
         controla_inventario = @controla_inventario,
         permite_venta_sin_stock = @permite_venta_sin_stock,
