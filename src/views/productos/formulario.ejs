@@ -315,8 +315,11 @@
                 <div class="form-section product-section">
                     <div class="section-title-row">
                         <div>
-                            <h3>Impuestos</h3>
-                            <p>Configura IVA solo cuando el negocio lo requiera.</p>
+                            <h3>IVA para venta</h3>
+                            <p>
+                                Configura estos campos solo si el producto se venderá manejando IVA.
+                                Esto no depende del IVA que pueda venir en una compra al proveedor.
+                            </p>
                         </div>
                     </div>
 
@@ -326,8 +329,8 @@
                                 ? 'checked' : '' %>
                             >
                             <span>
-                                <strong>Producto con IVA</strong>
-                                <small>Activa cálculo de impuesto para este producto.</small>
+                                <strong>Vender este producto con IVA</strong>
+                                <small>Activa el cálculo de IVA cuando este producto se venda.</small>
                             </span>
                         </label>
 
@@ -336,28 +339,29 @@
                                 <%=Number(producto.precio_incluye_iva)===1 ? 'checked' : '' %>
                             >
                             <span>
-                                <strong>Precio incluye IVA</strong>
-                                <small>Se separará el impuesto en reportes futuros.</small>
+                                <strong>El precio de venta incluye IVA</strong>
+                                <small>Si está activo, Prismia separará la base y el impuesto al vender.</small>
                             </span>
                         </label>
                     </div>
 
                     <div class="form-grid">
                         <div class="form-group">
-                            <label for="porcentaje_iva_visual">IVA (%)</label>
+                            <label for="porcentaje_iva_visual">IVA de venta (%)</label>
                             <input type="number" id="porcentaje_iva_visual" name="porcentaje_iva_visual" min="0"
                                 step="0.01"
                                 value="<%= typeof producto.porcentaje_iva_visual !== 'undefined' ? producto.porcentaje_iva_visual : ((producto.porcentaje_iva || 0) / 100) %>">
                             <small class="field-help">
-                                Ejemplo: 19 para IVA del 19%. Si no aplica, deja 0.
+                                Ejemplo: 19 para IVA del 19% en ventas. Si el negocio no vende este producto con IVA,
+                                deja 0.
                             </small>
                         </div>
 
                         <div class="module-hint">
-                            <strong>Valor fiscal</strong>
+                            <strong>Solo afecta la venta</strong>
                             <span>
-                                El IVA no se trata como ganancia. Cuando aplique, el sistema separará venta neta e
-                                impuesto.
+                                Este IVA se usará al vender el producto. El IVA registrado en compras será independiente
+                                y servirá para calcular el costo real de entrada.
                             </span>
                         </div>
                     </div>
