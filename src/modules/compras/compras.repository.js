@@ -255,6 +255,33 @@ function obtenerUltimoConsecutivoCompra(prefijo) {
     return Number(resultado?.ultimo_consecutivo || 0);
 }
 
+function obtenerSiguienteNumeroCompra() {
+    const numeracion = obtenerNumeracionCompra();
+
+    if (!numeracion) {
+        return {
+            numero_compra: 'CP-BORRADOR',
+            prefijo: 'CP',
+            consecutivo: 0,
+        };
+    }
+
+    const prefijo = limpiarTexto(numeracion.prefijo) || 'CP';
+    const longitudConsecutivo = normalizarEntero(numeracion.longitud_consecutivo, 6);
+    const ultimoDocumento = obtenerUltimoConsecutivoCompra(prefijo);
+
+    const consecutivo = Math.max(
+        normalizarEntero(numeracion.ultimo_consecutivo),
+        ultimoDocumento
+    ) + 1;
+
+    return {
+        numero_compra: formatearNumeroDocumento(prefijo, consecutivo, longitudConsecutivo),
+        prefijo,
+        consecutivo,
+    };
+}
+
 function registrarCompraConInventario({ compra, lineas, usuario, ip, userAgent }) {
     const transaccion = db.transaction(() => {
         const numeracion = obtenerNumeracionCompra();
@@ -635,5 +662,6 @@ module.exports = {
     contarCompras,
     listarProveedoresActivos,
     buscarProductosParaCompra,
+    obtenerSiguienteNumeroCompra,
     registrarCompraConInventario,
 };

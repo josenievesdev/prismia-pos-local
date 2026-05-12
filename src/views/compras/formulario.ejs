@@ -25,11 +25,13 @@
             <div class="ventas-header-status">
                 <span class="ventas-status-chip is-open compras-status-chip">
                     <span class="ventas-status-dot"></span>
-                    Sin afectar inventario todavía
+                    Borrador sin guardar
                 </span>
 
                 <span class="ventas-header-meta">
-                    Documento <strong>CP-BORRADOR</strong>
+                    Documento <strong>
+                        <%= numeroCompraSugerido || 'CP-BORRADOR' %>
+                    </strong>
                 </span>
             </div>
         </header>
@@ -91,10 +93,10 @@
                     </label>
 
                     <div class="ventas-context-item compras-support-box">
-                        <span>Soporte</span>
+                        <span>Soporte proveedor</span>
                         <input type="text" id="numeroSoporteCompra" name="numero_soporte"
-                            placeholder="Ej: FE-1025, RM-442">
-                        <small>Número del documento del proveedor</small>
+                            placeholder="Ej: FE-1025, RM-442, ABC-123">
+                        <small>Factura, remisión o cuenta de cobro del proveedor. Puede incluir letras.</small>
                     </div>
 
                     <div class="ventas-context-item ventas-context-actions">
@@ -176,7 +178,7 @@
                         </div>
 
                         <span class="ventas-ticket-state">
-                            CP-BORRADOR
+                            <%= numeroCompraSugerido || 'CP-BORRADOR' %>
                         </span>
                     </header>
 
@@ -216,7 +218,7 @@
                                 </div>
 
                                 <small class="ventas-payment-note">
-                                    Todavía no descuenta ni suma inventario.
+                                    Al guardar, suma inventario y actualiza costos.
                                 </small>
                             </div>
 
@@ -235,7 +237,9 @@
 
                                 <div class="ventas-payment-info-card">
                                     <span>Documento</span>
-                                    <strong>CP-BORRADOR</strong>
+                                    <strong>
+                                        <%= numeroCompraSugerido || 'CP-BORRADOR' %>
+                                    </strong>
                                     <small>Se confirma al guardar</small>
                                 </div>
                             </div>

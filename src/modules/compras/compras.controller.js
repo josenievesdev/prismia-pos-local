@@ -15,6 +15,7 @@ function mostrarFormularioNuevaCompra(req, res) {
         titulo: 'Nueva compra',
         modo: 'crear',
         fechaCompra: datosFormulario.fecha_compra,
+        numeroCompraSugerido: datosFormulario.numero_compra_sugerido,
         tiposSoporte: datosFormulario.tipos_soporte,
         proveedores: datosFormulario.proveedores,
         error: null,

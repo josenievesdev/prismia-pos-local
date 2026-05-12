@@ -324,8 +324,11 @@ function obtenerDatosFormularioNuevaCompra() {
         .listarProveedoresActivos({ limite: 300 })
         .map(prepararProveedorParaCompra);
 
+    const siguienteNumero = comprasRepository.obtenerSiguienteNumeroCompra();
+
     return {
         fecha_compra: obtenerFechaActualISO(),
+        numero_compra_sugerido: siguienteNumero.numero_compra,
         tipos_soporte: TIPOS_SOPORTE_COMPRA,
         proveedores,
     };
