@@ -401,3 +401,73 @@
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+.compras-detalle-page {
+    gap: 14px;
+}
+
+.compras-detail-summary,
+.compras-detail-totals {
+    display: grid;
+    gap: 10px;
+}
+
+.compras-detail-summary {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.compras-detail-totals {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.compras-detail-summary div,
+.compras-detail-totals div,
+.compras-detail-note {
+    display: grid;
+    gap: 4px;
+}
+
+.compras-detail-summary span,
+.compras-detail-totals span,
+.compras-detail-note span {
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+}
+
+.compras-detail-summary strong,
+.compras-detail-totals strong {
+    color: var(--color-text);
+    font-size: 15px;
+}
+
+.compras-detail-summary small {
+    color: var(--color-muted);
+    font-size: 12px;
+}
+
+.compras-detail-totals .is-total {
+    padding: 12px;
+    border-radius: var(--radius-sm);
+    background: rgba(36, 79, 143, 0.08);
+}
+
+.compras-detail-note p {
+    margin: 0;
+    color: var(--color-text);
+    line-height: 1.45;
+}
+
+.compras-detail-table {
+    min-width: 980px;
+}
+
+@media (max-width: 900px) {
+
+    .compras-detail-summary,
+    .compras-detail-totals {
+        grid-template-columns: 1fr;
+    }
+}

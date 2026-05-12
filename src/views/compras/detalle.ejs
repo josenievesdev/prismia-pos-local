@@ -1,0 +1,218 @@
+<section class="module-page compras-detalle-page">
+    <div class="module-header module-header-actions">
+        <div>
+            <p class="eyebrow">Compra registrada</p>
+            <h2>
+                <%= compra.numero_compra %>
+            </h2>
+            <p>
+                Detalle operativo de compra, costos, IVA, inventario y precio de venta.
+            </p>
+        </div>
+
+        <div class="module-header-actions-right">
+            <a href="/compras" class="btn-secondary">
+                Volver
+            </a>
+
+            <a href="/compras/nueva" class="btn-primary">
+                Nueva compra
+            </a>
+        </div>
+    </div>
+
+    <article class="module-card compras-detail-summary">
+        <div>
+            <span>Proveedor</span>
+            <strong>
+                <%= compra.proveedor_nombre %>
+            </strong>
+            <small>
+                <%= compra.proveedor_documento_mostrar %>
+            </small>
+        </div>
+
+        <div>
+            <span>Soporte proveedor</span>
+            <strong>
+                <%= compra.soporte_mostrar %>
+            </strong>
+            <small>
+                <%= compra.tipo_soporte %>
+            </small>
+        </div>
+
+        <div>
+            <span>Fecha compra</span>
+            <strong>
+                <%= compra.fecha_compra_mostrar %>
+            </strong>
+            <small>Registrada por <%= compra.usuario_nombre || 'Sin usuario' %></small>
+        </div>
+
+        <div>
+            <span>Estado</span>
+            <strong>
+                <span
+                    class="badge <%= compra.estado === 'registrada' ? 'badge-success' : compra.estado === 'anulada' ? 'badge-danger' : 'badge-muted' %>">
+                    <%= compra.estado_etiqueta %>
+                </span>
+            </strong>
+            <small>Documento interno Prismia</small>
+        </div>
+    </article>
+
+    <article class="module-card compras-detail-totals">
+        <div>
+            <span>Subtotal</span>
+            <strong>
+                <%= compra.subtotal_mostrar %>
+            </strong>
+        </div>
+
+        <div>
+            <span>IVA compra</span>
+            <strong>
+                <%= compra.iva_total_mostrar %>
+            </strong>
+        </div>
+
+        <div class="is-total">
+            <span>Total compra</span>
+            <strong>
+                <%= compra.total_mostrar %>
+            </strong>
+        </div>
+    </article>
+
+    <% if (compra.observaciones) { %>
+        <article class="module-card compras-detail-note">
+            <span>Observaciones</span>
+            <p>
+                <%= compra.observaciones %>
+            </p>
+        </article>
+        <% } %>
+
+            <article class="module-card">
+                <div class="table-summary">
+                    <span>Productos comprados</span>
+                    <span>
+                        <strong>
+                            <%= detalle.length %>
+                        </strong> línea(s)
+                    </span>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="data-table compras-detail-table">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th class="text-right">Cantidad</th>
+                                <th class="text-right">Costo base</th>
+                                <th class="text-right">IVA</th>
+                                <th class="text-right">Costo final</th>
+                                <th class="text-right">Total</th>
+                                <th>Inventario</th>
+                                <th>Precio venta</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <% detalle.forEach(function (linea) { %>
+                                <tr>
+                                    <td>
+                                        <strong>
+                                            <%= linea.producto_nombre %>
+                                        </strong>
+                                        <span class="table-subtext">
+                                            <%= linea.producto_codigo %> · <%= linea.unidad_abreviatura %>
+                                        </span>
+                                    </td>
+
+                                    <td class="text-right">
+                                        <%= linea.cantidad_mostrar %>
+                                    </td>
+
+                                    <td class="text-right">
+                                        <strong>
+                                            <%= linea.costo_unitario_mostrar %>
+                                        </strong>
+
+                                        <% if (Number(linea.descuento_porcentaje || 0)> 0) { %>
+                                            <span class="table-subtext">
+                                                Desc. <%= linea.descuento_porcentaje %>%:
+                                                    <%= linea.descuento_linea_mostrar %>
+                                            </span>
+                                            <% } %>
+                                    </td>
+
+                                    <td class="text-right">
+                                        <strong>
+                                            <%= linea.porcentaje_iva %>%
+                                        </strong>
+                                        <span class="table-subtext">
+                                            <%= linea.iva_linea_mostrar %>
+                                        </span>
+                                    </td>
+
+                                    <td class="text-right">
+                                        <strong>
+                                            <%= linea.costo_unitario_final_mostrar %>
+                                        </strong>
+                                        <span class="table-subtext">
+                                            Neto: <%= linea.costo_unitario_neto_mostrar %>
+                                        </span>
+                                    </td>
+
+                                    <td class="text-right">
+                                        <strong>
+                                            <%= linea.total_linea_mostrar %>
+                                        </strong>
+                                    </td>
+
+                                    <td>
+                                        <strong>
+                                            <%= linea.stock_anterior_mostrar %>
+                                                →
+                                                <%= linea.stock_nuevo_mostrar %>
+                                        </strong>
+
+                                        <span class="table-subtext">
+                                            Promedio:
+                                            <%= linea.costo_promedio_anterior_mostrar %>
+                                                →
+                                                <%= linea.costo_promedio_nuevo_mostrar %>
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <strong>
+                                            <%= linea.precio_venta_anterior_mostrar %>
+                                                →
+                                                <%= linea.precio_venta_nuevo_mostrar %>
+                                        </strong>
+
+                                        <span class="table-subtext">
+                                            Sugerido:
+                                            <%= linea.precio_venta_sugerido_mostrar %>
+                                        </span>
+
+                                        <% if (linea.actualizo_precio) { %>
+                                            <span class="badge badge-success">
+                                                Actualizado
+                                            </span>
+                                            <% } else { %>
+                                                <span class="badge badge-muted">
+                                                    Sin cambio
+                                                </span>
+                                                <% } %>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+</section>

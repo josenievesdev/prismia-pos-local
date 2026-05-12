@@ -282,6 +282,87 @@ function obtenerSiguienteNumeroCompra() {
     };
 }
 
+function obtenerCompraPorId(idCompra) {
+    return db
+        .prepare(`
+            SELECT
+                c.id_compra,
+                c.numero_compra,
+                c.numero_soporte,
+                c.tipo_soporte,
+                c.fecha_compra,
+                c.fecha_registro,
+                c.subtotal,
+                c.iva_total,
+                c.total,
+                c.estado,
+                c.observaciones,
+
+                p.id_proveedor,
+                p.nombre_comercial AS proveedor_nombre_comercial,
+                p.razon_social AS proveedor_razon_social,
+                p.tipo_documento AS proveedor_tipo_documento,
+                p.documento AS proveedor_documento,
+                p.telefono AS proveedor_telefono,
+                p.celular AS proveedor_celular,
+                p.correo AS proveedor_correo,
+                p.contacto_nombre AS proveedor_contacto_nombre,
+
+                u.nombre AS usuario_nombre
+            FROM compras c
+            INNER JOIN proveedores p
+                ON p.id_proveedor = c.id_proveedor
+            LEFT JOIN usuarios u
+                ON u.id_usuario = c.id_usuario
+            WHERE c.id_compra = ?
+            LIMIT 1
+        `)
+        .get(Number(idCompra));
+}
+
+function listarDetalleCompra(idCompra) {
+    return db
+        .prepare(`
+            SELECT
+                cd.id_compra_detalle,
+                cd.id_compra,
+                cd.id_producto,
+                cd.cantidad,
+                cd.costo_unitario,
+                cd.porcentaje_iva,
+                cd.subtotal_linea,
+                cd.iva_linea,
+                cd.total_linea,
+                cd.stock_anterior,
+                cd.stock_nuevo,
+                cd.ultimo_costo_anterior,
+                cd.costo_promedio_anterior,
+                cd.costo_promedio_nuevo,
+                cd.descuento_porcentaje,
+                cd.descuento_linea,
+                cd.costo_unitario_neto,
+                cd.iva_unitario,
+                cd.costo_unitario_final,
+                cd.precio_venta_anterior,
+                cd.ganancia_sobre_costo_porcentaje,
+                cd.precio_venta_sugerido,
+                cd.actualizar_precio_venta,
+                cd.precio_venta_nuevo,
+
+                p.nombre AS producto_nombre,
+                p.codigo_interno AS producto_codigo,
+                u.abreviatura AS unidad_abreviatura
+            FROM compras_detalle cd
+            INNER JOIN productos p
+                ON p.id_producto = cd.id_producto
+            LEFT JOIN unidades_medida u
+                ON u.id_unidad_medida = p.id_unidad_medida
+            WHERE cd.id_compra = ?
+            ORDER BY cd.id_compra_detalle ASC
+        `)
+        .all(Number(idCompra));
+}
+
 function registrarCompraConInventario({ compra, lineas, usuario, ip, userAgent }) {
     const transaccion = db.transaction(() => {
         const numeracion = obtenerNumeracionCompra();
@@ -663,5 +744,7 @@ module.exports = {
     listarProveedoresActivos,
     buscarProductosParaCompra,
     obtenerSiguienteNumeroCompra,
+    obtenerCompraPorId,
+    listarDetalleCompra,
     registrarCompraConInventario,
 };

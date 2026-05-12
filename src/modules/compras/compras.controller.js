@@ -8,6 +8,24 @@ const estilosComprasPOS = [
 ];
 
 
+function mostrarDetalleCompra(req, res) {
+    const resultado = comprasService.obtenerDetalleCompra(req.params.id);
+
+    if (!resultado) {
+        return res.status(404).render('errors/404', {
+            titulo: 'Compra no encontrada',
+            mensaje: 'No se encontró la compra solicitada.',
+        });
+    }
+
+    return res.render('compras/detalle', {
+        titulo: `Compra ${resultado.compra.numero_compra}`,
+        compra: resultado.compra,
+        detalle: resultado.detalle,
+        estilosModulo: estilosComprasPOS,
+    });
+}
+
 function mostrarFormularioNuevaCompra(req, res) {
     const datosFormulario = comprasService.obtenerDatosFormularioNuevaCompra();
 
@@ -83,6 +101,7 @@ function listarCompras(req, res) {
 
 module.exports = {
     listarCompras,
+    mostrarDetalleCompra,
     mostrarFormularioNuevaCompra,
     buscarProductosParaCompra,
     validarCompra,

@@ -406,6 +406,76 @@ function guardarCompra(datos = {}, contexto = {}) {
     }
 }
 
+function prepararDetalleLineaVista(linea) {
+    return {
+        ...linea,
+        producto_nombre: linea.producto_nombre || `Producto #${linea.id_producto}`,
+        producto_codigo: linea.producto_codigo || 'Sin código',
+        unidad_abreviatura: linea.unidad_abreviatura || 'und',
+
+        cantidad_mostrar: Number(linea.cantidad || 0).toLocaleString('es-CO'),
+        costo_unitario_mostrar: formatearMoneda(linea.costo_unitario),
+        descuento_linea_mostrar: formatearMoneda(linea.descuento_linea),
+        costo_unitario_neto_mostrar: formatearMoneda(linea.costo_unitario_neto),
+        iva_unitario_mostrar: formatearMoneda(linea.iva_unitario),
+        costo_unitario_final_mostrar: formatearMoneda(linea.costo_unitario_final),
+        subtotal_linea_mostrar: formatearMoneda(linea.subtotal_linea),
+        iva_linea_mostrar: formatearMoneda(linea.iva_linea),
+        total_linea_mostrar: formatearMoneda(linea.total_linea),
+
+        stock_anterior_mostrar: Number(linea.stock_anterior || 0).toLocaleString('es-CO'),
+        stock_nuevo_mostrar: Number(linea.stock_nuevo || 0).toLocaleString('es-CO'),
+
+        ultimo_costo_anterior_mostrar: formatearMoneda(linea.ultimo_costo_anterior),
+        costo_promedio_anterior_mostrar: formatearMoneda(linea.costo_promedio_anterior),
+        costo_promedio_nuevo_mostrar: formatearMoneda(linea.costo_promedio_nuevo),
+
+        precio_venta_anterior_mostrar: formatearMoneda(linea.precio_venta_anterior),
+        precio_venta_sugerido_mostrar: formatearMoneda(linea.precio_venta_sugerido),
+        precio_venta_nuevo_mostrar: formatearMoneda(linea.precio_venta_nuevo),
+        actualizo_precio: Number(linea.actualizar_precio_venta || 0) === 1,
+    };
+}
+
+function obtenerDetalleCompra(idCompra) {
+    const compra = comprasRepository.obtenerCompraPorId(idCompra);
+
+    if (!compra) {
+        return null;
+    }
+
+    const proveedorNombre =
+        compra.proveedor_nombre_comercial ||
+        compra.proveedor_razon_social ||
+        `Proveedor #${compra.id_proveedor}`;
+
+    const detalle = comprasRepository
+        .listarDetalleCompra(compra.id_compra)
+        .map(prepararDetalleLineaVista);
+
+    return {
+        compra: {
+            ...compra,
+            proveedor_nombre: proveedorNombre,
+            proveedor_documento_mostrar: compra.proveedor_documento
+                ? `${compra.proveedor_tipo_documento || 'Doc'} ${compra.proveedor_documento}`
+                : 'Sin documento',
+            soporte_mostrar: compra.numero_soporte || 'Sin soporte',
+            fecha_compra_mostrar: formatearFecha(compra.fecha_compra),
+            fecha_registro_mostrar: compra.fecha_registro || '',
+            subtotal_mostrar: formatearMoneda(compra.subtotal),
+            iva_total_mostrar: formatearMoneda(compra.iva_total),
+            total_mostrar: formatearMoneda(compra.total),
+            estado_etiqueta: {
+                borrador: 'Borrador',
+                registrada: 'Registrada',
+                anulada: 'Anulada',
+            }[compra.estado] || compra.estado,
+        },
+        detalle,
+    };
+}
+
 function listarCompras(query = {}) {
     const filtrosIniciales = prepararFiltros(query);
     const totalResultados = comprasRepository.contarCompras(filtrosIniciales);
@@ -442,4 +512,5 @@ module.exports = {
     buscarProductosParaCompra,
     validarYCalcularCompra,
     guardarCompra,
+    obtenerDetalleCompra,
 };

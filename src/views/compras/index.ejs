@@ -94,6 +94,7 @@
                                                 <th class="text-right">IVA</th>
                                                 <th class="text-right">Total</th>
                                                 <th>Estado</th>
+                                                <th class="text-right">Acción</th>
                                             </tr>
                                         </thead>
 
@@ -141,6 +142,13 @@
                                                             class="badge <%= compra.estado === 'registrada' ? 'badge-success' : compra.estado === 'anulada' ? 'badge-danger' : 'badge-muted' %>">
                                                             <%= compra.estado_etiqueta || compra.estado %>
                                                         </span>
+                                                    </td>
+
+                                                    <td class="text-right">
+                                                        <a href="/compras/<%= compra.id_compra %>"
+                                                            class="btn-secondary btn-small">
+                                                            Ver
+                                                        </a>
                                                     </td>
                                                 </tr>
                                                 <% }) %>
