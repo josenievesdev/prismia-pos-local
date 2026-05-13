@@ -270,6 +270,19 @@ function validarYCalcularCompra(datos = {}) {
         errores.push('El total de la compra debe ser mayor a cero.');
     }
 
+    if (idProveedor && numeroSoporte) {
+        const soporteYaExiste = comprasRepository.existeSoporteProveedorActivo(
+            idProveedor,
+            numeroSoporte
+        );
+
+        if (soporteYaExiste) {
+            errores.push(
+                'Este soporte proveedor ya fue registrado para el proveedor seleccionado.'
+            );
+        }
+    }
+
     return {
         valido: errores.length === 0,
         errores,
@@ -398,10 +411,18 @@ function guardarCompra(datos = {}, contexto = {}) {
             mensaje: `Compra ${resultado.numero_compra} registrada correctamente.`,
         };
     } catch (error) {
+        const mensajeError = String(error.message || '');
+        const esSoporteDuplicado = mensajeError.includes('compras.id_proveedor')
+            && mensajeError.includes('compras.numero_soporte');
+
         return {
             ok: false,
-            codigoEstado: 400,
-            errores: [error.message || 'No se pudo registrar la compra.'],
+            codigoEstado: esSoporteDuplicado ? 409 : 400,
+            errores: [
+                esSoporteDuplicado
+                    ? 'Este soporte proveedor ya fue registrado para el proveedor seleccionado.'
+                    : mensajeError || 'No se pudo registrar la compra.',
+            ],
         };
     }
 }

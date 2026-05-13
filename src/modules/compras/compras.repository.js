@@ -282,6 +282,27 @@ function obtenerSiguienteNumeroCompra() {
     };
 }
 
+function existeSoporteProveedorActivo(idProveedor, numeroSoporte) {
+    const soporte = limpiarTexto(numeroSoporte);
+
+    if (!Number(idProveedor) || !soporte) {
+        return false;
+    }
+
+    const resultado = db
+        .prepare(`
+            SELECT id_compra
+            FROM compras
+            WHERE id_proveedor = ?
+              AND numero_soporte = ?
+              AND estado <> 'anulada'
+            LIMIT 1
+        `)
+        .get(Number(idProveedor), soporte);
+
+    return Boolean(resultado);
+}
+
 function obtenerCompraPorId(idCompra) {
     return db
         .prepare(`
@@ -744,6 +765,7 @@ module.exports = {
     listarProveedoresActivos,
     buscarProductosParaCompra,
     obtenerSiguienteNumeroCompra,
+    existeSoporteProveedorActivo,
     obtenerCompraPorId,
     listarDetalleCompra,
     registrarCompraConInventario,

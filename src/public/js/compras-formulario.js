@@ -42,6 +42,7 @@
         proveedor: null,
         proveedores: [],
         lineas: [],
+        guardando: false,
         temporizadorProveedores: null,
         temporizadorProductos: null,
     };
@@ -455,7 +456,7 @@
         ui.contadorLineas.textContent = String(estado.lineas.length);
 
         if (ui.btnGuardar) {
-            ui.btnGuardar.disabled = estado.lineas.length === 0;
+            ui.btnGuardar.disabled = estado.guardando || estado.lineas.length === 0;
         }
 
         if (!estado.lineas.length) {
@@ -705,6 +706,11 @@
     }
 
     async function guardarCompraEnBackend() {
+        if (estado.guardando) {
+            return;
+        }
+
+        estado.guardando = true;
         limpiarAlerta();
 
         if (ui.btnGuardar) {
@@ -726,6 +732,8 @@
             if (!resultado.ok) {
                 mostrarAlerta((resultado.errores || [resultado.mensaje || 'No se pudo registrar la compra.']).join(' '));
 
+                estado.guardando = false;
+
                 if (ui.btnGuardar) {
                     ui.btnGuardar.disabled = estado.lineas.length === 0;
                     ui.btnGuardar.textContent = 'Guardar compra';
@@ -739,6 +747,8 @@
         } catch (error) {
             console.error('Error guardando compra:', error);
             mostrarAlerta('No se pudo registrar la compra.');
+
+            estado.guardando = false;
 
             if (ui.btnGuardar) {
                 ui.btnGuardar.disabled = estado.lineas.length === 0;
