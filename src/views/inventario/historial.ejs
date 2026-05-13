@@ -83,6 +83,7 @@
                                 <th>Stock anterior</th>
                                 <th>Stock nuevo</th>
                                 <th>Usuario</th>
+                                <th>Referencia</th>
                                 <th>Motivo</th>
                             </tr>
                         </thead>
@@ -134,6 +135,19 @@
                                         <span class="text-muted">
                                             <%= movimiento.usuario_nombre || 'Sistema' %>
                                         </span>
+                                    </td>
+
+                                    <td>
+                                        <% if (movimiento.referencia_url && typeof tieneRol==='function' &&
+                                            tieneRol('administrador')) { %>
+                                            <a href="<%= movimiento.referencia_url %>" class="table-link">
+                                                <%= movimiento.referencia_texto %>
+                                            </a>
+                                            <% } else { %>
+                                                <span class="text-muted">
+                                                    <%= movimiento.referencia_texto || 'Sin referencia' %>
+                                                </span>
+                                                <% } %>
                                     </td>
 
                                     <td>

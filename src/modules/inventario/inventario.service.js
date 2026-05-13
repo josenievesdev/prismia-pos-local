@@ -255,12 +255,40 @@ function traducirTipoMovimiento(tipoMovimiento) {
     return mapa[tipoMovimiento] || tipoMovimiento;
 }
 
+function construirReferenciaMovimiento(movimiento) {
+    if (
+        movimiento.referencia_tipo === 'compra'
+        && movimiento.referencia_id
+        && movimiento.numero_compra_referencia
+    ) {
+        return {
+            texto: `Compra ${movimiento.numero_compra_referencia}`,
+            url: `/compras/${movimiento.referencia_id}`,
+        };
+    }
+
+    if (movimiento.referencia_tipo && movimiento.referencia_id) {
+        return {
+            texto: `${movimiento.referencia_tipo} #${movimiento.referencia_id}`,
+            url: null,
+        };
+    }
+
+    return {
+        texto: 'Sin referencia',
+        url: null,
+    };
+}
+
 function enriquecerMovimiento(movimiento) {
     const permiteDecimales = Number(movimiento.unidad_permite_decimales) === 1;
+    const referencia = construirReferenciaMovimiento(movimiento);
 
     return {
         ...movimiento,
         tipo_movimiento_texto: traducirTipoMovimiento(movimiento.tipo_movimiento),
+        referencia_texto: referencia.texto,
+        referencia_url: referencia.url,
         cantidad_texto: formatearCantidad(
             movimiento.cantidad,
             movimiento.unidad_abreviatura,

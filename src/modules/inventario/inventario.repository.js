@@ -1,17 +1,17 @@
 const db = require('../../config/db');
 
 function limpiarTexto(valor) {
-    return String(valor || '').trim();
+  return String(valor || '').trim();
 }
 
 function construirFiltrosStock(filtros = {}) {
-    const condiciones = ['p.eliminado_en IS NULL'];
-    const parametros = [];
+  const condiciones = ['p.eliminado_en IS NULL'];
+  const parametros = [];
 
-    const busqueda = limpiarTexto(filtros.busqueda);
+  const busqueda = limpiarTexto(filtros.busqueda);
 
-    if (busqueda) {
-        condiciones.push(`
+  if (busqueda) {
+    condiciones.push(`
       (
         LOWER(p.nombre) LIKE LOWER(?)
         OR LOWER(p.codigo_interno) LIKE LOWER(?)
@@ -19,59 +19,59 @@ function construirFiltrosStock(filtros = {}) {
       )
     `);
 
-        const patron = `%${busqueda}%`;
-        parametros.push(patron, patron, patron);
-    }
+    const patron = `%${busqueda}%`;
+    parametros.push(patron, patron, patron);
+  }
 
-    const idCategoriaProducto = Number(filtros.idCategoriaProducto);
+  const idCategoriaProducto = Number(filtros.idCategoriaProducto);
 
-    if (idCategoriaProducto && !Number.isNaN(idCategoriaProducto)) {
-        condiciones.push('p.id_categoria_producto = ?');
-        parametros.push(idCategoriaProducto);
-    }
+  if (idCategoriaProducto && !Number.isNaN(idCategoriaProducto)) {
+    condiciones.push('p.id_categoria_producto = ?');
+    parametros.push(idCategoriaProducto);
+  }
 
-    const estadoStock = limpiarTexto(filtros.estadoStock);
+  const estadoStock = limpiarTexto(filtros.estadoStock);
 
-    if (estadoStock === 'bajo') {
-        condiciones.push(`
+  if (estadoStock === 'bajo') {
+    condiciones.push(`
       p.controla_inventario = 1
       AND p.stock_actual > 0
       AND p.stock_actual <= p.stock_minimo
     `);
-    }
+  }
 
-    if (estadoStock === 'sin_stock') {
-        condiciones.push(`
+  if (estadoStock === 'sin_stock') {
+    condiciones.push(`
       p.controla_inventario = 1
       AND p.stock_actual <= 0
     `);
-    }
+  }
 
-    if (estadoStock === 'sin_control') {
-        condiciones.push('p.controla_inventario = 0');
-    }
+  if (estadoStock === 'sin_control') {
+    condiciones.push('p.controla_inventario = 0');
+  }
 
-    if (estadoStock === 'ok') {
-        condiciones.push(`
+  if (estadoStock === 'ok') {
+    condiciones.push(`
       p.controla_inventario = 1
       AND p.stock_actual > p.stock_minimo
     `);
-    }
+  }
 
-    return {
-        where: condiciones.join(' AND '),
-        parametros,
-    };
+  return {
+    where: condiciones.join(' AND '),
+    parametros,
+  };
 }
 
 function listarResumenStock(filtros = {}) {
-    const { where, parametros } = construirFiltrosStock(filtros);
+  const { where, parametros } = construirFiltrosStock(filtros);
 
-    const limite = Number(filtros.limite) || 10;
-    const offset = Number(filtros.offset) || 0;
+  const limite = Number(filtros.limite) || 10;
+  const offset = Number(filtros.offset) || 0;
 
-    return db
-        .prepare(`
+  return db
+    .prepare(`
       SELECT
         p.id_producto,
         p.id_categoria_producto,
@@ -103,14 +103,14 @@ function listarResumenStock(filtros = {}) {
       LIMIT ?
       OFFSET ?
     `)
-        .all(...parametros, limite, offset);
+    .all(...parametros, limite, offset);
 }
 
 function contarResumenStock(filtros = {}) {
-    const { where, parametros } = construirFiltrosStock(filtros);
+  const { where, parametros } = construirFiltrosStock(filtros);
 
-    const resultado = db
-        .prepare(`
+  const resultado = db
+    .prepare(`
       SELECT COUNT(*) AS total
       FROM productos p
       LEFT JOIN categorias_productos c
@@ -119,14 +119,14 @@ function contarResumenStock(filtros = {}) {
         ON u.id_unidad_medida = p.id_unidad_medida
       WHERE ${where}
     `)
-        .get(...parametros);
+    .get(...parametros);
 
-    return resultado?.total || 0;
+  return resultado?.total || 0;
 }
 
 function listarCategoriasDisponibles() {
-    return db
-        .prepare(`
+  return db
+    .prepare(`
       SELECT
         id_categoria_producto,
         nombre,
@@ -135,12 +135,12 @@ function listarCategoriasDisponibles() {
       WHERE eliminado_en IS NULL
       ORDER BY nombre ASC
     `)
-        .all();
+    .all();
 }
 
 function obtenerProductoInventarioPorId(idProducto) {
-    return db
-        .prepare(`
+  return db
+    .prepare(`
       SELECT
         p.id_producto,
         p.id_categoria_producto,
@@ -171,12 +171,12 @@ function obtenerProductoInventarioPorId(idProducto) {
         AND p.eliminado_en IS NULL
       LIMIT 1
     `)
-        .get(idProducto);
+    .get(idProducto);
 }
 
 function registrarAjusteInventario({ producto, ajuste, usuario, ip, userAgent }) {
-    const transaccion = db.transaction(() => {
-        db.prepare(`
+  const transaccion = db.transaction(() => {
+    db.prepare(`
       UPDATE productos
       SET
         stock_actual = @stock_nuevo,
@@ -184,11 +184,11 @@ function registrarAjusteInventario({ producto, ajuste, usuario, ip, userAgent })
       WHERE id_producto = @id_producto
         AND eliminado_en IS NULL
     `).run({
-            id_producto: producto.id_producto,
-            stock_nuevo: ajuste.stock_nuevo,
-        });
+      id_producto: producto.id_producto,
+      stock_nuevo: ajuste.stock_nuevo,
+    });
 
-        const resultadoMovimiento = db.prepare(`
+    const resultadoMovimiento = db.prepare(`
       INSERT INTO movimientos_inventario (
         id_producto,
         id_usuario,
@@ -213,17 +213,17 @@ function registrarAjusteInventario({ producto, ajuste, usuario, ip, userAgent })
         NULL
       )
     `).run({
-            id_producto: producto.id_producto,
-            id_usuario: usuario?.id_usuario || 1,
-            id_unidad_medida: producto.id_unidad_medida,
-            tipo_movimiento: ajuste.tipo_movimiento,
-            cantidad: ajuste.cantidad,
-            stock_anterior: ajuste.stock_anterior,
-            stock_nuevo: ajuste.stock_nuevo,
-            motivo: ajuste.motivo,
-        });
+      id_producto: producto.id_producto,
+      id_usuario: usuario?.id_usuario || 1,
+      id_unidad_medida: producto.id_unidad_medida,
+      tipo_movimiento: ajuste.tipo_movimiento,
+      cantidad: ajuste.cantidad,
+      stock_anterior: ajuste.stock_anterior,
+      stock_nuevo: ajuste.stock_nuevo,
+      motivo: ajuste.motivo,
+    });
 
-        db.prepare(`
+    db.prepare(`
       INSERT INTO auditoria (
         id_usuario,
         accion,
@@ -244,36 +244,36 @@ function registrarAjusteInventario({ producto, ajuste, usuario, ip, userAgent })
         @user_agent
       )
     `).run({
-            id_usuario: usuario?.id_usuario || null,
-            id_registro_afectado: producto.id_producto,
-            datos_anteriores: JSON.stringify({
-                stock_actual: ajuste.stock_anterior,
-            }),
-            datos_nuevos: JSON.stringify({
-                tipo_movimiento: ajuste.tipo_movimiento,
-                cantidad: ajuste.cantidad,
-                stock_nuevo: ajuste.stock_nuevo,
-                motivo: ajuste.motivo,
-                id_movimiento_inventario: resultadoMovimiento.lastInsertRowid,
-            }),
-            ip: ip || 'local',
-            user_agent: userAgent || '',
-        });
-
-        return resultadoMovimiento.lastInsertRowid;
+      id_usuario: usuario?.id_usuario || null,
+      id_registro_afectado: producto.id_producto,
+      datos_anteriores: JSON.stringify({
+        stock_actual: ajuste.stock_anterior,
+      }),
+      datos_nuevos: JSON.stringify({
+        tipo_movimiento: ajuste.tipo_movimiento,
+        cantidad: ajuste.cantidad,
+        stock_nuevo: ajuste.stock_nuevo,
+        motivo: ajuste.motivo,
+        id_movimiento_inventario: resultadoMovimiento.lastInsertRowid,
+      }),
+      ip: ip || 'local',
+      user_agent: userAgent || '',
     });
 
-    return transaccion();
+    return resultadoMovimiento.lastInsertRowid;
+  });
+
+  return transaccion();
 }
 
 function construirFiltrosMovimientos(filtros = {}) {
-    const condiciones = ['1 = 1'];
-    const parametros = [];
+  const condiciones = ['1 = 1'];
+  const parametros = [];
 
-    const busqueda = limpiarTexto(filtros.busqueda);
+  const busqueda = limpiarTexto(filtros.busqueda);
 
-    if (busqueda) {
-        condiciones.push(`
+  if (busqueda) {
+    condiciones.push(`
       (
         LOWER(p.nombre) LIKE LOWER(?)
         OR LOWER(p.codigo_interno) LIKE LOWER(?)
@@ -281,38 +281,38 @@ function construirFiltrosMovimientos(filtros = {}) {
       )
     `);
 
-        const patron = `%${busqueda}%`;
-        parametros.push(patron, patron, patron);
-    }
+    const patron = `%${busqueda}%`;
+    parametros.push(patron, patron, patron);
+  }
 
-    const tipoMovimiento = limpiarTexto(filtros.tipoMovimiento);
+  const tipoMovimiento = limpiarTexto(filtros.tipoMovimiento);
 
-    if (tipoMovimiento) {
-        condiciones.push('mi.tipo_movimiento = ?');
-        parametros.push(tipoMovimiento);
-    }
+  if (tipoMovimiento) {
+    condiciones.push('mi.tipo_movimiento = ?');
+    parametros.push(tipoMovimiento);
+  }
 
-    const idProducto = Number(filtros.idProducto);
+  const idProducto = Number(filtros.idProducto);
 
-    if (idProducto && !Number.isNaN(idProducto)) {
-        condiciones.push('mi.id_producto = ?');
-        parametros.push(idProducto);
-    }
+  if (idProducto && !Number.isNaN(idProducto)) {
+    condiciones.push('mi.id_producto = ?');
+    parametros.push(idProducto);
+  }
 
-    return {
-        where: condiciones.join(' AND '),
-        parametros,
-    };
+  return {
+    where: condiciones.join(' AND '),
+    parametros,
+  };
 }
 
 function listarMovimientosInventario(filtros = {}) {
-    const { where, parametros } = construirFiltrosMovimientos(filtros);
+  const { where, parametros } = construirFiltrosMovimientos(filtros);
 
-    const limite = Number(filtros.limite) || 10;
-    const offset = Number(filtros.offset) || 0;
+  const limite = Number(filtros.limite) || 10;
+  const offset = Number(filtros.offset) || 0;
 
-    return db
-        .prepare(`
+  return db
+    .prepare(`
       SELECT
         mi.id_movimiento_inventario,
         mi.id_producto,
@@ -332,7 +332,8 @@ function listarMovimientosInventario(filtros = {}) {
         u.nombre AS unidad_nombre,
         u.abreviatura AS unidad_abreviatura,
         u.permite_decimales AS unidad_permite_decimales,
-        usu.nombre AS usuario_nombre
+        usu.nombre AS usuario_nombre,
+        c.numero_compra AS numero_compra_referencia
       FROM movimientos_inventario mi
       INNER JOIN productos p
         ON p.id_producto = mi.id_producto
@@ -340,19 +341,22 @@ function listarMovimientosInventario(filtros = {}) {
         ON u.id_unidad_medida = mi.id_unidad_medida
       LEFT JOIN usuarios usu
         ON usu.id_usuario = mi.id_usuario
+      LEFT JOIN compras c
+        ON mi.referencia_tipo = 'compra'
+       AND c.id_compra = mi.referencia_id
       WHERE ${where}
       ORDER BY mi.creado_en DESC, mi.id_movimiento_inventario DESC
       LIMIT ?
       OFFSET ?
     `)
-        .all(...parametros, limite, offset);
+    .all(...parametros, limite, offset);
 }
 
 function contarMovimientosInventario(filtros = {}) {
-    const { where, parametros } = construirFiltrosMovimientos(filtros);
+  const { where, parametros } = construirFiltrosMovimientos(filtros);
 
-    const resultado = db
-        .prepare(`
+  const resultado = db
+    .prepare(`
       SELECT COUNT(*) AS total
       FROM movimientos_inventario mi
       INNER JOIN productos p
@@ -363,24 +367,24 @@ function contarMovimientosInventario(filtros = {}) {
         ON usu.id_usuario = mi.id_usuario
       WHERE ${where}
     `)
-        .get(...parametros);
+    .get(...parametros);
 
-    return resultado?.total || 0;
+  return resultado?.total || 0;
 }
 
 function listarNumerosConteo() {
-    return db
-        .prepare(`
+  return db
+    .prepare(`
       SELECT numero_conteo
       FROM conteos_inventario
       WHERE numero_conteo LIKE 'INV-%'
     `)
-        .all();
+    .all();
 }
 
 function listarConteosInventario() {
-    return db
-        .prepare(`
+  return db
+    .prepare(`
       SELECT
         ci.id_conteo_inventario,
         ci.numero_conteo,
@@ -400,13 +404,13 @@ function listarConteosInventario() {
         ON u.id_usuario = ci.id_usuario_creacion
       ORDER BY ci.fecha_inicio DESC, ci.id_conteo_inventario DESC
     `)
-        .all();
+    .all();
 }
 
 function crearConteoInventario({ conteo, productos }) {
-    const transaccion = db.transaction(() => {
-        const resultadoConteo = db
-            .prepare(`
+  const transaccion = db.transaction(() => {
+    const resultadoConteo = db
+      .prepare(`
         INSERT INTO conteos_inventario (
           numero_conteo,
           id_usuario_creacion,
@@ -427,11 +431,11 @@ function crearConteoInventario({ conteo, productos }) {
           @observaciones
         )
       `)
-            .run(conteo);
+      .run(conteo);
 
-        const idConteo = Number(resultadoConteo.lastInsertRowid);
+    const idConteo = Number(resultadoConteo.lastInsertRowid);
 
-        const insertarDetalle = db.prepare(`
+    const insertarDetalle = db.prepare(`
       INSERT INTO detalle_conteos_inventario (
         id_conteo_inventario,
         id_producto,
@@ -463,21 +467,21 @@ function crearConteoInventario({ conteo, productos }) {
       )
     `);
 
-        for (const producto of productos) {
-            insertarDetalle.run({
-                id_conteo_inventario: idConteo,
-                id_producto: producto.id_producto,
-                id_unidad_medida: producto.id_unidad_medida,
-                codigo_interno: producto.codigo_interno,
-                codigo_barras: producto.codigo_barras,
-                nombre_producto: producto.nombre,
-                unidad_abreviatura: producto.unidad_abreviatura,
-                stock_sistema: producto.stock_actual,
-                costo_promedio: producto.costo_promedio || producto.precio_costo || 0,
-            });
-        }
+    for (const producto of productos) {
+      insertarDetalle.run({
+        id_conteo_inventario: idConteo,
+        id_producto: producto.id_producto,
+        id_unidad_medida: producto.id_unidad_medida,
+        codigo_interno: producto.codigo_interno,
+        codigo_barras: producto.codigo_barras,
+        nombre_producto: producto.nombre,
+        unidad_abreviatura: producto.unidad_abreviatura,
+        stock_sistema: producto.stock_actual,
+        costo_promedio: producto.costo_promedio || producto.precio_costo || 0,
+      });
+    }
 
-        db.prepare(`
+    db.prepare(`
       INSERT INTO auditoria (
         id_usuario,
         accion,
@@ -498,38 +502,38 @@ function crearConteoInventario({ conteo, productos }) {
         @user_agent
       )
     `).run({
-            id_usuario: conteo.id_usuario_creacion || null,
-            id_registro_afectado: idConteo,
-            datos_nuevos: JSON.stringify({
-                numero_conteo: conteo.numero_conteo,
-                total_productos: productos.length,
-            }),
-            ip: conteo.ip || 'local',
-            user_agent: conteo.user_agent || '',
-        });
-
-        return idConteo;
+      id_usuario: conteo.id_usuario_creacion || null,
+      id_registro_afectado: idConteo,
+      datos_nuevos: JSON.stringify({
+        numero_conteo: conteo.numero_conteo,
+        total_productos: productos.length,
+      }),
+      ip: conteo.ip || 'local',
+      user_agent: conteo.user_agent || '',
     });
 
-    return transaccion();
+    return idConteo;
+  });
+
+  return transaccion();
 }
 
 function listarProductosParaConteo({ tipoConteo, idCategoriaProducto }) {
-    const condiciones = [
-        'p.eliminado_en IS NULL',
-        'p.estado = ?',
-        'p.controla_inventario = 1',
-    ];
+  const condiciones = [
+    'p.eliminado_en IS NULL',
+    'p.estado = ?',
+    'p.controla_inventario = 1',
+  ];
 
-    const parametros = ['activo'];
+  const parametros = ['activo'];
 
-    if (tipoConteo === 'categoria') {
-        condiciones.push('p.id_categoria_producto = ?');
-        parametros.push(idCategoriaProducto);
-    }
+  if (tipoConteo === 'categoria') {
+    condiciones.push('p.id_categoria_producto = ?');
+    parametros.push(idCategoriaProducto);
+  }
 
-    return db
-        .prepare(`
+  return db
+    .prepare(`
       SELECT
         p.id_producto,
         p.id_categoria_producto,
@@ -547,12 +551,12 @@ function listarProductosParaConteo({ tipoConteo, idCategoriaProducto }) {
       WHERE ${condiciones.join(' AND ')}
       ORDER BY p.nombre ASC
     `)
-        .all(...parametros);
+    .all(...parametros);
 }
 
 function obtenerConteoPorId(idConteo) {
-    return db
-        .prepare(`
+  return db
+    .prepare(`
       SELECT
         ci.id_conteo_inventario,
         ci.numero_conteo,
@@ -580,12 +584,12 @@ function obtenerConteoPorId(idConteo) {
       WHERE ci.id_conteo_inventario = ?
       LIMIT 1
     `)
-        .get(idConteo);
+    .get(idConteo);
 }
 
 function listarDetalleConteo(idConteo) {
-    return db
-        .prepare(`
+  return db
+    .prepare(`
       SELECT
         d.id_detalle_conteo_inventario,
         d.id_conteo_inventario,
@@ -609,12 +613,12 @@ function listarDetalleConteo(idConteo) {
       WHERE d.id_conteo_inventario = ?
       ORDER BY d.nombre_producto ASC
     `)
-        .all(idConteo);
+    .all(idConteo);
 }
 
 function guardarCantidadesConteo({ idConteo, detalles, usuario, ip, userAgent }) {
-    const transaccion = db.transaction(() => {
-        const actualizarDetalle = db.prepare(`
+  const transaccion = db.transaction(() => {
+    const actualizarDetalle = db.prepare(`
       UPDATE detalle_conteos_inventario
       SET
         stock_contado = @stock_contado,
@@ -627,27 +631,27 @@ function guardarCantidadesConteo({ idConteo, detalles, usuario, ip, userAgent })
         AND id_conteo_inventario = @id_conteo_inventario
     `);
 
-        for (const detalle of detalles) {
-            actualizarDetalle.run({
-                id_detalle_conteo_inventario: detalle.id_detalle_conteo_inventario,
-                id_conteo_inventario: idConteo,
-                stock_contado: detalle.stock_contado,
-                diferencia: detalle.diferencia,
-                valor_diferencia: detalle.valor_diferencia,
-                observaciones: detalle.observaciones,
-            });
-        }
+    for (const detalle of detalles) {
+      actualizarDetalle.run({
+        id_detalle_conteo_inventario: detalle.id_detalle_conteo_inventario,
+        id_conteo_inventario: idConteo,
+        stock_contado: detalle.stock_contado,
+        diferencia: detalle.diferencia,
+        valor_diferencia: detalle.valor_diferencia,
+        observaciones: detalle.observaciones,
+      });
+    }
 
-        const totalDiferencias = detalles.filter(
-            (detalle) => Math.abs(Number(detalle.diferencia || 0)) > 0.000001
-        ).length;
+    const totalDiferencias = detalles.filter(
+      (detalle) => Math.abs(Number(detalle.diferencia || 0)) > 0.000001
+    ).length;
 
-        const valorDiferenciaTotal = detalles.reduce(
-            (acumulado, detalle) => acumulado + Number(detalle.valor_diferencia || 0),
-            0
-        );
+    const valorDiferenciaTotal = detalles.reduce(
+      (acumulado, detalle) => acumulado + Number(detalle.valor_diferencia || 0),
+      0
+    );
 
-        db.prepare(`
+    db.prepare(`
       UPDATE conteos_inventario
       SET
         estado = 'en_revision',
@@ -657,12 +661,12 @@ function guardarCantidadesConteo({ idConteo, detalles, usuario, ip, userAgent })
         actualizado_en = CURRENT_TIMESTAMP
       WHERE id_conteo_inventario = @id_conteo_inventario
     `).run({
-            id_conteo_inventario: idConteo,
-            total_diferencias: totalDiferencias,
-            valor_diferencia_total: valorDiferenciaTotal,
-        });
+      id_conteo_inventario: idConteo,
+      total_diferencias: totalDiferencias,
+      valor_diferencia_total: valorDiferenciaTotal,
+    });
 
-        db.prepare(`
+    db.prepare(`
       INSERT INTO auditoria (
         id_usuario,
         accion,
@@ -683,29 +687,29 @@ function guardarCantidadesConteo({ idConteo, detalles, usuario, ip, userAgent })
         @user_agent
       )
     `).run({
-            id_usuario: usuario?.id_usuario || null,
-            id_registro_afectado: idConteo,
-            datos_nuevos: JSON.stringify({
-                total_productos_contados: detalles.length,
-                total_diferencias: totalDiferencias,
-                valor_diferencia_total: valorDiferenciaTotal,
-            }),
-            ip: ip || 'local',
-            user_agent: userAgent || '',
-        });
-
-        return {
-            totalDiferencias,
-            valorDiferenciaTotal,
-        };
+      id_usuario: usuario?.id_usuario || null,
+      id_registro_afectado: idConteo,
+      datos_nuevos: JSON.stringify({
+        total_productos_contados: detalles.length,
+        total_diferencias: totalDiferencias,
+        valor_diferencia_total: valorDiferenciaTotal,
+      }),
+      ip: ip || 'local',
+      user_agent: userAgent || '',
     });
 
-    return transaccion();
+    return {
+      totalDiferencias,
+      valorDiferenciaTotal,
+    };
+  });
+
+  return transaccion();
 }
 
 function listarDetalleConteoParaAplicar(idConteo) {
-    return db
-        .prepare(`
+  return db
+    .prepare(`
       SELECT
         d.id_detalle_conteo_inventario,
         d.id_conteo_inventario,
@@ -728,12 +732,12 @@ function listarDetalleConteoParaAplicar(idConteo) {
       WHERE d.id_conteo_inventario = ?
       ORDER BY d.nombre_producto ASC
     `)
-        .all(idConteo);
+    .all(idConteo);
 }
 
 function aplicarConteoInventario({ conteo, detalles, usuario, ip, userAgent }) {
-    const transaccion = db.transaction(() => {
-        const actualizarProducto = db.prepare(`
+  const transaccion = db.transaction(() => {
+    const actualizarProducto = db.prepare(`
       UPDATE productos
       SET
         stock_actual = @stock_nuevo,
@@ -742,7 +746,7 @@ function aplicarConteoInventario({ conteo, detalles, usuario, ip, userAgent }) {
         AND eliminado_en IS NULL
     `);
 
-        const insertarMovimiento = db.prepare(`
+    const insertarMovimiento = db.prepare(`
       INSERT INTO movimientos_inventario (
         id_producto,
         id_usuario,
@@ -768,7 +772,7 @@ function aplicarConteoInventario({ conteo, detalles, usuario, ip, userAgent }) {
       )
     `);
 
-        const actualizarDetalle = db.prepare(`
+    const actualizarDetalle = db.prepare(`
       UPDATE detalle_conteos_inventario
       SET
         estado = 'ajustado',
@@ -776,38 +780,38 @@ function aplicarConteoInventario({ conteo, detalles, usuario, ip, userAgent }) {
       WHERE id_detalle_conteo_inventario = @id_detalle_conteo_inventario
     `);
 
-        for (const detalle of detalles) {
-            const diferencia = Number(detalle.diferencia || 0);
-            const stockNuevo = Number(detalle.stock_contado || 0);
-            const stockAnterior = Number(detalle.stock_sistema || 0);
+    for (const detalle of detalles) {
+      const diferencia = Number(detalle.diferencia || 0);
+      const stockNuevo = Number(detalle.stock_contado || 0);
+      const stockAnterior = Number(detalle.stock_sistema || 0);
 
-            actualizarProducto.run({
-                id_producto: detalle.id_producto,
-                stock_nuevo: stockNuevo,
-            });
+      actualizarProducto.run({
+        id_producto: detalle.id_producto,
+        stock_nuevo: stockNuevo,
+      });
 
-            if (Math.abs(diferencia) > 0.000001) {
-                insertarMovimiento.run({
-                    id_producto: detalle.id_producto,
-                    id_usuario: usuario?.id_usuario || 1,
-                    id_unidad_medida: detalle.id_unidad_medida,
-                    tipo_movimiento:
-                        diferencia > 0 ? 'ajuste_positivo' : 'ajuste_negativo',
-                    cantidad: Math.abs(diferencia),
-                    stock_anterior: stockAnterior,
-                    stock_nuevo: stockNuevo,
-                    motivo: `Aplicación de conteo físico ${conteo.numero_conteo}`,
-                    referencia_id: conteo.id_conteo_inventario,
-                });
-            }
+      if (Math.abs(diferencia) > 0.000001) {
+        insertarMovimiento.run({
+          id_producto: detalle.id_producto,
+          id_usuario: usuario?.id_usuario || 1,
+          id_unidad_medida: detalle.id_unidad_medida,
+          tipo_movimiento:
+            diferencia > 0 ? 'ajuste_positivo' : 'ajuste_negativo',
+          cantidad: Math.abs(diferencia),
+          stock_anterior: stockAnterior,
+          stock_nuevo: stockNuevo,
+          motivo: `Aplicación de conteo físico ${conteo.numero_conteo}`,
+          referencia_id: conteo.id_conteo_inventario,
+        });
+      }
 
-            actualizarDetalle.run({
-                id_detalle_conteo_inventario:
-                    detalle.id_detalle_conteo_inventario,
-            });
-        }
+      actualizarDetalle.run({
+        id_detalle_conteo_inventario:
+          detalle.id_detalle_conteo_inventario,
+      });
+    }
 
-        db.prepare(`
+    db.prepare(`
       UPDATE conteos_inventario
       SET
         estado = 'aplicado',
@@ -816,11 +820,11 @@ function aplicarConteoInventario({ conteo, detalles, usuario, ip, userAgent }) {
         actualizado_en = CURRENT_TIMESTAMP
       WHERE id_conteo_inventario = @id_conteo_inventario
     `).run({
-            id_conteo_inventario: conteo.id_conteo_inventario,
-            id_usuario_aplicacion: usuario?.id_usuario || null,
-        });
+      id_conteo_inventario: conteo.id_conteo_inventario,
+      id_usuario_aplicacion: usuario?.id_usuario || null,
+    });
 
-        db.prepare(`
+    db.prepare(`
       INSERT INTO auditoria (
         id_usuario,
         accion,
@@ -841,27 +845,27 @@ function aplicarConteoInventario({ conteo, detalles, usuario, ip, userAgent }) {
         @user_agent
       )
     `).run({
-            id_usuario: usuario?.id_usuario || null,
-            id_registro_afectado: conteo.id_conteo_inventario,
-            datos_nuevos: JSON.stringify({
-                numero_conteo: conteo.numero_conteo,
-                total_productos: detalles.length,
-                total_diferencias: conteo.total_diferencias,
-                valor_diferencia_total: conteo.valor_diferencia_total,
-            }),
-            ip: ip || 'local',
-            user_agent: userAgent || '',
-        });
-
-        return true;
+      id_usuario: usuario?.id_usuario || null,
+      id_registro_afectado: conteo.id_conteo_inventario,
+      datos_nuevos: JSON.stringify({
+        numero_conteo: conteo.numero_conteo,
+        total_productos: detalles.length,
+        total_diferencias: conteo.total_diferencias,
+        valor_diferencia_total: conteo.valor_diferencia_total,
+      }),
+      ip: ip || 'local',
+      user_agent: userAgent || '',
     });
 
-    return transaccion();
+    return true;
+  });
+
+  return transaccion();
 }
 
 function obtenerResumenOperativoInventario() {
-    return db
-        .prepare(`
+  return db
+    .prepare(`
       WITH productos_valorizados AS (
         SELECT
           p.id_producto,
@@ -1017,12 +1021,12 @@ function obtenerResumenOperativoInventario() {
 
       FROM calculos
     `)
-        .get();
+    .get();
 }
 
 function listarAlertasStock(limite = 10) {
-    return db
-        .prepare(`
+  return db
+    .prepare(`
       SELECT
         p.id_producto,
         p.codigo_interno,
@@ -1056,12 +1060,12 @@ function listarAlertasStock(limite = 10) {
         p.nombre ASC
       LIMIT ?
     `)
-        .all(limite);
+    .all(limite);
 }
 
 function listarProductosMayorValorInventario(limite = 10) {
-    return db
-        .prepare(`
+  return db
+    .prepare(`
       SELECT
         p.id_producto,
         p.codigo_interno,
@@ -1098,12 +1102,12 @@ function listarProductosMayorValorInventario(limite = 10) {
       ORDER BY valor_estimado DESC, p.nombre ASC
       LIMIT ?
     `)
-        .all(limite);
+    .all(limite);
 }
 
 function listarResumenMovimientosInventario30Dias() {
-    return db
-        .prepare(`
+  return db
+    .prepare(`
       SELECT
         mi.tipo_movimiento,
         COUNT(*) AS total_movimientos,
@@ -1124,12 +1128,12 @@ function listarResumenMovimientosInventario30Dias() {
       GROUP BY mi.tipo_movimiento
       ORDER BY total_movimientos DESC
     `)
-        .all();
+    .all();
 }
 
 function listarConteosInventarioRecientes(limite = 5) {
-    return db
-        .prepare(`
+  return db
+    .prepare(`
       SELECT
         ci.id_conteo_inventario,
         ci.numero_conteo,
@@ -1148,31 +1152,31 @@ function listarConteosInventarioRecientes(limite = 5) {
       ORDER BY ci.fecha_inicio DESC, ci.id_conteo_inventario DESC
       LIMIT ?
     `)
-        .all(limite);
+    .all(limite);
 }
 
 module.exports = {
-    listarResumenStock,
-    contarResumenStock,
-    listarCategoriasDisponibles,
-    obtenerProductoInventarioPorId,
-    registrarAjusteInventario,
-    listarMovimientosInventario,
-    contarMovimientosInventario,
+  listarResumenStock,
+  contarResumenStock,
+  listarCategoriasDisponibles,
+  obtenerProductoInventarioPorId,
+  registrarAjusteInventario,
+  listarMovimientosInventario,
+  contarMovimientosInventario,
 
-    listarNumerosConteo,
-    listarConteosInventario,
-    crearConteoInventario,
-    listarProductosParaConteo,
-    obtenerConteoPorId,
-    listarDetalleConteo,
-    guardarCantidadesConteo,
-    listarDetalleConteoParaAplicar,
-    aplicarConteoInventario,
+  listarNumerosConteo,
+  listarConteosInventario,
+  crearConteoInventario,
+  listarProductosParaConteo,
+  obtenerConteoPorId,
+  listarDetalleConteo,
+  guardarCantidadesConteo,
+  listarDetalleConteoParaAplicar,
+  aplicarConteoInventario,
 
-    obtenerResumenOperativoInventario,
-    listarAlertasStock,
-    listarProductosMayorValorInventario,
-    listarResumenMovimientosInventario30Dias,
-    listarConteosInventarioRecientes,
+  obtenerResumenOperativoInventario,
+  listarAlertasStock,
+  listarProductosMayorValorInventario,
+  listarResumenMovimientosInventario30Dias,
+  listarConteosInventarioRecientes,
 };
