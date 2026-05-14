@@ -8,6 +8,23 @@ const estilosComprasPOS = [
 ];
 
 
+function mostrarImprimirCompra(req, res) {
+    const documento = comprasService.obtenerDocumentoCompraImprimible(req.params.id);
+
+    if (!documento) {
+        return res.status(404).render('errors/404', {
+            titulo: 'Compra no encontrada',
+            mensaje: 'No se encontró la compra solicitada.',
+        });
+    }
+
+    return res.render('compras/imprimir', {
+        titulo: `Imprimir ${documento.compra.numero_compra}`,
+        documento,
+        layout: false,
+    });
+}
+
 function mostrarDetalleCompra(req, res) {
     const resultado = comprasService.obtenerDetalleCompra(req.params.id);
 
@@ -102,6 +119,7 @@ function listarCompras(req, res) {
 module.exports = {
     listarCompras,
     mostrarDetalleCompra,
+    mostrarImprimirCompra,
     mostrarFormularioNuevaCompra,
     buscarProductosParaCompra,
     validarCompra,

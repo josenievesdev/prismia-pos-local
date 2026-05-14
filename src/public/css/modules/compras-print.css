@@ -1,0 +1,292 @@
+:root {
+    --print-text: #0f172a;
+    --print-muted: #64748b;
+    --print-line: #cbd5e1;
+    --print-soft: #f8fafc;
+    --print-strong: #020617;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #eef2f7;
+    color: var(--print-text);
+    font-family: Inter, Arial, Helvetica, sans-serif;
+    font-size: 12px;
+}
+
+.print-shell {
+    min-height: 100vh;
+    padding: 18px 20px 32px;
+}
+
+.print-actions {
+    width: min(216mm, 100%);
+    margin: 0 auto 14px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.print-page {
+    width: 216mm;
+    min-height: 279mm;
+    margin: 0 auto;
+    padding: 16mm;
+    background: #ffffff;
+    border: 1px solid rgba(203, 213, 225, 0.8);
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.14);
+}
+
+.print-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 250px;
+    gap: 18px;
+    align-items: start;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--print-strong);
+}
+
+.print-business h1 {
+    margin: 0 0 8px;
+    font-size: 21px;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    color: var(--print-strong);
+}
+
+.print-business p {
+    margin: 3px 0;
+    color: var(--print-muted);
+    line-height: 1.35;
+}
+
+.print-document-box {
+    padding: 14px 12px;
+    border: 1px solid var(--print-strong);
+    text-align: center;
+}
+
+.print-document-box span {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--print-muted);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.print-document-box strong {
+    display: block;
+    font-size: 19px;
+    color: var(--print-strong);
+}
+
+.print-document-box small {
+    display: block;
+    margin-top: 8px;
+    color: var(--print-muted);
+    font-size: 9px;
+    line-height: 1.35;
+}
+
+.print-section {
+    margin-top: 16px;
+}
+
+.print-section-title {
+    margin: 0 0 8px;
+    font-size: 12px;
+    color: var(--print-strong);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.print-info-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    border-top: 1px solid var(--print-line);
+    border-left: 1px solid var(--print-line);
+}
+
+.print-info-item {
+    min-height: 52px;
+    padding: 9px;
+    border-right: 1px solid var(--print-line);
+    border-bottom: 1px solid var(--print-line);
+}
+
+.print-info-item span {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--print-muted);
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.print-info-item strong {
+    display: block;
+    color: var(--print-text);
+    line-height: 1.35;
+    word-break: break-word;
+}
+
+.print-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid var(--print-line);
+}
+
+.print-table th {
+    padding: 8px 7px;
+    background: var(--print-soft);
+    border-bottom: 1px solid var(--print-line);
+    color: var(--print-strong);
+    font-size: 9px;
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.print-table td {
+    padding: 8px 7px;
+    border-bottom: 1px solid var(--print-line);
+    vertical-align: top;
+}
+
+.print-table tr:last-child td {
+    border-bottom: 0;
+}
+
+.print-table .text-right {
+    text-align: right;
+}
+
+.print-product-name {
+    display: block;
+    margin-bottom: 3px;
+    color: var(--print-strong);
+    font-weight: 700;
+}
+
+.print-small {
+    display: block;
+    margin-top: 3px;
+    color: var(--print-muted);
+    font-size: 10px;
+    line-height: 1.35;
+}
+
+.print-totals {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 260px;
+    gap: 14px;
+    align-items: start;
+    margin-top: 16px;
+}
+
+.print-observations {
+    min-height: 86px;
+    padding: 10px;
+    border: 1px solid var(--print-line);
+}
+
+.print-observations p {
+    margin: 0;
+    line-height: 1.45;
+}
+
+.print-total-box {
+    border: 1px solid var(--print-line);
+}
+
+.print-total-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--print-line);
+}
+
+.print-total-row:last-child {
+    border-bottom: 0;
+}
+
+.print-total-row span {
+    color: var(--print-muted);
+}
+
+.print-total-row strong {
+    color: var(--print-strong);
+}
+
+.print-total-row.is-main {
+    background: var(--print-soft);
+    font-size: 14px;
+}
+
+.print-signatures {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 34px;
+    margin-top: 44px;
+}
+
+.print-signature {
+    padding-top: 12px;
+    border-top: 1px solid var(--print-strong);
+    color: var(--print-muted);
+    text-align: center;
+}
+
+.print-footer {
+    margin-top: 22px;
+    padding-top: 10px;
+    border-top: 1px solid var(--print-line);
+    color: var(--print-muted);
+    font-size: 10px;
+    line-height: 1.45;
+    text-align: center;
+}
+
+@media print {
+    body {
+        background: #ffffff;
+    }
+
+    .print-shell {
+        padding: 0;
+    }
+
+    .print-actions {
+        display: none;
+    }
+
+    .print-page {
+        width: auto;
+        min-height: auto;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        box-shadow: none;
+    }
+
+    .print-section {
+        break-inside: avoid;
+    }
+
+    .print-table tr {
+        break-inside: avoid;
+    }
+
+    @page {
+        size: A4;
+        margin: 12mm;
+    }
+}

@@ -1,0 +1,289 @@
+<% const data=documento || {}; const comercio=data.comercio || {}; const compra=data.compra || {}; const
+    detalle=Array.isArray(data.detalle) ? data.detalle : []; function texto(valor, defecto='' ) { if (valor===null ||
+    valor===undefined) { return defecto; } const limpio=String(valor).trim(); return limpio || defecto; } function
+    mayuscula(valor, defecto='' ) { return texto(valor, defecto).toUpperCase(); } function fechaHora(valor) { if
+    (!valor) { return '' ; } return String(valor).replace('T', ' ' ).slice(0, 19); } function tipoSoporteTexto(valor) {
+    const tipos={ factura_proveedor: 'Factura de proveedor' , cuenta_cobro: 'Cuenta de cobro' , remision: 'Remisión' ,
+    otro: 'Otro soporte' , }; return tipos[valor] || texto(valor, 'No registrado' ); } const
+    nombreComercio=texto(comercio.nombre_mostrar, 'Comercio sin configurar' ); const
+    documentoComercio=texto(comercio.documento); const numeroCompra=texto(compra.numero_compra, 'CP-SIN-NUMERO' ); %>
+
+    <!DOCTYPE html>
+    <html lang="es">
+
+    <head>
+        <meta charset="UTF-8">
+        <title>Imprimir <%= numeroCompra %> | Prismia POS Local</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link rel="stylesheet" href="/css/main.css">
+        <link rel="stylesheet" href="/css/modules/compras-print.css">
+    </head>
+
+    <body>
+        <main class="print-shell">
+            <div class="print-actions">
+                <button type="button" class="btn-primary" onclick="window.print()">
+                    Imprimir / Guardar PDF
+                </button>
+
+                <a href="/compras/<%= compra.id_compra %>" class="btn-secondary">
+                    Volver al detalle
+                </a>
+            </div>
+
+            <section class="print-page">
+                <header class="print-header">
+                    <div class="print-business">
+                        <h1>
+                            <%= mayuscula(nombreComercio) %>
+                        </h1>
+
+                        <% if (documentoComercio) { %>
+                            <p>
+                                <%= texto(comercio.tipo_documento, 'NIT' ) %>:
+                                    <%= documentoComercio %>
+                            </p>
+                            <% } %>
+
+                                <% if (comercio.direccion) { %>
+                                    <p>
+                                        <%= comercio.direccion %>
+                                    </p>
+                                    <% } %>
+
+                                        <% if (comercio.telefono) { %>
+                                            <p>Tel: <%= comercio.telefono %>
+                                            </p>
+                                            <% } %>
+
+                                                <% if (comercio.correo) { %>
+                                                    <p>
+                                                        <%= comercio.correo %>
+                                                    </p>
+                                                    <% } %>
+                    </div>
+
+                    <div class="print-document-box">
+                        <span>Compra interna</span>
+                        <strong>
+                            <%= numeroCompra %>
+                        </strong>
+                        <small>
+                            Documento operativo interno. No reemplaza factura electrónica ni soporte tributario DIAN.
+                        </small>
+                    </div>
+                </header>
+
+                <section class="print-section">
+                    <h2 class="print-section-title">Datos de la compra</h2>
+
+                    <div class="print-info-grid">
+                        <div class="print-info-item">
+                            <span>Proveedor</span>
+                            <strong>
+                                <%= texto(compra.proveedor_nombre, 'No registrado' ) %>
+                            </strong>
+                        </div>
+
+                        <div class="print-info-item">
+                            <span>Documento proveedor</span>
+                            <strong>
+                                <%= texto(compra.proveedor_documento_mostrar, 'No registrado' ) %>
+                            </strong>
+                        </div>
+
+                        <div class="print-info-item">
+                            <span>Soporte proveedor</span>
+                            <strong>
+                                <%= texto(compra.soporte_mostrar, 'No registrado' ) %>
+                            </strong>
+                        </div>
+
+                        <div class="print-info-item">
+                            <span>Tipo soporte</span>
+                            <strong>
+                                <%= tipoSoporteTexto(compra.tipo_soporte) %>
+                            </strong>
+                        </div>
+
+                        <div class="print-info-item">
+                            <span>Fecha compra</span>
+                            <strong>
+                                <%= texto(compra.fecha_compra_mostrar, 'Sin fecha' ) %>
+                            </strong>
+                        </div>
+
+                        <div class="print-info-item">
+                            <span>Fecha registro</span>
+                            <strong>
+                                <%= fechaHora(compra.fecha_registro_mostrar || compra.fecha_registro) || 'Sin registro'
+                                    %>
+                            </strong>
+                        </div>
+
+                        <div class="print-info-item">
+                            <span>Usuario</span>
+                            <strong>
+                                <%= texto(compra.usuario_nombre, 'Sin usuario' ) %>
+                            </strong>
+                        </div>
+
+                        <div class="print-info-item">
+                            <span>Estado</span>
+                            <strong>
+                                <%= texto(compra.estado_etiqueta || compra.estado, 'Sin estado' ) %>
+                            </strong>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="print-section">
+                    <h2 class="print-section-title">Productos comprados</h2>
+
+                    <table class="print-table">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th class="text-right">Cantidad</th>
+                                <th class="text-right">Costo base</th>
+                                <th class="text-right">IVA</th>
+                                <th class="text-right">Costo final</th>
+                                <th class="text-right">Total</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <% if (!detalle.length) { %>
+                                <tr>
+                                    <td colspan="6">Sin productos registrados.</td>
+                                </tr>
+                                <% } %>
+
+                                    <% detalle.forEach(function (linea) { %>
+                                        <tr>
+                                            <td>
+                                                <span class="print-product-name">
+                                                    <%= texto(linea.producto_nombre, 'Producto sin nombre' ) %>
+                                                </span>
+
+                                                <span class="print-small">
+                                                    <%= texto(linea.producto_codigo, 'Sin código' ) %>
+                                                        ·
+                                                        <%= texto(linea.unidad_abreviatura, 'und' ) %>
+                                                </span>
+
+                                                <span class="print-small">
+                                                    Stock:
+                                                    <%= texto(linea.stock_anterior_mostrar, '0' ) %>
+                                                        →
+                                                        <%= texto(linea.stock_nuevo_mostrar, '0' ) %>
+                                                </span>
+
+                                                <span class="print-small">
+                                                    Precio venta:
+                                                    <%= texto(linea.precio_venta_anterior_mostrar, '$ 0' ) %>
+                                                        →
+                                                        <%= texto(linea.precio_venta_nuevo_mostrar, '$ 0' ) %>
+                                                            ·
+                                                            <%= linea.actualizo_precio ? 'Actualizado' : 'Sin cambio' %>
+                                                </span>
+                                            </td>
+
+                                            <td class="text-right">
+                                                <%= texto(linea.cantidad_mostrar, '0' ) %>
+                                            </td>
+
+                                            <td class="text-right">
+                                                <strong>
+                                                    <%= texto(linea.costo_unitario_mostrar, '$ 0' ) %>
+                                                </strong>
+
+                                                <% if (Number(linea.descuento_porcentaje || 0)> 0) { %>
+                                                    <span class="print-small">
+                                                        Desc. <%= linea.descuento_porcentaje %>%:
+                                                            <%= texto(linea.descuento_linea_mostrar, '$ 0' ) %>
+                                                    </span>
+                                                    <% } %>
+                                            </td>
+
+                                            <td class="text-right">
+                                                <strong>
+                                                    <%= texto(linea.porcentaje_iva, '0' ) %>%
+                                                </strong>
+                                                <span class="print-small">
+                                                    <%= texto(linea.iva_linea_mostrar, '$ 0' ) %>
+                                                </span>
+                                            </td>
+
+                                            <td class="text-right">
+                                                <strong>
+                                                    <%= texto(linea.costo_unitario_final_mostrar, '$ 0' ) %>
+                                                </strong>
+                                                <span class="print-small">
+                                                    Neto: <%= texto(linea.costo_unitario_neto_mostrar, '$ 0' ) %>
+                                                </span>
+                                            </td>
+
+                                            <td class="text-right">
+                                                <strong>
+                                                    <%= texto(linea.total_linea_mostrar, '$ 0' ) %>
+                                                </strong>
+                                            </td>
+                                        </tr>
+                                        <% }) %>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section class="print-totals">
+                    <div class="print-observations">
+                        <h2 class="print-section-title">Observaciones</h2>
+                        <p>
+                            <%= texto(compra.observaciones, 'Sin observaciones registradas.' ) %>
+                        </p>
+                    </div>
+
+                    <div class="print-total-box">
+                        <div class="print-total-row">
+                            <span>Subtotal</span>
+                            <strong>
+                                <%= texto(compra.subtotal_mostrar, '$ 0' ) %>
+                            </strong>
+                        </div>
+
+                        <div class="print-total-row">
+                            <span>IVA compra</span>
+                            <strong>
+                                <%= texto(compra.iva_total_mostrar, '$ 0' ) %>
+                            </strong>
+                        </div>
+
+                        <div class="print-total-row is-main">
+                            <span>Total compra</span>
+                            <strong>
+                                <%= texto(compra.total_mostrar, '$ 0' ) %>
+                            </strong>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="print-signatures">
+                    <div class="print-signature">
+                        Recibido / Revisado por
+                    </div>
+
+                    <div class="print-signature">
+                        Responsable de registro
+                    </div>
+                </section>
+
+                <footer class="print-footer">
+                    Documento generado por Prismia POS Local. Uso interno para control operativo de compras,
+                    inventario y costos.
+                </footer>
+            </section>
+        </main>
+    </body>
+
+    </html>
