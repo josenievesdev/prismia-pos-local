@@ -15,6 +15,7 @@ router.post('/api/validar', comprasController.validarCompra);
 
 router.post('/', comprasController.guardarCompra);
 router.get('/', comprasController.listarCompras);
+router.get('/:id/imprimir', comprasController.mostrarImprimirCompra);
 router.get('/:id', comprasController.mostrarDetalleCompra);
 
 module.exports = router;

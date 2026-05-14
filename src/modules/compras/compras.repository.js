@@ -303,6 +303,29 @@ function existeSoporteProveedorActivo(idProveedor, numeroSoporte) {
     return Boolean(resultado);
 }
 
+function obtenerConfiguracionNegocio() {
+    return db
+        .prepare(`
+            SELECT
+                id_configuracion,
+                nombre_negocio,
+                nombre_comercial,
+                tipo_documento,
+                documento,
+                direccion,
+                telefono,
+                correo,
+                moneda,
+                mensaje_recibo,
+                logo_url
+            FROM configuracion_negocio
+            WHERE estado = 'activo'
+            ORDER BY id_configuracion ASC
+            LIMIT 1
+        `)
+        .get();
+}
+
 function obtenerCompraPorId(idCompra) {
     return db
         .prepare(`
@@ -766,6 +789,7 @@ module.exports = {
     buscarProductosParaCompra,
     obtenerSiguienteNumeroCompra,
     existeSoporteProveedorActivo,
+    obtenerConfiguracionNegocio,
     obtenerCompraPorId,
     listarDetalleCompra,
     registrarCompraConInventario,

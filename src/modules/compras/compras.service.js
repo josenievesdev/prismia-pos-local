@@ -427,6 +427,34 @@ function guardarCompra(datos = {}, contexto = {}) {
     }
 }
 
+function prepararComercioDocumento(configuracion) {
+    if (!configuracion) {
+        return {
+            nombre_mostrar: 'Comercio sin configurar',
+            tipo_documento: 'NIT',
+            documento: '',
+            direccion: '',
+            telefono: '',
+            correo: '',
+            mensaje_recibo: '',
+        };
+    }
+
+    return {
+        ...configuracion,
+        nombre_mostrar:
+            limpiarTexto(configuracion.nombre_comercial)
+            || limpiarTexto(configuracion.nombre_negocio)
+            || 'Comercio sin nombre',
+        tipo_documento: limpiarTexto(configuracion.tipo_documento) || 'NIT',
+        documento: limpiarTexto(configuracion.documento),
+        direccion: limpiarTexto(configuracion.direccion),
+        telefono: limpiarTexto(configuracion.telefono),
+        correo: limpiarTexto(configuracion.correo),
+        mensaje_recibo: limpiarTexto(configuracion.mensaje_recibo),
+    };
+}
+
 function prepararDetalleLineaVista(linea) {
     return {
         ...linea,
@@ -497,6 +525,22 @@ function obtenerDetalleCompra(idCompra) {
     };
 }
 
+function obtenerDocumentoCompraImprimible(idCompra) {
+    const resultado = obtenerDetalleCompra(idCompra);
+
+    if (!resultado) {
+        return null;
+    }
+
+    const configuracion = comprasRepository.obtenerConfiguracionNegocio();
+
+    return {
+        comercio: prepararComercioDocumento(configuracion),
+        compra: resultado.compra,
+        detalle: resultado.detalle,
+    };
+}
+
 function listarCompras(query = {}) {
     const filtrosIniciales = prepararFiltros(query);
     const totalResultados = comprasRepository.contarCompras(filtrosIniciales);
@@ -534,4 +578,5 @@ module.exports = {
     validarYCalcularCompra,
     guardarCompra,
     obtenerDetalleCompra,
+    obtenerDocumentoCompraImprimible,
 };
