@@ -79,6 +79,13 @@ function listarCompras(filtros = {}) {
                 c.total,
                 c.estado,
                 c.observaciones,
+                c.condicion_pago,
+                c.dias_plazo,
+                c.fecha_vencimiento,
+                c.estado_pago,
+                c.fecha_pago,
+                c.total_pagado,
+                c.saldo_pendiente,
                 p.id_proveedor,
                 p.nombre_comercial AS proveedor_nombre_comercial,
                 p.razon_social AS proveedor_razon_social,
@@ -341,6 +348,13 @@ function obtenerCompraPorId(idCompra) {
                 c.total,
                 c.estado,
                 c.observaciones,
+                c.condicion_pago,
+                c.dias_plazo,
+                c.fecha_vencimiento,
+                c.estado_pago,
+                c.fecha_pago,
+                c.total_pagado,
+                c.saldo_pendiente,
 
                 p.id_proveedor,
                 p.nombre_comercial AS proveedor_nombre_comercial,
@@ -443,7 +457,14 @@ function registrarCompraConInventario({ compra, lineas, usuario, ip, userAgent }
                     iva_total,
                     total,
                     estado,
-                    observaciones
+                    observaciones,
+                    condicion_pago,
+                    dias_plazo,
+                    fecha_vencimiento,
+                    estado_pago,
+                    fecha_pago,
+                    total_pagado,
+                    saldo_pendiente
                 ) VALUES (
                     @numero_compra,
                     @id_proveedor,
@@ -455,7 +476,14 @@ function registrarCompraConInventario({ compra, lineas, usuario, ip, userAgent }
                     @iva_total,
                     @total,
                     'registrada',
-                    @observaciones
+                    @observaciones,
+                    @condicion_pago,
+                    @dias_plazo,
+                    @fecha_vencimiento,
+                    @estado_pago,
+                    @fecha_pago,
+                    @total_pagado,
+                    @saldo_pendiente
                 )
             `)
             .run({
@@ -469,6 +497,13 @@ function registrarCompraConInventario({ compra, lineas, usuario, ip, userAgent }
                 iva_total: compra.iva_total,
                 total: compra.total,
                 observaciones: compra.observaciones || null,
+                condicion_pago: compra.condicion_pago || 'contado',
+                dias_plazo: compra.dias_plazo || 0,
+                fecha_vencimiento: compra.fecha_vencimiento || compra.fecha_compra,
+                estado_pago: compra.estado_pago || 'pagada',
+                fecha_pago: compra.fecha_pago || null,
+                total_pagado: compra.total_pagado || 0,
+                saldo_pendiente: compra.saldo_pendiente || 0,
             });
 
         const idCompra = Number(resultadoCompra.lastInsertRowid);
@@ -767,6 +802,10 @@ function registrarCompraConInventario({ compra, lineas, usuario, ip, userAgent }
                 id_compra: idCompra,
                 numero_compra: numeroCompra,
                 total: compra.total,
+                condicion_pago: compra.condicion_pago,
+                fecha_vencimiento: compra.fecha_vencimiento,
+                estado_pago: compra.estado_pago,
+                saldo_pendiente: compra.saldo_pendiente,
                 lineas: lineas.length,
             }),
             ip: ip || 'local',

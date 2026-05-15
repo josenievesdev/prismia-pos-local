@@ -140,6 +140,29 @@
                     </label>
                 </section>
 
+                <section class="compras-payment-strip" id="bloquePagoCompra">
+                    <label class="ventas-field">
+                        <span>Condición de pago</span>
+                        <select id="condicionPagoCompra" name="condicion_pago">
+                            <% (condicionesPago || [ { valor: 'contado' , etiqueta: 'Contado' }, { valor: 'credito' ,
+                                etiqueta: 'Crédito' } ]).forEach(function (condicion) { %>
+                                <option value="<%= condicion.valor %>">
+                                    <%= condicion.etiqueta %>
+                                </option>
+                                <% }) %>
+                        </select>
+                    </label>
+
+                    <label class="ventas-field" id="campoFechaVencimientoCompra" hidden>
+                        <span>Fecha de vencimiento</span>
+                        <input type="date" id="fechaVencimientoCompra" name="fecha_vencimiento"
+                            value="<%= fechaCompra %>">
+                        <small id="resumenVencimientoCompra">
+                            En contado queda pagada con vencimiento del mismo día.
+                        </small>
+                    </label>
+                </section>
+
                 <section class="ventas-search-section">
                     <div class="ventas-search-form">
                         <div class="ventas-search-input-wrap">

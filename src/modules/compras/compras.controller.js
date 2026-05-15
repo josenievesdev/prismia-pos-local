@@ -52,6 +52,7 @@ function mostrarFormularioNuevaCompra(req, res) {
         fechaCompra: datosFormulario.fecha_compra,
         numeroCompraSugerido: datosFormulario.numero_compra_sugerido,
         tiposSoporte: datosFormulario.tipos_soporte,
+        condicionesPago: datosFormulario.condiciones_pago,
         proveedores: datosFormulario.proveedores,
         error: null,
         estilosModulo: estilosComprasPOS,

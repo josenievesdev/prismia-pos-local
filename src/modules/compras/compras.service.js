@@ -2,6 +2,8 @@ const comprasRepository = require('./compras.repository');
 
 const ESTADOS_PERMITIDOS = ['borrador', 'registrada', 'anulada'];
 const LIMITE_POR_PAGINA = 20;
+const CONDICIONES_PAGO_PERMITIDAS = ['contado', 'credito'];
+const ESTADOS_PAGO_PERMITIDOS = ['pendiente', 'pagada', 'vencida', 'parcial'];
 
 const TIPOS_SOPORTE_COMPRA = [
     {
@@ -99,6 +101,111 @@ function formatearFecha(valor) {
         month: '2-digit',
         day: '2-digit',
     });
+}
+
+function esFechaISOValida(valor) {
+    const texto = limpiarTexto(valor);
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(texto)) {
+        return false;
+    }
+
+    const [anio, mes, dia] = texto.split('-').map(Number);
+    const fecha = new Date(anio, mes - 1, dia);
+
+    return fecha.getFullYear() === anio
+        && fecha.getMonth() === mes - 1
+        && fecha.getDate() === dia;
+}
+
+function sumarDiasFechaISO(fechaISO, dias) {
+    if (!esFechaISOValida(fechaISO)) {
+        return '';
+    }
+
+    const [anio, mes, dia] = fechaISO.split('-').map(Number);
+    const fecha = new Date(anio, mes - 1, dia);
+    fecha.setDate(fecha.getDate() + normalizarEntero(dias, 0));
+
+    const anioFinal = fecha.getFullYear();
+    const mesFinal = String(fecha.getMonth() + 1).padStart(2, '0');
+    const diaFinal = String(fecha.getDate()).padStart(2, '0');
+
+    return `${anioFinal}-${mesFinal}-${diaFinal}`;
+}
+
+function compararFechasISO(fechaA, fechaB) {
+    if (!esFechaISOValida(fechaA) || !esFechaISOValida(fechaB)) {
+        return 0;
+    }
+
+    return fechaA.localeCompare(fechaB);
+}
+
+function calcularDiferenciaDiasISO(fechaInicio, fechaFin) {
+    if (!esFechaISOValida(fechaInicio) || !esFechaISOValida(fechaFin)) {
+        return 0;
+    }
+
+    const [anioInicio, mesInicio, diaInicio] = fechaInicio.split('-').map(Number);
+    const [anioFin, mesFin, diaFin] = fechaFin.split('-').map(Number);
+
+    const inicio = Date.UTC(anioInicio, mesInicio - 1, diaInicio);
+    const fin = Date.UTC(anioFin, mesFin - 1, diaFin);
+
+    return Math.max(0, Math.round((fin - inicio) / 86400000));
+}
+
+function prepararDatosPagoCompra(datos = {}, { fechaCompra = '', total = 0 } = {}) {
+    const condicionPagoFormulario = limpiarTexto(datos.condicion_pago || 'contado').toLowerCase();
+    const condicionPago = condicionPagoFormulario || 'contado';
+    const totalSeguro = normalizarEntero(total, 0);
+
+    if (condicionPago !== 'credito') {
+        return {
+            condicion_pago: 'contado',
+            dias_plazo: 0,
+            fecha_vencimiento: fechaCompra,
+            estado_pago: 'pagada',
+            fecha_pago: fechaCompra,
+            total_pagado: totalSeguro,
+            saldo_pendiente: 0,
+        };
+    }
+
+    const fechaVencimientoFormulario = limpiarTexto(datos.fecha_vencimiento);
+    const diasPlazoFormulario = normalizarEntero(datos.dias_plazo, 0);
+
+    const fechaVencimiento = fechaVencimientoFormulario
+        || sumarDiasFechaISO(fechaCompra, diasPlazoFormulario);
+
+    const diasPlazoCalculado = calcularDiferenciaDiasISO(fechaCompra, fechaVencimiento);
+
+    return {
+        condicion_pago: 'credito',
+        dias_plazo: diasPlazoCalculado,
+        fecha_vencimiento: fechaVencimiento,
+        estado_pago: 'pendiente',
+        fecha_pago: null,
+        total_pagado: 0,
+        saldo_pendiente: totalSeguro,
+    };
+}
+
+function obtenerEtiquetaCondicionPago(condicionPago) {
+    return {
+        contado: 'Contado',
+        credito: 'Crédito',
+    }[condicionPago] || 'Contado';
+}
+
+function obtenerEtiquetaEstadoPago(estadoPago) {
+    return {
+        pendiente: 'Pendiente',
+        pagada: 'Pagada',
+        vencida: 'Vencida',
+        parcial: 'Parcial',
+    }[estadoPago] || 'Pendiente';
 }
 
 function prepararFiltros(query = {}) {
@@ -270,6 +377,33 @@ function validarYCalcularCompra(datos = {}) {
         errores.push('El total de la compra debe ser mayor a cero.');
     }
 
+    const datosPago = prepararDatosPagoCompra(datos, {
+        fechaCompra,
+        total: totales.total,
+    });
+
+    if (!CONDICIONES_PAGO_PERMITIDAS.includes(datosPago.condicion_pago)) {
+        errores.push('Selecciona una condición de pago válida.');
+    }
+
+    if (datosPago.condicion_pago === 'credito') {
+        if (!limpiarTexto(datos.fecha_vencimiento) && normalizarEntero(datos.dias_plazo, 0) <= 0) {
+            errores.push('Para una compra a crédito indica la fecha de vencimiento.');
+        }
+
+        if (!esFechaISOValida(datosPago.fecha_vencimiento)) {
+            errores.push('La fecha de vencimiento no es válida.');
+        }
+
+        if (
+            esFechaISOValida(fechaCompra)
+            && esFechaISOValida(datosPago.fecha_vencimiento)
+            && compararFechasISO(datosPago.fecha_vencimiento, fechaCompra) < 0
+        ) {
+            errores.push('La fecha de vencimiento no puede ser menor que la fecha de compra.');
+        }
+    }
+
     if (idProveedor && numeroSoporte) {
         const soporteYaExiste = comprasRepository.existeSoporteProveedorActivo(
             idProveedor,
@@ -296,6 +430,13 @@ function validarYCalcularCompra(datos = {}) {
             descuento: totales.descuento,
             iva_total: totales.iva_total,
             total: totales.total,
+            condicion_pago: datosPago.condicion_pago,
+            dias_plazo: datosPago.dias_plazo,
+            fecha_vencimiento: datosPago.fecha_vencimiento,
+            estado_pago: datosPago.estado_pago,
+            fecha_pago: datosPago.fecha_pago,
+            total_pagado: datosPago.total_pagado,
+            saldo_pendiente: datosPago.saldo_pendiente,
         },
         lineas: lineasCalculadas,
     };
@@ -343,6 +484,10 @@ function obtenerDatosFormularioNuevaCompra() {
         fecha_compra: obtenerFechaActualISO(),
         numero_compra_sugerido: siguienteNumero.numero_compra,
         tipos_soporte: TIPOS_SOPORTE_COMPRA,
+        condiciones_pago: [
+            { valor: 'contado', etiqueta: 'Contado' },
+            { valor: 'credito', etiqueta: 'Crédito' },
+        ],
         proveedores,
     };
 }
@@ -373,6 +518,12 @@ function prepararCompraVista(compra) {
         subtotal_mostrar: formatearMoneda(compra.subtotal),
         iva_total_mostrar: formatearMoneda(compra.iva_total),
         total_mostrar: formatearMoneda(compra.total),
+        condicion_pago_etiqueta: obtenerEtiquetaCondicionPago(compra.condicion_pago),
+        estado_pago_etiqueta: obtenerEtiquetaEstadoPago(compra.estado_pago),
+        fecha_vencimiento_mostrar: formatearFecha(compra.fecha_vencimiento),
+        fecha_pago_mostrar: compra.fecha_pago ? formatearFecha(compra.fecha_pago) : 'Sin registrar',
+        total_pagado_mostrar: formatearMoneda(compra.total_pagado),
+        saldo_pendiente_mostrar: formatearMoneda(compra.saldo_pendiente),
         estado_etiqueta: {
             borrador: 'Borrador',
             registrada: 'Registrada',
@@ -515,6 +666,12 @@ function obtenerDetalleCompra(idCompra) {
             subtotal_mostrar: formatearMoneda(compra.subtotal),
             iva_total_mostrar: formatearMoneda(compra.iva_total),
             total_mostrar: formatearMoneda(compra.total),
+            condicion_pago_etiqueta: obtenerEtiquetaCondicionPago(compra.condicion_pago),
+            estado_pago_etiqueta: obtenerEtiquetaEstadoPago(compra.estado_pago),
+            fecha_vencimiento_mostrar: formatearFecha(compra.fecha_vencimiento),
+            fecha_pago_mostrar: compra.fecha_pago ? formatearFecha(compra.fecha_pago) : 'Sin registrar',
+            total_pagado_mostrar: formatearMoneda(compra.total_pagado),
+            saldo_pendiente_mostrar: formatearMoneda(compra.saldo_pendiente),
             estado_etiqueta: {
                 borrador: 'Borrador',
                 registrada: 'Registrada',

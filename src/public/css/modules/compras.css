@@ -61,6 +61,29 @@
     box-shadow: var(--shadow-soft);
 }
 
+.compras-payment-strip {
+    display: grid;
+    grid-template-columns: 180px minmax(220px, 1fr);
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid var(--vb);
+    border-radius: var(--vr);
+    background: #fff;
+    box-shadow: var(--shadow-soft);
+}
+
+.compras-payment-strip[hidden],
+.compras-payment-strip [hidden] {
+    display: none !important;
+}
+
+.compras-payment-strip small {
+    color: var(--color-muted);
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
 .compras-observaciones-field {
     min-width: 0;
 }
@@ -332,6 +355,7 @@
 
     .compras-filters,
     .compras-support-strip,
+    .compras-payment-strip,
     .compras-context-bar {
         grid-template-columns: 1fr;
     }

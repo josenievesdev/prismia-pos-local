@@ -30,6 +30,16 @@
         totalCompra: $('totalCompra'),
         totalCompraPrincipal: $('totalCompraPrincipal'),
 
+        fechaCompra: $('fechaCompra'),
+        tipoSoporte: $('tipoSoporteCompra'),
+        numeroSoporte: $('numeroSoporteCompra'),
+        observaciones: $('observacionesCompra'),
+
+        condicionPago: $('condicionPagoCompra'),
+        fechaVencimiento: $('fechaVencimientoCompra'),
+        campoFechaVencimiento: $('campoFechaVencimientoCompra'),
+        resumenVencimiento: $('resumenVencimientoCompra'),
+
         btnLimpiar: $('btnLimpiarCompra'),
         btnGuardar: $('btnGuardarCompra'),
     };
@@ -91,6 +101,90 @@
 
     function formatearMoneda(valor) {
         return formatoMoneda.format(redondearDinero(valor));
+    }
+
+    function esFechaISOValida(valor) {
+        const texto = limpiarTexto(valor);
+
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(texto)) {
+            return false;
+        }
+
+        const [anio, mes, dia] = texto.split('-').map(Number);
+        const fecha = new Date(anio, mes - 1, dia);
+
+        return fecha.getFullYear() === anio
+            && fecha.getMonth() === mes - 1
+            && fecha.getDate() === dia;
+    }
+
+    function sumarDiasFechaISO(fechaISO, dias) {
+        if (!esFechaISOValida(fechaISO)) {
+            return '';
+        }
+
+        const [anio, mes, dia] = fechaISO.split('-').map(Number);
+        const fecha = new Date(anio, mes - 1, dia);
+        fecha.setDate(fecha.getDate() + Math.trunc(limpiarNumero(dias, 0)));
+
+        const anioFinal = fecha.getFullYear();
+        const mesFinal = String(fecha.getMonth() + 1).padStart(2, '0');
+        const diaFinal = String(fecha.getDate()).padStart(2, '0');
+
+        return `${anioFinal}-${mesFinal}-${diaFinal}`;
+    }
+
+    function formatearFechaCorta(fechaISO) {
+        if (!esFechaISOValida(fechaISO)) {
+            return 'Sin fecha válida';
+        }
+
+        const [anio, mes, dia] = fechaISO.split('-').map(Number);
+        const fecha = new Date(anio, mes - 1, dia);
+
+        return fecha.toLocaleDateString('es-CO', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+        });
+    }
+
+    function actualizarCamposPagoCompra({ sugerirVencimiento = false } = {}) {
+        if (!ui.condicionPago) {
+            return;
+        }
+
+        const condicionPago = ui.condicionPago.value || 'contado';
+        const esCredito = condicionPago === 'credito';
+        const fechaCompra = ui.fechaCompra?.value || '';
+
+        if (ui.campoFechaVencimiento) {
+            ui.campoFechaVencimiento.hidden = !esCredito;
+        }
+
+        if (!esCredito) {
+            if (ui.fechaVencimiento) {
+                ui.fechaVencimiento.value = fechaCompra;
+            }
+
+            if (ui.resumenVencimiento) {
+                ui.resumenVencimiento.textContent = 'En contado queda pagada con vencimiento del mismo día.';
+            }
+
+            return;
+        }
+
+        if (ui.fechaVencimiento && sugerirVencimiento) {
+            ui.fechaVencimiento.value = sumarDiasFechaISO(fechaCompra, 15);
+        }
+
+        if (ui.resumenVencimiento) {
+            const fechaVencimiento = ui.fechaVencimiento?.value || '';
+
+            ui.resumenVencimiento.textContent = fechaVencimiento
+                ? `Quedará pendiente hasta ${formatearFechaCorta(fechaVencimiento)}.`
+                : 'Selecciona la fecha de vencimiento de la compra.';
+        }
     }
 
     function escaparHtml(valor) {
@@ -673,10 +767,12 @@
     function construirPayloadCompra() {
         return {
             id_proveedor: ui.idProveedor.value,
-            fecha_compra: document.getElementById('fechaCompra')?.value || '',
-            tipo_soporte: document.getElementById('tipoSoporteCompra')?.value || 'factura_proveedor',
-            numero_soporte: document.getElementById('numeroSoporteCompra')?.value || '',
-            observaciones: document.getElementById('observacionesCompra')?.value || '',
+            fecha_compra: ui.fechaCompra?.value || '',
+            tipo_soporte: ui.tipoSoporte?.value || 'factura_proveedor',
+            numero_soporte: ui.numeroSoporte?.value || '',
+            condicion_pago: ui.condicionPago?.value || 'contado',
+            fecha_vencimiento: ui.fechaVencimiento?.value || '',
+            observaciones: ui.observaciones?.value || '',
             lineas: estado.lineas.map((linea) => {
                 const calculo = calcularLinea(linea);
 
@@ -761,12 +857,41 @@
         estado.lineas = [];
         limpiarProveedorSeleccionado({ enfocar: false });
         ui.busquedaProducto.value = '';
+
+        if (ui.condicionPago) {
+            ui.condicionPago.value = 'contado';
+        }
+
+        if (ui.fechaVencimiento) {
+            ui.fechaVencimiento.value = ui.fechaCompra?.value || '';
+        }
+
         ocultarResultados(ui.resultadosProductos);
         limpiarAlerta();
+        actualizarCamposPagoCompra({ sugerirVencimiento: true });
         renderizarLineas();
     }
 
     cargarProveedoresIniciales();
+    actualizarCamposPagoCompra({ sugerirVencimiento: true });
+
+    if (ui.fechaCompra) {
+        ui.fechaCompra.addEventListener('change', function () {
+            actualizarCamposPagoCompra({ sugerirVencimiento: true });
+        });
+    }
+
+    if (ui.condicionPago) {
+        ui.condicionPago.addEventListener('change', function () {
+            actualizarCamposPagoCompra({ sugerirVencimiento: true });
+        });
+    }
+
+    if (ui.fechaVencimiento) {
+        ui.fechaVencimiento.addEventListener('change', function () {
+            actualizarCamposPagoCompra();
+        });
+    }
 
     ui.buscarProveedor.addEventListener('input', function () {
         clearTimeout(estado.temporizadorProveedores);
