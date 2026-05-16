@@ -89,6 +89,50 @@
         </div>
     </article>
 
+    <article class="module-card compras-payment-summary">
+        <div>
+            <span>Condición</span>
+            <strong>
+                <%= compra.condicion_pago_etiqueta %>
+            </strong>
+            <small>
+                Compra registrada como <%= compra.condicion_pago_etiqueta.toLowerCase() %>
+            </small>
+        </div>
+
+        <div>
+            <span>Estado de pago</span>
+            <strong>
+                <span class="badge <%= compra.estado_pago_badge %>">
+                    <%= compra.estado_pago_etiqueta %>
+                </span>
+            </strong>
+            <small>
+                <%= compra.vencimiento_resumen %>
+            </small>
+        </div>
+
+        <div>
+            <span>Vencimiento</span>
+            <strong>
+                <%= compra.fecha_vencimiento_mostrar %>
+            </strong>
+            <small>
+                Días de plazo: <%= compra.dias_plazo || 0 %>
+            </small>
+        </div>
+
+        <div class="is-total">
+            <span>Saldo pendiente</span>
+            <strong>
+                <%= compra.saldo_pendiente_mostrar %>
+            </strong>
+            <small>
+                Pagado: <%= compra.total_pagado_mostrar %>
+            </small>
+        </div>
+    </article>
+
     <% if (compra.observaciones) { %>
         <article class="module-card compras-detail-note">
             <span>Observaciones</span>

@@ -208,6 +208,101 @@ function obtenerEtiquetaEstadoPago(estadoPago) {
     }[estadoPago] || 'Pendiente';
 }
 
+function obtenerFechaActualISO() {
+    const fecha = new Date();
+
+    const anio = fecha.getFullYear();
+    const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+    const dia = String(fecha.getDate()).padStart(2, '0');
+
+    return `${anio}-${mes}-${dia}`;
+}
+
+function calcularDiasEntreFechasISO(fechaInicio, fechaFin) {
+    if (!esFechaISOValida(fechaInicio) || !esFechaISOValida(fechaFin)) {
+        return 0;
+    }
+
+    const [anioInicio, mesInicio, diaInicio] = fechaInicio.split('-').map(Number);
+    const [anioFin, mesFin, diaFin] = fechaFin.split('-').map(Number);
+
+    const inicio = Date.UTC(anioInicio, mesInicio - 1, diaInicio);
+    const fin = Date.UTC(anioFin, mesFin - 1, diaFin);
+
+    return Math.round((fin - inicio) / 86400000);
+}
+
+function prepararEstadoPagoVista(compra = {}) {
+    const estadoDocumento = limpiarTexto(compra.estado).toLowerCase();
+    const estadoPago = limpiarTexto(compra.estado_pago || 'pendiente').toLowerCase();
+    const condicionPago = limpiarTexto(compra.condicion_pago || 'contado').toLowerCase();
+
+    if (estadoDocumento === 'anulada') {
+        return {
+            estado_pago_visual: 'anulada',
+            estado_pago_etiqueta: 'Anulada',
+            estado_pago_badge: 'badge-muted',
+            vencimiento_resumen: 'Compra anulada',
+            dias_para_vencer: null,
+        };
+    }
+
+    if (estadoPago === 'pagada' || condicionPago === 'contado') {
+        return {
+            estado_pago_visual: 'pagada',
+            estado_pago_etiqueta: 'Pagada',
+            estado_pago_badge: 'badge-success',
+            vencimiento_resumen: 'Compra pagada',
+            dias_para_vencer: 0,
+        };
+    }
+
+    if (!esFechaISOValida(compra.fecha_vencimiento)) {
+        return {
+            estado_pago_visual: 'pendiente',
+            estado_pago_etiqueta: 'Pendiente',
+            estado_pago_badge: 'badge-warning',
+            vencimiento_resumen: 'Sin fecha de vencimiento',
+            dias_para_vencer: null,
+        };
+    }
+
+    const hoy = obtenerFechaActualISO();
+    const diasParaVencer = calcularDiasEntreFechasISO(hoy, compra.fecha_vencimiento);
+
+    if (diasParaVencer < 0) {
+        const diasVencidos = Math.abs(diasParaVencer);
+
+        return {
+            estado_pago_visual: 'vencida',
+            estado_pago_etiqueta: 'Vencida',
+            estado_pago_badge: 'badge-danger',
+            vencimiento_resumen: `Venció hace ${diasVencidos} día(s)`,
+            dias_para_vencer: diasParaVencer,
+        };
+    }
+
+    if (diasParaVencer <= 7) {
+        return {
+            estado_pago_visual: 'proxima',
+            estado_pago_etiqueta: 'Próxima a vencer',
+            estado_pago_badge: 'badge-warning',
+            vencimiento_resumen: diasParaVencer === 0
+                ? 'Vence hoy'
+                : `Vence en ${diasParaVencer} día(s)`,
+            dias_para_vencer: diasParaVencer,
+        };
+    }
+
+    return {
+        estado_pago_visual: 'pendiente',
+        estado_pago_etiqueta: 'Pendiente',
+        estado_pago_badge: 'badge-muted',
+        vencimiento_resumen: `Vence en ${diasParaVencer} día(s)`,
+        dias_para_vencer: diasParaVencer,
+    };
+}
+
 function prepararFiltros(query = {}) {
     const paginaSolicitada = Number(query.pagina);
     const pagina = paginaSolicitada > 0 ? Math.floor(paginaSolicitada) : 1;
@@ -519,11 +614,11 @@ function prepararCompraVista(compra) {
         iva_total_mostrar: formatearMoneda(compra.iva_total),
         total_mostrar: formatearMoneda(compra.total),
         condicion_pago_etiqueta: obtenerEtiquetaCondicionPago(compra.condicion_pago),
-        estado_pago_etiqueta: obtenerEtiquetaEstadoPago(compra.estado_pago),
         fecha_vencimiento_mostrar: formatearFecha(compra.fecha_vencimiento),
         fecha_pago_mostrar: compra.fecha_pago ? formatearFecha(compra.fecha_pago) : 'Sin registrar',
         total_pagado_mostrar: formatearMoneda(compra.total_pagado),
         saldo_pendiente_mostrar: formatearMoneda(compra.saldo_pendiente),
+        ...prepararEstadoPagoVista(compra),
         estado_etiqueta: {
             borrador: 'Borrador',
             registrada: 'Registrada',
@@ -667,11 +762,11 @@ function obtenerDetalleCompra(idCompra) {
             iva_total_mostrar: formatearMoneda(compra.iva_total),
             total_mostrar: formatearMoneda(compra.total),
             condicion_pago_etiqueta: obtenerEtiquetaCondicionPago(compra.condicion_pago),
-            estado_pago_etiqueta: obtenerEtiquetaEstadoPago(compra.estado_pago),
             fecha_vencimiento_mostrar: formatearFecha(compra.fecha_vencimiento),
             fecha_pago_mostrar: compra.fecha_pago ? formatearFecha(compra.fecha_pago) : 'Sin registrar',
             total_pagado_mostrar: formatearMoneda(compra.total_pagado),
             saldo_pendiente_mostrar: formatearMoneda(compra.saldo_pendiente),
+            ...prepararEstadoPagoVista(compra),
             estado_etiqueta: {
                 borrador: 'Borrador',
                 registrada: 'Registrada',

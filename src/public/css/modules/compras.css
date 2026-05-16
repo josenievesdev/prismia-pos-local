@@ -431,7 +431,8 @@
 }
 
 .compras-detail-summary,
-.compras-detail-totals {
+.compras-detail-totals,
+.compras-payment-summary {
     display: grid;
     gap: 10px;
 }
@@ -444,8 +445,13 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.compras-payment-summary {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .compras-detail-summary div,
 .compras-detail-totals div,
+.compras-payment-summary div,
 .compras-detail-note {
     display: grid;
     gap: 4px;
@@ -453,6 +459,7 @@
 
 .compras-detail-summary span,
 .compras-detail-totals span,
+.compras-payment-summary span,
 .compras-detail-note span {
     color: var(--color-muted);
     font-size: 11px;
@@ -462,17 +469,20 @@
 }
 
 .compras-detail-summary strong,
-.compras-detail-totals strong {
+.compras-detail-totals strong,
+.compras-payment-summary strong {
     color: var(--color-text);
     font-size: 15px;
 }
 
-.compras-detail-summary small {
+.compras-detail-summary small,
+.compras-payment-summary small {
     color: var(--color-muted);
     font-size: 12px;
 }
 
-.compras-detail-totals .is-total {
+.compras-detail-totals .is-total,
+.compras-payment-summary .is-total {
     padding: 12px;
     border-radius: var(--radius-sm);
     background: rgba(36, 79, 143, 0.08);
@@ -491,7 +501,8 @@
 @media (max-width: 900px) {
 
     .compras-detail-summary,
-    .compras-detail-totals {
+    .compras-detail-totals,
+    .compras-payment-summary {
         grid-template-columns: 1fr;
     }
 }

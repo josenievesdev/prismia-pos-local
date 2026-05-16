@@ -90,6 +90,8 @@
                                                 <th>Proveedor</th>
                                                 <th>Soporte</th>
                                                 <th>Fecha</th>
+                                                <th>Pago</th>
+                                                <th>Vencimiento</th>
                                                 <th class="text-right">IVA</th>
                                                 <th class="text-right">Total</th>
                                                 <th>Estado</th>
@@ -124,6 +126,27 @@
 
                                                     <td>
                                                         <%= compra.fecha_compra_mostrar %>
+                                                    </td>
+
+                                                    <td>
+                                                        <span class="badge <%= compra.estado_pago_badge %>">
+                                                            <%= compra.estado_pago_etiqueta %>
+                                                        </span>
+                                                        <span class="table-subtext">
+                                                            <%= compra.condicion_pago_etiqueta %>
+                                                                <% if (compra.saldo_pendiente> 0) { %>
+                                                                    · Saldo: <%= compra.saldo_pendiente_mostrar %>
+                                                                        <% } %>
+                                                        </span>
+                                                    </td>
+
+                                                    <td>
+                                                        <strong>
+                                                            <%= compra.fecha_vencimiento_mostrar %>
+                                                        </strong>
+                                                        <span class="table-subtext">
+                                                            <%= compra.vencimiento_resumen %>
+                                                        </span>
                                                     </td>
 
                                                     <td class="text-right">
