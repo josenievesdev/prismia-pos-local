@@ -19,169 +19,189 @@
         </div>
     </div>
 
-    <section class="compras-payables-summary">
-        <article class="module-card compras-payable-card">
-            <span>Total pendiente</span>
-            <strong>
-                <%= resumenCuentasPorPagar.total_pendiente_mostrar %>
-            </strong>
-            <small>
-                <%= resumenCuentasPorPagar.compras_pendientes %> compra(s) pendiente(s)
-            </small>
-        </article>
-
-        <article class="module-card compras-payable-card is-danger">
-            <span>Vencido</span>
-            <strong>
-                <%= resumenCuentasPorPagar.total_vencido_mostrar %>
-            </strong>
-            <small>
-                <%= resumenCuentasPorPagar.compras_vencidas %> compra(s) vencida(s)
-            </small>
-        </article>
-
-        <article class="module-card compras-payable-card is-warning">
-            <span>Próximo a vencer</span>
-            <strong>
-                <%= resumenCuentasPorPagar.total_proximo_mostrar %>
-            </strong>
-            <small>
-                <%= resumenCuentasPorPagar.compras_proximas %> compra(s) en 7 días
-            </small>
-        </article>
-
-        <article class="module-card compras-payable-card">
-            <span>Créditos pendientes</span>
-            <strong>
-                <%= resumenCuentasPorPagar.total_credito_pendiente_mostrar %>
-            </strong>
-            <small>
-                <%= resumenCuentasPorPagar.compras_credito_pendientes %> crédito(s) pendiente(s)
-            </small>
-        </article>
-    </section>
-
-    <section class="module-card compras-cxp-card">
-        <div class="table-summary compras-cxp-summary">
-            <span>Obligaciones pendientes</span>
-            <span>
-                <strong>
-                    <%= cuentas.length %>
-                </strong> compra(s) con saldo pendiente
-            </span>
+    <% if (mensajeExito==='pago_registrado' ) { %>
+        <div class="compras-feedback is-success">
+            Pago a proveedor registrado correctamente.
         </div>
+        <% } %>
 
-        <% if (!cuentas.length) { %>
-            <div class="empty-state compras-cxp-empty">
-                <h3>Sin cuentas por pagar</h3>
-                <p>
-                    No hay compras registradas con saldo pendiente.
-                </p>
-                <a href="/compras/nueva" class="btn-primary">
-                    Registrar compra
-                </a>
-            </div>
-            <% } else { %>
-                <div class="table-wrapper compras-cxp-table-wrapper">
-                    <table class="data-table compras-table compras-cxp-table">
-                        <thead>
-                            <tr>
-                                <th>Compra</th>
-                                <th>Proveedor</th>
-                                <th>Soporte</th>
-                                <th>Compra</th>
-                                <th>Vencimiento</th>
-                                <th>Estado</th>
-                                <th class="text-right">Total</th>
-                                <th class="text-right">Saldo</th>
-                                <th class="text-right">Acción</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            <% cuentas.forEach(function (compra) { %>
-                                <tr>
-                                    <td>
-                                        <div class="compras-cxp-main-cell">
-                                            <strong>
-                                                <%= compra.numero_compra %>
-                                            </strong>
-                                            <span class="table-subtext">
-                                                <%= compra.condicion_pago_etiqueta %>
-                                            </span>
-                                        </div>
-                                    </td>
-
-                                    <td>
-                                        <div class="compras-cxp-main-cell">
-                                            <strong>
-                                                <%= compra.proveedor_nombre %>
-                                            </strong>
-                                            <span class="table-subtext">
-                                                <%= compra.proveedor_documento || 'Sin documento' %>
-                                            </span>
-                                        </div>
-                                    </td>
-
-                                    <td>
-                                        <div class="compras-cxp-main-cell">
-                                            <strong>
-                                                <%= compra.numero_soporte || 'Sin soporte' %>
-                                            </strong>
-                                            <span class="table-subtext">
-                                                <%= compra.tipo_soporte || 'Sin tipo' %>
-                                            </span>
-                                        </div>
-                                    </td>
-
-                                    <td>
-                                        <span class="compras-cxp-date">
-                                            <%= compra.fecha_compra_mostrar %>
-                                        </span>
-                                    </td>
-
-                                    <td>
-                                        <div class="compras-cxp-main-cell">
-                                            <strong>
-                                                <%= compra.fecha_vencimiento_mostrar %>
-                                            </strong>
-                                            <span class="table-subtext">
-                                                <%= compra.vencimiento_resumen %>
-                                            </span>
-                                        </div>
-                                    </td>
-
-                                    <td>
-                                        <span class="badge <%= compra.estado_pago_badge %>">
-                                            <%= compra.estado_pago_etiqueta %>
-                                        </span>
-                                    </td>
-
-                                    <td class="text-right">
-                                        <strong class="compras-cxp-money">
-                                            <%= compra.total_mostrar %>
-                                        </strong>
-                                    </td>
-
-                                    <td class="text-right">
-                                        <strong class="compras-cxp-money is-pending">
-                                            <%= compra.saldo_pendiente_mostrar %>
-                                        </strong>
-                                        <span class="table-subtext">
-                                            Pagado: <%= compra.total_pagado_mostrar %>
-                                        </span>
-                                    </td>
-
-                                    <td class="text-right">
-                                        <a href="/compras/<%= compra.id_compra %>" class="btn-secondary btn-sm">
-                                            Ver detalle
-                                        </a>
-                                    </td>
-                                </tr>
-                                <% }) %>
-                        </tbody>
-                    </table>
+            <% if (error==='pago_no_registrado' ) { %>
+                <div class="compras-feedback is-error">
+                    No se pudo registrar el pago a proveedor.
                 </div>
                 <% } %>
-    </section>
+
+                    <section class="compras-payables-summary">
+                        <article class="module-card compras-payable-card">
+                            <span>Total pendiente</span>
+                            <strong>
+                                <%= resumenCuentasPorPagar.total_pendiente_mostrar %>
+                            </strong>
+                            <small>
+                                <%= resumenCuentasPorPagar.compras_pendientes %> compra(s) pendiente(s)
+                            </small>
+                        </article>
+
+                        <article class="module-card compras-payable-card is-danger">
+                            <span>Vencido</span>
+                            <strong>
+                                <%= resumenCuentasPorPagar.total_vencido_mostrar %>
+                            </strong>
+                            <small>
+                                <%= resumenCuentasPorPagar.compras_vencidas %> compra(s) vencida(s)
+                            </small>
+                        </article>
+
+                        <article class="module-card compras-payable-card is-warning">
+                            <span>Próximo a vencer</span>
+                            <strong>
+                                <%= resumenCuentasPorPagar.total_proximo_mostrar %>
+                            </strong>
+                            <small>
+                                <%= resumenCuentasPorPagar.compras_proximas %> compra(s) en 7 días
+                            </small>
+                        </article>
+
+                        <article class="module-card compras-payable-card">
+                            <span>Créditos pendientes</span>
+                            <strong>
+                                <%= resumenCuentasPorPagar.total_credito_pendiente_mostrar %>
+                            </strong>
+                            <small>
+                                <%= resumenCuentasPorPagar.compras_credito_pendientes %> crédito(s) pendiente(s)
+                            </small>
+                        </article>
+                    </section>
+
+                    <section class="module-card compras-cxp-card">
+                        <div class="table-summary compras-cxp-summary">
+                            <span>Obligaciones pendientes</span>
+                            <span>
+                                <strong>
+                                    <%= cuentas.length %>
+                                </strong> compra(s) con saldo pendiente
+                            </span>
+                        </div>
+
+                        <% if (!cuentas.length) { %>
+                            <div class="empty-state compras-cxp-empty">
+                                <h3>Sin cuentas por pagar</h3>
+                                <p>
+                                    No hay compras registradas con saldo pendiente.
+                                </p>
+                                <a href="/compras/nueva" class="btn-primary">
+                                    Registrar compra
+                                </a>
+                            </div>
+                            <% } else { %>
+                                <div class="table-wrapper compras-cxp-table-wrapper">
+                                    <table class="data-table compras-table compras-cxp-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Compra</th>
+                                                <th>Proveedor</th>
+                                                <th>Soporte</th>
+                                                <th>Compra</th>
+                                                <th>Vencimiento</th>
+                                                <th>Estado</th>
+                                                <th class="text-right">Total</th>
+                                                <th class="text-right">Saldo</th>
+                                                <th class="text-right">Acción</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            <% cuentas.forEach(function (compra) { %>
+                                                <tr>
+                                                    <td>
+                                                        <div class="compras-cxp-main-cell">
+                                                            <strong>
+                                                                <%= compra.numero_compra %>
+                                                            </strong>
+                                                            <span class="table-subtext">
+                                                                <%= compra.condicion_pago_etiqueta %>
+                                                            </span>
+                                                        </div>
+                                                    </td>
+
+                                                    <td>
+                                                        <div class="compras-cxp-main-cell">
+                                                            <strong>
+                                                                <%= compra.proveedor_nombre %>
+                                                            </strong>
+                                                            <span class="table-subtext">
+                                                                <%= compra.proveedor_documento || 'Sin documento' %>
+                                                            </span>
+                                                        </div>
+                                                    </td>
+
+                                                    <td>
+                                                        <div class="compras-cxp-main-cell">
+                                                            <strong>
+                                                                <%= compra.numero_soporte || 'Sin soporte' %>
+                                                            </strong>
+                                                            <span class="table-subtext">
+                                                                <%= compra.tipo_soporte || 'Sin tipo' %>
+                                                            </span>
+                                                        </div>
+                                                    </td>
+
+                                                    <td>
+                                                        <span class="compras-cxp-date">
+                                                            <%= compra.fecha_compra_mostrar %>
+                                                        </span>
+                                                    </td>
+
+                                                    <td>
+                                                        <div class="compras-cxp-main-cell">
+                                                            <strong>
+                                                                <%= compra.fecha_vencimiento_mostrar %>
+                                                            </strong>
+                                                            <span class="table-subtext">
+                                                                <%= compra.vencimiento_resumen %>
+                                                            </span>
+                                                        </div>
+                                                    </td>
+
+                                                    <td>
+                                                        <span class="badge <%= compra.estado_pago_badge %>">
+                                                            <%= compra.estado_pago_etiqueta %>
+                                                        </span>
+                                                    </td>
+
+                                                    <td class="text-right">
+                                                        <strong class="compras-cxp-money">
+                                                            <%= compra.total_mostrar %>
+                                                        </strong>
+                                                    </td>
+
+                                                    <td class="text-right">
+                                                        <strong class="compras-cxp-money is-pending">
+                                                            <%= compra.saldo_pendiente_mostrar %>
+                                                        </strong>
+                                                        <span class="table-subtext">
+                                                            Pagado: <%= compra.total_pagado_mostrar %>
+                                                        </span>
+                                                    </td>
+
+                                                    <td class="text-right">
+                                                        <div class="compras-cxp-actions">
+                                                            <a href="/compras/<%= compra.id_compra %>/pagos/nuevo"
+                                                                class="btn-primary btn-sm">
+                                                                Pagar
+                                                            </a>
+
+                                                            <a href="/compras/<%= compra.id_compra %>"
+                                                                class="btn-secondary btn-sm">
+                                                                Ver
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <% }) %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <% } %>
+                    </section>
 </section>

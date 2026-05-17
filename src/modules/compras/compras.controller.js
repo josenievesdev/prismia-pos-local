@@ -39,6 +39,7 @@ function mostrarDetalleCompra(req, res) {
         titulo: `Compra ${resultado.compra.numero_compra}`,
         compra: resultado.compra,
         detalle: resultado.detalle,
+        pagosProveedor: resultado.pagosProveedor || [],
         estilosModulo: estilosComprasPOS,
     });
 }

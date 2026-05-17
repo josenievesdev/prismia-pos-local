@@ -133,134 +133,221 @@
         </div>
     </article>
 
-    <% if (compra.observaciones) { %>
-        <article class="module-card compras-detail-note">
-            <span>Observaciones</span>
-            <p>
-                <%= compra.observaciones %>
-            </p>
+    <% if (compra.condicion_pago==='credito' && Number(compra.saldo_pendiente || 0)> 0) { %>
+        <article class="module-card compras-payment-action">
+            <div>
+                <span>Cuenta por pagar activa</span>
+                <strong>Registrar abono o pago total</strong>
+                <small>El pago actualizará el saldo pendiente de esta compra.</small>
+            </div>
+
+            <a href="/compras/<%= compra.id_compra %>/pagos/nuevo" class="btn-primary">
+                Registrar pago
+            </a>
         </article>
         <% } %>
 
-            <article class="module-card">
+            <article class="module-card compras-payment-history">
                 <div class="table-summary">
-                    <span>Productos comprados</span>
+                    <span>Pagos registrados</span>
                     <span>
                         <strong>
-                            <%= detalle.length %>
-                        </strong> línea(s)
+                            <%= (pagosProveedor || []).length %>
+                        </strong> pago(s)
                     </span>
                 </div>
 
-                <div class="table-wrapper">
-                    <table class="data-table compras-detail-table">
-                        <thead>
-                            <tr>
-                                <th>Producto</th>
-                                <th class="text-right">Cantidad</th>
-                                <th class="text-right">Costo base</th>
-                                <th class="text-right">IVA</th>
-                                <th class="text-right">Costo final</th>
-                                <th class="text-right">Total</th>
-                                <th>Inventario</th>
-                                <th>Precio venta</th>
-                            </tr>
-                        </thead>
+                <% if (!pagosProveedor || !pagosProveedor.length) { %>
+                    <div class="empty-state compras-payment-empty">
+                        <strong>Sin pagos registrados</strong>
+                        <span>Esta compra todavía no tiene pagos asociados.</span>
+                    </div>
+                    <% } else { %>
+                        <div class="table-wrapper">
+                            <table class="data-table compras-payment-history-table">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Medio</th>
+                                        <th>Referencia</th>
+                                        <th>Usuario</th>
+                                        <th class="text-right">Monto</th>
+                                    </tr>
+                                </thead>
 
-                        <tbody>
-                            <% detalle.forEach(function (linea) { %>
-                                <tr>
-                                    <td>
-                                        <strong>
-                                            <%= linea.producto_nombre %>
-                                        </strong>
-                                        <span class="table-subtext">
-                                            <%= linea.producto_codigo %> · <%= linea.unidad_abreviatura %>
-                                        </span>
-                                    </td>
+                                <tbody>
+                                    <% pagosProveedor.forEach(function (pago) { %>
+                                        <tr>
+                                            <td>
+                                                <strong>
+                                                    <%= pago.fecha_pago_mostrar %>
+                                                </strong>
+                                            </td>
 
-                                    <td class="text-right">
-                                        <%= linea.cantidad_mostrar %>
-                                    </td>
-
-                                    <td class="text-right">
-                                        <strong>
-                                            <%= linea.costo_unitario_mostrar %>
-                                        </strong>
-
-                                        <% if (Number(linea.descuento_porcentaje || 0)> 0) { %>
-                                            <span class="table-subtext">
-                                                Desc. <%= linea.descuento_porcentaje %>%:
-                                                    <%= linea.descuento_linea_mostrar %>
-                                            </span>
-                                            <% } %>
-                                    </td>
-
-                                    <td class="text-right">
-                                        <strong>
-                                            <%= linea.porcentaje_iva %>%
-                                        </strong>
-                                        <span class="table-subtext">
-                                            <%= linea.iva_linea_mostrar %>
-                                        </span>
-                                    </td>
-
-                                    <td class="text-right">
-                                        <strong>
-                                            <%= linea.costo_unitario_final_mostrar %>
-                                        </strong>
-                                        <span class="table-subtext">
-                                            Neto: <%= linea.costo_unitario_neto_mostrar %>
-                                        </span>
-                                    </td>
-
-                                    <td class="text-right">
-                                        <strong>
-                                            <%= linea.total_linea_mostrar %>
-                                        </strong>
-                                    </td>
-
-                                    <td>
-                                        <strong>
-                                            <%= linea.stock_anterior_mostrar %>
-                                                →
-                                                <%= linea.stock_nuevo_mostrar %>
-                                        </strong>
-
-                                        <span class="table-subtext">
-                                            Promedio:
-                                            <%= linea.costo_promedio_anterior_mostrar %>
-                                                →
-                                                <%= linea.costo_promedio_nuevo_mostrar %>
-                                        </span>
-                                    </td>
-
-                                    <td>
-                                        <strong>
-                                            <%= linea.precio_venta_anterior_mostrar %>
-                                                →
-                                                <%= linea.precio_venta_nuevo_mostrar %>
-                                        </strong>
-
-                                        <span class="table-subtext">
-                                            Sugerido:
-                                            <%= linea.precio_venta_sugerido_mostrar %>
-                                        </span>
-
-                                        <% if (linea.actualizo_precio) { %>
-                                            <span class="badge badge-success">
-                                                Actualizado
-                                            </span>
-                                            <% } else { %>
-                                                <span class="badge badge-muted">
-                                                    Sin cambio
+                                            <td>
+                                                <strong>
+                                                    <%= pago.medio_pago_mostrar %>
+                                                </strong>
+                                                <span class="table-subtext">
+                                                    <%= pago.entidad_pago_mostrar %>
                                                 </span>
-                                                <% } %>
-                                    </td>
-                                </tr>
-                                <% }) %>
-                        </tbody>
-                    </table>
-                </div>
+                                            </td>
+
+                                            <td>
+                                                <%= pago.referencia_pago_mostrar %>
+
+                                                    <% if (pago.observaciones_mostrar) { %>
+                                                        <span class="table-subtext">
+                                                            <%= pago.observaciones_mostrar %>
+                                                        </span>
+                                                        <% } %>
+                                            </td>
+
+                                            <td>
+                                                <%= pago.usuario_nombre %>
+                                            </td>
+
+                                            <td class="text-right">
+                                                <strong>
+                                                    <%= pago.monto_pagado_mostrar %>
+                                                </strong>
+                                            </td>
+                                        </tr>
+                                        <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+                        <% } %>
             </article>
+
+            <% if (compra.observaciones) { %>
+                <article class="module-card compras-detail-note">
+                    <span>Observaciones</span>
+                    <p>
+                        <%= compra.observaciones %>
+                    </p>
+                </article>
+                <% } %>
+
+                    <article class="module-card">
+                        <div class="table-summary">
+                            <span>Productos comprados</span>
+                            <span>
+                                <strong>
+                                    <%= detalle.length %>
+                                </strong> línea(s)
+                            </span>
+                        </div>
+
+                        <div class="table-wrapper">
+                            <table class="data-table compras-detail-table">
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th class="text-right">Cantidad</th>
+                                        <th class="text-right">Costo base</th>
+                                        <th class="text-right">IVA</th>
+                                        <th class="text-right">Costo final</th>
+                                        <th class="text-right">Total</th>
+                                        <th>Inventario</th>
+                                        <th>Precio venta</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    <% detalle.forEach(function (linea) { %>
+                                        <tr>
+                                            <td>
+                                                <strong>
+                                                    <%= linea.producto_nombre %>
+                                                </strong>
+                                                <span class="table-subtext">
+                                                    <%= linea.producto_codigo %> · <%= linea.unidad_abreviatura %>
+                                                </span>
+                                            </td>
+
+                                            <td class="text-right">
+                                                <%= linea.cantidad_mostrar %>
+                                            </td>
+
+                                            <td class="text-right">
+                                                <strong>
+                                                    <%= linea.costo_unitario_mostrar %>
+                                                </strong>
+
+                                                <% if (Number(linea.descuento_porcentaje || 0)> 0) { %>
+                                                    <span class="table-subtext">
+                                                        Desc. <%= linea.descuento_porcentaje %>%:
+                                                            <%= linea.descuento_linea_mostrar %>
+                                                    </span>
+                                                    <% } %>
+                                            </td>
+
+                                            <td class="text-right">
+                                                <strong>
+                                                    <%= linea.porcentaje_iva %>%
+                                                </strong>
+                                                <span class="table-subtext">
+                                                    <%= linea.iva_linea_mostrar %>
+                                                </span>
+                                            </td>
+
+                                            <td class="text-right">
+                                                <strong>
+                                                    <%= linea.costo_unitario_final_mostrar %>
+                                                </strong>
+                                                <span class="table-subtext">
+                                                    Neto: <%= linea.costo_unitario_neto_mostrar %>
+                                                </span>
+                                            </td>
+
+                                            <td class="text-right">
+                                                <strong>
+                                                    <%= linea.total_linea_mostrar %>
+                                                </strong>
+                                            </td>
+
+                                            <td>
+                                                <strong>
+                                                    <%= linea.stock_anterior_mostrar %>
+                                                        →
+                                                        <%= linea.stock_nuevo_mostrar %>
+                                                </strong>
+
+                                                <span class="table-subtext">
+                                                    Promedio:
+                                                    <%= linea.costo_promedio_anterior_mostrar %>
+                                                        →
+                                                        <%= linea.costo_promedio_nuevo_mostrar %>
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                <strong>
+                                                    <%= linea.precio_venta_anterior_mostrar %>
+                                                        →
+                                                        <%= linea.precio_venta_nuevo_mostrar %>
+                                                </strong>
+
+                                                <span class="table-subtext">
+                                                    Sugerido:
+                                                    <%= linea.precio_venta_sugerido_mostrar %>
+                                                </span>
+
+                                                <% if (linea.actualizo_precio) { %>
+                                                    <span class="badge badge-success">
+                                                        Actualizado
+                                                    </span>
+                                                    <% } else { %>
+                                                        <span class="badge badge-muted">
+                                                            Sin cambio
+                                                        </span>
+                                                        <% } %>
+                                            </td>
+                                        </tr>
+                                        <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </article>
 </section>

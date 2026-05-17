@@ -914,6 +914,24 @@ function prepararDetalleLineaVista(linea) {
     };
 }
 
+function prepararPagoProveedorVista(pago) {
+    const medioPagoNombre =
+        limpiarTexto(pago.medio_pago_nombre) ||
+        limpiarTexto(pago.medio_pago_codigo) ||
+        `Medio #${pago.id_medio_pago}`;
+
+    return {
+        ...pago,
+        medio_pago_mostrar: medioPagoNombre,
+        fecha_pago_mostrar: formatearFecha(pago.fecha_pago),
+        monto_pagado_mostrar: formatearMoneda(pago.monto_pagado),
+        referencia_pago_mostrar: limpiarTexto(pago.referencia_pago) || 'Sin referencia',
+        entidad_pago_mostrar: limpiarTexto(pago.entidad_pago) || 'Sin entidad',
+        observaciones_mostrar: limpiarTexto(pago.observaciones),
+        usuario_nombre: limpiarTexto(pago.usuario_nombre) || 'Sin usuario',
+    };
+}
+
 function obtenerDetalleCompra(idCompra) {
     const compra = comprasRepository.obtenerCompraPorId(idCompra);
 
@@ -929,6 +947,10 @@ function obtenerDetalleCompra(idCompra) {
     const detalle = comprasRepository
         .listarDetalleCompra(compra.id_compra)
         .map(prepararDetalleLineaVista);
+
+    const pagosProveedor = comprasRepository
+        .listarPagosCompraProveedor(compra.id_compra)
+        .map(prepararPagoProveedorVista);
 
     return {
         compra: {
@@ -956,6 +978,7 @@ function obtenerDetalleCompra(idCompra) {
             }[compra.estado] || compra.estado,
         },
         detalle,
+        pagosProveedor,
     };
 }
 

@@ -331,6 +331,44 @@ function listarCuentasPorPagar() {
         .all();
 }
 
+function listarPagosCompraProveedor(idCompra) {
+    return db
+        .prepare(`
+            SELECT
+                pc.id_pago_compra_proveedor,
+                pc.id_compra,
+                pc.id_proveedor,
+                pc.id_usuario,
+                pc.id_medio_pago,
+                pc.id_turno_caja,
+                pc.id_movimiento_caja,
+                pc.fecha_pago,
+                pc.monto_pagado,
+                pc.referencia_pago,
+                pc.entidad_pago,
+                pc.observaciones,
+                pc.estado,
+                pc.creado_en,
+
+                mp.codigo AS medio_pago_codigo,
+                mp.nombre AS medio_pago_nombre,
+                mp.tipo AS medio_pago_tipo,
+
+                u.nombre AS usuario_nombre
+            FROM pagos_compras_proveedores pc
+            LEFT JOIN medios_pago mp
+                ON mp.id_medio_pago = pc.id_medio_pago
+            LEFT JOIN usuarios u
+                ON u.id_usuario = pc.id_usuario
+            WHERE pc.id_compra = ?
+              AND pc.estado = 'registrado'
+            ORDER BY
+                pc.fecha_pago DESC,
+                pc.id_pago_compra_proveedor DESC
+        `)
+        .all(Number(idCompra));
+}
+
 function listarMediosPagoActivos() {
     return db
         .prepare(`
@@ -1314,6 +1352,7 @@ module.exports = {
     obtenerCompraPorId,
     obtenerCompraParaPagoProveedor,
     listarDetalleCompra,
+    listarPagosCompraProveedor,
     listarMediosPagoActivos,
     obtenerMedioPagoPorId,
     registrarPagoCompraProveedor,
