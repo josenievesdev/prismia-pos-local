@@ -369,6 +369,10 @@
         align-items: flex-start;
         flex-direction: column;
     }
+
+    .compras-payables-summary {
+        grid-template-columns: 1fr;
+    }
 }
 
 .compras-provider-actions {
@@ -505,4 +509,53 @@
     .compras-payment-summary {
         grid-template-columns: 1fr;
     }
+}
+
+.compras-payables-summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.compras-payable-card {
+    display: grid;
+    gap: 5px;
+    padding: 14px;
+}
+
+.compras-payable-card span {
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+}
+
+.compras-payable-card strong {
+    color: var(--color-text);
+    font-size: 20px;
+    line-height: 1.15;
+}
+
+.compras-payable-card small {
+    color: var(--color-muted);
+    font-size: 12px;
+}
+
+.compras-payable-card.is-danger {
+    border-color: rgba(190, 18, 60, 0.22);
+    background: rgba(254, 242, 242, 0.95);
+}
+
+.compras-payable-card.is-danger strong {
+    color: #be123c;
+}
+
+.compras-payable-card.is-warning {
+    border-color: rgba(180, 83, 9, 0.22);
+    background: rgba(255, 251, 235, 0.95);
+}
+
+.compras-payable-card.is-warning strong {
+    color: #92400e;
 }

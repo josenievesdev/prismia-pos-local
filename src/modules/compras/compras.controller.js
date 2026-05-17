@@ -99,6 +99,7 @@ function listarCompras(req, res) {
         titulo: 'Compras',
         filtros: resultado.filtros,
         compras: resultado.compras,
+        resumenCuentasPorPagar: resultado.resumen_cuentas_por_pagar,
         totalResultados: resultado.total_resultados,
         limiteResultados: resultado.limite_resultados,
         paginaActual: resultado.pagina_actual,

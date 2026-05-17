@@ -21,6 +21,48 @@
         </span>
     </div>
 
+    <section class="compras-payables-summary">
+        <article class="module-card compras-payable-card">
+            <span>Total pendiente</span>
+            <strong>
+                <%= resumenCuentasPorPagar.total_pendiente_mostrar %>
+            </strong>
+            <small>
+                <%= resumenCuentasPorPagar.compras_pendientes %> compra(s) pendiente(s)
+            </small>
+        </article>
+
+        <article class="module-card compras-payable-card is-danger">
+            <span>Vencido</span>
+            <strong>
+                <%= resumenCuentasPorPagar.total_vencido_mostrar %>
+            </strong>
+            <small>
+                <%= resumenCuentasPorPagar.compras_vencidas %> compra(s) vencida(s)
+            </small>
+        </article>
+
+        <article class="module-card compras-payable-card is-warning">
+            <span>Próximo a vencer</span>
+            <strong>
+                <%= resumenCuentasPorPagar.total_proximo_mostrar %>
+            </strong>
+            <small>
+                <%= resumenCuentasPorPagar.compras_proximas %> compra(s) en 7 días
+            </small>
+        </article>
+
+        <article class="module-card compras-payable-card">
+            <span>Créditos pendientes</span>
+            <strong>
+                <%= resumenCuentasPorPagar.total_credito_pendiente_mostrar %>
+            </strong>
+            <small>
+                <%= resumenCuentasPorPagar.compras_credito_pendientes %> crédito(s) pendiente(s)
+            </small>
+        </article>
+    </section>
+
     <% if (mensajeExito) { %>
         <div class="alert alert-success">
             <%= mensajeExito %>

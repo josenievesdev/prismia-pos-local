@@ -171,6 +171,103 @@ function contarCompras(filtros = {}) {
     return Number(resultado?.total || 0);
 }
 
+function obtenerResumenCuentasPorPagar({ fechaActual } = {}) {
+    const fecha = limpiarTexto(fechaActual);
+
+    return db
+        .prepare(`
+            SELECT
+                COALESCE(SUM(
+                    CASE
+                        WHEN c.estado = 'registrada'
+                         AND c.estado_pago = 'pendiente'
+                        THEN c.saldo_pendiente
+                        ELSE 0
+                    END
+                ), 0) AS total_pendiente,
+
+                COUNT(
+                    CASE
+                        WHEN c.estado = 'registrada'
+                         AND c.estado_pago = 'pendiente'
+                        THEN 1
+                    END
+                ) AS compras_pendientes,
+
+                COALESCE(SUM(
+                    CASE
+                        WHEN c.estado = 'registrada'
+                         AND c.estado_pago = 'pendiente'
+                         AND c.fecha_vencimiento IS NOT NULL
+                         AND c.fecha_vencimiento != ''
+                         AND c.fecha_vencimiento < @fecha_actual
+                        THEN c.saldo_pendiente
+                        ELSE 0
+                    END
+                ), 0) AS total_vencido,
+
+                COUNT(
+                    CASE
+                        WHEN c.estado = 'registrada'
+                         AND c.estado_pago = 'pendiente'
+                         AND c.fecha_vencimiento IS NOT NULL
+                         AND c.fecha_vencimiento != ''
+                         AND c.fecha_vencimiento < @fecha_actual
+                        THEN 1
+                    END
+                ) AS compras_vencidas,
+
+                COALESCE(SUM(
+                    CASE
+                        WHEN c.estado = 'registrada'
+                         AND c.estado_pago = 'pendiente'
+                         AND c.fecha_vencimiento IS NOT NULL
+                         AND c.fecha_vencimiento != ''
+                         AND c.fecha_vencimiento >= @fecha_actual
+                         AND c.fecha_vencimiento <= date(@fecha_actual, '+7 day')
+                        THEN c.saldo_pendiente
+                        ELSE 0
+                    END
+                ), 0) AS total_proximo,
+
+                COUNT(
+                    CASE
+                        WHEN c.estado = 'registrada'
+                         AND c.estado_pago = 'pendiente'
+                         AND c.fecha_vencimiento IS NOT NULL
+                         AND c.fecha_vencimiento != ''
+                         AND c.fecha_vencimiento >= @fecha_actual
+                         AND c.fecha_vencimiento <= date(@fecha_actual, '+7 day')
+                        THEN 1
+                    END
+                ) AS compras_proximas,
+
+                COALESCE(SUM(
+                    CASE
+                        WHEN c.estado = 'registrada'
+                         AND c.condicion_pago = 'credito'
+                         AND c.estado_pago = 'pendiente'
+                        THEN c.saldo_pendiente
+                        ELSE 0
+                    END
+                ), 0) AS total_credito_pendiente,
+
+                COUNT(
+                    CASE
+                        WHEN c.estado = 'registrada'
+                         AND c.condicion_pago = 'credito'
+                         AND c.estado_pago = 'pendiente'
+                        THEN 1
+                    END
+                ) AS compras_credito_pendientes
+
+            FROM compras c
+        `)
+        .get({
+            fecha_actual: fecha,
+        });
+}
+
 function listarProveedoresActivos({ limite = 300 } = {}) {
     return db
         .prepare(`
@@ -874,6 +971,7 @@ function registrarCompraConInventario({ compra, lineas, usuario, ip, userAgent }
 module.exports = {
     listarCompras,
     contarCompras,
+    obtenerResumenCuentasPorPagar,
     listarProveedoresActivos,
     buscarProductosParaCompra,
     obtenerSiguienteNumeroCompra,

@@ -304,6 +304,29 @@ function prepararEstadoPagoVista(compra = {}) {
     };
 }
 
+function prepararResumenCuentasPorPagar(resumen = {}) {
+    const totalPendiente = normalizarEntero(resumen.total_pendiente, 0);
+    const totalVencido = normalizarEntero(resumen.total_vencido, 0);
+    const totalProximo = normalizarEntero(resumen.total_proximo, 0);
+    const totalCreditoPendiente = normalizarEntero(resumen.total_credito_pendiente, 0);
+
+    return {
+        total_pendiente: totalPendiente,
+        compras_pendientes: normalizarEntero(resumen.compras_pendientes, 0),
+        total_vencido: totalVencido,
+        compras_vencidas: normalizarEntero(resumen.compras_vencidas, 0),
+        total_proximo: totalProximo,
+        compras_proximas: normalizarEntero(resumen.compras_proximas, 0),
+        total_credito_pendiente: totalCreditoPendiente,
+        compras_credito_pendientes: normalizarEntero(resumen.compras_credito_pendientes, 0),
+
+        total_pendiente_mostrar: formatearMoneda(totalPendiente),
+        total_vencido_mostrar: formatearMoneda(totalVencido),
+        total_proximo_mostrar: formatearMoneda(totalProximo),
+        total_credito_pendiente_mostrar: formatearMoneda(totalCreditoPendiente),
+    };
+}
+
 function prepararFiltros(query = {}) {
     const paginaSolicitada = Number(query.pagina);
     const pagina = paginaSolicitada > 0 ? Math.floor(paginaSolicitada) : 1;
@@ -815,9 +838,16 @@ function listarCompras(query = {}) {
         .listarCompras(filtros)
         .map(prepararCompraVista);
 
+    const resumenCuentasPorPagar = prepararResumenCuentasPorPagar(
+        comprasRepository.obtenerResumenCuentasPorPagar({
+            fechaActual: filtros.fecha_actual,
+        })
+    );
+
     return {
         filtros,
         compras,
+        resumen_cuentas_por_pagar: resumenCuentasPorPagar,
         total_resultados: totalResultados,
         limite_resultados: filtros.limite,
         pagina_actual: paginaActual,
