@@ -120,8 +120,21 @@ function listarCompras(req, res) {
     });
 }
 
+function mostrarCuentasPorPagar(req, res) {
+    const resultado = comprasService.listarCuentasPorPagar();
+
+    return res.render('compras/cuentas-por-pagar', {
+        titulo: 'Cuentas por pagar',
+        cuentas: resultado.cuentas,
+        resumenCuentasPorPagar: resultado.resumen,
+        fechaActual: resultado.fecha_actual,
+        estilosModulo: estilosCompras,
+    });
+}
+
 module.exports = {
     listarCompras,
+    mostrarCuentasPorPagar,
     mostrarDetalleCompra,
     mostrarImprimirCompra,
     mostrarFormularioNuevaCompra,

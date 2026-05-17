@@ -1,0 +1,170 @@
+<div class="module-page compras-page">
+    <div class="module-header">
+        <div>
+            <span class="module-eyebrow">COMPRAS Y OBLIGACIONES</span>
+            <h1>Cuentas por pagar</h1>
+            <p>
+                Revisa las compras a crédito pendientes, sus vencimientos y saldos por proveedor.
+            </p>
+        </div>
+
+        <div class="module-header-actions">
+            <a href="/compras" class="btn-secondary">Volver a compras</a>
+            <a href="/compras/cuentas-por-pagar" class="btn-secondary">Cuentas por pagar</a>
+            <a href="/compras/nueva" class="btn-primary">Nueva compra</a>
+        </div>
+    </div>
+
+    <section class="compras-payables-summary">
+        <article class="module-card compras-payable-card">
+            <span>Total pendiente</span>
+            <strong>
+                <%= resumenCuentasPorPagar.total_pendiente_mostrar %>
+            </strong>
+            <small>
+                <%= resumenCuentasPorPagar.compras_pendientes %> compra(s) pendiente(s)
+            </small>
+        </article>
+
+        <article class="module-card compras-payable-card is-danger">
+            <span>Vencido</span>
+            <strong>
+                <%= resumenCuentasPorPagar.total_vencido_mostrar %>
+            </strong>
+            <small>
+                <%= resumenCuentasPorPagar.compras_vencidas %> compra(s) vencida(s)
+            </small>
+        </article>
+
+        <article class="module-card compras-payable-card is-warning">
+            <span>Próximo a vencer</span>
+            <strong>
+                <%= resumenCuentasPorPagar.total_proximo_mostrar %>
+            </strong>
+            <small>
+                <%= resumenCuentasPorPagar.compras_proximas %> compra(s) en 7 días
+            </small>
+        </article>
+
+        <article class="module-card compras-payable-card">
+            <span>Créditos pendientes</span>
+            <strong>
+                <%= resumenCuentasPorPagar.total_credito_pendiente_mostrar %>
+            </strong>
+            <small>
+                <%= resumenCuentasPorPagar.compras_credito_pendientes %> crédito(s) pendiente(s)
+            </small>
+        </article>
+    </section>
+
+    <section class="module-card">
+        <div class="section-header">
+            <div>
+                <h2>Obligaciones pendientes</h2>
+                <p>
+                    <%= cuentas.length %> compra(s) con saldo pendiente.
+                </p>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="module-table compras-table">
+                <thead>
+                    <tr>
+                        <th>Compra</th>
+                        <th>Proveedor</th>
+                        <th>Soporte</th>
+                        <th>Fecha compra</th>
+                        <th>Vencimiento</th>
+                        <th>Estado</th>
+                        <th class="text-right">Total</th>
+                        <th class="text-right">Saldo</th>
+                        <th class="text-right">Acción</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <% if (!cuentas.length) { %>
+                        <tr>
+                            <td colspan="9">
+                                <div class="empty-state">
+                                    <strong>Sin cuentas por pagar</strong>
+                                    <span>No hay compras registradas con saldo pendiente.</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <% } %>
+
+                            <% cuentas.forEach(function (compra) { %>
+                                <tr>
+                                    <td>
+                                        <strong>
+                                            <%= compra.numero_compra %>
+                                        </strong>
+                                        <span class="table-subtext">
+                                            <%= compra.condicion_pago_etiqueta %>
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <strong>
+                                            <%= compra.proveedor_nombre %>
+                                        </strong>
+                                        <span class="table-subtext">
+                                            <%= compra.proveedor_documento || 'Sin documento' %>
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <%= compra.numero_soporte || 'Sin soporte' %>
+                                            <span class="table-subtext">
+                                                <%= compra.tipo_soporte %>
+                                            </span>
+                                    </td>
+
+                                    <td>
+                                        <%= compra.fecha_compra_mostrar %>
+                                    </td>
+
+                                    <td>
+                                        <strong>
+                                            <%= compra.fecha_vencimiento_mostrar %>
+                                        </strong>
+                                        <span class="table-subtext">
+                                            <%= compra.vencimiento_resumen %>
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="badge <%= compra.estado_pago_badge %>">
+                                            <%= compra.estado_pago_etiqueta %>
+                                        </span>
+                                    </td>
+
+                                    <td class="text-right">
+                                        <strong>
+                                            <%= compra.total_mostrar %>
+                                        </strong>
+                                    </td>
+
+                                    <td class="text-right">
+                                        <strong>
+                                            <%= compra.saldo_pendiente_mostrar %>
+                                        </strong>
+                                        <span class="table-subtext">
+                                            Pagado: <%= compra.total_pagado_mostrar %>
+                                        </span>
+                                    </td>
+
+                                    <td class="text-right">
+                                        <a href="/compras/<%= compra.id_compra %>" class="btn-table">
+                                            Ver
+                                        </a>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>

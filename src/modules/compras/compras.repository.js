@@ -171,6 +171,8 @@ function contarCompras(filtros = {}) {
     return Number(resultado?.total || 0);
 }
 
+
+
 function obtenerResumenCuentasPorPagar({ fechaActual } = {}) {
     const fecha = limpiarTexto(fechaActual);
 
@@ -266,6 +268,56 @@ function obtenerResumenCuentasPorPagar({ fechaActual } = {}) {
         .get({
             fecha_actual: fecha,
         });
+}
+
+function listarCuentasPorPagar() {
+    return db
+        .prepare(`
+            SELECT
+                c.id_compra,
+                c.numero_compra,
+                c.fecha_compra,
+                c.fecha_registro,
+                c.tipo_soporte,
+                c.numero_soporte,
+                c.subtotal,
+                c.iva_total,
+                c.total,
+                c.estado,
+                c.observaciones,
+                c.condicion_pago,
+                c.dias_plazo,
+                c.fecha_vencimiento,
+                c.estado_pago,
+                c.fecha_pago,
+                c.total_pagado,
+                c.saldo_pendiente,
+
+                p.id_proveedor,
+                p.nombre_comercial AS proveedor_nombre_comercial,
+                p.razon_social AS proveedor_razon_social,
+                p.tipo_documento AS proveedor_tipo_documento,
+                p.documento AS proveedor_documento,
+
+                u.nombre AS usuario_nombre
+
+            FROM compras c
+            INNER JOIN proveedores p
+                ON p.id_proveedor = c.id_proveedor
+            LEFT JOIN usuarios u
+                ON u.id_usuario = c.id_usuario
+            WHERE c.estado = 'registrada'
+              AND c.estado_pago = 'pendiente'
+              AND c.saldo_pendiente > 0
+            ORDER BY
+                CASE
+                    WHEN c.fecha_vencimiento IS NULL OR c.fecha_vencimiento = '' THEN 1
+                    ELSE 0
+                END ASC,
+                c.fecha_vencimiento ASC,
+                c.id_compra ASC
+        `)
+        .all();
 }
 
 function listarProveedoresActivos({ limite = 300 } = {}) {
@@ -972,6 +1024,7 @@ module.exports = {
     listarCompras,
     contarCompras,
     obtenerResumenCuentasPorPagar,
+    listarCuentasPorPagar,
     listarProveedoresActivos,
     buscarProductosParaCompra,
     obtenerSiguienteNumeroCompra,

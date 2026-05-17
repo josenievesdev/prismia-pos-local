@@ -859,8 +859,31 @@ function listarCompras(query = {}) {
     };
 }
 
+function listarCuentasPorPagar() {
+    const fechaActual = obtenerFechaActualISO();
+
+    const cuentas = comprasRepository
+        .listarCuentasPorPagar({
+            fechaActual,
+        })
+        .map(prepararCompraVista);
+
+    const resumen = prepararResumenCuentasPorPagar(
+        comprasRepository.obtenerResumenCuentasPorPagar({
+            fechaActual,
+        })
+    );
+
+    return {
+        cuentas,
+        resumen,
+        fecha_actual: fechaActual,
+    };
+}
+
 module.exports = {
     listarCompras,
+    listarCuentasPorPagar,
     obtenerDatosFormularioNuevaCompra,
     buscarProductosParaCompra,
     validarYCalcularCompra,
