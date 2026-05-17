@@ -237,6 +237,7 @@ function prepararEstadoPagoVista(compra = {}) {
     const estadoDocumento = limpiarTexto(compra.estado).toLowerCase();
     const estadoPago = limpiarTexto(compra.estado_pago || 'pendiente').toLowerCase();
     const condicionPago = limpiarTexto(compra.condicion_pago || 'contado').toLowerCase();
+    const esParcial = estadoPago === 'parcial';
 
     if (estadoDocumento === 'anulada') {
         return {
@@ -260,8 +261,8 @@ function prepararEstadoPagoVista(compra = {}) {
 
     if (!esFechaISOValida(compra.fecha_vencimiento)) {
         return {
-            estado_pago_visual: 'pendiente',
-            estado_pago_etiqueta: 'Pendiente',
+            estado_pago_visual: esParcial ? 'parcial' : 'pendiente',
+            estado_pago_etiqueta: esParcial ? 'Parcial' : 'Pendiente',
             estado_pago_badge: 'badge-warning',
             vencimiento_resumen: 'Sin fecha de vencimiento',
             dias_para_vencer: null,
@@ -276,7 +277,7 @@ function prepararEstadoPagoVista(compra = {}) {
 
         return {
             estado_pago_visual: 'vencida',
-            estado_pago_etiqueta: 'Vencida',
+            estado_pago_etiqueta: esParcial ? 'Parcial vencida' : 'Vencida',
             estado_pago_badge: 'badge-danger',
             vencimiento_resumen: `Venció hace ${diasVencidos} día(s)`,
             dias_para_vencer: diasParaVencer,
@@ -285,8 +286,8 @@ function prepararEstadoPagoVista(compra = {}) {
 
     if (diasParaVencer <= 7) {
         return {
-            estado_pago_visual: 'proxima',
-            estado_pago_etiqueta: 'Próxima a vencer',
+            estado_pago_visual: esParcial ? 'parcial_proxima' : 'proxima',
+            estado_pago_etiqueta: esParcial ? 'Parcial próxima' : 'Próxima a vencer',
             estado_pago_badge: 'badge-warning',
             vencimiento_resumen: diasParaVencer === 0
                 ? 'Vence hoy'
@@ -296,9 +297,9 @@ function prepararEstadoPagoVista(compra = {}) {
     }
 
     return {
-        estado_pago_visual: 'pendiente',
-        estado_pago_etiqueta: 'Pendiente',
-        estado_pago_badge: 'badge-muted',
+        estado_pago_visual: esParcial ? 'parcial' : 'pendiente',
+        estado_pago_etiqueta: esParcial ? 'Parcial' : 'Pendiente',
+        estado_pago_badge: esParcial ? 'badge-warning' : 'badge-muted',
         vencimiento_resumen: `Vence en ${diasParaVencer} día(s)`,
         dias_para_vencer: diasParaVencer,
     };
@@ -597,6 +598,158 @@ function prepararProductoParaCompra(producto) {
     };
 }
 
+function prepararMedioPagoVista(medioPago) {
+    return {
+        ...medioPago,
+        requiere_referencia: Number(medioPago.requiere_referencia || 0) === 1,
+        afecta_efectivo_caja: Number(medioPago.afecta_efectivo_caja || 0) === 1,
+    };
+}
+
+function obtenerValoresPagoProveedorPorDefecto(compra = {}, datos = {}) {
+    return {
+        fecha_pago: limpiarTexto(datos.fecha_pago) || obtenerFechaActualISO(),
+        monto_pagado: datos.monto_pagado || compra.saldo_pendiente || '',
+        id_medio_pago: datos.id_medio_pago || '',
+        referencia_pago: limpiarTexto(datos.referencia_pago),
+        entidad_pago: limpiarTexto(datos.entidad_pago),
+        observaciones: limpiarTexto(datos.observaciones),
+    };
+}
+
+function obtenerFormularioPagoProveedor(idCompra, datosFormulario = {}, errores = []) {
+    const compra = comprasRepository.obtenerCompraParaPagoProveedor(idCompra);
+
+    if (!compra) {
+        return null;
+    }
+
+    const compraVista = prepararCompraVista(compra);
+    const mediosPago = comprasRepository
+        .listarMediosPagoActivos()
+        .map(prepararMedioPagoVista);
+
+    return {
+        compra: compraVista,
+        medios_pago: mediosPago,
+        valores: obtenerValoresPagoProveedorPorDefecto(compra, datosFormulario),
+        errores,
+    };
+}
+
+function prepararPagoProveedor(datos = {}) {
+    return {
+        fecha_pago: limpiarTexto(datos.fecha_pago),
+        monto_pagado: normalizarEntero(datos.monto_pagado, 0),
+        id_medio_pago: normalizarEntero(datos.id_medio_pago, 0),
+        referencia_pago: limpiarTexto(datos.referencia_pago),
+        entidad_pago: limpiarTexto(datos.entidad_pago),
+        observaciones: limpiarTexto(datos.observaciones),
+    };
+}
+
+function validarPagoProveedor(idCompra, datos = {}, contexto = {}) {
+    const errores = [];
+    const compra = comprasRepository.obtenerCompraParaPagoProveedor(idCompra);
+    const pago = prepararPagoProveedor(datos);
+    const usuario = contexto.usuario || null;
+
+    if (!usuario?.id_usuario) {
+        errores.push('No se encontró el usuario activo de la sesión.');
+    }
+
+    if (!compra) {
+        errores.push('No se encontró la compra seleccionada.');
+        return { valido: false, errores, pago, compra: null, medio_pago: null };
+    }
+
+    if (compra.estado !== 'registrada') {
+        errores.push('Solo se pueden registrar pagos sobre compras registradas.');
+    }
+
+    if (compra.condicion_pago !== 'credito') {
+        errores.push('Solo las compras a crédito permiten registrar pagos desde cuentas por pagar.');
+    }
+
+    const saldoPendiente = normalizarEntero(compra.saldo_pendiente, 0);
+
+    if (saldoPendiente <= 0 || compra.estado_pago === 'pagada') {
+        errores.push('La compra seleccionada no tiene saldo pendiente.');
+    }
+
+    if (!esFechaISOValida(pago.fecha_pago)) {
+        errores.push('Selecciona una fecha de pago válida.');
+    }
+
+    if (pago.monto_pagado <= 0) {
+        errores.push('El monto pagado debe ser mayor a cero.');
+    }
+
+    if (pago.monto_pagado > saldoPendiente) {
+        errores.push('El monto pagado no puede superar el saldo pendiente.');
+    }
+
+    const medioPago = comprasRepository.obtenerMedioPagoPorId(pago.id_medio_pago);
+
+    if (!medioPago || Number(medioPago.activo || 0) !== 1) {
+        errores.push('Selecciona un medio de pago activo.');
+    }
+
+    if (medioPago && Number(medioPago.requiere_referencia || 0) === 1 && !pago.referencia_pago) {
+        errores.push('Este medio de pago requiere referencia.');
+    }
+
+    return {
+        valido: errores.length === 0,
+        errores,
+        pago,
+        compra,
+        medio_pago: medioPago || null,
+    };
+}
+
+function registrarPagoProveedor(idCompra, datos = {}, contexto = {}) {
+    const resultadoValidacion = validarPagoProveedor(idCompra, datos, contexto);
+
+    if (!resultadoValidacion.valido) {
+        return {
+            ok: false,
+            codigoEstado: 422,
+            errores: resultadoValidacion.errores,
+            formulario: obtenerFormularioPagoProveedor(
+                idCompra,
+                datos,
+                resultadoValidacion.errores
+            ),
+        };
+    }
+
+    try {
+        const resultado = comprasRepository.registrarPagoCompraProveedor({
+            idCompra,
+            pago: resultadoValidacion.pago,
+            usuario: contexto.usuario,
+            ip: contexto.ip,
+            userAgent: contexto.userAgent,
+        });
+
+        return {
+            ok: true,
+            pago: resultado,
+            mensaje: 'Pago a proveedor registrado correctamente.',
+        };
+    } catch (error) {
+        const errores = [error.message || 'No se pudo registrar el pago a proveedor.'];
+
+        return {
+            ok: false,
+            codigoEstado: 400,
+            errores,
+            formulario: obtenerFormularioPagoProveedor(idCompra, datos, errores),
+        };
+    }
+}
+
 function obtenerDatosFormularioNuevaCompra() {
     const proveedores = comprasRepository
         .listarProveedoresActivos({ limite: 300 })
@@ -884,6 +1037,8 @@ function listarCuentasPorPagar() {
 module.exports = {
     listarCompras,
     listarCuentasPorPagar,
+    obtenerFormularioPagoProveedor,
+    registrarPagoProveedor,
     obtenerDatosFormularioNuevaCompra,
     buscarProductosParaCompra,
     validarYCalcularCompra,

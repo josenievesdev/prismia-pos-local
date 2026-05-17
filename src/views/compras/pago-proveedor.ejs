@@ -1,0 +1,150 @@
+<section class="module-page compras-page compras-pago-proveedor-page">
+    <div class="module-header module-header-actions">
+        <div>
+            <p class="eyebrow">Cuentas por pagar</p>
+            <h2>Registrar pago</h2>
+            <p>
+                Aplica un pago a la compra <strong>
+                    <%= compra.numero_compra %>
+                </strong> y actualiza su saldo pendiente.
+            </p>
+        </div>
+
+        <div class="module-actions compras-header-actions">
+            <a href="/compras/cuentas-por-pagar" class="btn-secondary">
+                Volver a cuentas por pagar
+            </a>
+
+            <a href="/compras/<%= compra.id_compra %>" class="btn-secondary">
+                Ver detalle
+            </a>
+        </div>
+    </div>
+
+    <% if (errores && errores.length) { %>
+        <div class="alert alert-error compras-pago-alert">
+            <strong>No se pudo registrar el pago.</strong>
+            <ul>
+                <% errores.forEach(function (error) { %>
+                    <li>
+                        <%= error %>
+                    </li>
+                    <% }) %>
+            </ul>
+        </div>
+        <% } %>
+
+            <section class="compras-pago-layout">
+                <article class="module-card compras-pago-resumen">
+                    <span>Compra</span>
+                    <strong>
+                        <%= compra.numero_compra %>
+                    </strong>
+                    <small>
+                        <%= compra.soporte_mostrar %>
+                    </small>
+
+                    <div class="compras-pago-resumen-grid">
+                        <div>
+                            <span>Proveedor</span>
+                            <strong>
+                                <%= compra.proveedor_nombre %>
+                            </strong>
+                            <small>
+                                <%= compra.proveedor_documento_mostrar %>
+                            </small>
+                        </div>
+
+                        <div>
+                            <span>Total compra</span>
+                            <strong>
+                                <%= compra.total_mostrar %>
+                            </strong>
+                            <small>Pagado: <%= compra.total_pagado_mostrar %></small>
+                        </div>
+
+                        <div class="is-pending">
+                            <span>Saldo pendiente</span>
+                            <strong>
+                                <%= compra.saldo_pendiente_mostrar %>
+                            </strong>
+                            <small>
+                                <%= compra.vencimiento_resumen %>
+                            </small>
+                        </div>
+                    </div>
+                </article>
+
+                <form class="module-card compras-pago-form" method="POST"
+                    action="/compras/<%= compra.id_compra %>/pagos" novalidate>
+                    <div class="form-section">
+                        <h3>Datos del pago</h3>
+
+                        <div class="form-grid">
+                            <label class="form-group">
+                                <span>Fecha de pago</span>
+                                <input type="date" name="fecha_pago" value="<%= valores.fecha_pago %>" required>
+                            </label>
+
+                            <label class="form-group">
+                                <span>Monto pagado</span>
+                                <input type="number" name="monto_pagado" value="<%= valores.monto_pagado %>" min="1"
+                                    max="<%= compra.saldo_pendiente %>" step="1" required>
+                            </label>
+
+                            <label class="form-group">
+                                <span>Medio de pago</span>
+                                <select name="id_medio_pago" required>
+                                    <option value="">Selecciona un medio</option>
+
+                                    <% mediosPago.forEach(function (medio) { %>
+                                        <option value="<%= medio.id_medio_pago %>"
+                                            <%=String(valores.id_medio_pago)===String(medio.id_medio_pago) ? 'selected'
+                                            : '' %>>
+                                            <%= medio.nombre %>
+                                                <%= medio.requiere_referencia ? ' · requiere referencia' : '' %>
+                                        </option>
+                                        <% }) %>
+                                </select>
+                            </label>
+
+                            <label class="form-group">
+                                <span>Referencia</span>
+                                <input type="text" name="referencia_pago" value="<%= valores.referencia_pago %>"
+                                    placeholder="Ej: comprobante, transferencia, recibo">
+                            </label>
+
+                            <label class="form-group">
+                                <span>Entidad</span>
+                                <input type="text" name="entidad_pago" value="<%= valores.entidad_pago %>"
+                                    placeholder="Ej: Bancolombia, Nequi, caja menor">
+                            </label>
+
+                            <label class="form-group form-group-wide">
+                                <span>Observaciones</span>
+                                <textarea name="observaciones" rows="3"
+                                    placeholder="Notas internas del pago"><%= valores.observaciones %></textarea>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="compras-pago-note">
+                        <strong>Nota operativa</strong>
+                        <p>
+                            Este pago actualiza el saldo de la compra. En esta versión no crea movimiento de caja
+                            todavía.
+                        </p>
+                    </div>
+
+                    <div class="form-actions">
+                        <a href="/compras/cuentas-por-pagar" class="btn-secondary">
+                            Cancelar
+                        </a>
+
+                        <button type="submit" class="btn-primary">
+                            Registrar pago
+                        </button>
+                    </div>
+                </form>
+            </section>
+</section>

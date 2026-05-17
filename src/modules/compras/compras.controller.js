@@ -59,6 +59,53 @@ function mostrarFormularioNuevaCompra(req, res) {
     });
 }
 
+function mostrarFormularioPagoProveedor(req, res) {
+    const formulario = comprasService.obtenerFormularioPagoProveedor(req.params.id);
+
+    if (!formulario) {
+        return res.status(404).render('errors/404', {
+            titulo: 'Compra no encontrada',
+            mensaje: 'No se encontró la compra solicitada para registrar el pago.',
+        });
+    }
+
+    return res.render('compras/pago-proveedor', {
+        titulo: `Registrar pago ${formulario.compra.numero_compra}`,
+        compra: formulario.compra,
+        mediosPago: formulario.medios_pago,
+        valores: formulario.valores,
+        errores: formulario.errores,
+        estilosModulo: estilosCompras,
+    });
+}
+
+function registrarPagoProveedor(req, res) {
+    const resultado = comprasService.registrarPagoProveedor(req.params.id, req.body || {}, {
+        usuario: req.session?.usuario || null,
+        ip: req.ip || 'local',
+        userAgent: req.get('user-agent') || '',
+    });
+
+    if (!resultado.ok) {
+        const formulario = resultado.formulario;
+
+        if (!formulario) {
+            return res.redirect('/compras/cuentas-por-pagar?error=pago_no_registrado');
+        }
+
+        return res.status(resultado.codigoEstado || 400).render('compras/pago-proveedor', {
+            titulo: `Registrar pago ${formulario.compra.numero_compra}`,
+            compra: formulario.compra,
+            mediosPago: formulario.medios_pago,
+            valores: formulario.valores,
+            errores: formulario.errores,
+            estilosModulo: estilosCompras,
+        });
+    }
+
+    return res.redirect('/compras/cuentas-por-pagar?exito=pago_registrado');
+}
+
 function buscarProductosParaCompra(req, res) {
     const productos = comprasService.buscarProductosParaCompra({
         busqueda: req.query.busqueda || '',
@@ -128,6 +175,8 @@ function mostrarCuentasPorPagar(req, res) {
         cuentas: resultado.cuentas,
         resumenCuentasPorPagar: resultado.resumen,
         fechaActual: resultado.fecha_actual,
+        mensajeExito: req.query.exito || null,
+        error: req.query.error || null,
         estilosModulo: estilosCompras,
     });
 }
@@ -136,6 +185,8 @@ module.exports = {
     listarCompras,
     mostrarCuentasPorPagar,
     mostrarDetalleCompra,
+    mostrarFormularioPagoProveedor,
+    registrarPagoProveedor,
     mostrarImprimirCompra,
     mostrarFormularioNuevaCompra,
     buscarProductosParaCompra,

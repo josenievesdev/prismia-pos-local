@@ -70,37 +70,40 @@ function construirFiltrosCompras(filtros = {}) {
 
     if (estadoPago === 'pendiente') {
         condiciones.push(`
-            c.estado = 'registrada'
-            AND c.estado_pago = 'pendiente'
-            AND (
-                c.fecha_vencimiento IS NULL
-                OR c.fecha_vencimiento = ''
-                OR c.fecha_vencimiento > date(?, '+7 day')
-            )
-        `);
+        c.estado = 'registrada'
+        AND c.estado_pago IN ('pendiente', 'parcial')
+        AND c.saldo_pendiente > 0
+        AND (
+            c.fecha_vencimiento IS NULL
+            OR c.fecha_vencimiento = ''
+            OR c.fecha_vencimiento > date(?, '+7 day')
+        )
+    `);
         parametros.push(fechaActual);
     }
 
     if (estadoPago === 'proxima') {
         condiciones.push(`
-            c.estado = 'registrada'
-            AND c.estado_pago = 'pendiente'
-            AND c.fecha_vencimiento IS NOT NULL
-            AND c.fecha_vencimiento != ''
-            AND c.fecha_vencimiento >= ?
-            AND c.fecha_vencimiento <= date(?, '+7 day')
-        `);
+        c.estado = 'registrada'
+        AND c.estado_pago IN ('pendiente', 'parcial')
+        AND c.saldo_pendiente > 0
+        AND c.fecha_vencimiento IS NOT NULL
+        AND c.fecha_vencimiento != ''
+        AND c.fecha_vencimiento >= ?
+        AND c.fecha_vencimiento <= date(?, '+7 day')
+    `);
         parametros.push(fechaActual, fechaActual);
     }
 
     if (estadoPago === 'vencida') {
         condiciones.push(`
-            c.estado = 'registrada'
-            AND c.estado_pago = 'pendiente'
-            AND c.fecha_vencimiento IS NOT NULL
-            AND c.fecha_vencimiento != ''
-            AND c.fecha_vencimiento < ?
-        `);
+        c.estado = 'registrada'
+        AND c.estado_pago IN ('pendiente', 'parcial')
+        AND c.saldo_pendiente > 0
+        AND c.fecha_vencimiento IS NOT NULL
+        AND c.fecha_vencimiento != ''
+        AND c.fecha_vencimiento < ?
+    `);
         parametros.push(fechaActual);
     }
 
@@ -182,7 +185,8 @@ function obtenerResumenCuentasPorPagar({ fechaActual } = {}) {
                 COALESCE(SUM(
                     CASE
                         WHEN c.estado = 'registrada'
-                         AND c.estado_pago = 'pendiente'
+                         AND c.estado_pago IN ('pendiente', 'parcial')
+                         AND c.saldo_pendiente > 0
                         THEN c.saldo_pendiente
                         ELSE 0
                     END
@@ -191,7 +195,8 @@ function obtenerResumenCuentasPorPagar({ fechaActual } = {}) {
                 COUNT(
                     CASE
                         WHEN c.estado = 'registrada'
-                         AND c.estado_pago = 'pendiente'
+                         AND c.estado_pago IN ('pendiente', 'parcial')
+                         AND c.saldo_pendiente > 0
                         THEN 1
                     END
                 ) AS compras_pendientes,
@@ -199,7 +204,8 @@ function obtenerResumenCuentasPorPagar({ fechaActual } = {}) {
                 COALESCE(SUM(
                     CASE
                         WHEN c.estado = 'registrada'
-                         AND c.estado_pago = 'pendiente'
+                         AND c.estado_pago IN ('pendiente', 'parcial')
+                         AND c.saldo_pendiente > 0
                          AND c.fecha_vencimiento IS NOT NULL
                          AND c.fecha_vencimiento != ''
                          AND c.fecha_vencimiento < @fecha_actual
@@ -211,7 +217,8 @@ function obtenerResumenCuentasPorPagar({ fechaActual } = {}) {
                 COUNT(
                     CASE
                         WHEN c.estado = 'registrada'
-                         AND c.estado_pago = 'pendiente'
+                         AND c.estado_pago IN ('pendiente', 'parcial')
+                         AND c.saldo_pendiente > 0
                          AND c.fecha_vencimiento IS NOT NULL
                          AND c.fecha_vencimiento != ''
                          AND c.fecha_vencimiento < @fecha_actual
@@ -222,7 +229,8 @@ function obtenerResumenCuentasPorPagar({ fechaActual } = {}) {
                 COALESCE(SUM(
                     CASE
                         WHEN c.estado = 'registrada'
-                         AND c.estado_pago = 'pendiente'
+                         AND c.estado_pago IN ('pendiente', 'parcial')
+                         AND c.saldo_pendiente > 0
                          AND c.fecha_vencimiento IS NOT NULL
                          AND c.fecha_vencimiento != ''
                          AND c.fecha_vencimiento >= @fecha_actual
@@ -235,7 +243,8 @@ function obtenerResumenCuentasPorPagar({ fechaActual } = {}) {
                 COUNT(
                     CASE
                         WHEN c.estado = 'registrada'
-                         AND c.estado_pago = 'pendiente'
+                         AND c.estado_pago IN ('pendiente', 'parcial')
+                         AND c.saldo_pendiente > 0
                          AND c.fecha_vencimiento IS NOT NULL
                          AND c.fecha_vencimiento != ''
                          AND c.fecha_vencimiento >= @fecha_actual
@@ -248,7 +257,8 @@ function obtenerResumenCuentasPorPagar({ fechaActual } = {}) {
                     CASE
                         WHEN c.estado = 'registrada'
                          AND c.condicion_pago = 'credito'
-                         AND c.estado_pago = 'pendiente'
+                         AND c.estado_pago IN ('pendiente', 'parcial')
+                         AND c.saldo_pendiente > 0
                         THEN c.saldo_pendiente
                         ELSE 0
                     END
@@ -258,7 +268,8 @@ function obtenerResumenCuentasPorPagar({ fechaActual } = {}) {
                     CASE
                         WHEN c.estado = 'registrada'
                          AND c.condicion_pago = 'credito'
-                         AND c.estado_pago = 'pendiente'
+                         AND c.estado_pago IN ('pendiente', 'parcial')
+                         AND c.saldo_pendiente > 0
                         THEN 1
                     END
                 ) AS compras_credito_pendientes
@@ -307,8 +318,8 @@ function listarCuentasPorPagar() {
             LEFT JOIN usuarios u
                 ON u.id_usuario = c.id_usuario
             WHERE c.estado = 'registrada'
-              AND c.estado_pago = 'pendiente'
-              AND c.saldo_pendiente > 0
+  AND c.estado_pago IN ('pendiente', 'parcial')
+  AND c.saldo_pendiente > 0
             ORDER BY
                 CASE
                     WHEN c.fecha_vencimiento IS NULL OR c.fecha_vencimiento = '' THEN 1
@@ -318,6 +329,276 @@ function listarCuentasPorPagar() {
                 c.id_compra ASC
         `)
         .all();
+}
+
+function listarMediosPagoActivos() {
+    return db
+        .prepare(`
+            SELECT
+                id_medio_pago,
+                codigo,
+                nombre,
+                tipo,
+                requiere_referencia,
+                afecta_efectivo_caja,
+                activo,
+                orden
+            FROM medios_pago
+            WHERE activo = 1
+            ORDER BY orden ASC, nombre ASC
+        `)
+        .all();
+}
+
+function obtenerMedioPagoPorId(idMedioPago) {
+    return db
+        .prepare(`
+            SELECT
+                id_medio_pago,
+                codigo,
+                nombre,
+                tipo,
+                requiere_referencia,
+                afecta_efectivo_caja,
+                activo,
+                orden
+            FROM medios_pago
+            WHERE id_medio_pago = ?
+            LIMIT 1
+        `)
+        .get(Number(idMedioPago));
+}
+
+function obtenerCompraParaPagoProveedor(idCompra) {
+    return db
+        .prepare(`
+            SELECT
+                c.id_compra,
+                c.numero_compra,
+                c.fecha_compra,
+                c.tipo_soporte,
+                c.numero_soporte,
+                c.subtotal,
+                c.iva_total,
+                c.total,
+                c.estado,
+                c.condicion_pago,
+                c.dias_plazo,
+                c.fecha_vencimiento,
+                c.estado_pago,
+                c.fecha_pago,
+                c.total_pagado,
+                c.saldo_pendiente,
+
+                p.id_proveedor,
+                p.nombre_comercial AS proveedor_nombre_comercial,
+                p.razon_social AS proveedor_razon_social,
+                p.tipo_documento AS proveedor_tipo_documento,
+                p.documento AS proveedor_documento
+            FROM compras c
+            INNER JOIN proveedores p
+                ON p.id_proveedor = c.id_proveedor
+            WHERE c.id_compra = ?
+            LIMIT 1
+        `)
+        .get(Number(idCompra));
+}
+
+function tablaExiste(nombreTabla) {
+    const resultado = db
+        .prepare(`
+            SELECT name
+            FROM sqlite_master
+            WHERE type = 'table'
+              AND name = ?
+            LIMIT 1
+        `)
+        .get(nombreTabla);
+
+    return Boolean(resultado);
+}
+
+function registrarAuditoriaPagoProveedor({ usuario, idPago, compraAntes, compraDespues, pago, ip, userAgent }) {
+    if (!tablaExiste('auditoria')) {
+        return;
+    }
+
+    db.prepare(`
+        INSERT INTO auditoria (
+            id_usuario,
+            accion,
+            tabla_afectada,
+            id_registro_afectado,
+            datos_anteriores,
+            datos_nuevos,
+            ip,
+            user_agent
+        ) VALUES (
+            @id_usuario,
+            'registrar_pago_compra_proveedor',
+            'pagos_compras_proveedores',
+            @id_registro_afectado,
+            @datos_anteriores,
+            @datos_nuevos,
+            @ip,
+            @user_agent
+        )
+    `).run({
+        id_usuario: usuario.id_usuario,
+        id_registro_afectado: idPago,
+        datos_anteriores: JSON.stringify({
+            id_compra: compraAntes.id_compra,
+            numero_compra: compraAntes.numero_compra,
+            estado_pago: compraAntes.estado_pago,
+            total_pagado: compraAntes.total_pagado,
+            saldo_pendiente: compraAntes.saldo_pendiente,
+        }),
+        datos_nuevos: JSON.stringify({
+            id_pago_compra_proveedor: idPago,
+            id_compra: compraDespues.id_compra,
+            numero_compra: compraDespues.numero_compra,
+            monto_pagado: pago.monto_pagado,
+            fecha_pago: pago.fecha_pago,
+            id_medio_pago: pago.id_medio_pago,
+            referencia_pago: pago.referencia_pago || null,
+            entidad_pago: pago.entidad_pago || null,
+            estado_pago: compraDespues.estado_pago,
+            total_pagado: compraDespues.total_pagado,
+            saldo_pendiente: compraDespues.saldo_pendiente,
+        }),
+        ip: ip || 'local',
+        user_agent: userAgent || '',
+    });
+}
+
+function registrarPagoCompraProveedor({ idCompra, pago, usuario, ip, userAgent }) {
+    const transaccion = db.transaction(() => {
+        const compraActual = obtenerCompraParaPagoProveedor(idCompra);
+
+        if (!compraActual) {
+            throw new Error('No se encontró la compra seleccionada.');
+        }
+
+        if (compraActual.estado !== 'registrada') {
+            throw new Error('Solo se pueden registrar pagos sobre compras registradas.');
+        }
+
+        const saldoActual = normalizarEntero(compraActual.saldo_pendiente, 0);
+        const totalCompra = normalizarEntero(compraActual.total, 0);
+        const totalPagadoActual = normalizarEntero(compraActual.total_pagado, 0);
+        const montoPagado = normalizarEntero(pago.monto_pagado, 0);
+
+        if (saldoActual <= 0 || compraActual.estado_pago === 'pagada') {
+            throw new Error('La compra seleccionada no tiene saldo pendiente.');
+        }
+
+        if (montoPagado <= 0) {
+            throw new Error('El monto del pago debe ser mayor a cero.');
+        }
+
+        if (montoPagado > saldoActual) {
+            throw new Error('El monto del pago no puede superar el saldo pendiente.');
+        }
+
+        const medioPago = obtenerMedioPagoPorId(pago.id_medio_pago);
+
+        if (!medioPago || Number(medioPago.activo || 0) !== 1) {
+            throw new Error('Selecciona un medio de pago activo.');
+        }
+
+        const resultadoPago = db
+            .prepare(`
+                INSERT INTO pagos_compras_proveedores (
+                    id_compra,
+                    id_proveedor,
+                    id_usuario,
+                    id_medio_pago,
+                    id_turno_caja,
+                    id_movimiento_caja,
+                    fecha_pago,
+                    monto_pagado,
+                    referencia_pago,
+                    entidad_pago,
+                    observaciones,
+                    estado
+                ) VALUES (
+                    @id_compra,
+                    @id_proveedor,
+                    @id_usuario,
+                    @id_medio_pago,
+                    NULL,
+                    NULL,
+                    @fecha_pago,
+                    @monto_pagado,
+                    @referencia_pago,
+                    @entidad_pago,
+                    @observaciones,
+                    'registrado'
+                )
+            `)
+            .run({
+                id_compra: compraActual.id_compra,
+                id_proveedor: compraActual.id_proveedor,
+                id_usuario: usuario.id_usuario,
+                id_medio_pago: medioPago.id_medio_pago,
+                fecha_pago: pago.fecha_pago,
+                monto_pagado: montoPagado,
+                referencia_pago: pago.referencia_pago || null,
+                entidad_pago: pago.entidad_pago || null,
+                observaciones: pago.observaciones || null,
+            });
+
+        const idPago = Number(resultadoPago.lastInsertRowid);
+        const totalPagadoNuevo = Math.min(totalCompra, totalPagadoActual + montoPagado);
+        const saldoPendienteNuevo = Math.max(0, totalCompra - totalPagadoNuevo);
+        const estadoPagoNuevo = saldoPendienteNuevo === 0 ? 'pagada' : 'parcial';
+        const fechaPagoCompra = saldoPendienteNuevo === 0 ? pago.fecha_pago : null;
+
+        db.prepare(`
+            UPDATE compras
+            SET total_pagado = @total_pagado,
+                saldo_pendiente = @saldo_pendiente,
+                estado_pago = @estado_pago,
+                fecha_pago = @fecha_pago,
+                actualizado_en = CURRENT_TIMESTAMP
+            WHERE id_compra = @id_compra
+        `).run({
+            id_compra: compraActual.id_compra,
+            total_pagado: totalPagadoNuevo,
+            saldo_pendiente: saldoPendienteNuevo,
+            estado_pago: estadoPagoNuevo,
+            fecha_pago: fechaPagoCompra,
+        });
+
+        const compraDespues = {
+            ...compraActual,
+            total_pagado: totalPagadoNuevo,
+            saldo_pendiente: saldoPendienteNuevo,
+            estado_pago: estadoPagoNuevo,
+            fecha_pago: fechaPagoCompra,
+        };
+
+        registrarAuditoriaPagoProveedor({
+            usuario,
+            idPago,
+            compraAntes: compraActual,
+            compraDespues,
+            pago: {
+                ...pago,
+                monto_pagado: montoPagado,
+                id_medio_pago: medioPago.id_medio_pago,
+            },
+            ip,
+            userAgent,
+        });
+
+        return {
+            id_pago_compra_proveedor: idPago,
+            compra: compraDespues,
+        };
+    });
+
+    return transaccion();
 }
 
 function listarProveedoresActivos({ limite = 300 } = {}) {
@@ -1031,6 +1312,10 @@ module.exports = {
     existeSoporteProveedorActivo,
     obtenerConfiguracionNegocio,
     obtenerCompraPorId,
+    obtenerCompraParaPagoProveedor,
     listarDetalleCompra,
+    listarMediosPagoActivos,
+    obtenerMedioPagoPorId,
+    registrarPagoCompraProveedor,
     registrarCompraConInventario,
 };
