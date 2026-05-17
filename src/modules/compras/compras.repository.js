@@ -54,6 +54,56 @@ function construirFiltrosCompras(filtros = {}) {
         parametros.push(estado);
     }
 
+    const condicionPago = limpiarTexto(filtros.condicion_pago);
+
+    if (['contado', 'credito'].includes(condicionPago)) {
+        condiciones.push('c.condicion_pago = ?');
+        parametros.push(condicionPago);
+    }
+
+    const estadoPago = limpiarTexto(filtros.estado_pago);
+    const fechaActual = limpiarTexto(filtros.fecha_actual);
+
+    if (estadoPago === 'pagada') {
+        condiciones.push(`c.estado_pago = 'pagada'`);
+    }
+
+    if (estadoPago === 'pendiente') {
+        condiciones.push(`
+            c.estado = 'registrada'
+            AND c.estado_pago = 'pendiente'
+            AND (
+                c.fecha_vencimiento IS NULL
+                OR c.fecha_vencimiento = ''
+                OR c.fecha_vencimiento > date(?, '+7 day')
+            )
+        `);
+        parametros.push(fechaActual);
+    }
+
+    if (estadoPago === 'proxima') {
+        condiciones.push(`
+            c.estado = 'registrada'
+            AND c.estado_pago = 'pendiente'
+            AND c.fecha_vencimiento IS NOT NULL
+            AND c.fecha_vencimiento != ''
+            AND c.fecha_vencimiento >= ?
+            AND c.fecha_vencimiento <= date(?, '+7 day')
+        `);
+        parametros.push(fechaActual, fechaActual);
+    }
+
+    if (estadoPago === 'vencida') {
+        condiciones.push(`
+            c.estado = 'registrada'
+            AND c.estado_pago = 'pendiente'
+            AND c.fecha_vencimiento IS NOT NULL
+            AND c.fecha_vencimiento != ''
+            AND c.fecha_vencimiento < ?
+        `);
+        parametros.push(fechaActual);
+    }
+
     return {
         where: condiciones.join(' AND '),
         parametros,

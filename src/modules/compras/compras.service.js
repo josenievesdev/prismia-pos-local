@@ -4,6 +4,7 @@ const ESTADOS_PERMITIDOS = ['borrador', 'registrada', 'anulada'];
 const LIMITE_POR_PAGINA = 20;
 const CONDICIONES_PAGO_PERMITIDAS = ['contado', 'credito'];
 const ESTADOS_PAGO_PERMITIDOS = ['pendiente', 'pagada', 'vencida', 'parcial'];
+const FILTROS_ESTADO_PAGO = ['pagada', 'pendiente', 'proxima', 'vencida'];
 
 const TIPOS_SOPORTE_COMPRA = [
     {
@@ -308,10 +309,15 @@ function prepararFiltros(query = {}) {
     const pagina = paginaSolicitada > 0 ? Math.floor(paginaSolicitada) : 1;
 
     const estado = limpiarTexto(query.estado);
+    const condicionPago = limpiarTexto(query.condicion_pago).toLowerCase();
+    const estadoPago = limpiarTexto(query.estado_pago).toLowerCase();
 
     return {
         busqueda: limpiarTexto(query.busqueda),
         estado: ESTADOS_PERMITIDOS.includes(estado) ? estado : '',
+        condicion_pago: CONDICIONES_PAGO_PERMITIDAS.includes(condicionPago) ? condicionPago : '',
+        estado_pago: FILTROS_ESTADO_PAGO.includes(estadoPago) ? estadoPago : '',
+        fecha_actual: obtenerFechaActualISO(),
         pagina,
         limite: LIMITE_POR_PAGINA,
         offset: (pagina - 1) * LIMITE_POR_PAGINA,

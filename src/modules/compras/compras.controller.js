@@ -110,6 +110,8 @@ function listarCompras(req, res) {
         queryPaginacion: new URLSearchParams({
             ...(resultado.filtros.busqueda ? { busqueda: resultado.filtros.busqueda } : {}),
             ...(resultado.filtros.estado ? { estado: resultado.filtros.estado } : {}),
+            ...(resultado.filtros.condicion_pago ? { condicion_pago: resultado.filtros.condicion_pago } : {}),
+            ...(resultado.filtros.estado_pago ? { estado_pago: resultado.filtros.estado_pago } : {}),
         }).toString(),
         mensajeExito: req.query.exito || null,
         error: req.query.error || null,

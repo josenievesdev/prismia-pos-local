@@ -41,7 +41,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="estado">Estado</label>
+                            <label for="estado">Documento</label>
                             <select id="estado" name="estado">
                                 <option value="" <%=!filtros.estado ? 'selected' : '' %>>Todos</option>
                                 <option value="borrador" <%=filtros.estado==='borrador' ? 'selected' : '' %>>Borrador
@@ -49,6 +49,38 @@
                                 <option value="registrada" <%=filtros.estado==='registrada' ? 'selected' : '' %>
                                     >Registrada</option>
                                 <option value="anulada" <%=filtros.estado==='anulada' ? 'selected' : '' %>>Anulada
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="condicion_pago">Condición</label>
+                            <select id="condicion_pago" name="condicion_pago">
+                                <option value="" <%=!filtros.condicion_pago ? 'selected' : '' %>>Todas</option>
+                                <option value="contado" <%=filtros.condicion_pago==='contado' ? 'selected' : '' %>>
+                                    Contado
+                                </option>
+                                <option value="credito" <%=filtros.condicion_pago==='credito' ? 'selected' : '' %>>
+                                    Crédito
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="estado_pago">Pago</label>
+                            <select id="estado_pago" name="estado_pago">
+                                <option value="" <%=!filtros.estado_pago ? 'selected' : '' %>>Todos</option>
+                                <option value="pagada" <%=filtros.estado_pago==='pagada' ? 'selected' : '' %>>
+                                    Pagadas
+                                </option>
+                                <option value="pendiente" <%=filtros.estado_pago==='pendiente' ? 'selected' : '' %>>
+                                    Pendientes
+                                </option>
+                                <option value="proxima" <%=filtros.estado_pago==='proxima' ? 'selected' : '' %>>
+                                    Próximas a vencer
+                                </option>
+                                <option value="vencida" <%=filtros.estado_pago==='vencida' ? 'selected' : '' %>>
+                                    Vencidas
                                 </option>
                             </select>
                         </div>
