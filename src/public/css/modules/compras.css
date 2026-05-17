@@ -1109,3 +1109,26 @@ body.modal-open {
     color: var(--color-muted);
     font-size: 12px;
 }
+
+/* ===== Origen del pago proveedor ===== */
+
+.compras-payment-origin-readonly {
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 11px 12px;
+    background: var(--color-bg-soft);
+}
+
+.compras-payment-origin-readonly strong {
+    display: block;
+    margin-top: 5px;
+    color: var(--color-text);
+    font-size: 13px;
+}
+
+.compras-payment-origin-readonly small {
+    display: block;
+    margin-top: 4px;
+    color: var(--color-muted);
+    font-size: 12px;
+}

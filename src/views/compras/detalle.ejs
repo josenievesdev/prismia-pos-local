@@ -129,9 +129,7 @@
                             <strong>
                                 <%= compra.fecha_vencimiento_mostrar %>
                             </strong>
-                            <small>
-                                Días de plazo: <%= compra.dias_plazo || 0 %>
-                            </small>
+                            <small>Días de plazo: <%= compra.dias_plazo || 0 %></small>
                         </div>
 
                         <div class="is-total">
@@ -139,9 +137,7 @@
                             <strong>
                                 <%= compra.saldo_pendiente_mostrar %>
                             </strong>
-                            <small>
-                                Pagado: <%= compra.total_pagado_mostrar %>
-                            </small>
+                            <small>Pagado: <%= compra.total_pagado_mostrar %></small>
                         </div>
                     </article>
 
@@ -160,10 +156,17 @@
                         <% } %>
 
                             <article class="module-card compras-payment-history">
-                                <% const totalPagosProveedor=(pagosProveedor || []).length; const
-                                    pagosProveedorActivos=(pagosProveedor || []).filter(function (pago) { return
-                                    !pago.esta_anulado; }).length; const pagosProveedorAnulados=totalPagosProveedor -
-                                    pagosProveedorActivos; %>
+                                <% const pagosProveedorLista=pagosProveedor || []; function
+                                    pagoProveedorEstaAnulado(pago) { const estadoRaw=String(pago.estado || ''
+                                    ).trim().toLowerCase(); const
+                                    estadoEtiqueta=String(pago.estado_pago_proveedor_etiqueta || ''
+                                    ).trim().toLowerCase(); const badge=String(pago.estado_pago_proveedor_badge || ''
+                                    ).trim().toLowerCase(); const banderaAnulado=pago.esta_anulado===true ||
+                                    String(pago.esta_anulado || '' ).trim().toLowerCase()==='true' ; return (
+                                    estadoRaw==='anulado' || estadoEtiqueta==='anulado' || badge.includes('danger') ||
+                                    banderaAnulado ); } const pagosProveedorAnulados=pagosProveedorLista.filter(function
+                                    (pago) { return pagoProveedorEstaAnulado(pago); }).length; const
+                                    pagosProveedorActivos=pagosProveedorLista.length - pagosProveedorAnulados; %>
 
                                     <div class="table-summary compras-payment-history-summary">
                                         <span>Historial de pagos</span>
@@ -178,7 +181,7 @@
                                         </span>
                                     </div>
 
-                                    <% if (!pagosProveedor || !pagosProveedor.length) { %>
+                                    <% if (!pagosProveedorLista.length) { %>
                                         <div class="empty-state compras-payment-empty">
                                             <strong>Sin pagos registrados</strong>
                                             <span>Esta compra todavía no tiene pagos asociados.</span>
@@ -199,94 +202,102 @@
                                                     </thead>
 
                                                     <tbody>
-                                                        <% pagosProveedor.forEach(function (pago) { %>
-                                                            <tr
-                                                                class="<%= pago.esta_anulado ? 'is-cancelled-row' : '' %>">
-                                                                <td>
-                                                                    <strong>
-                                                                        <%= pago.fecha_pago_mostrar %>
-                                                                    </strong>
+                                                        <% pagosProveedorLista.forEach(function (pago) { %>
+                                                            <% const pagoAnulado=pagoProveedorEstaAnulado(pago); %>
 
-                                                                    <% if (pago.esta_anulado && pago.anulado_en_mostrar)
-                                                                        { %>
-                                                                        <span class="table-subtext">
-                                                                            Anulado: <%= pago.anulado_en_mostrar %>
-                                                                        </span>
-                                                                        <% } %>
-                                                                </td>
-
-                                                                <td>
-                                                                    <strong>
-                                                                        <%= pago.medio_pago_mostrar %>
-                                                                    </strong>
-                                                                    <span class="table-subtext">
-                                                                        <%= pago.entidad_pago_mostrar %>
-                                                                    </span>
-                                                                </td>
-
-                                                                <td>
-                                                                    <%= pago.referencia_pago_mostrar %>
-
-                                                                        <% if (pago.observaciones_mostrar) { %>
+                                                                <tr
+                                                                    class="<%= pagoAnulado ? 'is-cancelled-row' : '' %>">
+                                                                    <td>
+                                                                        <strong>
+                                                                            <%= pago.fecha_pago_mostrar %>
+                                                                        </strong>
+                                                                        <% if (pagoAnulado && (pago.anulado_en_mostrar
+                                                                            || pago.anulado_en)) { %>
                                                                             <span class="table-subtext">
-                                                                                <%= pago.observaciones_mostrar %>
+                                                                                Anulado: <%= pago.anulado_en_mostrar ||
+                                                                                    pago.anulado_en %>
                                                                             </span>
                                                                             <% } %>
+                                                                    </td>
 
-                                                                                <% if (pago.esta_anulado &&
-                                                                                    pago.motivo_anulacion_mostrar) { %>
-                                                                                    <span
-                                                                                        class="table-subtext compras-payment-cancel-reason">
-                                                                                        Motivo: <%=
-                                                                                            pago.motivo_anulacion_mostrar
-                                                                                            %>
-                                                                                    </span>
-                                                                                    <% } %>
-                                                                </td>
+                                                                    <td>
+                                                                        <strong>
+                                                                            <%= pago.medio_pago_mostrar %>
+                                                                        </strong>
 
-                                                                <td>
-                                                                    <span
-                                                                        class="badge <%= pago.estado_pago_proveedor_badge %>">
-                                                                        <%= pago.estado_pago_proveedor_etiqueta %>
-                                                                    </span>
-
-                                                                    <% if (pago.esta_anulado &&
-                                                                        pago.usuario_anulacion_nombre) { %>
                                                                         <span class="table-subtext">
-                                                                            Por: <%= pago.usuario_anulacion_nombre %>
+                                                                            <%= pago.entidad_pago_mostrar %>
                                                                         </span>
-                                                                        <% } %>
-                                                                </td>
 
-                                                                <td>
-                                                                    <%= pago.usuario_nombre %>
-                                                                </td>
+                                                                        <span class="table-subtext">
+                                                                            Origen: <%= pago.origen_pago_etiqueta %>
+                                                                        </span>
+                                                                    </td>
 
-                                                                <td class="text-right">
-                                                                    <strong
-                                                                        class="<%= pago.esta_anulado ? 'compras-payment-cancelled-money' : '' %>">
-                                                                        <%= pago.monto_pagado_mostrar %>
-                                                                    </strong>
-                                                                </td>
+                                                                    <td>
+                                                                        <%= pago.referencia_pago_mostrar %>
 
-                                                                <td class="text-right">
-                                                                    <% if (!pago.esta_anulado) { %>
-                                                                        <button type="button"
-                                                                            class="btn-secondary btn-sm compras-payment-cancel-button"
-                                                                            data-modal-anular-pago
-                                                                            data-action="/compras/<%= compra.id_compra %>/pagos/<%= pago.id_pago_compra_proveedor %>/anular"
-                                                                            data-monto="<%= pago.monto_pagado_mostrar %>"
-                                                                            data-fecha="<%= pago.fecha_pago_mostrar %>"
-                                                                            data-medio="<%= pago.medio_pago_mostrar %>">
-                                                                            Anular
-                                                                        </button>
-                                                                        <% } else { %>
-                                                                            <span class="table-subtext">Sin
-                                                                                acción</span>
+                                                                            <% if (pago.observaciones_mostrar) { %>
+                                                                                <span class="table-subtext">
+                                                                                    <%= pago.observaciones_mostrar %>
+                                                                                </span>
+                                                                                <% } %>
+
+                                                                                    <% if (pagoAnulado &&
+                                                                                        pago.motivo_anulacion_mostrar) {
+                                                                                        %>
+                                                                                        <span
+                                                                                            class="table-subtext compras-payment-cancel-reason">
+                                                                                            Motivo: <%=
+                                                                                                pago.motivo_anulacion_mostrar
+                                                                                                %>
+                                                                                        </span>
+                                                                                        <% } %>
+                                                                    </td>
+
+                                                                    <td>
+                                                                        <span
+                                                                            class="badge <%= pago.estado_pago_proveedor_badge %>">
+                                                                            <%= pago.estado_pago_proveedor_etiqueta %>
+                                                                        </span>
+                                                                        <% if (pagoAnulado &&
+                                                                            pago.usuario_anulacion_nombre) { %>
+                                                                            <span class="table-subtext">
+                                                                                Por: <%= pago.usuario_anulacion_nombre
+                                                                                    %>
+                                                                            </span>
                                                                             <% } %>
-                                                                </td>
-                                                            </tr>
-                                                            <% }) %>
+                                                                    </td>
+
+                                                                    <td>
+                                                                        <%= pago.usuario_nombre %>
+                                                                    </td>
+
+                                                                    <td class="text-right">
+                                                                        <strong
+                                                                            class="<%= pagoAnulado ? 'compras-payment-cancelled-money' : '' %>">
+                                                                            <%= pago.monto_pagado_mostrar %>
+                                                                        </strong>
+                                                                    </td>
+
+                                                                    <td class="text-right">
+                                                                        <% if (!pagoAnulado) { %>
+                                                                            <button type="button"
+                                                                                class="btn-secondary btn-sm compras-payment-cancel-button"
+                                                                                data-modal-anular-pago
+                                                                                data-action="/compras/<%= compra.id_compra %>/pagos/<%= pago.id_pago_compra_proveedor %>/anular"
+                                                                                data-monto="<%= pago.monto_pagado_mostrar %>"
+                                                                                data-fecha="<%= pago.fecha_pago_mostrar %>"
+                                                                                data-medio="<%= pago.medio_pago_mostrar %>">
+                                                                                Anular
+                                                                            </button>
+                                                                            <% } else { %>
+                                                                                <span class="table-subtext">Sin
+                                                                                    acción</span>
+                                                                                <% } %>
+                                                                    </td>
+                                                                </tr>
+                                                                <% }) %>
                                                     </tbody>
                                                 </table>
                                             </div>

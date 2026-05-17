@@ -115,10 +115,16 @@
                             </label>
 
                             <label class="form-group">
-                                <span>Entidad</span>
+                                <span>Entidad / cuenta origen</span>
                                 <input type="text" name="entidad_pago" value="<%= valores.entidad_pago %>"
-                                    placeholder="Ej: Bancolombia, Nequi, caja menor">
+                                    placeholder="Ej: Bancolombia, Nequi, administración">
                             </label>
+
+                            <div class="form-group compras-payment-origin-readonly">
+                                <span>Origen del pago</span>
+                                <strong>Tesorería / contabilidad</strong>
+                                <small>No afecta caja ni arqueo de ventas.</small>
+                            </div>
 
                             <label class="form-group form-group-wide">
                                 <span>Observaciones</span>

@@ -645,6 +645,7 @@ function prepararPagoProveedor(datos = {}) {
         referencia_pago: limpiarTexto(datos.referencia_pago),
         entidad_pago: limpiarTexto(datos.entidad_pago),
         observaciones: limpiarTexto(datos.observaciones),
+        origen_pago: 'tesoreria',
     };
 }
 
@@ -990,6 +991,8 @@ function prepararPagoProveedorVista(pago) {
         anulado_en_mostrar: pago.anulado_en ? formatearFecha(pago.anulado_en) : '',
         usuario_anulacion_nombre: limpiarTexto(pago.usuario_anulacion_nombre) || '',
         motivo_anulacion_mostrar: limpiarTexto(pago.motivo_anulacion),
+        origen_pago: limpiarTexto(pago.origen_pago || 'tesoreria'),
+        origen_pago_etiqueta: pago.origen_pago === 'caja' ? 'Caja' : 'Tesorería',
     };
 }
 

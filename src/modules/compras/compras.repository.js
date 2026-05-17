@@ -348,6 +348,7 @@ function listarPagosCompraProveedor(idCompra) {
                 pc.entidad_pago,
                 pc.observaciones,
                 pc.estado,
+                pc.origen_pago,
                 pc.creado_en,
                 pc.actualizado_en,
                 pc.anulado_en,
@@ -507,6 +508,7 @@ function registrarAuditoriaPagoProveedor({ usuario, idPago, compraAntes, compraD
             id_medio_pago: pago.id_medio_pago,
             referencia_pago: pago.referencia_pago || null,
             entidad_pago: pago.entidad_pago || null,
+            origen_pago: pago.origen_pago || 'tesoreria',
             estado_pago: compraDespues.estado_pago,
             total_pagado: compraDespues.total_pagado,
             saldo_pendiente: compraDespues.saldo_pendiente,
@@ -533,6 +535,7 @@ function obtenerPagoCompraProveedorPorId(idPago) {
                 pc.entidad_pago,
                 pc.observaciones,
                 pc.estado,
+                pc.origen_pago,
                 pc.creado_en,
                 pc.anulado_en,
                 pc.anulado_por,
@@ -764,6 +767,7 @@ function registrarPagoCompraProveedor({ idCompra, pago, usuario, ip, userAgent }
                     referencia_pago,
                     entidad_pago,
                     observaciones,
+                    origen_pago,
                     estado
                 ) VALUES (
                     @id_compra,
@@ -777,6 +781,7 @@ function registrarPagoCompraProveedor({ idCompra, pago, usuario, ip, userAgent }
                     @referencia_pago,
                     @entidad_pago,
                     @observaciones,
+                    @origen_pago,
                     'registrado'
                 )
             `)
@@ -790,6 +795,7 @@ function registrarPagoCompraProveedor({ idCompra, pago, usuario, ip, userAgent }
                 referencia_pago: pago.referencia_pago || null,
                 entidad_pago: pago.entidad_pago || null,
                 observaciones: pago.observaciones || null,
+                origen_pago: pago.origen_pago || 'tesoreria',
             });
 
         const idPago = Number(resultadoPago.lastInsertRowid);
