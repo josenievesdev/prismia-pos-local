@@ -10,6 +10,7 @@ router.use(requiereAutenticacion);
 router.use(requiereRol('administrador'));
 
 router.get('/cuentas-por-pagar', comprasController.mostrarCuentasPorPagar);
+router.get('/pagos-proveedores', comprasController.mostrarPagosProveedores);
 router.get('/nueva', comprasController.mostrarFormularioNuevaCompra);
 router.get('/api/productos/buscar', comprasController.buscarProductosParaCompra);
 router.post('/api/validar', comprasController.validarCompra);

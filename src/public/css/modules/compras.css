@@ -1132,3 +1132,54 @@ body.modal-open {
     color: var(--color-muted);
     font-size: 12px;
 }
+
+/* ===== Historial general de pagos a proveedores ===== */
+
+.compras-pagos-proveedores-card {
+    padding: 16px;
+}
+
+.compras-pagos-proveedores-table-wrapper {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+}
+
+.compras-pagos-proveedores-table {
+    min-width: 1180px;
+}
+
+.compras-pagos-proveedores-table th,
+.compras-pagos-proveedores-table td {
+    padding: 11px 12px;
+    vertical-align: top;
+}
+
+.compras-pagos-proveedores-table th {
+    white-space: nowrap;
+}
+
+.compras-pagos-proveedores-table .table-subtext {
+    display: block;
+    margin-top: 3px;
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+.compras-pagos-proveedores-table tbody tr:hover {
+    background: rgba(36, 79, 143, 0.035);
+}
+
+.compras-pagos-proveedores-table tr.is-cancelled-row {
+    background: rgba(239, 68, 68, 0.035);
+}
+
+.compras-pagos-proveedores-table tr.is-cancelled-row td {
+    color: var(--color-muted);
+}
+
+@media (max-width: 900px) {
+    .compras-pagos-proveedores-table {
+        min-width: 980px;
+    }
+}

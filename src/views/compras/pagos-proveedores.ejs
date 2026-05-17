@@ -1,0 +1,245 @@
+<section class="module-page compras-page compras-pagos-proveedores-page">
+    <div class="module-header module-header-actions">
+        <div>
+            <p class="eyebrow">Tesorería / proveedores</p>
+            <h2>Pagos a proveedores</h2>
+            <p>
+                Consulta los pagos registrados y anulados asociados a cuentas por pagar.
+            </p>
+        </div>
+
+        <div class="module-actions compras-header-actions">
+            <a href="/compras/cuentas-por-pagar" class="btn-secondary">
+                Cuentas por pagar
+            </a>
+
+            <a href="/compras" class="btn-secondary">
+                Volver a compras
+            </a>
+        </div>
+    </div>
+
+    <section class="compras-payables-summary">
+        <article class="module-card compras-payable-card">
+            <span>Total registrado</span>
+            <strong>
+                <%= resumen.total_registrado_mostrar %>
+            </strong>
+            <small>
+                <%= resumen.pagos_registrados %> pago(s) activo(s)
+            </small>
+        </article>
+
+        <article class="module-card compras-payable-card is-danger">
+            <span>Total anulado</span>
+            <strong>
+                <%= resumen.total_anulado_mostrar %>
+            </strong>
+            <small>
+                <%= resumen.pagos_anulados %> pago(s) anulado(s)
+            </small>
+        </article>
+
+        <article class="module-card compras-payable-card">
+            <span>Movimientos</span>
+            <strong>
+                <%= resumen.total_movimientos %>
+            </strong>
+            <small>Pago(s) encontrados</small>
+        </article>
+
+        <article class="module-card compras-payable-card">
+            <span>Origen operativo</span>
+            <strong>Tesorería</strong>
+            <small>No afecta caja ni arqueo de ventas</small>
+        </article>
+    </section>
+
+    <section class="module-card compras-filters-card">
+        <form method="GET" action="/compras/pagos-proveedores" class="compras-filters-form">
+            <label class="form-group">
+                <span>Buscar</span>
+                <input type="search" name="busqueda" value="<%= filtros.busqueda || '' %>"
+                    placeholder="Proveedor, documento, compra, soporte o referencia">
+            </label>
+
+            <label class="form-group">
+                <span>Estado</span>
+                <select name="estado">
+                    <option value="" <%=!filtros.estado ? 'selected' : '' %>>Todos</option>
+                    <option value="registrado" <%=filtros.estado==='registrado' ? 'selected' : '' %>>Registrados
+                    </option>
+                    <option value="anulado" <%=filtros.estado==='anulado' ? 'selected' : '' %>>Anulados</option>
+                </select>
+            </label>
+
+            <label class="form-group">
+                <span>Medio</span>
+                <select name="id_medio_pago">
+                    <option value="" <%=!filtros.id_medio_pago ? 'selected' : '' %>>Todos</option>
+
+                    <% mediosPago.forEach(function (medio) { %>
+                        <option value="<%= medio.id_medio_pago %>" <%=String(filtros.id_medio_pago || ''
+                            )===String(medio.id_medio_pago) ? 'selected' : '' %>>
+                            <%= medio.nombre %>
+                        </option>
+                        <% }) %>
+                </select>
+            </label>
+
+            <label class="form-group">
+                <span>Desde</span>
+                <input type="date" name="fecha_desde" value="<%= filtros.fecha_desde || '' %>">
+            </label>
+
+            <label class="form-group">
+                <span>Hasta</span>
+                <input type="date" name="fecha_hasta" value="<%= filtros.fecha_hasta || '' %>">
+            </label>
+
+            <div class="compras-filter-actions">
+                <button type="submit" class="btn-primary">
+                    Filtrar
+                </button>
+
+                <a href="/compras/pagos-proveedores" class="btn-secondary">
+                    Limpiar
+                </a>
+            </div>
+        </form>
+    </section>
+
+    <section class="module-card compras-pagos-proveedores-card">
+        <div class="table-summary compras-payment-history-summary">
+            <span>Historial general</span>
+            <span>
+                <strong>
+                    <%= pagos.length %>
+                </strong> movimiento(s)
+            </span>
+        </div>
+
+        <% if (!pagos.length) { %>
+            <div class="empty-state compras-cxp-empty">
+                <h3>Sin pagos encontrados</h3>
+                <p>
+                    No hay pagos a proveedores que coincidan con los filtros seleccionados.
+                </p>
+                <a href="/compras/cuentas-por-pagar" class="btn-primary">
+                    Ver cuentas por pagar
+                </a>
+            </div>
+            <% } else { %>
+                <div class="table-wrapper compras-pagos-proveedores-table-wrapper">
+                    <table class="data-table compras-pagos-proveedores-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Proveedor</th>
+                                <th>Compra</th>
+                                <th>Medio</th>
+                                <th>Referencia</th>
+                                <th>Estado</th>
+                                <th>Usuario</th>
+                                <th class="text-right">Monto</th>
+                                <th class="text-right">Acción</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <% pagos.forEach(function (pago) { %>
+                                <tr class="<%= pago.esta_anulado ? 'is-cancelled-row' : '' %>">
+                                    <td>
+                                        <strong>
+                                            <%= pago.fecha_pago_mostrar %>
+                                        </strong>
+
+                                        <% if (pago.esta_anulado && pago.anulado_en_mostrar) { %>
+                                            <span class="table-subtext">
+                                                Anulado: <%= pago.anulado_en_mostrar %>
+                                            </span>
+                                            <% } %>
+                                    </td>
+
+                                    <td>
+                                        <strong>
+                                            <%= pago.proveedor_nombre %>
+                                        </strong>
+                                        <span class="table-subtext">
+                                            <%= pago.proveedor_documento_mostrar %>
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <strong>
+                                            <%= pago.numero_compra %>
+                                        </strong>
+                                        <span class="table-subtext">
+                                            Soporte: <%= pago.numero_soporte || 'Sin soporte' %>
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <strong>
+                                            <%= pago.medio_pago_mostrar %>
+                                        </strong>
+                                        <span class="table-subtext">
+                                            <%= pago.entidad_pago_mostrar %>
+                                        </span>
+                                        <span class="table-subtext">
+                                            Origen: <%= pago.origen_pago_etiqueta %>
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <%= pago.referencia_pago_mostrar %>
+
+                                            <% if (pago.observaciones_mostrar) { %>
+                                                <span class="table-subtext">
+                                                    <%= pago.observaciones_mostrar %>
+                                                </span>
+                                                <% } %>
+
+                                                    <% if (pago.esta_anulado && pago.motivo_anulacion_mostrar) { %>
+                                                        <span class="table-subtext compras-payment-cancel-reason">
+                                                            Motivo: <%= pago.motivo_anulacion_mostrar %>
+                                                        </span>
+                                                        <% } %>
+                                    </td>
+
+                                    <td>
+                                        <span class="badge <%= pago.estado_pago_proveedor_badge %>">
+                                            <%= pago.estado_pago_proveedor_etiqueta %>
+                                        </span>
+
+                                        <% if (pago.esta_anulado && pago.usuario_anulacion_nombre) { %>
+                                            <span class="table-subtext">
+                                                Por: <%= pago.usuario_anulacion_nombre %>
+                                            </span>
+                                            <% } %>
+                                    </td>
+
+                                    <td>
+                                        <%= pago.usuario_nombre %>
+                                    </td>
+
+                                    <td class="text-right">
+                                        <strong
+                                            class="<%= pago.esta_anulado ? 'compras-payment-cancelled-money' : '' %>">
+                                            <%= pago.monto_pagado_mostrar %>
+                                        </strong>
+                                    </td>
+
+                                    <td class="text-right">
+                                        <a href="/compras/<%= pago.id_compra %>" class="btn-secondary btn-sm">
+                                            Ver compra
+                                        </a>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+                <% } %>
+    </section>
+</section>

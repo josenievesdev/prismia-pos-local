@@ -204,9 +204,23 @@ function mostrarCuentasPorPagar(req, res) {
     });
 }
 
+function mostrarPagosProveedores(req, res) {
+    const resultado = comprasService.listarPagosProveedores(req.query || {});
+
+    return res.render('compras/pagos-proveedores', {
+        titulo: 'Pagos a proveedores',
+        pagos: resultado.pagos,
+        resumen: resultado.resumen,
+        mediosPago: resultado.mediosPago,
+        filtros: resultado.filtros,
+        estilosModulo: estilosCompras,
+    });
+}
+
 module.exports = {
     listarCompras,
     mostrarCuentasPorPagar,
+    mostrarPagosProveedores,
     mostrarDetalleCompra,
     mostrarFormularioPagoProveedor,
     registrarPagoProveedor,

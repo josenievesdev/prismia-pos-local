@@ -967,6 +967,100 @@ function prepararDetalleLineaVista(linea) {
     };
 }
 
+function prepararFiltrosPagosProveedores(query = {}) {
+    return {
+        busqueda: limpiarTexto(query.busqueda),
+        estado: limpiarTexto(query.estado),
+        origen_pago: limpiarTexto(query.origen_pago),
+        id_medio_pago: limpiarTexto(query.id_medio_pago),
+        fecha_desde: limpiarTexto(query.fecha_desde),
+        fecha_hasta: limpiarTexto(query.fecha_hasta),
+    };
+}
+
+function prepararResumenPagosProveedoresVista(resumen = {}) {
+    return {
+        total_registrado: normalizarEntero(resumen.total_registrado, 0),
+        pagos_registrados: normalizarEntero(resumen.pagos_registrados, 0),
+        total_anulado: normalizarEntero(resumen.total_anulado, 0),
+        pagos_anulados: normalizarEntero(resumen.pagos_anulados, 0),
+        total_movimientos: normalizarEntero(resumen.total_movimientos, 0),
+
+        total_registrado_mostrar: formatearMoneda(resumen.total_registrado),
+        total_anulado_mostrar: formatearMoneda(resumen.total_anulado),
+    };
+}
+
+function prepararPagoProveedorGeneralVista(pago) {
+    const proveedorNombre =
+        limpiarTexto(pago.proveedor_nombre_comercial) ||
+        limpiarTexto(pago.proveedor_razon_social) ||
+        `Proveedor #${pago.id_proveedor}`;
+
+    const medioPagoNombre =
+        limpiarTexto(pago.medio_pago_nombre) ||
+        limpiarTexto(pago.medio_pago_codigo) ||
+        `Medio #${pago.id_medio_pago}`;
+
+    const estadoPago = limpiarTexto(pago.estado || 'registrado').toLowerCase();
+    const estaAnulado = estadoPago === 'anulado';
+
+    return {
+        ...pago,
+        proveedor_nombre: proveedorNombre,
+        proveedor_documento_mostrar: pago.proveedor_documento
+            ? `${pago.proveedor_tipo_documento || 'Doc'} ${pago.proveedor_documento}`
+            : 'Sin documento',
+
+        fecha_pago_mostrar: formatearFecha(pago.fecha_pago),
+        fecha_compra_mostrar: formatearFecha(pago.fecha_compra),
+
+        medio_pago_mostrar: medioPagoNombre,
+        monto_pagado_mostrar: formatearMoneda(pago.monto_pagado),
+        total_compra_mostrar: formatearMoneda(pago.total_compra),
+        saldo_pendiente_mostrar: formatearMoneda(pago.saldo_pendiente),
+
+        referencia_pago_mostrar: limpiarTexto(pago.referencia_pago) || 'Sin referencia',
+        entidad_pago_mostrar: limpiarTexto(pago.entidad_pago) || 'Sin entidad',
+        observaciones_mostrar: limpiarTexto(pago.observaciones),
+
+        esta_anulado: estaAnulado,
+        estado_pago_proveedor_etiqueta: estaAnulado ? 'Anulado' : 'Registrado',
+        estado_pago_proveedor_badge: estaAnulado ? 'badge-danger' : 'badge-success',
+
+        origen_pago: limpiarTexto(pago.origen_pago || 'tesoreria'),
+        origen_pago_etiqueta: pago.origen_pago === 'caja' ? 'Caja' : 'Tesorería',
+
+        usuario_nombre: limpiarTexto(pago.usuario_nombre) || 'Sin usuario',
+        anulado_en_mostrar: pago.anulado_en ? formatearFecha(pago.anulado_en) : '',
+        usuario_anulacion_nombre: limpiarTexto(pago.usuario_anulacion_nombre) || '',
+        motivo_anulacion_mostrar: limpiarTexto(pago.motivo_anulacion),
+    };
+}
+
+function listarPagosProveedores(query = {}) {
+    const filtros = prepararFiltrosPagosProveedores(query);
+
+    const pagos = comprasRepository
+        .listarPagosProveedores(filtros)
+        .map(prepararPagoProveedorGeneralVista);
+
+    const resumen = prepararResumenPagosProveedoresVista(
+        comprasRepository.obtenerResumenPagosProveedores(filtros)
+    );
+
+    const mediosPago = comprasRepository
+        .listarMediosPagoActivos()
+        .map(prepararMedioPagoVista);
+
+    return {
+        pagos,
+        resumen,
+        mediosPago,
+        filtros,
+    };
+}
+
 function prepararPagoProveedorVista(pago) {
     const medioPagoNombre =
         limpiarTexto(pago.medio_pago_nombre) ||
@@ -1124,6 +1218,7 @@ function listarCuentasPorPagar() {
 module.exports = {
     listarCompras,
     listarCuentasPorPagar,
+    listarPagosProveedores,
     obtenerFormularioPagoProveedor,
     registrarPagoProveedor,
     anularPagoProveedor,

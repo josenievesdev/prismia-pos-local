@@ -331,6 +331,182 @@ function listarCuentasPorPagar() {
         .all();
 }
 
+function construirFiltrosPagosProveedores(filtros = {}) {
+    const condiciones = [];
+    const parametros = {};
+
+    const busqueda = limpiarTexto(filtros.busqueda);
+    const estado = limpiarTexto(filtros.estado).toLowerCase();
+    const origenPago = limpiarTexto(filtros.origen_pago).toLowerCase();
+    const idMedioPago = normalizarEntero(filtros.id_medio_pago, 0);
+    const fechaDesde = limpiarTexto(filtros.fecha_desde);
+    const fechaHasta = limpiarTexto(filtros.fecha_hasta);
+
+    if (busqueda) {
+        condiciones.push(`
+            (
+                c.numero_compra LIKE @busqueda
+                OR c.numero_soporte LIKE @busqueda
+                OR p.nombre_comercial LIKE @busqueda
+                OR p.razon_social LIKE @busqueda
+                OR p.documento LIKE @busqueda
+                OR pc.referencia_pago LIKE @busqueda
+                OR pc.entidad_pago LIKE @busqueda
+            )
+        `);
+
+        parametros.busqueda = `%${busqueda}%`;
+    }
+
+    if (['registrado', 'anulado'].includes(estado)) {
+        condiciones.push('pc.estado = @estado');
+        parametros.estado = estado;
+    }
+
+    if (['tesoreria', 'caja'].includes(origenPago)) {
+        condiciones.push('pc.origen_pago = @origen_pago');
+        parametros.origen_pago = origenPago;
+    }
+
+    if (idMedioPago > 0) {
+        condiciones.push('pc.id_medio_pago = @id_medio_pago');
+        parametros.id_medio_pago = idMedioPago;
+    }
+
+    if (fechaDesde) {
+        condiciones.push('date(pc.fecha_pago) >= date(@fecha_desde)');
+        parametros.fecha_desde = fechaDesde;
+    }
+
+    if (fechaHasta) {
+        condiciones.push('date(pc.fecha_pago) <= date(@fecha_hasta)');
+        parametros.fecha_hasta = fechaHasta;
+    }
+
+    const where = condiciones.length
+        ? `WHERE ${condiciones.join(' AND ')}`
+        : '';
+
+    return {
+        where,
+        parametros,
+    };
+}
+
+function listarPagosProveedores(filtros = {}) {
+    const { where, parametros } = construirFiltrosPagosProveedores(filtros);
+
+    return db
+        .prepare(`
+            SELECT
+                pc.id_pago_compra_proveedor,
+                pc.id_compra,
+                pc.id_proveedor,
+                pc.id_usuario,
+                pc.id_medio_pago,
+                pc.id_turno_caja,
+                pc.id_movimiento_caja,
+                pc.fecha_pago,
+                pc.monto_pagado,
+                pc.referencia_pago,
+                pc.entidad_pago,
+                pc.observaciones,
+                pc.estado,
+                pc.origen_pago,
+                pc.creado_en,
+                pc.actualizado_en,
+                pc.anulado_en,
+                pc.anulado_por,
+                pc.motivo_anulacion,
+
+                c.numero_compra,
+                c.fecha_compra,
+                c.tipo_soporte,
+                c.numero_soporte,
+                c.total AS total_compra,
+                c.estado_pago AS estado_pago_compra,
+                c.total_pagado,
+                c.saldo_pendiente,
+
+                p.nombre_comercial AS proveedor_nombre_comercial,
+                p.razon_social AS proveedor_razon_social,
+                p.tipo_documento AS proveedor_tipo_documento,
+                p.documento AS proveedor_documento,
+
+                mp.codigo AS medio_pago_codigo,
+                mp.nombre AS medio_pago_nombre,
+                mp.tipo AS medio_pago_tipo,
+
+                u.nombre AS usuario_nombre,
+                ua.nombre AS usuario_anulacion_nombre
+            FROM pagos_compras_proveedores pc
+            INNER JOIN compras c
+                ON c.id_compra = pc.id_compra
+            INNER JOIN proveedores p
+                ON p.id_proveedor = pc.id_proveedor
+            LEFT JOIN medios_pago mp
+                ON mp.id_medio_pago = pc.id_medio_pago
+            LEFT JOIN usuarios u
+                ON u.id_usuario = pc.id_usuario
+            LEFT JOIN usuarios ua
+                ON ua.id_usuario = pc.anulado_por
+            ${where}
+            ORDER BY
+                pc.fecha_pago DESC,
+                pc.id_pago_compra_proveedor DESC
+        `)
+        .all(parametros);
+}
+
+function obtenerResumenPagosProveedores(filtros = {}) {
+    const { where, parametros } = construirFiltrosPagosProveedores(filtros);
+
+    return db
+        .prepare(`
+            SELECT
+                COALESCE(SUM(
+                    CASE
+                        WHEN pc.estado = 'registrado'
+                        THEN pc.monto_pagado
+                        ELSE 0
+                    END
+                ), 0) AS total_registrado,
+
+                COUNT(
+                    CASE
+                        WHEN pc.estado = 'registrado'
+                        THEN 1
+                    END
+                ) AS pagos_registrados,
+
+                COALESCE(SUM(
+                    CASE
+                        WHEN pc.estado = 'anulado'
+                        THEN pc.monto_pagado
+                        ELSE 0
+                    END
+                ), 0) AS total_anulado,
+
+                COUNT(
+                    CASE
+                        WHEN pc.estado = 'anulado'
+                        THEN 1
+                    END
+                ) AS pagos_anulados,
+
+                COUNT(*) AS total_movimientos
+            FROM pagos_compras_proveedores pc
+            INNER JOIN compras c
+                ON c.id_compra = pc.id_compra
+            INNER JOIN proveedores p
+                ON p.id_proveedor = pc.id_proveedor
+            LEFT JOIN medios_pago mp
+                ON mp.id_medio_pago = pc.id_medio_pago
+            ${where}
+        `)
+        .get(parametros);
+}
+
 function listarPagosCompraProveedor(idCompra) {
     return db
         .prepare(`
@@ -1564,6 +1740,8 @@ module.exports = {
     obtenerCompraPorId,
     obtenerCompraParaPagoProveedor,
     listarDetalleCompra,
+    listarPagosProveedores,
+    obtenerResumenPagosProveedores,
     listarPagosCompraProveedor,
     obtenerPagoCompraProveedorPorId,
     listarMediosPagoActivos,
