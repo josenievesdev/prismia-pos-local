@@ -25,329 +25,464 @@
         </div>
     </div>
 
-    <article class="module-card compras-detail-summary">
-        <div>
-            <span>Proveedor</span>
-            <strong>
-                <%= compra.proveedor_nombre %>
-            </strong>
-            <small>
-                <%= compra.proveedor_documento_mostrar %>
-            </small>
+    <% if (mensajeExito==='pago_anulado' ) { %>
+        <div class="compras-feedback is-success">
+            Pago a proveedor anulado correctamente.
         </div>
-
-        <div>
-            <span>Soporte proveedor</span>
-            <strong>
-                <%= compra.soporte_mostrar %>
-            </strong>
-            <small>
-                <%= compra.tipo_soporte %>
-            </small>
-        </div>
-
-        <div>
-            <span>Fecha compra</span>
-            <strong>
-                <%= compra.fecha_compra_mostrar %>
-            </strong>
-            <small>Registrada por <%= compra.usuario_nombre || 'Sin usuario' %></small>
-        </div>
-
-        <div>
-            <span>Estado</span>
-            <strong>
-                <span
-                    class="badge <%= compra.estado === 'registrada' ? 'badge-success' : compra.estado === 'anulada' ? 'badge-danger' : 'badge-muted' %>">
-                    <%= compra.estado_etiqueta %>
-                </span>
-            </strong>
-            <small>Documento interno Prismia</small>
-        </div>
-    </article>
-
-    <article class="module-card compras-detail-totals">
-        <div>
-            <span>Subtotal</span>
-            <strong>
-                <%= compra.subtotal_mostrar %>
-            </strong>
-        </div>
-
-        <div>
-            <span>IVA compra</span>
-            <strong>
-                <%= compra.iva_total_mostrar %>
-            </strong>
-        </div>
-
-        <div class="is-total">
-            <span>Total compra</span>
-            <strong>
-                <%= compra.total_mostrar %>
-            </strong>
-        </div>
-    </article>
-
-    <article class="module-card compras-payment-summary">
-        <div>
-            <span>Condición</span>
-            <strong>
-                <%= compra.condicion_pago_etiqueta %>
-            </strong>
-            <small>
-                Compra registrada como <%= compra.condicion_pago_etiqueta.toLowerCase() %>
-            </small>
-        </div>
-
-        <div>
-            <span>Estado de pago</span>
-            <strong>
-                <span class="badge <%= compra.estado_pago_badge %>">
-                    <%= compra.estado_pago_etiqueta %>
-                </span>
-            </strong>
-            <small>
-                <%= compra.vencimiento_resumen %>
-            </small>
-        </div>
-
-        <div>
-            <span>Vencimiento</span>
-            <strong>
-                <%= compra.fecha_vencimiento_mostrar %>
-            </strong>
-            <small>
-                Días de plazo: <%= compra.dias_plazo || 0 %>
-            </small>
-        </div>
-
-        <div class="is-total">
-            <span>Saldo pendiente</span>
-            <strong>
-                <%= compra.saldo_pendiente_mostrar %>
-            </strong>
-            <small>
-                Pagado: <%= compra.total_pagado_mostrar %>
-            </small>
-        </div>
-    </article>
-
-    <% if (compra.condicion_pago==='credito' && Number(compra.saldo_pendiente || 0)> 0) { %>
-        <article class="module-card compras-payment-action">
-            <div>
-                <span>Cuenta por pagar activa</span>
-                <strong>Registrar abono o pago total</strong>
-                <small>El pago actualizará el saldo pendiente de esta compra.</small>
-            </div>
-
-            <a href="/compras/<%= compra.id_compra %>/pagos/nuevo" class="btn-primary">
-                Registrar pago
-            </a>
-        </article>
         <% } %>
 
-            <article class="module-card compras-payment-history">
-                <div class="table-summary">
-                    <span>Pagos registrados</span>
-                    <span>
-                        <strong>
-                            <%= (pagosProveedor || []).length %>
-                        </strong> pago(s)
-                    </span>
+            <% if (error==='pago_no_anulado' ) { %>
+                <div class="compras-feedback is-error">
+                    No se pudo anular el pago a proveedor.
                 </div>
-
-                <% if (!pagosProveedor || !pagosProveedor.length) { %>
-                    <div class="empty-state compras-payment-empty">
-                        <strong>Sin pagos registrados</strong>
-                        <span>Esta compra todavía no tiene pagos asociados.</span>
-                    </div>
-                    <% } else { %>
-                        <div class="table-wrapper">
-                            <table class="data-table compras-payment-history-table">
-                                <thead>
-                                    <tr>
-                                        <th>Fecha</th>
-                                        <th>Medio</th>
-                                        <th>Referencia</th>
-                                        <th>Usuario</th>
-                                        <th class="text-right">Monto</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    <% pagosProveedor.forEach(function (pago) { %>
-                                        <tr>
-                                            <td>
-                                                <strong>
-                                                    <%= pago.fecha_pago_mostrar %>
-                                                </strong>
-                                            </td>
-
-                                            <td>
-                                                <strong>
-                                                    <%= pago.medio_pago_mostrar %>
-                                                </strong>
-                                                <span class="table-subtext">
-                                                    <%= pago.entidad_pago_mostrar %>
-                                                </span>
-                                            </td>
-
-                                            <td>
-                                                <%= pago.referencia_pago_mostrar %>
-
-                                                    <% if (pago.observaciones_mostrar) { %>
-                                                        <span class="table-subtext">
-                                                            <%= pago.observaciones_mostrar %>
-                                                        </span>
-                                                        <% } %>
-                                            </td>
-
-                                            <td>
-                                                <%= pago.usuario_nombre %>
-                                            </td>
-
-                                            <td class="text-right">
-                                                <strong>
-                                                    <%= pago.monto_pagado_mostrar %>
-                                                </strong>
-                                            </td>
-                                        </tr>
-                                        <% }) %>
-                                </tbody>
-                            </table>
-                        </div>
-                        <% } %>
-            </article>
-
-            <% if (compra.observaciones) { %>
-                <article class="module-card compras-detail-note">
-                    <span>Observaciones</span>
-                    <p>
-                        <%= compra.observaciones %>
-                    </p>
-                </article>
                 <% } %>
 
-                    <article class="module-card">
-                        <div class="table-summary">
-                            <span>Productos comprados</span>
-                            <span>
-                                <strong>
-                                    <%= detalle.length %>
-                                </strong> línea(s)
-                            </span>
+                    <article class="module-card compras-detail-summary">
+                        <div>
+                            <span>Proveedor</span>
+                            <strong>
+                                <%= compra.proveedor_nombre %>
+                            </strong>
+                            <small>
+                                <%= compra.proveedor_documento_mostrar %>
+                            </small>
                         </div>
 
-                        <div class="table-wrapper">
-                            <table class="data-table compras-detail-table">
-                                <thead>
-                                    <tr>
-                                        <th>Producto</th>
-                                        <th class="text-right">Cantidad</th>
-                                        <th class="text-right">Costo base</th>
-                                        <th class="text-right">IVA</th>
-                                        <th class="text-right">Costo final</th>
-                                        <th class="text-right">Total</th>
-                                        <th>Inventario</th>
-                                        <th>Precio venta</th>
-                                    </tr>
-                                </thead>
+                        <div>
+                            <span>Soporte proveedor</span>
+                            <strong>
+                                <%= compra.soporte_mostrar %>
+                            </strong>
+                            <small>
+                                <%= compra.tipo_soporte %>
+                            </small>
+                        </div>
 
-                                <tbody>
-                                    <% detalle.forEach(function (linea) { %>
-                                        <tr>
-                                            <td>
-                                                <strong>
-                                                    <%= linea.producto_nombre %>
-                                                </strong>
-                                                <span class="table-subtext">
-                                                    <%= linea.producto_codigo %> · <%= linea.unidad_abreviatura %>
-                                                </span>
-                                            </td>
+                        <div>
+                            <span>Fecha compra</span>
+                            <strong>
+                                <%= compra.fecha_compra_mostrar %>
+                            </strong>
+                            <small>Registrada por <%= compra.usuario_nombre || 'Sin usuario' %></small>
+                        </div>
 
-                                            <td class="text-right">
-                                                <%= linea.cantidad_mostrar %>
-                                            </td>
-
-                                            <td class="text-right">
-                                                <strong>
-                                                    <%= linea.costo_unitario_mostrar %>
-                                                </strong>
-
-                                                <% if (Number(linea.descuento_porcentaje || 0)> 0) { %>
-                                                    <span class="table-subtext">
-                                                        Desc. <%= linea.descuento_porcentaje %>%:
-                                                            <%= linea.descuento_linea_mostrar %>
-                                                    </span>
-                                                    <% } %>
-                                            </td>
-
-                                            <td class="text-right">
-                                                <strong>
-                                                    <%= linea.porcentaje_iva %>%
-                                                </strong>
-                                                <span class="table-subtext">
-                                                    <%= linea.iva_linea_mostrar %>
-                                                </span>
-                                            </td>
-
-                                            <td class="text-right">
-                                                <strong>
-                                                    <%= linea.costo_unitario_final_mostrar %>
-                                                </strong>
-                                                <span class="table-subtext">
-                                                    Neto: <%= linea.costo_unitario_neto_mostrar %>
-                                                </span>
-                                            </td>
-
-                                            <td class="text-right">
-                                                <strong>
-                                                    <%= linea.total_linea_mostrar %>
-                                                </strong>
-                                            </td>
-
-                                            <td>
-                                                <strong>
-                                                    <%= linea.stock_anterior_mostrar %>
-                                                        →
-                                                        <%= linea.stock_nuevo_mostrar %>
-                                                </strong>
-
-                                                <span class="table-subtext">
-                                                    Promedio:
-                                                    <%= linea.costo_promedio_anterior_mostrar %>
-                                                        →
-                                                        <%= linea.costo_promedio_nuevo_mostrar %>
-                                                </span>
-                                            </td>
-
-                                            <td>
-                                                <strong>
-                                                    <%= linea.precio_venta_anterior_mostrar %>
-                                                        →
-                                                        <%= linea.precio_venta_nuevo_mostrar %>
-                                                </strong>
-
-                                                <span class="table-subtext">
-                                                    Sugerido:
-                                                    <%= linea.precio_venta_sugerido_mostrar %>
-                                                </span>
-
-                                                <% if (linea.actualizo_precio) { %>
-                                                    <span class="badge badge-success">
-                                                        Actualizado
-                                                    </span>
-                                                    <% } else { %>
-                                                        <span class="badge badge-muted">
-                                                            Sin cambio
-                                                        </span>
-                                                        <% } %>
-                                            </td>
-                                        </tr>
-                                        <% }) %>
-                                </tbody>
-                            </table>
+                        <div>
+                            <span>Estado</span>
+                            <strong>
+                                <span
+                                    class="badge <%= compra.estado === 'registrada' ? 'badge-success' : compra.estado === 'anulada' ? 'badge-danger' : 'badge-muted' %>">
+                                    <%= compra.estado_etiqueta %>
+                                </span>
+                            </strong>
+                            <small>Documento interno Prismia</small>
                         </div>
                     </article>
+
+                    <article class="module-card compras-detail-totals">
+                        <div>
+                            <span>Subtotal</span>
+                            <strong>
+                                <%= compra.subtotal_mostrar %>
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span>IVA compra</span>
+                            <strong>
+                                <%= compra.iva_total_mostrar %>
+                            </strong>
+                        </div>
+
+                        <div class="is-total">
+                            <span>Total compra</span>
+                            <strong>
+                                <%= compra.total_mostrar %>
+                            </strong>
+                        </div>
+                    </article>
+
+                    <article class="module-card compras-payment-summary">
+                        <div>
+                            <span>Condición</span>
+                            <strong>
+                                <%= compra.condicion_pago_etiqueta %>
+                            </strong>
+                            <small>
+                                Compra registrada como <%= compra.condicion_pago_etiqueta.toLowerCase() %>
+                            </small>
+                        </div>
+
+                        <div>
+                            <span>Estado de pago</span>
+                            <strong>
+                                <span class="badge <%= compra.estado_pago_badge %>">
+                                    <%= compra.estado_pago_etiqueta %>
+                                </span>
+                            </strong>
+                            <small>
+                                <%= compra.vencimiento_resumen %>
+                            </small>
+                        </div>
+
+                        <div>
+                            <span>Vencimiento</span>
+                            <strong>
+                                <%= compra.fecha_vencimiento_mostrar %>
+                            </strong>
+                            <small>
+                                Días de plazo: <%= compra.dias_plazo || 0 %>
+                            </small>
+                        </div>
+
+                        <div class="is-total">
+                            <span>Saldo pendiente</span>
+                            <strong>
+                                <%= compra.saldo_pendiente_mostrar %>
+                            </strong>
+                            <small>
+                                Pagado: <%= compra.total_pagado_mostrar %>
+                            </small>
+                        </div>
+                    </article>
+
+                    <% if (compra.condicion_pago==='credito' && Number(compra.saldo_pendiente || 0)> 0) { %>
+                        <article class="module-card compras-payment-action">
+                            <div>
+                                <span>Cuenta por pagar activa</span>
+                                <strong>Registrar abono o pago total</strong>
+                                <small>El pago actualizará el saldo pendiente de esta compra.</small>
+                            </div>
+
+                            <a href="/compras/<%= compra.id_compra %>/pagos/nuevo" class="btn-primary">
+                                Registrar pago
+                            </a>
+                        </article>
+                        <% } %>
+
+                            <article class="module-card compras-payment-history">
+                                <% const totalPagosProveedor=(pagosProveedor || []).length; const
+                                    pagosProveedorActivos=(pagosProveedor || []).filter(function (pago) { return
+                                    !pago.esta_anulado; }).length; const pagosProveedorAnulados=totalPagosProveedor -
+                                    pagosProveedorActivos; %>
+
+                                    <div class="table-summary compras-payment-history-summary">
+                                        <span>Historial de pagos</span>
+                                        <span>
+                                            <strong>
+                                                <%= pagosProveedorActivos %>
+                                            </strong> activo(s)
+                                            ·
+                                            <strong>
+                                                <%= pagosProveedorAnulados %>
+                                            </strong> anulado(s)
+                                        </span>
+                                    </div>
+
+                                    <% if (!pagosProveedor || !pagosProveedor.length) { %>
+                                        <div class="empty-state compras-payment-empty">
+                                            <strong>Sin pagos registrados</strong>
+                                            <span>Esta compra todavía no tiene pagos asociados.</span>
+                                        </div>
+                                        <% } else { %>
+                                            <div class="table-wrapper">
+                                                <table class="data-table compras-payment-history-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Fecha</th>
+                                                            <th>Medio</th>
+                                                            <th>Referencia</th>
+                                                            <th>Estado</th>
+                                                            <th>Usuario</th>
+                                                            <th class="text-right">Monto</th>
+                                                            <th class="text-right">Acción</th>
+                                                        </tr>
+                                                    </thead>
+
+                                                    <tbody>
+                                                        <% pagosProveedor.forEach(function (pago) { %>
+                                                            <tr
+                                                                class="<%= pago.esta_anulado ? 'is-cancelled-row' : '' %>">
+                                                                <td>
+                                                                    <strong>
+                                                                        <%= pago.fecha_pago_mostrar %>
+                                                                    </strong>
+
+                                                                    <% if (pago.esta_anulado && pago.anulado_en_mostrar)
+                                                                        { %>
+                                                                        <span class="table-subtext">
+                                                                            Anulado: <%= pago.anulado_en_mostrar %>
+                                                                        </span>
+                                                                        <% } %>
+                                                                </td>
+
+                                                                <td>
+                                                                    <strong>
+                                                                        <%= pago.medio_pago_mostrar %>
+                                                                    </strong>
+                                                                    <span class="table-subtext">
+                                                                        <%= pago.entidad_pago_mostrar %>
+                                                                    </span>
+                                                                </td>
+
+                                                                <td>
+                                                                    <%= pago.referencia_pago_mostrar %>
+
+                                                                        <% if (pago.observaciones_mostrar) { %>
+                                                                            <span class="table-subtext">
+                                                                                <%= pago.observaciones_mostrar %>
+                                                                            </span>
+                                                                            <% } %>
+
+                                                                                <% if (pago.esta_anulado &&
+                                                                                    pago.motivo_anulacion_mostrar) { %>
+                                                                                    <span
+                                                                                        class="table-subtext compras-payment-cancel-reason">
+                                                                                        Motivo: <%=
+                                                                                            pago.motivo_anulacion_mostrar
+                                                                                            %>
+                                                                                    </span>
+                                                                                    <% } %>
+                                                                </td>
+
+                                                                <td>
+                                                                    <span
+                                                                        class="badge <%= pago.estado_pago_proveedor_badge %>">
+                                                                        <%= pago.estado_pago_proveedor_etiqueta %>
+                                                                    </span>
+
+                                                                    <% if (pago.esta_anulado &&
+                                                                        pago.usuario_anulacion_nombre) { %>
+                                                                        <span class="table-subtext">
+                                                                            Por: <%= pago.usuario_anulacion_nombre %>
+                                                                        </span>
+                                                                        <% } %>
+                                                                </td>
+
+                                                                <td>
+                                                                    <%= pago.usuario_nombre %>
+                                                                </td>
+
+                                                                <td class="text-right">
+                                                                    <strong
+                                                                        class="<%= pago.esta_anulado ? 'compras-payment-cancelled-money' : '' %>">
+                                                                        <%= pago.monto_pagado_mostrar %>
+                                                                    </strong>
+                                                                </td>
+
+                                                                <td class="text-right">
+                                                                    <% if (!pago.esta_anulado) { %>
+                                                                        <button type="button"
+                                                                            class="btn-secondary btn-sm compras-payment-cancel-button"
+                                                                            data-modal-anular-pago
+                                                                            data-action="/compras/<%= compra.id_compra %>/pagos/<%= pago.id_pago_compra_proveedor %>/anular"
+                                                                            data-monto="<%= pago.monto_pagado_mostrar %>"
+                                                                            data-fecha="<%= pago.fecha_pago_mostrar %>"
+                                                                            data-medio="<%= pago.medio_pago_mostrar %>">
+                                                                            Anular
+                                                                        </button>
+                                                                        <% } else { %>
+                                                                            <span class="table-subtext">Sin
+                                                                                acción</span>
+                                                                            <% } %>
+                                                                </td>
+                                                            </tr>
+                                                            <% }) %>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <% } %>
+                            </article>
+
+                            <% if (compra.observaciones) { %>
+                                <article class="module-card compras-detail-note">
+                                    <span>Observaciones</span>
+                                    <p>
+                                        <%= compra.observaciones %>
+                                    </p>
+                                </article>
+                                <% } %>
+
+                                    <article class="module-card">
+                                        <div class="table-summary">
+                                            <span>Productos comprados</span>
+                                            <span>
+                                                <strong>
+                                                    <%= detalle.length %>
+                                                </strong> línea(s)
+                                            </span>
+                                        </div>
+
+                                        <div class="table-wrapper">
+                                            <table class="data-table compras-detail-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Producto</th>
+                                                        <th class="text-right">Cantidad</th>
+                                                        <th class="text-right">Costo base</th>
+                                                        <th class="text-right">IVA</th>
+                                                        <th class="text-right">Costo final</th>
+                                                        <th class="text-right">Total</th>
+                                                        <th>Inventario</th>
+                                                        <th>Precio venta</th>
+                                                    </tr>
+                                                </thead>
+
+                                                <tbody>
+                                                    <% detalle.forEach(function (linea) { %>
+                                                        <tr>
+                                                            <td>
+                                                                <strong>
+                                                                    <%= linea.producto_nombre %>
+                                                                </strong>
+                                                                <span class="table-subtext">
+                                                                    <%= linea.producto_codigo %> · <%=
+                                                                            linea.unidad_abreviatura %>
+                                                                </span>
+                                                            </td>
+
+                                                            <td class="text-right">
+                                                                <%= linea.cantidad_mostrar %>
+                                                            </td>
+
+                                                            <td class="text-right">
+                                                                <strong>
+                                                                    <%= linea.costo_unitario_mostrar %>
+                                                                </strong>
+
+                                                                <% if (Number(linea.descuento_porcentaje || 0)> 0) { %>
+                                                                    <span class="table-subtext">
+                                                                        Desc. <%= linea.descuento_porcentaje %>%:
+                                                                            <%= linea.descuento_linea_mostrar %>
+                                                                    </span>
+                                                                    <% } %>
+                                                            </td>
+
+                                                            <td class="text-right">
+                                                                <strong>
+                                                                    <%= linea.porcentaje_iva %>%
+                                                                </strong>
+                                                                <span class="table-subtext">
+                                                                    <%= linea.iva_linea_mostrar %>
+                                                                </span>
+                                                            </td>
+
+                                                            <td class="text-right">
+                                                                <strong>
+                                                                    <%= linea.costo_unitario_final_mostrar %>
+                                                                </strong>
+                                                                <span class="table-subtext">
+                                                                    Neto: <%= linea.costo_unitario_neto_mostrar %>
+                                                                </span>
+                                                            </td>
+
+                                                            <td class="text-right">
+                                                                <strong>
+                                                                    <%= linea.total_linea_mostrar %>
+                                                                </strong>
+                                                            </td>
+
+                                                            <td>
+                                                                <strong>
+                                                                    <%= linea.stock_anterior_mostrar %>
+                                                                        →
+                                                                        <%= linea.stock_nuevo_mostrar %>
+                                                                </strong>
+
+                                                                <span class="table-subtext">
+                                                                    Promedio:
+                                                                    <%= linea.costo_promedio_anterior_mostrar %>
+                                                                        →
+                                                                        <%= linea.costo_promedio_nuevo_mostrar %>
+                                                                </span>
+                                                            </td>
+
+                                                            <td>
+                                                                <strong>
+                                                                    <%= linea.precio_venta_anterior_mostrar %>
+                                                                        →
+                                                                        <%= linea.precio_venta_nuevo_mostrar %>
+                                                                </strong>
+
+                                                                <span class="table-subtext">
+                                                                    Sugerido:
+                                                                    <%= linea.precio_venta_sugerido_mostrar %>
+                                                                </span>
+
+                                                                <% if (linea.actualizo_precio) { %>
+                                                                    <span class="badge badge-success">
+                                                                        Actualizado
+                                                                    </span>
+                                                                    <% } else { %>
+                                                                        <span class="badge badge-muted">
+                                                                            Sin cambio
+                                                                        </span>
+                                                                        <% } %>
+                                                            </td>
+                                                        </tr>
+                                                        <% }) %>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </article>
+
+                                    <div class="compras-modal-overlay" id="modalAnularPagoProveedor" hidden>
+                                        <div class="compras-modal" role="dialog" aria-modal="true"
+                                            aria-labelledby="modalAnularPagoTitulo">
+                                            <div class="compras-modal-header">
+                                                <div>
+                                                    <span>Anulación de pago</span>
+                                                    <h3 id="modalAnularPagoTitulo">Anular pago a proveedor</h3>
+                                                </div>
+
+                                                <button type="button" class="compras-modal-close"
+                                                    data-cerrar-modal-anular-pago aria-label="Cerrar modal">
+                                                    ×
+                                                </button>
+                                            </div>
+
+                                            <div class="compras-modal-body">
+                                                <p>
+                                                    Vas a anular este pago. El saldo pendiente de la compra se
+                                                    recalculará automáticamente.
+                                                </p>
+
+                                                <div class="compras-modal-summary">
+                                                    <div>
+                                                        <span>Monto</span>
+                                                        <strong data-modal-pago-monto>—</strong>
+                                                    </div>
+
+                                                    <div>
+                                                        <span>Fecha</span>
+                                                        <strong data-modal-pago-fecha>—</strong>
+                                                    </div>
+
+                                                    <div>
+                                                        <span>Medio</span>
+                                                        <strong data-modal-pago-medio>—</strong>
+                                                    </div>
+                                                </div>
+
+                                                <form method="POST" id="formAnularPagoProveedor"
+                                                    class="compras-modal-form">
+                                                    <label class="form-group">
+                                                        <span>Motivo de anulación</span>
+                                                        <textarea name="motivo_anulacion" rows="3" maxlength="300"
+                                                            required>Anulado desde detalle de compra</textarea>
+                                                    </label>
+
+                                                    <div class="compras-modal-actions">
+                                                        <button type="button" class="btn-secondary"
+                                                            data-cerrar-modal-anular-pago>
+                                                            Cancelar
+                                                        </button>
+
+                                                        <button type="submit" class="btn-primary">
+                                                            Confirmar anulación
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
 </section>

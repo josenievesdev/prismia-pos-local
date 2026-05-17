@@ -349,19 +349,26 @@ function listarPagosCompraProveedor(idCompra) {
                 pc.observaciones,
                 pc.estado,
                 pc.creado_en,
+                pc.actualizado_en,
+                pc.anulado_en,
+                pc.anulado_por,
+                pc.motivo_anulacion,
 
                 mp.codigo AS medio_pago_codigo,
                 mp.nombre AS medio_pago_nombre,
                 mp.tipo AS medio_pago_tipo,
 
-                u.nombre AS usuario_nombre
+                u.nombre AS usuario_nombre,
+                ua.nombre AS usuario_anulacion_nombre
             FROM pagos_compras_proveedores pc
             LEFT JOIN medios_pago mp
                 ON mp.id_medio_pago = pc.id_medio_pago
             LEFT JOIN usuarios u
                 ON u.id_usuario = pc.id_usuario
+            LEFT JOIN usuarios ua
+                ON ua.id_usuario = pc.anulado_por
             WHERE pc.id_compra = ?
-              AND pc.estado = 'registrado'
+              AND pc.estado IN ('registrado', 'anulado')
             ORDER BY
                 pc.fecha_pago DESC,
                 pc.id_pago_compra_proveedor DESC
@@ -507,6 +514,205 @@ function registrarAuditoriaPagoProveedor({ usuario, idPago, compraAntes, compraD
         ip: ip || 'local',
         user_agent: userAgent || '',
     });
+}
+
+function obtenerPagoCompraProveedorPorId(idPago) {
+    return db
+        .prepare(`
+            SELECT
+                pc.id_pago_compra_proveedor,
+                pc.id_compra,
+                pc.id_proveedor,
+                pc.id_usuario,
+                pc.id_medio_pago,
+                pc.id_turno_caja,
+                pc.id_movimiento_caja,
+                pc.fecha_pago,
+                pc.monto_pagado,
+                pc.referencia_pago,
+                pc.entidad_pago,
+                pc.observaciones,
+                pc.estado,
+                pc.creado_en,
+                pc.anulado_en,
+                pc.anulado_por,
+                pc.motivo_anulacion
+            FROM pagos_compras_proveedores pc
+            WHERE pc.id_pago_compra_proveedor = ?
+            LIMIT 1
+        `)
+        .get(Number(idPago));
+}
+
+function registrarAuditoriaAnulacionPagoProveedor({
+    usuario,
+    pagoAntes,
+    pagoDespues,
+    compraAntes,
+    compraDespues,
+    motivoAnulacion,
+    ip,
+    userAgent,
+}) {
+    if (!tablaExiste('auditoria')) {
+        return;
+    }
+
+    db.prepare(`
+        INSERT INTO auditoria (
+            id_usuario,
+            accion,
+            tabla_afectada,
+            id_registro_afectado,
+            datos_anteriores,
+            datos_nuevos,
+            ip,
+            user_agent
+        ) VALUES (
+            @id_usuario,
+            'anular_pago_compra_proveedor',
+            'pagos_compras_proveedores',
+            @id_registro_afectado,
+            @datos_anteriores,
+            @datos_nuevos,
+            @ip,
+            @user_agent
+        )
+    `).run({
+        id_usuario: usuario.id_usuario,
+        id_registro_afectado: pagoAntes.id_pago_compra_proveedor,
+        datos_anteriores: JSON.stringify({
+            pago: pagoAntes,
+            compra: {
+                id_compra: compraAntes.id_compra,
+                numero_compra: compraAntes.numero_compra,
+                estado_pago: compraAntes.estado_pago,
+                total_pagado: compraAntes.total_pagado,
+                saldo_pendiente: compraAntes.saldo_pendiente,
+                fecha_pago: compraAntes.fecha_pago,
+            },
+        }),
+        datos_nuevos: JSON.stringify({
+            pago: pagoDespues,
+            compra: {
+                id_compra: compraDespues.id_compra,
+                numero_compra: compraDespues.numero_compra,
+                estado_pago: compraDespues.estado_pago,
+                total_pagado: compraDespues.total_pagado,
+                saldo_pendiente: compraDespues.saldo_pendiente,
+                fecha_pago: compraDespues.fecha_pago,
+            },
+            motivo_anulacion: motivoAnulacion,
+        }),
+        ip: ip || 'local',
+        user_agent: userAgent || '',
+    });
+}
+
+function anularPagoCompraProveedor({ idCompra, idPago, motivoAnulacion, usuario, ip, userAgent }) {
+    const transaccion = db.transaction(() => {
+        const compraActual = obtenerCompraParaPagoProveedor(idCompra);
+
+        if (!compraActual) {
+            throw new Error('No se encontró la compra seleccionada.');
+        }
+
+        const pagoActual = obtenerPagoCompraProveedorPorId(idPago);
+
+        if (!pagoActual) {
+            throw new Error('No se encontró el pago seleccionado.');
+        }
+
+        if (Number(pagoActual.id_compra) !== Number(compraActual.id_compra)) {
+            throw new Error('El pago seleccionado no pertenece a esta compra.');
+        }
+
+        if (pagoActual.estado !== 'registrado') {
+            throw new Error('Este pago ya fue anulado o no está disponible.');
+        }
+
+        if (pagoActual.id_movimiento_caja) {
+            throw new Error('Este pago tiene movimiento de caja asociado. La reversión de caja se implementará en un bloque posterior.');
+        }
+
+        const totalCompra = normalizarEntero(compraActual.total, 0);
+        const totalPagadoActual = normalizarEntero(compraActual.total_pagado, 0);
+        const montoPago = normalizarEntero(pagoActual.monto_pagado, 0);
+
+        const totalPagadoNuevo = Math.max(0, totalPagadoActual - montoPago);
+        const saldoPendienteNuevo = Math.max(0, totalCompra - totalPagadoNuevo);
+
+        let estadoPagoNuevo = 'pendiente';
+
+        if (saldoPendienteNuevo === 0) {
+            estadoPagoNuevo = 'pagada';
+        } else if (totalPagadoNuevo > 0) {
+            estadoPagoNuevo = 'parcial';
+        }
+
+        const fechaPagoNueva = estadoPagoNuevo === 'pagada'
+            ? compraActual.fecha_pago
+            : null;
+
+        db.prepare(`
+            UPDATE pagos_compras_proveedores
+            SET estado = 'anulado',
+                anulado_en = CURRENT_TIMESTAMP,
+                anulado_por = @anulado_por,
+                motivo_anulacion = @motivo_anulacion,
+                actualizado_en = CURRENT_TIMESTAMP
+            WHERE id_pago_compra_proveedor = @id_pago_compra_proveedor
+              AND estado = 'registrado'
+        `).run({
+            id_pago_compra_proveedor: pagoActual.id_pago_compra_proveedor,
+            anulado_por: usuario.id_usuario,
+            motivo_anulacion: motivoAnulacion || 'Anulación de pago a proveedor',
+        });
+
+        db.prepare(`
+            UPDATE compras
+            SET total_pagado = @total_pagado,
+                saldo_pendiente = @saldo_pendiente,
+                estado_pago = @estado_pago,
+                fecha_pago = @fecha_pago,
+                actualizado_en = CURRENT_TIMESTAMP
+            WHERE id_compra = @id_compra
+        `).run({
+            id_compra: compraActual.id_compra,
+            total_pagado: totalPagadoNuevo,
+            saldo_pendiente: saldoPendienteNuevo,
+            estado_pago: estadoPagoNuevo,
+            fecha_pago: fechaPagoNueva,
+        });
+
+        const pagoDespues = obtenerPagoCompraProveedorPorId(pagoActual.id_pago_compra_proveedor);
+
+        const compraDespues = {
+            ...compraActual,
+            total_pagado: totalPagadoNuevo,
+            saldo_pendiente: saldoPendienteNuevo,
+            estado_pago: estadoPagoNuevo,
+            fecha_pago: fechaPagoNueva,
+        };
+
+        registrarAuditoriaAnulacionPagoProveedor({
+            usuario,
+            pagoAntes: pagoActual,
+            pagoDespues,
+            compraAntes: compraActual,
+            compraDespues,
+            motivoAnulacion,
+            ip,
+            userAgent,
+        });
+
+        return {
+            pago: pagoDespues,
+            compra: compraDespues,
+        };
+    });
+
+    return transaccion();
 }
 
 function registrarPagoCompraProveedor({ idCompra, pago, usuario, ip, userAgent }) {
@@ -1353,8 +1559,10 @@ module.exports = {
     obtenerCompraParaPagoProveedor,
     listarDetalleCompra,
     listarPagosCompraProveedor,
+    obtenerPagoCompraProveedorPorId,
     listarMediosPagoActivos,
     obtenerMedioPagoPorId,
     registrarPagoCompraProveedor,
+    anularPagoCompraProveedor,
     registrarCompraConInventario,
 };

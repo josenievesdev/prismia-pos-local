@@ -30,6 +30,11 @@
                     </main>
             </section>
     </div>
+    <% if (typeof scriptsModulo !=='undefined' && Array.isArray(scriptsModulo)) { %>
+        <% scriptsModulo.forEach((script)=> { %>
+            <script src="<%= script %>"></script>
+            <% }) %>
+                <% } %>
 </body>
 
 </html>

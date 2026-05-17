@@ -708,6 +708,58 @@ function validarPagoProveedor(idCompra, datos = {}, contexto = {}) {
     };
 }
 
+function anularPagoProveedor(idCompra, idPago, datos = {}, contexto = {}) {
+    const usuario = contexto.usuario || null;
+    const motivoAnulacion = limpiarTexto(datos.motivo_anulacion || 'Anulación de pago a proveedor');
+
+    if (!usuario?.id_usuario) {
+        return {
+            ok: false,
+            codigoEstado: 401,
+            errores: ['No se encontró el usuario activo de la sesión.'],
+        };
+    }
+
+    if (!idCompra || !idPago) {
+        return {
+            ok: false,
+            codigoEstado: 400,
+            errores: ['No se recibió la compra o el pago seleccionado.'],
+        };
+    }
+
+    if (motivoAnulacion.length > 300) {
+        return {
+            ok: false,
+            codigoEstado: 422,
+            errores: ['El motivo de anulación no puede superar 300 caracteres.'],
+        };
+    }
+
+    try {
+        const resultado = comprasRepository.anularPagoCompraProveedor({
+            idCompra,
+            idPago,
+            motivoAnulacion,
+            usuario,
+            ip: contexto.ip,
+            userAgent: contexto.userAgent,
+        });
+
+        return {
+            ok: true,
+            resultado,
+            mensaje: 'Pago a proveedor anulado correctamente.',
+        };
+    } catch (error) {
+        return {
+            ok: false,
+            codigoEstado: 400,
+            errores: [error.message || 'No se pudo anular el pago a proveedor.'],
+        };
+    }
+}
+
 function registrarPagoProveedor(idCompra, datos = {}, contexto = {}) {
     const resultadoValidacion = validarPagoProveedor(idCompra, datos, contexto);
 
@@ -920,8 +972,14 @@ function prepararPagoProveedorVista(pago) {
         limpiarTexto(pago.medio_pago_codigo) ||
         `Medio #${pago.id_medio_pago}`;
 
+    const estadoPago = limpiarTexto(pago.estado || 'registrado').toLowerCase();
+    const estaAnulado = estadoPago === 'anulado';
+
     return {
         ...pago,
+        esta_anulado: estaAnulado,
+        estado_pago_proveedor_etiqueta: estaAnulado ? 'Anulado' : 'Registrado',
+        estado_pago_proveedor_badge: estaAnulado ? 'badge-danger' : 'badge-success',
         medio_pago_mostrar: medioPagoNombre,
         fecha_pago_mostrar: formatearFecha(pago.fecha_pago),
         monto_pagado_mostrar: formatearMoneda(pago.monto_pagado),
@@ -929,6 +987,9 @@ function prepararPagoProveedorVista(pago) {
         entidad_pago_mostrar: limpiarTexto(pago.entidad_pago) || 'Sin entidad',
         observaciones_mostrar: limpiarTexto(pago.observaciones),
         usuario_nombre: limpiarTexto(pago.usuario_nombre) || 'Sin usuario',
+        anulado_en_mostrar: pago.anulado_en ? formatearFecha(pago.anulado_en) : '',
+        usuario_anulacion_nombre: limpiarTexto(pago.usuario_anulacion_nombre) || '',
+        motivo_anulacion_mostrar: limpiarTexto(pago.motivo_anulacion),
     };
 }
 
@@ -1062,6 +1123,7 @@ module.exports = {
     listarCuentasPorPagar,
     obtenerFormularioPagoProveedor,
     registrarPagoProveedor,
+    anularPagoProveedor,
     obtenerDatosFormularioNuevaCompra,
     buscarProductosParaCompra,
     validarYCalcularCompra,

@@ -40,7 +40,10 @@ function mostrarDetalleCompra(req, res) {
         compra: resultado.compra,
         detalle: resultado.detalle,
         pagosProveedor: resultado.pagosProveedor || [],
+        mensajeExito: req.query.exito || null,
+        error: req.query.error || null,
         estilosModulo: estilosComprasPOS,
+        scriptsModulo: ['/js/compras-detalle.js'],
     });
 }
 
@@ -105,6 +108,25 @@ function registrarPagoProveedor(req, res) {
     }
 
     return res.redirect('/compras/cuentas-por-pagar?exito=pago_registrado');
+}
+
+function anularPagoProveedor(req, res) {
+    const resultado = comprasService.anularPagoProveedor(
+        req.params.id,
+        req.params.idPago,
+        req.body || {},
+        {
+            usuario: req.session?.usuario || null,
+            ip: req.ip || 'local',
+            userAgent: req.get('user-agent') || '',
+        }
+    );
+
+    if (!resultado.ok) {
+        return res.redirect(`/compras/${req.params.id}?error=pago_no_anulado`);
+    }
+
+    return res.redirect(`/compras/${req.params.id}?exito=pago_anulado`);
 }
 
 function buscarProductosParaCompra(req, res) {
@@ -188,6 +210,7 @@ module.exports = {
     mostrarDetalleCompra,
     mostrarFormularioPagoProveedor,
     registrarPagoProveedor,
+    anularPagoProveedor,
     mostrarImprimirCompra,
     mostrarFormularioNuevaCompra,
     buscarProductosParaCompra,

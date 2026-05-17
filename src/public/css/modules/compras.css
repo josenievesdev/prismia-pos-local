@@ -926,3 +926,186 @@
         align-items: stretch;
     }
 }
+
+/* ===== Anulación de pagos proveedor ===== */
+
+.compras-payment-cancel-form {
+    display: inline-flex;
+    justify-content: flex-end;
+    margin: 0;
+}
+
+.compras-payment-cancel-form .btn-secondary {
+    min-height: 30px;
+}
+
+/* ===== Modal Prismia para anulación de pagos ===== */
+
+body.modal-open {
+    overflow: hidden;
+}
+
+.compras-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: grid;
+    place-items: center;
+    padding: 18px;
+    background: rgba(15, 23, 42, 0.52);
+    backdrop-filter: blur(3px);
+}
+
+.compras-modal-overlay[hidden] {
+    display: none;
+}
+
+.compras-modal {
+    width: min(520px, 100%);
+    border: 1px solid var(--color-border);
+    border-radius: 18px;
+    background: var(--color-surface);
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.28);
+    overflow: hidden;
+}
+
+.compras-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 18px 18px 14px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.compras-modal-header span {
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.compras-modal-header h3 {
+    margin: 4px 0 0;
+    color: var(--color-text);
+    font-size: 18px;
+    line-height: 1.2;
+}
+
+.compras-modal-close {
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-bg-soft);
+    color: var(--color-text);
+    cursor: pointer;
+    font-size: 22px;
+    line-height: 1;
+}
+
+.compras-modal-close:hover {
+    background: var(--color-surface);
+}
+
+.compras-modal-body {
+    display: grid;
+    gap: 14px;
+    padding: 18px;
+}
+
+.compras-modal-body p {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.compras-modal-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.compras-modal-summary div {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 11px;
+    background: var(--color-bg-soft);
+}
+
+.compras-modal-summary span {
+    display: block;
+    color: var(--color-muted);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.compras-modal-summary strong {
+    display: block;
+    margin-top: 4px;
+    color: var(--color-text);
+    font-size: 13px;
+    line-height: 1.25;
+}
+
+.compras-modal-form {
+    display: grid;
+    gap: 14px;
+}
+
+.compras-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.compras-payment-cancel-button {
+    min-height: 30px;
+}
+
+@media (max-width: 640px) {
+    .compras-modal-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .compras-modal-actions {
+        flex-direction: column-reverse;
+    }
+
+    .compras-modal-actions .btn-primary,
+    .compras-modal-actions .btn-secondary {
+        width: 100%;
+    }
+}
+
+/* ===== Historial de pagos anulados ===== */
+
+.compras-payment-history-table tr.is-cancelled-row {
+    background: rgba(239, 68, 68, 0.035);
+}
+
+.compras-payment-history-table tr.is-cancelled-row td {
+    color: var(--color-muted);
+}
+
+.compras-payment-cancel-reason {
+    color: #991b1b;
+}
+
+.compras-payment-cancelled-money {
+    color: var(--color-muted);
+    text-decoration: line-through;
+}
+
+.compras-payment-history-summary {
+    align-items: center;
+}
+
+.compras-payment-history-summary span:last-child {
+    color: var(--color-muted);
+    font-size: 12px;
+}

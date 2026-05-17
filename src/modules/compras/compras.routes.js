@@ -19,6 +19,7 @@ router.get('/', comprasController.listarCompras);
 
 router.get('/:id/pagos/nuevo', comprasController.mostrarFormularioPagoProveedor);
 router.post('/:id/pagos', comprasController.registrarPagoProveedor);
+router.post('/:id/pagos/:idPago/anular', comprasController.anularPagoProveedor);
 
 router.get('/:id/imprimir', comprasController.mostrarImprimirCompra);
 router.get('/:id', comprasController.mostrarDetalleCompra);
