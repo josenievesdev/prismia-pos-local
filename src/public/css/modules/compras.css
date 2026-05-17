@@ -559,3 +559,143 @@
 .compras-payable-card.is-warning strong {
     color: #92400e;
 }
+
+/* ===== Cuentas por pagar ===== */
+
+.compras-header-actions {
+    justify-content: flex-end;
+}
+
+.compras-cxp-page {
+    gap: 14px;
+}
+
+.compras-cxp-card {
+    padding: 16px;
+}
+
+.compras-cxp-summary {
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.compras-cxp-table-wrapper {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+}
+
+.compras-cxp-table {
+    min-width: 1080px;
+}
+
+.compras-cxp-table th,
+.compras-cxp-table td {
+    padding: 11px 12px;
+    vertical-align: top;
+}
+
+.compras-cxp-table th {
+    white-space: nowrap;
+}
+
+.compras-cxp-table tbody tr:hover {
+    background: rgba(36, 79, 143, 0.035);
+}
+
+.compras-cxp-table th:nth-child(1),
+.compras-cxp-table td:nth-child(1) {
+    width: 12%;
+}
+
+.compras-cxp-table th:nth-child(2),
+.compras-cxp-table td:nth-child(2) {
+    width: 22%;
+}
+
+.compras-cxp-table th:nth-child(3),
+.compras-cxp-table td:nth-child(3) {
+    width: 15%;
+}
+
+.compras-cxp-table th:nth-child(4),
+.compras-cxp-table td:nth-child(4),
+.compras-cxp-table th:nth-child(5),
+.compras-cxp-table td:nth-child(5) {
+    width: 12%;
+}
+
+.compras-cxp-table th:nth-child(6),
+.compras-cxp-table td:nth-child(6) {
+    width: 10%;
+}
+
+.compras-cxp-table th:nth-child(7),
+.compras-cxp-table td:nth-child(7),
+.compras-cxp-table th:nth-child(8),
+.compras-cxp-table td:nth-child(8) {
+    width: 12%;
+}
+
+.compras-cxp-table th:nth-child(9),
+.compras-cxp-table td:nth-child(9) {
+    width: 9%;
+}
+
+.compras-cxp-main-cell {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.compras-cxp-main-cell strong,
+.compras-cxp-money,
+.compras-cxp-date {
+    color: var(--color-text);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.compras-cxp-money {
+    display: block;
+    white-space: nowrap;
+}
+
+.compras-cxp-money.is-pending {
+    color: var(--color-primary-dark);
+}
+
+.compras-cxp-table .table-subtext {
+    margin-top: 3px;
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+.compras-cxp-empty {
+    min-height: 220px;
+}
+
+@media (max-width: 900px) {
+    .compras-header-actions {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .compras-header-actions .btn-primary,
+    .compras-header-actions .btn-secondary {
+        flex: 1;
+    }
+}
+
+@media (max-width: 760px) {
+    .compras-header-actions {
+        flex-direction: column;
+    }
+
+    .compras-header-actions .btn-primary,
+    .compras-header-actions .btn-secondary {
+        width: 100%;
+    }
+}
