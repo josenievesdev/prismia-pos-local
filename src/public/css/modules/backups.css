@@ -1,64 +1,66 @@
 .backups-page {
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 14px;
 }
 
 .backups-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
-    gap: 18px;
+    grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.9fr);
+    gap: 14px;
 }
 
 .backups-card {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 14px;
 }
 
 .backups-card-primary {
-    border-color: rgba(79, 70, 229, 0.18);
-    background: linear-gradient(135deg, rgba(79, 70, 229, 0.08), #fff 46%);
+    border-color: rgba(79, 70, 229, 0.15);
+    background: linear-gradient(135deg, rgba(79, 70, 229, 0.06), #fff 50%);
 }
 
 .backups-card-head {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 14px;
+    gap: 12px;
 }
 
 .backups-card-head h3 {
-    margin: 4px 0 6px;
-    color: #0f172a;
-    font-size: 18px;
+    margin: 2px 0 4px;
+    color: var(--color-text);
+    font-size: 16px;
+    font-weight: 700;
 }
 
 .backups-card-head p,
 .backups-warning-card p {
     margin: 0;
-    color: #64748b;
-    line-height: 1.55;
+    color: var(--color-muted);
+    font-size: 13px;
+    line-height: 1.5;
 }
 
 .backups-actions-row {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     flex-wrap: wrap;
 }
 
 .backups-actions-form {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 
 .backups-note {
-    padding: 12px 14px;
-    border: 1px solid rgba(148, 163, 184, 0.24);
-    border-radius: 14px;
-    background: rgba(248, 250, 252, 0.84);
+    padding: 10px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-soft);
     color: #475569;
     font-size: 13px;
     line-height: 1.45;
@@ -66,28 +68,28 @@
 
 .backups-status-list {
     display: grid;
-    gap: 10px;
+    gap: 8px;
 }
 
 .backups-status-list>div {
     display: grid;
-    grid-template-columns: 130px minmax(0, 1fr);
+    grid-template-columns: 120px minmax(0, 1fr);
     align-items: center;
-    gap: 12px;
-    padding: 11px 12px;
-    border: 1px solid rgba(226, 232, 240, 0.9);
-    border-radius: 14px;
-    background: rgba(248, 250, 252, 0.7);
+    gap: 10px;
+    padding: 9px 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-soft);
 }
 
 .backups-status-list span {
-    color: #64748b;
+    color: var(--color-muted);
     font-size: 12px;
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .backups-status-list strong {
-    color: #0f172a;
+    color: var(--color-text);
     font-size: 13px;
 }
 
@@ -95,8 +97,8 @@
 .backups-note code,
 .backups-warning-card code {
     max-width: 100%;
-    padding: 2px 6px;
-    border-radius: 8px;
+    padding: 2px 5px;
+    border-radius: var(--radius-xs);
     background: rgba(15, 23, 42, 0.06);
     color: #334155;
     font-size: 12px;
@@ -108,49 +110,18 @@
 }
 
 .backups-table-wrapper {
-    max-height: 420px;
+    max-height: 400px;
     overflow: auto;
 }
 
 .backups-table td strong {
-    color: #0f172a;
+    color: var(--color-text);
     font-size: 13px;
-}
-
-.btn-small {
-    min-height: 30px;
-    padding: 0 11px;
-    font-size: 12px;
 }
 
 .backups-warning-card {
-    border-color: rgba(245, 158, 11, 0.22);
-    background: rgba(255, 251, 235, 0.78);
-}
-
-.alert {
-    padding: 12px 14px;
-    border-radius: 14px;
-    font-size: 13px;
-    font-weight: 700;
-}
-
-.alert-success {
-    border: 1px solid rgba(22, 163, 74, 0.22);
-    background: rgba(220, 252, 231, 0.72);
-    color: #166534;
-}
-
-.alert-warning {
-    border: 1px solid rgba(245, 158, 11, 0.25);
-    background: rgba(254, 243, 199, 0.78);
-    color: #92400e;
-}
-
-.alert-danger {
-    border: 1px solid rgba(220, 38, 38, 0.24);
-    background: rgba(254, 226, 226, 0.78);
-    color: #991b1b;
+    border-color: rgba(245, 158, 11, 0.2);
+    background: rgba(255, 251, 235, 0.72);
 }
 
 @media (max-width: 980px) {
@@ -162,21 +133,21 @@
 @media (max-width: 640px) {
     .backups-status-list>div {
         grid-template-columns: 1fr;
-        gap: 4px;
+        gap: 3px;
     }
 }
 
 /* ===== Restauración de backups ===== */
 .backups-restore-card {
-    border-color: rgba(220, 38, 38, 0.18);
-    background: linear-gradient(135deg, rgba(254, 226, 226, 0.72), #fff 42%);
+    border-color: rgba(220, 38, 38, 0.15);
+    background: linear-gradient(135deg, rgba(254, 226, 226, 0.6), #fff 45%);
 }
 
 .backups-danger-note {
-    padding: 13px 14px;
-    border: 1px solid rgba(220, 38, 38, 0.2);
-    border-radius: 14px;
-    background: rgba(254, 242, 242, 0.86);
+    padding: 10px 12px;
+    border: 1px solid rgba(220, 38, 38, 0.18);
+    border-radius: var(--radius-sm);
+    background: #fef2f2;
     color: #7f1d1d;
     font-size: 13px;
     line-height: 1.5;
@@ -188,22 +159,22 @@
 
 .backups-restore-form {
     display: grid;
-    gap: 14px;
+    gap: 12px;
 }
 
 .backup-file-input {
     width: 100%;
-    padding: 10px 12px;
-    border: 1px dashed rgba(148, 163, 184, 0.8);
-    border-radius: 12px;
-    background: rgba(248, 250, 252, 0.84);
+    padding: 9px 12px;
+    border: 1px dashed rgba(148, 163, 184, 0.7);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-soft);
     color: #334155;
     font-size: 13px;
 }
 
 .restore-confirm-option {
-    border-color: rgba(220, 38, 38, 0.22);
-    background: rgba(254, 242, 242, 0.72);
+    border-color: rgba(220, 38, 38, 0.2);
+    background: #fef2f2;
 }
 
 .restore-confirm-option strong {
@@ -214,129 +185,113 @@
     color: #7f1d1d;
 }
 
-.btn-danger-soft {
-    min-height: 38px;
-    padding: 0 15px;
-    border: 1px solid rgba(220, 38, 38, 0.26);
-    border-radius: 10px;
-    background: rgba(254, 226, 226, 0.92);
-    color: #b91c1c;
-    font-size: 13px;
-    font-weight: 850;
-    cursor: pointer;
-}
-
-.btn-danger-soft:hover {
-    border-color: rgba(220, 38, 38, 0.42);
-    background: rgba(254, 202, 202, 0.96);
-}
-
 /* ===== Backups públicos y soporte ===== */
 .backups-protection-state {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 16px;
-    border: 1px solid rgba(34, 197, 94, 0.22);
-    border-radius: 18px;
-    background: rgba(240, 253, 244, 0.78);
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    border-radius: var(--radius-lg);
+    background: #f0fdf4;
 }
 
 .backups-protection-icon {
-    width: 42px;
-    height: 42px;
-    flex: 0 0 42px;
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     border-radius: 999px;
-    background: rgba(22, 163, 74, 0.12);
-    color: #15803d;
-    font-size: 22px;
-    font-weight: 900;
+    background: rgba(22, 163, 74, 0.1);
+    color: var(--color-success);
+    font-size: 20px;
+    font-weight: 700;
 }
 
 .backups-protection-state strong {
     display: block;
     color: #14532d;
-    font-size: 16px;
+    font-size: 15px;
+    font-weight: 700;
 }
 
 .backups-protection-state small {
     display: block;
-    margin-top: 3px;
+    margin-top: 2px;
     color: #166534;
-    font-size: 13px;
+    font-size: 12px;
 }
 
 .backups-support-card {
-    border-color: rgba(59, 130, 246, 0.2);
-    background: linear-gradient(135deg, rgba(219, 234, 254, 0.78), #fff 42%);
+    border-color: rgba(59, 130, 246, 0.18);
+    background: linear-gradient(135deg, rgba(219, 234, 254, 0.6), #fff 45%);
 }
 
 .backups-contact-box {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 10px;
-    margin-top: 12px;
+    gap: 8px;
+    margin-top: 10px;
 }
 
 .backups-contact-box>div {
-    padding: 12px;
-    border: 1px solid rgba(191, 219, 254, 0.85);
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.78);
+    padding: 10px;
+    border: 1px solid rgba(191, 219, 254, 0.8);
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.7);
 }
 
 .backups-contact-box span {
     display: block;
-    margin-bottom: 4px;
-    color: #64748b;
-    font-size: 11px;
-    font-weight: 800;
+    margin-bottom: 3px;
+    color: var(--color-muted);
+    font-size: 10px;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.05em;
 }
 
 .backups-contact-box strong {
-    color: #0f172a;
+    color: var(--color-text);
     font-size: 13px;
     word-break: break-word;
 }
 
 .backups-small-note {
-    margin-top: 12px !important;
-    color: #64748b;
-    font-size: 13px;
+    margin-top: 10px !important;
+    color: var(--color-muted);
+    font-size: 12px;
 }
 
 .backups-support-lock-card {
-    max-width: 620px;
-    border-color: rgba(79, 70, 229, 0.18);
-    background: linear-gradient(135deg, rgba(238, 242, 255, 0.92), #fff 48%);
+    max-width: 580px;
+    border-color: rgba(79, 70, 229, 0.15);
+    background: linear-gradient(135deg, rgba(238, 242, 255, 0.8), #fff 50%);
 }
 
 .support-unlock-form {
     display: grid;
-    gap: 14px;
-    margin-top: 14px;
+    gap: 12px;
+    margin-top: 12px;
 }
 
 .support-unlock-form input[type="password"] {
     width: 100%;
-    min-height: 40px;
+    min-height: 36px;
     padding: 0 12px;
-    border: 1px solid rgba(203, 213, 225, 0.95);
-    border-radius: 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
     background: #fff;
-    color: #0f172a;
-    font-size: 14px;
+    color: var(--color-text);
+    font-size: 13px;
 }
 
 .support-unlock-form input[type="password"]:focus {
     outline: none;
-    border-color: rgba(79, 70, 229, 0.5);
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+    border-color: rgba(79, 70, 229, 0.45);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.08);
 }
 
 @media (max-width: 780px) {

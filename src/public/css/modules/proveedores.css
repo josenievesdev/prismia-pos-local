@@ -1,13 +1,13 @@
 .proveedores-page {
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 14px;
 }
 
 .proveedores-filters {
     display: grid;
     grid-template-columns: minmax(260px, 1fr) minmax(160px, 220px) auto;
-    gap: 14px;
+    gap: 12px;
     align-items: end;
 }
 
@@ -27,11 +27,11 @@
 }
 
 .proveedores-main-cell strong {
-    color: #0f172a;
+    color: var(--color-text);
 }
 
 .proveedores-main-cell span {
-    color: #64748b;
+    color: var(--color-muted);
     font-size: 12px;
 }
 
@@ -39,30 +39,30 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 26px;
-    padding: 0 10px;
+    min-height: 24px;
+    padding: 0 8px;
     border-radius: 999px;
-    font-size: 12px;
-    font-weight: 800;
+    font-size: 11px;
+    font-weight: 600;
 }
 
 .proveedor-status-activo {
     border: 1px solid rgba(22, 163, 74, 0.22);
-    background: rgba(220, 252, 231, 0.82);
-    color: #166534;
+    background: var(--color-success-soft);
+    color: var(--color-success);
 }
 
 .proveedor-status-inactivo {
-    border: 1px solid rgba(148, 163, 184, 0.28);
-    background: rgba(248, 250, 252, 0.88);
-    color: #64748b;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface-soft);
+    color: var(--color-muted);
 }
 
 .proveedores-actions {
     display: inline-flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 8px;
+    gap: 6px;
     flex-wrap: wrap;
 }
 
@@ -72,24 +72,25 @@
 
 .proveedores-form-card {
     display: grid;
-    gap: 22px;
+    gap: 16px;
 }
 
 .proveedores-form-section {
     display: grid;
-    gap: 14px;
+    gap: 12px;
 }
 
 .proveedores-form-section h3 {
-    margin: 4px 0 0;
-    color: #0f172a;
-    font-size: 17px;
+    margin: 2px 0 0;
+    color: var(--color-text);
+    font-size: 15px;
+    font-weight: 700;
 }
 
 .proveedores-form-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
+    gap: 12px;
 }
 
 .proveedores-field-wide {
@@ -99,43 +100,9 @@
 .proveedores-form-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
-    padding-top: 16px;
-    border-top: 1px solid rgba(226, 232, 240, 0.85);
-}
-
-.btn-small {
-    min-height: 30px;
-    padding: 0 11px;
-    font-size: 12px;
-}
-
-.btn-danger-soft {
-    min-height: 34px;
-    padding: 0 12px;
-    border: 1px solid rgba(220, 38, 38, 0.24);
-    border-radius: 10px;
-    background: rgba(254, 226, 226, 0.86);
-    color: #b91c1c;
-    font-size: 12px;
-    font-weight: 800;
-    cursor: pointer;
-}
-
-.btn-danger-soft:hover {
-    border-color: rgba(220, 38, 38, 0.42);
-    background: rgba(254, 202, 202, 0.96);
-}
-
-.pagination {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 10px;
+    gap: 8px;
     padding-top: 14px;
-    border-top: 1px solid rgba(226, 232, 240, 0.85);
-    color: #64748b;
-    font-size: 13px;
+    border-top: 1px solid var(--color-border);
 }
 
 @media (max-width: 860px) {

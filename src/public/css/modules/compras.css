@@ -42,7 +42,7 @@
     background: transparent;
     color: var(--vt);
     font-size: 12px;
-    font-weight: 800;
+    font-weight: 700;
 }
 
 .compras-support-box input::placeholder {
@@ -100,7 +100,7 @@
     display: block;
     color: var(--color-muted);
     font-size: 9px;
-    font-weight: 800;
+    font-weight: 700;
     letter-spacing: .08em;
     text-transform: uppercase;
 }
@@ -192,7 +192,7 @@
     flex-shrink: 0;
     color: var(--color-primary-dark);
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 700;
 }
 
 .compras-sale-card {
@@ -287,7 +287,7 @@
     gap: 5px;
     color: var(--vt);
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 700;
 }
 
 .compras-cart-product strong {
@@ -318,7 +318,7 @@
 .compras-note-box strong {
     color: var(--color-text);
     font-size: 12px;
-    font-weight: 800;
+    font-weight: 700;
 }
 
 .compras-note-box span {
@@ -467,7 +467,7 @@
 .compras-detail-note span {
     color: var(--color-muted);
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 700;
     letter-spacing: .05em;
     text-transform: uppercase;
 }
@@ -526,7 +526,7 @@
 .compras-payable-card span {
     color: var(--color-muted);
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 700;
     letter-spacing: .05em;
     text-transform: uppercase;
 }
@@ -719,7 +719,7 @@
 .compras-pago-note strong {
     color: var(--color-muted);
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 700;
     letter-spacing: 0.05em;
     text-transform: uppercase;
 }
@@ -861,7 +861,7 @@
 .compras-payment-history .table-summary span:first-child {
     color: var(--color-muted);
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 700;
     letter-spacing: 0.05em;
     text-transform: uppercase;
 }
@@ -963,7 +963,7 @@ body.modal-open {
 .compras-modal {
     width: min(520px, 100%);
     border: 1px solid var(--color-border);
-    border-radius: 18px;
+    border-radius: var(--radius-lg);
     background: var(--color-surface);
     box-shadow: 0 24px 70px rgba(15, 23, 42, 0.28);
     overflow: hidden;
@@ -981,7 +981,7 @@ body.modal-open {
 .compras-modal-header span {
     color: var(--color-muted);
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 700;
     letter-spacing: 0.05em;
     text-transform: uppercase;
 }
@@ -1039,7 +1039,7 @@ body.modal-open {
     display: block;
     color: var(--color-muted);
     font-size: 10px;
-    font-weight: 800;
+    font-weight: 700;
     letter-spacing: 0.05em;
     text-transform: uppercase;
 }
