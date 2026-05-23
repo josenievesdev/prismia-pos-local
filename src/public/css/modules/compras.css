@@ -448,7 +448,7 @@
 }
 
 .compras-detalle-page {
-    gap: 14px;
+    gap: 20px;
 }
 
 .compras-detail-summary,
@@ -516,7 +516,64 @@
 }
 
 .compras-detail-table {
-    min-width: 980px;
+    min-width: 1080px;
+}
+
+.compras-detail-table th,
+.compras-detail-table td {
+    padding: 12px 14px;
+    vertical-align: top;
+}
+
+.compras-detail-table th {
+    white-space: nowrap;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.compras-detail-table tbody tr:hover {
+    background: rgba(36, 79, 143, 0.035);
+}
+
+.compras-detail-table th:nth-child(1),
+.compras-detail-table td:nth-child(1) { width: 19%; } /* Producto */
+.compras-detail-table th:nth-child(2),
+.compras-detail-table td:nth-child(2) { width: 7%; }  /* Cantidad */
+.compras-detail-table th:nth-child(3),
+.compras-detail-table td:nth-child(3) { width: 12%; } /* Costo base */
+.compras-detail-table th:nth-child(4),
+.compras-detail-table td:nth-child(4) { width: 9%; }  /* IVA */
+.compras-detail-table th:nth-child(5),
+.compras-detail-table td:nth-child(5) { width: 12%; } /* Costo final */
+.compras-detail-table th:nth-child(6),
+.compras-detail-table td:nth-child(6) { width: 11%; } /* Total */
+.compras-detail-table th:nth-child(7),
+.compras-detail-table td:nth-child(7) { width: 14%; } /* Inventario */
+.compras-detail-table th:nth-child(8),
+.compras-detail-table td:nth-child(8) { width: 16%; } /* Precio venta */
+
+.compras-detail-stack-cell {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+}
+
+.compras-detail-stack-cell strong {
+    color: var(--color-text);
+    font-size: 13px;
+    font-weight: 650;
+    line-height: 1.25;
+}
+
+.compras-detail-stack-cell .table-subtext {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+.compras-detail-table .badge {
+    margin-top: 4px;
+    width: fit-content;
 }
 
 @media (max-width: 900px) {
@@ -866,7 +923,7 @@
     justify-content: space-between;
     align-items: center;
     gap: 14px;
-    padding-left: 16px;
+    padding: 16px 20px;
     border-left: 4px solid var(--color-primary);
 }
 

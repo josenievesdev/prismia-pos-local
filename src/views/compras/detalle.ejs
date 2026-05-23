@@ -208,65 +208,61 @@
                                                                 <tr
                                                                     class="<%= pagoAnulado ? 'is-cancelled-row' : '' %>">
                                                                     <td>
-                                                                        <strong>
-                                                                            <%= pago.fecha_pago_mostrar %>
-                                                                        </strong>
-                                                                        <% if (pagoAnulado && (pago.anulado_en_mostrar
-                                                                            || pago.anulado_en)) { %>
-                                                                            <span class="table-subtext">
-                                                                                Anulado: <%= pago.anulado_en_mostrar ||
-                                                                                    pago.anulado_en %>
-                                                                            </span>
+                                                                        <div class="compras-detail-stack-cell">
+                                                                            <strong>
+                                                                                <%= pago.fecha_pago_mostrar %>
+                                                                            </strong>
+                                                                            <% if (pagoAnulado && (pago.anulado_en_mostrar || pago.anulado_en)) { %>
+                                                                                <span class="table-subtext">
+                                                                                    Anulado: <%= pago.anulado_en_mostrar || pago.anulado_en %>
+                                                                                </span>
                                                                             <% } %>
+                                                                        </div>
                                                                     </td>
 
                                                                     <td>
-                                                                        <strong>
-                                                                            <%= pago.medio_pago_mostrar %>
-                                                                        </strong>
-
-                                                                        <span class="table-subtext">
-                                                                            <%= pago.entidad_pago_mostrar %>
-                                                                        </span>
-
-                                                                        <span class="table-subtext">
-                                                                            Origen: <%= pago.origen_pago_etiqueta %>
-                                                                        </span>
+                                                                        <div class="compras-detail-stack-cell">
+                                                                            <strong>
+                                                                                <%= pago.medio_pago_mostrar %>
+                                                                            </strong>
+                                                                            <span class="table-subtext">
+                                                                                <%= pago.entidad_pago_mostrar %>
+                                                                            </span>
+                                                                            <span class="table-subtext">
+                                                                                Origen: <%= pago.origen_pago_etiqueta %>
+                                                                            </span>
+                                                                        </div>
                                                                     </td>
 
                                                                     <td>
-                                                                        <%= pago.referencia_pago_mostrar %>
-
+                                                                        <div class="compras-detail-stack-cell">
+                                                                            <strong>
+                                                                                <%= pago.referencia_pago_mostrar %>
+                                                                            </strong>
                                                                             <% if (pago.observaciones_mostrar) { %>
                                                                                 <span class="table-subtext">
                                                                                     <%= pago.observaciones_mostrar %>
                                                                                 </span>
-                                                                                <% } %>
-
-                                                                                    <% if (pagoAnulado &&
-                                                                                        pago.motivo_anulacion_mostrar) {
-                                                                                        %>
-                                                                                        <span
-                                                                                            class="table-subtext compras-payment-cancel-reason">
-                                                                                            Motivo: <%=
-                                                                                                pago.motivo_anulacion_mostrar
-                                                                                                %>
-                                                                                        </span>
-                                                                                        <% } %>
+                                                                            <% } %>
+                                                                            <% if (pagoAnulado && pago.motivo_anulacion_mostrar) { %>
+                                                                                <span class="table-subtext compras-payment-cancel-reason">
+                                                                                    Motivo: <%= pago.motivo_anulacion_mostrar %>
+                                                                                </span>
+                                                                            <% } %>
+                                                                        </div>
                                                                     </td>
 
                                                                     <td>
-                                                                        <span
-                                                                            class="badge <%= pago.estado_pago_proveedor_badge %>">
-                                                                            <%= pago.estado_pago_proveedor_etiqueta %>
-                                                                        </span>
-                                                                        <% if (pagoAnulado &&
-                                                                            pago.usuario_anulacion_nombre) { %>
-                                                                            <span class="table-subtext">
-                                                                                Por: <%= pago.usuario_anulacion_nombre
-                                                                                    %>
+                                                                        <div class="compras-detail-stack-cell">
+                                                                            <span class="badge <%= pago.estado_pago_proveedor_badge %>">
+                                                                                <%= pago.estado_pago_proveedor_etiqueta %>
                                                                             </span>
+                                                                            <% if (pagoAnulado && pago.usuario_anulacion_nombre) { %>
+                                                                                <span class="table-subtext">
+                                                                                    Por: <%= pago.usuario_anulacion_nombre %>
+                                                                                </span>
                                                                             <% } %>
+                                                                        </div>
                                                                     </td>
 
                                                                     <td>
@@ -342,48 +338,55 @@
                                                     <% detalle.forEach(function (linea) { %>
                                                         <tr>
                                                             <td>
-                                                                <strong>
-                                                                    <%= linea.producto_nombre %>
-                                                                </strong>
-                                                                <span class="table-subtext">
-                                                                    <%= linea.producto_codigo %> · <%=
-                                                                            linea.unidad_abreviatura %>
-                                                                </span>
-                                                            </td>
-
-                                                            <td class="text-right">
-                                                                <%= linea.cantidad_mostrar %>
-                                                            </td>
-
-                                                            <td class="text-right">
-                                                                <strong>
-                                                                    <%= linea.costo_unitario_mostrar %>
-                                                                </strong>
-
-                                                                <% if (Number(linea.descuento_porcentaje || 0)> 0) { %>
+                                                                <div class="compras-detail-stack-cell">
+                                                                    <strong>
+                                                                        <%= linea.producto_nombre %>
+                                                                    </strong>
                                                                     <span class="table-subtext">
-                                                                        Desc. <%= linea.descuento_porcentaje %>%:
-                                                                            <%= linea.descuento_linea_mostrar %>
+                                                                        <%= linea.producto_codigo %> · <%= linea.unidad_abreviatura %>
                                                                     </span>
+                                                                </div>
+                                                            </td>
+
+                                                            <td class="text-right">
+                                                                <strong>
+                                                                    <%= linea.cantidad_mostrar %>
+                                                                </strong>
+                                                            </td>
+
+                                                            <td class="text-right">
+                                                                <div class="compras-detail-stack-cell text-right">
+                                                                    <strong>
+                                                                        <%= linea.costo_unitario_mostrar %>
+                                                                    </strong>
+                                                                    <% if (Number(linea.descuento_porcentaje || 0)> 0) { %>
+                                                                        <span class="table-subtext">
+                                                                            Desc. <%= linea.descuento_porcentaje %>%: <%= linea.descuento_linea_mostrar %>
+                                                                        </span>
                                                                     <% } %>
+                                                                </div>
                                                             </td>
 
                                                             <td class="text-right">
-                                                                <strong>
-                                                                    <%= linea.porcentaje_iva %>%
-                                                                </strong>
-                                                                <span class="table-subtext">
-                                                                    <%= linea.iva_linea_mostrar %>
-                                                                </span>
+                                                                <div class="compras-detail-stack-cell text-right">
+                                                                    <strong>
+                                                                        <%= linea.porcentaje_iva %>%
+                                                                    </strong>
+                                                                    <span class="table-subtext">
+                                                                        <%= linea.iva_linea_mostrar %>
+                                                                    </span>
+                                                                </div>
                                                             </td>
 
                                                             <td class="text-right">
-                                                                <strong>
-                                                                    <%= linea.costo_unitario_final_mostrar %>
-                                                                </strong>
-                                                                <span class="table-subtext">
-                                                                    Neto: <%= linea.costo_unitario_neto_mostrar %>
-                                                                </span>
+                                                                <div class="compras-detail-stack-cell text-right">
+                                                                    <strong>
+                                                                        <%= linea.costo_unitario_final_mostrar %>
+                                                                    </strong>
+                                                                    <span class="table-subtext">
+                                                                        Neto: <%= linea.costo_unitario_neto_mostrar %>
+                                                                    </span>
+                                                                </div>
                                                             </td>
 
                                                             <td class="text-right">
@@ -393,41 +396,30 @@
                                                             </td>
 
                                                             <td>
-                                                                <strong>
-                                                                    <%= linea.stock_anterior_mostrar %>
-                                                                        →
-                                                                        <%= linea.stock_nuevo_mostrar %>
-                                                                </strong>
-
-                                                                <span class="table-subtext">
-                                                                    Promedio:
-                                                                    <%= linea.costo_promedio_anterior_mostrar %>
-                                                                        →
-                                                                        <%= linea.costo_promedio_nuevo_mostrar %>
-                                                                </span>
+                                                                <div class="compras-detail-stack-cell">
+                                                                    <strong>
+                                                                        <%= linea.stock_anterior_mostrar %> → <%= linea.stock_nuevo_mostrar %>
+                                                                    </strong>
+                                                                    <span class="table-subtext">
+                                                                        Promedio: <%= linea.costo_promedio_anterior_mostrar %> → <%= linea.costo_promedio_nuevo_mostrar %>
+                                                                    </span>
+                                                                </div>
                                                             </td>
 
                                                             <td>
-                                                                <strong>
-                                                                    <%= linea.precio_venta_anterior_mostrar %>
-                                                                        →
-                                                                        <%= linea.precio_venta_nuevo_mostrar %>
-                                                                </strong>
-
-                                                                <span class="table-subtext">
-                                                                    Sugerido:
-                                                                    <%= linea.precio_venta_sugerido_mostrar %>
-                                                                </span>
-
-                                                                <% if (linea.actualizo_precio) { %>
-                                                                    <span class="badge badge-success">
-                                                                        Actualizado
+                                                                <div class="compras-detail-stack-cell">
+                                                                    <strong>
+                                                                        <%= linea.precio_venta_anterior_mostrar %> → <%= linea.precio_venta_nuevo_mostrar %>
+                                                                    </strong>
+                                                                    <span class="table-subtext">
+                                                                        Sugerido: <%= linea.precio_venta_sugerido_mostrar %>
                                                                     </span>
+                                                                    <% if (linea.actualizo_precio) { %>
+                                                                        <span class="badge badge-success">Actualizado</span>
                                                                     <% } else { %>
-                                                                        <span class="badge badge-muted">
-                                                                            Sin cambio
-                                                                        </span>
-                                                                        <% } %>
+                                                                        <span class="badge badge-muted">Sin cambio</span>
+                                                                    <% } %>
+                                                                </div>
                                                             </td>
                                                         </tr>
                                                         <% }) %>
