@@ -3,14 +3,14 @@
     height: calc(100vh - 112px);
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
-    gap: 10px;
+    gap: 12px;
     overflow: hidden;
 }
 
 .dashboard-monitor-head {
     display: grid;
     grid-template-columns: 280px minmax(0, 1fr);
-    gap: 10px;
+    gap: 12px;
     min-height: 76px;
 }
 
@@ -61,7 +61,7 @@
 .dashboard-quick-kpis {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 10px;
+    gap: 12px;
 }
 
 .dash-kpi {
@@ -135,11 +135,11 @@
     min-height: 0;
     display: grid;
     grid-template-columns: 1.05fr 0.95fr 1fr;
-    grid-template-rows: minmax(0, 0.98fr) minmax(0, 1.02fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
         "sales cash payments"
         "products activity alerts";
-    gap: 10px;
+    gap: 12px;
 }
 
 .dash-panel {
@@ -148,8 +148,8 @@
     overflow: hidden;
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
-    gap: 8px;
-    padding: 12px;
+    gap: 10px;
+    padding: 14px;
 }
 
 .panel-sales {
@@ -249,7 +249,7 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
-    margin-top: 2px;
+    margin-top: 4px;
 }
 
 .dash-mini-row div,
@@ -284,13 +284,16 @@
     white-space: nowrap;
 }
 
+.panel-cash > :not(.dash-panel-head) {
+    min-height: 0;
+}
+
 .cash-main {
     min-width: 0;
-    min-height: 78px;
     display: grid;
     align-content: center;
-    gap: 3px;
-    padding: 10px 12px;
+    gap: 4px;
+    padding: 12px 14px;
     border: 1px solid rgba(36, 79, 143, 0.12);
     border-radius: var(--radius-md);
     background:
@@ -300,13 +303,13 @@
 
 .cash-main strong {
     display: block;
-    overflow: visible;
+    overflow: hidden;
     color: var(--color-text);
-    font-size: clamp(20px, 2vw, 24px);
+    font-size: clamp(18px, 1.8vw, 22px);
     font-weight: 700;
     letter-spacing: -0.04em;
     line-height: 1.15;
-    text-overflow: initial;
+    text-overflow: ellipsis;
     white-space: nowrap;
 }
 
@@ -323,7 +326,8 @@
     min-height: 0;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 7px;
+    gap: 8px;
+    align-content: start;
 }
 
 .payment-bars,
@@ -332,7 +336,7 @@
 .alerts-split {
     min-height: 0;
     display: grid;
-    gap: 7px;
+    gap: 8px;
 }
 
 .payment-bars {
@@ -649,7 +653,11 @@
     }
 
     .dash-panel {
-        min-height: 220px;
+        min-height: 200px;
+    }
+
+    .cash-main {
+        padding: 14px;
     }
 
     .payment-bars,

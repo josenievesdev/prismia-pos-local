@@ -5,6 +5,21 @@
     align-items: end;
 }
 
+.compras-filters-form {
+    display: grid;
+    grid-template-columns: minmax(240px, 1fr) repeat(2, minmax(130px, 165px)) repeat(2, minmax(120px, 145px)) auto;
+    gap: 12px;
+    align-items: end;
+}
+
+.compras-filter-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    align-items: end;
+    padding-bottom: 1px;
+}
+
 .compras-filters-actions {
     display: flex;
     justify-content: flex-end;
@@ -354,13 +369,15 @@
 @media (max-width: 760px) {
 
     .compras-filters,
+    .compras-filters-form,
     .compras-support-strip,
     .compras-payment-strip,
     .compras-context-bar {
         grid-template-columns: 1fr;
     }
 
-    .compras-filters-actions {
+    .compras-filters-actions,
+    .compras-filter-actions {
         flex-direction: column-reverse;
         align-items: stretch;
     }
@@ -519,8 +536,8 @@
 
 .compras-payable-card {
     display: grid;
-    gap: 5px;
-    padding: 14px;
+    gap: 6px;
+    padding: 16px;
 }
 
 .compras-payable-card span {
@@ -571,7 +588,7 @@
 }
 
 .compras-cxp-card {
-    padding: 16px;
+    padding: 18px;
 }
 
 .compras-cxp-summary {
@@ -849,6 +866,7 @@
     justify-content: space-between;
     align-items: center;
     gap: 14px;
+    padding-left: 16px;
     border-left: 4px solid var(--color-primary);
 }
 
@@ -1136,7 +1154,7 @@ body.modal-open {
 /* ===== Historial general de pagos a proveedores ===== */
 
 .compras-pagos-proveedores-card {
-    padding: 16px;
+    padding: 18px;
 }
 
 .compras-pagos-proveedores-table-wrapper {
