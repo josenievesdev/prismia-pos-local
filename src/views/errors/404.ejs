@@ -1,0 +1,24 @@
+<section class="page-card">
+    <div class="page-header">
+        <div>
+            <p class="page-eyebrow">Página no encontrada</p>
+            <h1>
+                <%= titulo || 'Registro no encontrado' %>
+            </h1>
+            <p class="page-subtitle">
+                <%= mensaje || 'No se encontró la información solicitada.' %>
+            </p>
+        </div>
+    </div>
+
+    <div class="empty-state">
+        <p>
+            La ruta o el registro que intentaste abrir no está disponible.
+        </p>
+
+        <div class="form-actions">
+            <a href="/dashboard" class="btn-secondary">Volver al dashboard</a>
+            <a href="/compras" class="btn-primary">Ir a compras</a>
+        </div>
+    </div>
+</section>
