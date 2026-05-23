@@ -137,6 +137,18 @@ body {
     word-break: break-word;
 }
 
+.print-info-item small {
+    display: block;
+    margin-top: 4px;
+    color: var(--print-muted);
+    font-size: 9px;
+    line-height: 1.35;
+}
+
+.print-payment-grid .print-info-item {
+    min-height: 58px;
+}
+
 .print-table {
     width: 100%;
     border-collapse: collapse;

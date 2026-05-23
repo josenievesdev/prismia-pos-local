@@ -139,6 +139,73 @@
                 </section>
 
                 <section class="print-section">
+                    <h2 class="print-section-title">Resumen de pago y vencimiento</h2>
+
+                    <div class="print-info-grid print-payment-grid">
+                        <div class="print-info-item">
+                            <span>Condición de pago</span>
+                            <strong>
+                                <%= texto(compra.condicion_pago_etiqueta, 'No registrada' ) %>
+                            </strong>
+                        </div>
+
+                        <div class="print-info-item">
+                            <span>Estado de pago</span>
+                            <strong>
+                                <%= texto(compra.estado_pago_etiqueta, 'Sin estado' ) %>
+                            </strong>
+                            <small>
+                                <%= texto(compra.vencimiento_resumen, 'Sin resumen de vencimiento' ) %>
+                            </small>
+                        </div>
+
+                        <div class="print-info-item">
+                            <span>Fecha de vencimiento</span>
+                            <strong>
+                                <%= texto(compra.fecha_vencimiento_mostrar, 'Sin vencimiento' ) %>
+                            </strong>
+                            <small>
+                                Días de plazo: <%= texto(compra.dias_plazo, '0' ) %>
+                            </small>
+                        </div>
+
+                        <div class="print-info-item">
+                            <span>Fecha de pago</span>
+                            <strong>
+                                <%= texto(compra.fecha_pago_mostrar, 'Sin registrar' ) %>
+                            </strong>
+                        </div>
+
+                        <div class="print-info-item">
+                            <span>Total compra</span>
+                            <strong>
+                                <%= texto(compra.total_mostrar, '$ 0' ) %>
+                            </strong>
+                        </div>
+
+                        <div class="print-info-item">
+                            <span>Total pagado</span>
+                            <strong>
+                                <%= texto(compra.total_pagado_mostrar, '$ 0' ) %>
+                            </strong>
+                        </div>
+
+                        <div class="print-info-item">
+                            <span>Saldo pendiente</span>
+                            <strong>
+                                <%= texto(compra.saldo_pendiente_mostrar, '$ 0' ) %>
+                            </strong>
+                        </div>
+
+                        <div class="print-info-item">
+                            <span>Origen pago proveedor</span>
+                            <strong>Tesorería / contabilidad</strong>
+                            <small>No afecta caja ni arqueo de ventas.</small>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="print-section">
                     <h2 class="print-section-title">Productos comprados</h2>
 
                     <table class="print-table">
