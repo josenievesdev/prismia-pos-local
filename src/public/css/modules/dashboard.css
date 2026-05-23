@@ -284,7 +284,7 @@
     white-space: nowrap;
 }
 
-.panel-cash > :not(.dash-panel-head) {
+.panel-cash> :not(.dash-panel-head) {
     min-height: 0;
 }
 
@@ -680,4 +680,65 @@
     .hour-chart {
         grid-template-columns: repeat(4, minmax(0, 1fr));
     }
+}
+
+/* Ajuste final: caja compacta sin recortar mini cards */
+.panel-cash {
+    grid-template-rows: auto minmax(44px, auto) minmax(0, 1fr);
+}
+
+.cash-main {
+    min-height: 44px;
+    align-content: center;
+    overflow: hidden;
+    gap: 1px;
+    padding: 6px 12px;
+}
+
+.cash-main strong {
+    display: block;
+    margin-top: 0;
+    overflow: hidden;
+    color: var(--color-text);
+    font-size: clamp(14px, 1.15vw, 17px);
+    font-weight: 700;
+    line-height: 1.05;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cash-main small {
+    display: block;
+    overflow: hidden;
+    margin-top: 0;
+    color: var(--color-muted);
+    font-size: 8.5px;
+    line-height: 1.15;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cash-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(40px, 1fr));
+    align-content: stretch;
+    gap: 7px;
+    min-height: 0;
+}
+
+.cash-grid>* {
+    min-height: 40px;
+    padding: 7px 10px;
+    overflow: hidden;
+}
+
+.cash-grid strong {
+    font-size: 13px;
+    line-height: 1.1;
+}
+
+.cash-grid small,
+.cash-grid span {
+    line-height: 1.1;
 }
