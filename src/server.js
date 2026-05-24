@@ -1,3 +1,7 @@
+const { asegurarBaseDatos } = require('./database/ensure-db');
+
+asegurarBaseDatos();
+
 const app = require('./app');
 const env = require('./config/env');
 const empresa = require('./config/empresa');

@@ -3,6 +3,10 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
+const { asegurarBaseDatos } = require('./database/ensure-db');
+
+asegurarBaseDatos();
+
 const app = require('./app');
 const empresa = require('./config/empresa');
 

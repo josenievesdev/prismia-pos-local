@@ -590,9 +590,15 @@ function inicializarBaseDatos() {
     console.log('====================================');
 }
 
-try {
-    inicializarBaseDatos();
-} catch (error) {
-    console.error('Error inicializando la base de datos:', error);
-    process.exit(1);
+if (require.main === module) {
+    try {
+        inicializarBaseDatos();
+    } catch (error) {
+        console.error('Error inicializando la base de datos:', error);
+        process.exit(1);
+    }
 }
+
+module.exports = {
+    inicializarBaseDatos,
+};
