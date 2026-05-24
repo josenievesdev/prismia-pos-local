@@ -156,6 +156,274 @@ function insertarCategoriasProductoIniciales() {
     console.log('Categorías de productos verificadas.');
 }
 
+function insertarUnidadesMedidaIniciales() {
+    const unidades = [
+        {
+            nombre: 'Unidad',
+            abreviatura: 'und',
+            permite_decimales: 0,
+        },
+        {
+            nombre: 'Metro',
+            abreviatura: 'm',
+            permite_decimales: 1,
+        },
+        {
+            nombre: 'Centímetro',
+            abreviatura: 'cm',
+            permite_decimales: 1,
+        },
+        {
+            nombre: 'Kilogramo',
+            abreviatura: 'kg',
+            permite_decimales: 1,
+        },
+        {
+            nombre: 'Gramo',
+            abreviatura: 'g',
+            permite_decimales: 1,
+        },
+        {
+            nombre: 'Litro',
+            abreviatura: 'l',
+            permite_decimales: 1,
+        },
+        {
+            nombre: 'Mililitro',
+            abreviatura: 'ml',
+            permite_decimales: 1,
+        },
+        {
+            nombre: 'Rollo',
+            abreviatura: 'rollo',
+            permite_decimales: 0,
+        },
+        {
+            nombre: 'Caja',
+            abreviatura: 'caja',
+            permite_decimales: 0,
+        },
+        {
+            nombre: 'Servicio',
+            abreviatura: 'serv',
+            permite_decimales: 1,
+        },
+    ];
+
+    const insertar = db.prepare(`
+        INSERT OR IGNORE INTO unidades_medida (
+            nombre,
+            abreviatura,
+            permite_decimales,
+            estado
+        ) VALUES (
+            @nombre,
+            @abreviatura,
+            @permite_decimales,
+            'activo'
+        )
+    `);
+
+    const transaccion = db.transaction(() => {
+        for (const unidad of unidades) {
+            insertar.run(unidad);
+        }
+    });
+
+    transaccion();
+
+    console.log('Unidades de medida iniciales verificadas.');
+}
+
+function insertarMediosPagoIniciales() {
+    const mediosPago = [
+        {
+            codigo: 'efectivo',
+            nombre: 'Efectivo',
+            tipo: 'efectivo',
+            requiere_referencia: 0,
+            afecta_efectivo_caja: 1,
+            activo: 1,
+            orden: 10,
+        },
+        {
+            codigo: 'nequi',
+            nombre: 'Nequi',
+            tipo: 'transferencia',
+            requiere_referencia: 1,
+            afecta_efectivo_caja: 0,
+            activo: 1,
+            orden: 20,
+        },
+        {
+            codigo: 'daviplata',
+            nombre: 'Daviplata',
+            tipo: 'transferencia',
+            requiere_referencia: 1,
+            afecta_efectivo_caja: 0,
+            activo: 1,
+            orden: 30,
+        },
+        {
+            codigo: 'bre_b',
+            nombre: 'Bre-B',
+            tipo: 'transferencia',
+            requiere_referencia: 1,
+            afecta_efectivo_caja: 0,
+            activo: 1,
+            orden: 40,
+        },
+        {
+            codigo: 'bancolombia',
+            nombre: 'Bancolombia',
+            tipo: 'transferencia',
+            requiere_referencia: 1,
+            afecta_efectivo_caja: 0,
+            activo: 1,
+            orden: 50,
+        },
+        {
+            codigo: 'tarjeta_debito',
+            nombre: 'Tarjeta débito',
+            tipo: 'tarjeta',
+            requiere_referencia: 1,
+            afecta_efectivo_caja: 0,
+            activo: 1,
+            orden: 60,
+        },
+        {
+            codigo: 'tarjeta_credito',
+            nombre: 'Tarjeta crédito',
+            tipo: 'tarjeta',
+            requiere_referencia: 1,
+            afecta_efectivo_caja: 0,
+            activo: 1,
+            orden: 70,
+        },
+        {
+            codigo: 'otro',
+            nombre: 'Otro',
+            tipo: 'otro',
+            requiere_referencia: 0,
+            afecta_efectivo_caja: 0,
+            activo: 1,
+            orden: 80,
+        },
+    ];
+
+    const insertar = db.prepare(`
+        INSERT OR IGNORE INTO medios_pago (
+            codigo,
+            nombre,
+            tipo,
+            requiere_referencia,
+            afecta_efectivo_caja,
+            activo,
+            orden
+        ) VALUES (
+            @codigo,
+            @nombre,
+            @tipo,
+            @requiere_referencia,
+            @afecta_efectivo_caja,
+            @activo,
+            @orden
+        )
+    `);
+
+    const transaccion = db.transaction(() => {
+        for (const medioPago of mediosPago) {
+            insertar.run(medioPago);
+        }
+    });
+
+    transaccion();
+
+    console.log('Medios de pago iniciales verificados.');
+}
+
+function insertarNumeracionesDocumentosIniciales() {
+    const numeraciones = [
+        {
+            codigo_documento: 'factura_venta',
+            nombre_documento: 'Factura de venta',
+            prefijo: 'FV',
+            longitud_consecutivo: 6,
+            ultimo_consecutivo: 0,
+            tipo_comprobante: 'recibo_interno',
+            observaciones: 'Numeración principal para ventas generadas desde POS.',
+        },
+        {
+            codigo_documento: 'cotizacion',
+            nombre_documento: 'Cotización',
+            prefijo: 'COT',
+            longitud_consecutivo: 6,
+            ultimo_consecutivo: 0,
+            tipo_comprobante: 'cotizacion',
+            observaciones: 'Numeración para cotizaciones comerciales.',
+        },
+        {
+            codigo_documento: 'remision',
+            nombre_documento: 'Remisión',
+            prefijo: 'RM',
+            longitud_consecutivo: 6,
+            ultimo_consecutivo: 0,
+            tipo_comprobante: 'remision',
+            observaciones: 'Numeración para remisiones internas.',
+        },
+        {
+            codigo_documento: 'nota_credito',
+            nombre_documento: 'Nota crédito interna',
+            prefijo: 'NC',
+            longitud_consecutivo: 6,
+            ultimo_consecutivo: 0,
+            tipo_comprobante: 'nota_credito',
+            observaciones: 'Numeración interna para notas crédito. Preparada para futuras integraciones fiscales.',
+        },
+        {
+            codigo_documento: 'compra_proveedor',
+            nombre_documento: 'Compra a proveedor',
+            prefijo: 'CP',
+            longitud_consecutivo: 6,
+            ultimo_consecutivo: 0,
+            tipo_comprobante: 'compra_interna',
+            observaciones: 'Numeración interna para compras a proveedores. No corresponde a documento DIAN.',
+        },
+    ];
+
+    const insertar = db.prepare(`
+        INSERT OR IGNORE INTO numeraciones_documentos (
+            codigo_documento,
+            nombre_documento,
+            prefijo,
+            longitud_consecutivo,
+            ultimo_consecutivo,
+            tipo_comprobante,
+            activo,
+            observaciones
+        ) VALUES (
+            @codigo_documento,
+            @nombre_documento,
+            @prefijo,
+            @longitud_consecutivo,
+            @ultimo_consecutivo,
+            @tipo_comprobante,
+            1,
+            @observaciones
+        )
+    `);
+
+    const transaccion = db.transaction(() => {
+        for (const numeracion of numeraciones) {
+            insertar.run(numeracion);
+        }
+    });
+
+    transaccion();
+
+    console.log('Numeraciones documentales iniciales verificadas.');
+}
+
 function insertarClienteConsumidorFinal() {
     const existe = db
         .prepare(`
@@ -310,6 +578,9 @@ function inicializarBaseDatos() {
     insertarRolesIniciales();
     insertarCategoriasGastoIniciales();
     insertarCategoriasProductoIniciales();
+    insertarUnidadesMedidaIniciales();
+    insertarMediosPagoIniciales();
+    insertarNumeracionesDocumentosIniciales();
     insertarClienteConsumidorFinal();
     insertarUsuarioAdmin();
     registrarAuditoriaInicial();

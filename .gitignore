@@ -48,6 +48,7 @@ src/database/data/*.db
 src/database/data/*.db-shm
 src/database/data/*.db-wal
 src/database/data/*.db-journal
+src/database/reports/
 
 # Backups locales de base de datos
 src/database/data/*backup*
