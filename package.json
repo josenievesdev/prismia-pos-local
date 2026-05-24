@@ -9,6 +9,7 @@
     "start": "node src/server.js",
     "start:https": "node src/server.https.js",
     "db:init": "node src/database/init-db.js",
+    "db:validate": "node src/database/validate-db.js",
     "db:migrate:001": "node src/database/migrations/001_unidades_costos_iva.js",
     "db:migrate:002": "node src/database/migrations/002_conteos_inventario.js",
     "db:migrate:003": "node src/database/migrations/003_medios_pago_caja.js",
