@@ -21,6 +21,8 @@ const carpetaBackupsBase = path.resolve(
     env.backups?.baseDir || 'storage/backups'
 );
 
+const rutaLogBackups = path.join(carpetaBackupsBase, 'backup-log.jsonl');
+
 const carpetaBackupsManuales = path.join(carpetaBackupsBase, 'manuales');
 const carpetaBackupsAutomaticos = path.join(carpetaBackupsBase, 'automaticos');
 const carpetaBackupsProgramados = path.join(carpetaBackupsBase, 'programados');
@@ -252,6 +254,38 @@ function eliminarArchivoSeguro(rutaArchivo) {
     }
 }
 
+function registrarEventoBackup(evento = {}) {
+    try {
+        asegurarCarpeta(carpetaBackupsBase);
+
+        const registro = {
+            fecha: new Date().toISOString(),
+            ...evento,
+        };
+
+        fs.appendFileSync(
+            rutaLogBackups,
+            `${JSON.stringify(registro)}\n`,
+            'utf8'
+        );
+    } catch (error) {
+        console.warn('No se pudo escribir el log técnico de backups:', error.message);
+    }
+}
+
+function validarBackupGenerado(rutaZip, idBackup) {
+    const carpetaVerificacion = path.join(
+        carpetaBackupsTemporales,
+        `verificacion-${idBackup}`
+    );
+
+    try {
+        validarYExtraerBackup(rutaZip, carpetaVerificacion);
+    } finally {
+        eliminarDirectorioSeguro(carpetaVerificacion);
+    }
+}
+
 function obtenerConfiguracionRetencion() {
     return {
         automaticos: leerEnteroConfig(env.backups?.retentionAutomaticos, 30, 1),
@@ -403,6 +437,8 @@ async function crearBackupCompleto({
 
         await crearZipDesdeCarpeta(carpetaTrabajo, rutaZipFinal);
 
+        validarBackupGenerado(rutaZipFinal, idBackup);
+
         const stats = fs.statSync(rutaZipFinal);
         const copiaExterna = copiarExterno
             ? await copiarBackupExterno(rutaZipFinal, nombreArchivo)
@@ -415,6 +451,22 @@ async function crearBackupCompleto({
 
         eliminarDirectorioSeguro(carpetaTrabajo);
         aplicarRetencionBackups();
+
+        registrarEventoBackup({
+            tipo,
+            ok: true,
+            mensaje: mensajeOk,
+            archivo: nombreArchivo,
+            ruta: rutaZipFinal,
+            bytes: stats.size,
+            total_archivos: manifest.total_archivos,
+            copia_externa: {
+                habilitada: copiaExterna.habilitada,
+                ok: copiaExterna.ok,
+                ruta: copiaExterna.ruta || '',
+                mensaje: copiaExterna.mensaje || '',
+            },
+        });
 
         return {
             ok: true,
@@ -432,6 +484,15 @@ async function crearBackupCompleto({
         };
     } catch (error) {
         eliminarDirectorioSeguro(carpetaTrabajo);
+        eliminarArchivoSeguro(rutaZipFinal);
+
+        registrarEventoBackup({
+            tipo,
+            ok: false,
+            mensaje: `No se pudo crear el backup: ${error.message}`,
+            archivo: nombreArchivo,
+            ruta: rutaZipFinal,
+        });
 
         return {
             ok: false,
