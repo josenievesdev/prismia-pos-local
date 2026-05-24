@@ -53,11 +53,7 @@ function renderBackupsSoporte(req, res, opciones = {}) {
 }
 
 function mostrarBackups(req, res) {
-    return renderBackupsPublico(res, {
-        exito: req.query.exito || '',
-        alerta: req.query.alerta || '',
-        error: req.query.error || '',
-    });
+    return res.redirect('/dashboard');
 }
 
 function mostrarBackupsSoporte(req, res) {
@@ -96,7 +92,7 @@ function cerrarSoporteBackups(req, res) {
         req.session.soporteBackupsAutorizado = false;
     }
 
-    return res.redirect('/backups');
+    return res.redirect('/dashboard');
 }
 
 async function crearBackupManual(req, res) {
