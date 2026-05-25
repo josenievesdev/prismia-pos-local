@@ -17,6 +17,10 @@ db.pragma('foreign_keys = ON');
 db.pragma('journal_mode = WAL');
 db.pragma('busy_timeout = 5000');
 
-console.log(`Base de datos SQLite conectada: ${dbPath}`);
+if (runtimePaths.estaEnProduccion()) {
+    console.log('Base de datos SQLite conectada correctamente.');
+} else {
+    console.log(`Base de datos SQLite conectada: ${dbPath}`);
+}
 
 module.exports = db;

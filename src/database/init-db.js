@@ -516,8 +516,13 @@ function insertarUsuarioAdmin() {
   `).run(idUsuario, rolAdministrador.id_rol);
 
     console.log('Usuario administrador creado.');
-    console.log(`Correo: ${env.admin.email}`);
-    console.log(`Contraseña inicial: ${env.admin.password}`);
+
+    if (env.app.isProduction) {
+        console.log('Credenciales iniciales configuradas desde variables de entorno.');
+    } else {
+        console.log(`Correo: ${env.admin.email}`);
+        console.log('Contraseña inicial: definida por configuración local.');
+    }
 }
 
 function registrarAuditoriaInicial() {

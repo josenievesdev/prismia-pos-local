@@ -2,11 +2,82 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
+const nodeEnv = process.env.NODE_ENV || 'development';
+const esProduccion = nodeEnv === 'production';
+
+function limpiarValor(valor) {
+    return String(valor || '').trim();
+}
+
+function obtenerValor(nombreVariable, valorDesarrollo = '') {
+    const valor = limpiarValor(process.env[nombreVariable]);
+
+    if (valor) {
+        return valor;
+    }
+
+    return esProduccion ? '' : valorDesarrollo;
+}
+
+function valorEsPlaceholder(valor) {
+    const valorNormalizado = limpiarValor(valor).toLowerCase();
+
+    if (!valorNormalizado) {
+        return true;
+    }
+
+    const placeholders = new Set([
+        'admin12345',
+        'prismia_pos_local_dev_secret',
+        'cambia_este_valor_en_produccion',
+        'cambia_esta_contrasena',
+        'cambia-esta-clave-tecnica',
+    ]);
+
+    return placeholders.has(valorNormalizado)
+        || valorNormalizado.includes('cambia_')
+        || valorNormalizado.includes('cambia-')
+        || valorNormalizado.includes('change_me')
+        || valorNormalizado.includes('changeme');
+}
+
+function validarConfigProduccion() {
+    if (!esProduccion) {
+        return;
+    }
+
+    const errores = [];
+    const sessionSecret = limpiarValor(process.env.SESSION_SECRET);
+    const adminPassword = limpiarValor(process.env.ADMIN_PASSWORD);
+    const supportBackupKey = limpiarValor(process.env.SUPPORT_BACKUP_KEY);
+
+    if (valorEsPlaceholder(sessionSecret) || sessionSecret.length < 24) {
+        errores.push('SESSION_SECRET debe estar configurado con un valor único y seguro de mínimo 24 caracteres.');
+    }
+
+    if (valorEsPlaceholder(adminPassword) || adminPassword.length < 10) {
+        errores.push('ADMIN_PASSWORD debe estar configurado con una contraseña inicial única de mínimo 10 caracteres.');
+    }
+
+    if (valorEsPlaceholder(supportBackupKey) || supportBackupKey.length < 12) {
+        errores.push('SUPPORT_BACKUP_KEY debe estar configurado con una clave técnica única de mínimo 12 caracteres.');
+    }
+
+    if (errores.length > 0) {
+        throw new Error([
+            'Configuración insegura para producción.',
+            ...errores,
+            'Corrige las variables de entorno antes de iniciar Prismia en producción.',
+        ].join('\n'));
+    }
+}
+
 const env = {
     app: {
         name: process.env.APP_NAME || 'Prismia POS Local',
         port: Number(process.env.APP_PORT) || 3000,
-        nodeEnv: process.env.NODE_ENV || 'development',
+        nodeEnv,
+        isProduction: esProduccion,
     },
 
     db: {
@@ -16,13 +87,13 @@ const env = {
     },
 
     session: {
-        secret: process.env.SESSION_SECRET || 'prismia_pos_local_dev_secret',
+        secret: obtenerValor('SESSION_SECRET', 'prismia_pos_local_dev_secret'),
     },
 
     backups: {
         baseDir: process.env.BACKUP_BASE_DIR || 'storage/backups',
         externalPath: process.env.BACKUP_EXTERNAL_PATH || '',
-        supportKey: process.env.SUPPORT_BACKUP_KEY || '',
+        supportKey: obtenerValor('SUPPORT_BACKUP_KEY'),
         supportContactName: process.env.SUPPORT_CONTACT_NAME || 'Nieves Systems',
         supportContactEmail: process.env.SUPPORT_CONTACT_EMAIL || 'soporte@tudominio.com',
         supportContactPhone: process.env.SUPPORT_CONTACT_PHONE || '',
@@ -35,7 +106,11 @@ const env = {
     admin: {
         name: process.env.ADMIN_NAME || 'Administrador',
         email: process.env.ADMIN_EMAIL || 'admin@prismia.local',
-        password: process.env.ADMIN_PASSWORD || 'Admin12345',
+        password: obtenerValor('ADMIN_PASSWORD', 'Admin12345'),
+    },
+
+    seguridad: {
+        validarConfigProduccion,
     },
 };
 

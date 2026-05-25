@@ -53,7 +53,9 @@ app.use(
     })
 );
 
-app.use(morgan('dev'));
+if (!env.app.isProduction) {
+    app.use(morgan('dev'));
+}
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());

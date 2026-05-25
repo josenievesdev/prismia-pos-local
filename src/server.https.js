@@ -3,6 +3,10 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
+const env = require('./config/env');
+
+env.seguridad.validarConfigProduccion();
+
 const { asegurarBaseDatos } = require('./database/ensure-db');
 
 asegurarBaseDatos();
