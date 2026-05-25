@@ -8,6 +8,7 @@ const expressLayouts = require('express-ejs-layouts');
 
 const env = require('./config/env');
 const empresa = require('./config/empresa');
+const runtimePaths = require('./config/runtime-paths');
 const localsMiddleware = require('./middlewares/locals.middleware');
 const errorMiddleware = require('./middlewares/error.middleware');
 
@@ -75,6 +76,9 @@ app.use(
 /**
  * Archivos públicos
  */
+runtimePaths.asegurarCarpetasRuntime();
+
+app.use('/uploads', express.static(runtimePaths.obtenerCarpetaUploadsPublicos()));
 app.use(express.static(path.join(__dirname, 'public')));
 
 function renderPantallaReinicioPendiente(res) {

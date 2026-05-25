@@ -2,9 +2,9 @@ const path = require('path');
 const fs = require('fs');
 const Database = require('better-sqlite3');
 
-const env = require('./env');
+const runtimePaths = require('./runtime-paths');
 
-const dbPath = path.resolve(process.cwd(), env.db.path);
+const dbPath = runtimePaths.obtenerRutaBaseDatos();
 const dbDir = path.dirname(dbPath);
 
 if (!fs.existsSync(dbDir)) {

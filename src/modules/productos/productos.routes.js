@@ -4,15 +4,13 @@ const path = require('path');
 const fs = require('fs');
 
 const productosController = require('./productos.controller');
+const runtimePaths = require('../../config/runtime-paths');
 const { requiereAutenticacion } = require('../../middlewares/auth.middleware');
 const { requiereRol } = require('../../middlewares/role.middleware');
 
 const router = express.Router();
 
-const carpetaUploadsProductos = path.join(
-    __dirname,
-    '../../public/uploads/productos'
-);
+const carpetaUploadsProductos = runtimePaths.obtenerCarpetaUploadsProductos();
 
 if (!fs.existsSync(carpetaUploadsProductos)) {
     fs.mkdirSync(carpetaUploadsProductos, { recursive: true });

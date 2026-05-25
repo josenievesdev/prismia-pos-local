@@ -2,11 +2,9 @@ const fs = require('fs');
 const path = require('path');
 
 const productosService = require('./productos.service');
+const runtimePaths = require('../../config/runtime-paths');
 
-const carpetaUploadsProductos = path.join(
-    __dirname,
-    '../../public/uploads/productos'
-);
+const carpetaUploadsProductos = runtimePaths.obtenerCarpetaUploadsProductos();
 
 const prefijoPublicoImagenesProducto = '/uploads/productos/';
 

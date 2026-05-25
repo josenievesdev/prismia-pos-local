@@ -4,14 +4,16 @@ const express = require('express');
 const multer = require('multer');
 
 const backupsController = require('./backups.controller');
+const runtimePaths = require('../../config/runtime-paths');
 const { requiereAutenticacion } = require('../../middlewares/auth.middleware');
 const { requiereRol } = require('../../middlewares/role.middleware');
 
 const router = express.Router();
 
-const carpetaUploadsRestauracion = path.resolve(
-    process.cwd(),
-    'storage/backups/tmp/uploads-restauracion'
+const carpetaUploadsRestauracion = path.join(
+    runtimePaths.obtenerCarpetaBackupsBase(),
+    'tmp',
+    'uploads-restauracion'
 );
 
 function asegurarCarpeta(ruta) {

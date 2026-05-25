@@ -9,17 +9,13 @@ const SQLite = require('better-sqlite3');
 const db = require('../../config/db');
 const env = require('../../config/env');
 const empresa = require('../../config/empresa');
+const runtimePaths = require('../../config/runtime-paths');
 
 const raizProyecto = process.cwd();
 
-const rutaBaseDatosPrincipal = path.resolve(
-    env.db?.path || path.join(raizProyecto, 'src/database/data/prismia_pos_local.sqlite')
-);
+const rutaBaseDatosPrincipal = runtimePaths.obtenerRutaBaseDatos();
 
-const carpetaBackupsBase = path.resolve(
-    raizProyecto,
-    env.backups?.baseDir || 'storage/backups'
-);
+const carpetaBackupsBase = runtimePaths.obtenerCarpetaBackupsBase();
 
 const rutaLogBackups = path.join(carpetaBackupsBase, 'backup-log.jsonl');
 
@@ -30,7 +26,7 @@ const carpetaBackupsEmergencia = path.join(carpetaBackupsBase, 'emergencia');
 const carpetaBackupsTemporales = path.join(carpetaBackupsBase, 'tmp');
 const carpetaRestauracionesTemporales = path.join(carpetaBackupsBase, 'restore-tmp');
 
-const carpetaUploadsProductos = path.resolve(raizProyecto, 'src/public/uploads/productos');
+const carpetaUploadsProductos = runtimePaths.obtenerCarpetaUploadsProductos();
 const nombreBaseDatos = path.basename(rutaBaseDatosPrincipal);
 
 function asegurarCarpeta(ruta) {
