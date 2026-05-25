@@ -12,6 +12,8 @@ const runtimePaths = require('./config/runtime-paths');
 const localsMiddleware = require('./middlewares/locals.middleware');
 const errorMiddleware = require('./middlewares/error.middleware');
 
+const setupRoutes = require('./modules/setup/setup.routes');
+const setupService = require('./modules/setup/setup.service');
 const authRoutes = require('./modules/auth/auth.routes');
 const dashboardRoutes = require('./modules/dashboard/dashboard.routes');
 const configuracionRoutes = require('./modules/configuracion/configuracion.routes');
@@ -249,6 +251,39 @@ app.use((req, res, next) => {
  * Variables disponibles en todas las vistas
  */
 app.use(localsMiddleware);
+
+/**
+ * Configuración inicial del primer administrador.
+ */
+app.use('/setup', setupRoutes);
+
+app.use((req, res, next) => {
+    const rutasPermitidas = [
+        '/setup',
+        '/setup/',
+        '/salud',
+        '/favicon.ico',
+    ];
+
+    if (rutasPermitidas.includes(req.path)) {
+        return next();
+    }
+
+    if (
+        req.path.startsWith('/css/') ||
+        req.path.startsWith('/js/') ||
+        req.path.startsWith('/img/') ||
+        req.path.startsWith('/uploads/')
+    ) {
+        return next();
+    }
+
+    if (setupService.requiereConfiguracionInicial()) {
+        return res.redirect('/setup');
+    }
+
+    return next();
+});
 
 /**
  * Ruta técnica para finalizar restauración.

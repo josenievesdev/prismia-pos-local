@@ -47,10 +47,10 @@ const semillasMinimas = [
         minimo: 1,
     },
     {
-        nombre: 'usuarios >= 1',
-        tabla: 'usuarios',
-        sql: 'SELECT COUNT(*) AS total FROM usuarios',
-        minimo: 1,
+        nombre: 'rol administrador = 1',
+        tabla: 'roles',
+        sql: "SELECT COUNT(*) AS total FROM roles WHERE nombre = 'administrador' AND estado = 'activo'",
+        exacto: 1,
     },
     {
         nombre: 'medios_pago >= 8',

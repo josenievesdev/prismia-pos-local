@@ -114,10 +114,6 @@ function validarConfigProduccion() {
         errores.push('SESSION_SECRET debe existir y tener un valor seguro de mínimo 24 caracteres.');
     }
 
-    if (valorEsPlaceholder(env.admin.password) || env.admin.password.length < 10) {
-        errores.push('ADMIN_PASSWORD debe estar configurado con una contraseña inicial única de mínimo 10 caracteres.');
-    }
-
     if (valorEsPlaceholder(env.backups.supportKey) || env.backups.supportKey.length < 12) {
         errores.push('SUPPORT_BACKUP_KEY debe existir y tener una clave técnica única de mínimo 12 caracteres.');
     }

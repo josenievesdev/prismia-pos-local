@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        <%= titulo %> | <%= empresa.software.nombre %>
+    </title>
+
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+
+<body>
+    <main class="auth-screen">
+        <section class="auth-brand-panel">
+            <div class="brand-system">
+                <div class="prism-mark" aria-hidden="true">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+
+                <div>
+                    <p class="brand-kicker">Primer arranque</p>
+
+                    <h1>
+                        <%= empresa.software.nombre %>
+                    </h1>
+
+                    <p class="brand-description">
+                        Crea el primer administrador para activar esta instalación local de Prismia.
+                    </p>
+                </div>
+            </div>
+
+            <div class="auth-brand-footer">
+                <span>Versión <%= empresa.software.version %></span>
+                <span>
+                    <%= empresa.software.desarrollador %>
+                </span>
+            </div>
+        </section>
+
+        <section class="auth-form-panel">
+            <div class="auth-card">
+                <div class="auth-card-header">
+                    <p class="eyebrow">Configuración inicial</p>
+                    <h2>Crear administrador</h2>
+                    <p>
+                        Este usuario tendrá acceso completo al sistema.
+                    </p>
+                </div>
+
+                <% if (error) { %>
+                    <div class="alert alert-error">
+                        <%= error %>
+                    </div>
+                    <% } %>
+
+                        <form class="form-card" method="POST" action="/setup">
+                            <div class="form-group">
+                                <label for="nombre">Nombre</label>
+                                <input type="text" id="nombre" name="nombre" placeholder="Administrador"
+                                    autocomplete="name" value="<%= valores?.nombre || '' %>" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="correo">Correo</label>
+                                <input type="email" id="correo" name="correo" placeholder="admin@negocio.com"
+                                    autocomplete="email" value="<%= valores?.correo || '' %>" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="contrasena">Contraseña</label>
+                                <input type="password" id="contrasena" name="contrasena"
+                                    placeholder="Mínimo 10 caracteres" autocomplete="new-password" minlength="10"
+                                    required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="confirmar_contrasena">Confirmar contraseña</label>
+                                <input type="password" id="confirmar_contrasena" name="confirmar_contrasena"
+                                    placeholder="Repite la contraseña" autocomplete="new-password" minlength="10"
+                                    required>
+                            </div>
+
+                            <button type="submit" class="btn-primary full-width">
+                                Crear administrador
+                            </button>
+                        </form>
+
+                        <p class="auth-note">
+                            Esta pantalla solo aparece cuando no existe un administrador activo.
+                        </p>
+            </div>
+        </section>
+    </main>
+</body>
+
+</html>

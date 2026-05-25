@@ -587,7 +587,7 @@ function inicializarBaseDatos() {
     insertarMediosPagoIniciales();
     insertarNumeracionesDocumentosIniciales();
     insertarClienteConsumidorFinal();
-    insertarUsuarioAdmin();
+    console.log('Primer administrador pendiente de configuración desde /setup.');
     registrarAuditoriaInicial();
 
     console.log('====================================');
