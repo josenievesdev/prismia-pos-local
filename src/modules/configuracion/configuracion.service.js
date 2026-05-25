@@ -1,4 +1,6 @@
 const configuracionRepository = require('./configuracion.repository');
+const env = require('../../config/env');
+const runtimeSecrets = require('../../config/runtime-secrets');
 
 function limpiarTexto(valor) {
     return String(valor || '').trim();
@@ -22,6 +24,19 @@ function obtenerConfiguracionNegocio() {
     }
 
     return configuracion;
+}
+
+function obtenerSeguridadSoporte() {
+    const claveDesdeEnv = Boolean(String(process.env.SUPPORT_BACKUP_KEY || '').trim());
+    const estadoRuntime = runtimeSecrets.obtenerEstadoSecretosRuntime();
+    const claveConfigurada = Boolean(env.backups.supportKey || estadoRuntime.clave_soporte);
+
+    return {
+        clave_configurada: claveConfigurada,
+        origen: claveDesdeEnv ? 'variable_entorno' : 'runtime',
+        permite_regenerar: !claveDesdeEnv,
+        actualizado_en: estadoRuntime.actualizado_en || '',
+    };
 }
 
 function validarDatosConfiguracion(datos) {
@@ -110,7 +125,45 @@ function actualizarConfiguracionNegocio({
     };
 }
 
+function regenerarClaveSoporte({ usuario, ip, userAgent }) {
+    const claveDesdeEnv = Boolean(String(process.env.SUPPORT_BACKUP_KEY || '').trim());
+
+    if (claveDesdeEnv) {
+        return {
+            ok: false,
+            mensaje: 'La clave técnica está definida por variable de entorno y no se puede regenerar desde Configuración.',
+        };
+    }
+
+    const resultado = runtimeSecrets.regenerarSupportBackupKey();
+
+    env.backups.supportKey = resultado.clave_soporte;
+
+    configuracionRepository.registrarAuditoria({
+        id_usuario: usuario?.id_usuario || null,
+        accion: 'regenerar_clave_soporte_backups',
+        tabla_afectada: 'secretos_runtime',
+        id_registro_afectado: null,
+        datos_anteriores: JSON.stringify({
+            clave_soporte: resultado.clave_anterior ? 'valor_anterior_oculto' : '',
+        }),
+        datos_nuevos: JSON.stringify({
+            clave_soporte: 'valor_nuevo_oculto',
+            ruta_archivo: resultado.ruta_archivo,
+        }),
+        ip: ip || 'local',
+        user_agent: userAgent || '',
+    });
+
+    return {
+        ok: true,
+        mensaje: 'Clave técnica de soporte regenerada correctamente. La nueva clave quedó guardada en el archivo interno de secretos runtime.',
+    };
+}
+
 module.exports = {
     obtenerConfiguracionNegocio,
+    obtenerSeguridadSoporte,
     actualizarConfiguracionNegocio,
+    regenerarClaveSoporte,
 };

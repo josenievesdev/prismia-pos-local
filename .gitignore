@@ -69,9 +69,10 @@ temp/
 *.swp
 *.swo
 
-# Backups generados por Prismia
+# Backups y runtime local generados por Prismia
 storage/backups/
 storage/tmp/
+storage/runtime/
 *.zip.tmp
 
 # Reinicio técnico local de desarrollo

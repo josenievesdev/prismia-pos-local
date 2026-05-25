@@ -1,12 +1,17 @@
 const configuracionService = require('./configuracion.service');
 
+function obtenerDatosVista() {
+    return {
+        configuracion: configuracionService.obtenerConfiguracionNegocio(),
+    };
+}
+
 function mostrarConfiguracion(req, res) {
-    const configuracion =
-        configuracionService.obtenerConfiguracionNegocio();
+    const datosVista = obtenerDatosVista();
 
     return res.render('configuracion/index', {
         titulo: 'Configuración',
-        configuracion,
+        configuracion: datosVista.configuracion,
         mensajeExito: null,
         error: null,
     });
@@ -34,13 +39,12 @@ function actualizarConfiguracion(req, res) {
             userAgent: req.headers['user-agent'],
         });
 
-    const configuracion =
-        configuracionService.obtenerConfiguracionNegocio();
+    const datosVista = obtenerDatosVista();
 
     if (!resultado.ok) {
         return res.status(400).render('configuracion/index', {
             titulo: 'Configuración',
-            configuracion,
+            configuracion: datosVista.configuracion,
             mensajeExito: null,
             error: resultado.mensaje,
         });
@@ -48,11 +52,12 @@ function actualizarConfiguracion(req, res) {
 
     return res.render('configuracion/index', {
         titulo: 'Configuración',
-        configuracion,
+        configuracion: datosVista.configuracion,
         mensajeExito: resultado.mensaje,
         error: null,
     });
 }
+
 
 module.exports = {
     mostrarConfiguracion,

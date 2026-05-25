@@ -2,6 +2,8 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
+const runtimeSecrets = require('./runtime-secrets');
+
 const nodeEnv = process.env.NODE_ENV || 'development';
 const esProduccion = nodeEnv === 'production';
 
@@ -17,6 +19,20 @@ function obtenerValor(nombreVariable, valorDesarrollo = '') {
     }
 
     return esProduccion ? '' : valorDesarrollo;
+}
+
+function obtenerValorSeguro(nombreVariable, obtenerValorRuntime, valorDesarrollo = '') {
+    const valor = limpiarValor(process.env[nombreVariable]);
+
+    if (valor) {
+        return valor;
+    }
+
+    if (typeof obtenerValorRuntime === 'function') {
+        return limpiarValor(obtenerValorRuntime());
+    }
+
+    return valorDesarrollo;
 }
 
 function valorEsPlaceholder(valor) {
@@ -41,37 +57,6 @@ function valorEsPlaceholder(valor) {
         || valorNormalizado.includes('changeme');
 }
 
-function validarConfigProduccion() {
-    if (!esProduccion) {
-        return;
-    }
-
-    const errores = [];
-    const sessionSecret = limpiarValor(process.env.SESSION_SECRET);
-    const adminPassword = limpiarValor(process.env.ADMIN_PASSWORD);
-    const supportBackupKey = limpiarValor(process.env.SUPPORT_BACKUP_KEY);
-
-    if (valorEsPlaceholder(sessionSecret) || sessionSecret.length < 24) {
-        errores.push('SESSION_SECRET debe estar configurado con un valor único y seguro de mínimo 24 caracteres.');
-    }
-
-    if (valorEsPlaceholder(adminPassword) || adminPassword.length < 10) {
-        errores.push('ADMIN_PASSWORD debe estar configurado con una contraseña inicial única de mínimo 10 caracteres.');
-    }
-
-    if (valorEsPlaceholder(supportBackupKey) || supportBackupKey.length < 12) {
-        errores.push('SUPPORT_BACKUP_KEY debe estar configurado con una clave técnica única de mínimo 12 caracteres.');
-    }
-
-    if (errores.length > 0) {
-        throw new Error([
-            'Configuración insegura para producción.',
-            ...errores,
-            'Corrige las variables de entorno antes de iniciar Prismia en producción.',
-        ].join('\n'));
-    }
-}
-
 const env = {
     app: {
         name: process.env.APP_NAME || 'Prismia POS Local',
@@ -87,13 +72,21 @@ const env = {
     },
 
     session: {
-        secret: obtenerValor('SESSION_SECRET', 'prismia_pos_local_dev_secret'),
+        secret: obtenerValorSeguro(
+            'SESSION_SECRET',
+            runtimeSecrets.obtenerSessionSecret,
+            'prismia_pos_local_dev_secret'
+        ),
     },
 
     backups: {
         baseDir: process.env.BACKUP_BASE_DIR || 'storage/backups',
         externalPath: process.env.BACKUP_EXTERNAL_PATH || '',
-        supportKey: obtenerValor('SUPPORT_BACKUP_KEY'),
+        supportKey: obtenerValorSeguro(
+            'SUPPORT_BACKUP_KEY',
+            runtimeSecrets.obtenerSupportBackupKey,
+            ''
+        ),
         supportContactName: process.env.SUPPORT_CONTACT_NAME || 'Nieves Systems',
         supportContactEmail: process.env.SUPPORT_CONTACT_EMAIL || 'soporte@tudominio.com',
         supportContactPhone: process.env.SUPPORT_CONTACT_PHONE || '',
@@ -108,10 +101,38 @@ const env = {
         email: process.env.ADMIN_EMAIL || 'admin@prismia.local',
         password: obtenerValor('ADMIN_PASSWORD', 'Admin12345'),
     },
+};
 
-    seguridad: {
-        validarConfigProduccion,
-    },
+function validarConfigProduccion() {
+    if (!esProduccion) {
+        return;
+    }
+
+    const errores = [];
+
+    if (valorEsPlaceholder(env.session.secret) || env.session.secret.length < 24) {
+        errores.push('SESSION_SECRET debe existir y tener un valor seguro de mínimo 24 caracteres.');
+    }
+
+    if (valorEsPlaceholder(env.admin.password) || env.admin.password.length < 10) {
+        errores.push('ADMIN_PASSWORD debe estar configurado con una contraseña inicial única de mínimo 10 caracteres.');
+    }
+
+    if (valorEsPlaceholder(env.backups.supportKey) || env.backups.supportKey.length < 12) {
+        errores.push('SUPPORT_BACKUP_KEY debe existir y tener una clave técnica única de mínimo 12 caracteres.');
+    }
+
+    if (errores.length > 0) {
+        throw new Error([
+            'Configuración insegura para producción.',
+            ...errores,
+            'Corrige las variables de entorno o los secretos runtime antes de iniciar Prismia en producción.',
+        ].join('\n'));
+    }
+}
+
+env.seguridad = {
+    validarConfigProduccion,
 };
 
 module.exports = env;
