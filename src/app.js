@@ -5,6 +5,7 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const session = require('express-session');
 const expressLayouts = require('express-ejs-layouts');
+const SQLiteSessionStore = require('./config/sqlite-session-store');
 
 const env = require('./config/env');
 const empresa = require('./config/empresa');
@@ -65,6 +66,9 @@ app.use(express.json());
 app.use(
     session({
         name: 'prismia.sid',
+        store: new SQLiteSessionStore({
+            ttlMs: 1000 * 60 * 60 * 8,
+        }),
         secret: env.session.secret,
         resave: false,
         saveUninitialized: false,
