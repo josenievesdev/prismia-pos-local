@@ -201,18 +201,13 @@ function renderPantallaReinicioPendiente(res) {
                 </p>
 
                 <div class="warning">
-                    <strong>No sigas usando esta ventana.</strong><br>
-                    Prismia necesita reiniciarse para abrir nuevamente la base restaurada.
+                    <strong>Prismia está terminando de reiniciarse.</strong><br>
+                    Espera unos segundos. La aplicación volverá a estar disponible automáticamente.
                 </div>
 
                 <div class="meta">
                     <div>
-                        <strong>En desarrollo:</strong>
-                        si nodemon no reinicia solo, escribe <code>rs</code> en la terminal.
-                    </div>
-                    <div>
-                        <strong>Alternativa:</strong>
-                        presiona <code>Ctrl + C</code> y ejecuta <code>npm run dev:https</code>.
+                        Si esta pantalla permanece más de un minuto, cierra Prismia y vuelve a abrirlo.
                     </div>
                 </div>
             </main>

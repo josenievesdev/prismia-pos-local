@@ -34,6 +34,17 @@ function obtenerFechaExpiracionMs(sess, ttlMs) {
     return ahoraEnMs() + ttlMs;
 }
 
+function esErrorConexionCerrada(error) {
+    const mensaje = String(error?.message || '').toLowerCase();
+
+    return (
+        mensaje.includes('not open') ||
+        mensaje.includes('closed') ||
+        mensaje.includes('database connection is not open') ||
+        mensaje.includes('database is not open')
+    );
+}
+
 class SQLiteSessionStore extends session.Store {
     constructor(opciones = {}) {
         super();
@@ -78,10 +89,18 @@ class SQLiteSessionStore extends session.Store {
     }
 
     limpiarSesionesExpiradas() {
-        db.prepare(`
-            DELETE FROM sesiones_http
-            WHERE fecha_expira_ms <= ?
-        `).run(ahoraEnMs());
+        try {
+            db.prepare(`
+                DELETE FROM sesiones_http
+                WHERE fecha_expira_ms <= ?
+            `).run(ahoraEnMs());
+        } catch (error) {
+            if (esErrorConexionCerrada(error)) {
+                return;
+            }
+
+            throw error;
+        }
     }
 
     get(sid, callback) {
@@ -106,6 +125,10 @@ class SQLiteSessionStore extends session.Store {
 
             return callback(null, JSON.parse(sesion.datos));
         } catch (error) {
+            if (esErrorConexionCerrada(error)) {
+                return callback(null, null);
+            }
+
             return callback(error);
         }
     }
@@ -132,6 +155,10 @@ class SQLiteSessionStore extends session.Store {
 
             return callback(null);
         } catch (error) {
+            if (esErrorConexionCerrada(error)) {
+                return callback(null);
+            }
+
             return callback(error);
         }
     }
@@ -145,6 +172,10 @@ class SQLiteSessionStore extends session.Store {
 
             return callback(null);
         } catch (error) {
+            if (esErrorConexionCerrada(error)) {
+                return callback(null);
+            }
+
             return callback(error);
         }
     }
@@ -162,6 +193,10 @@ class SQLiteSessionStore extends session.Store {
 
             return callback(null);
         } catch (error) {
+            if (esErrorConexionCerrada(error)) {
+                return callback(null);
+            }
+
             return callback(error);
         }
     }

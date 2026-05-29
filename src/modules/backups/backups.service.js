@@ -931,6 +931,38 @@ function restaurarUploadsProductosDesde(carpetaOrigen) {
     asegurarGitkeep(carpetaUploadsProductos);
 }
 
+function limpiarSesionesHttpRestauradas(rutaBaseDatos) {
+    let dbRestaurada;
+
+    try {
+        dbRestaurada = new SQLite(rutaBaseDatos);
+
+        const tablaSesiones = dbRestaurada.prepare(`
+            SELECT name
+            FROM sqlite_master
+            WHERE type = 'table'
+              AND name = 'sesiones_http'
+            LIMIT 1
+        `).get();
+
+        if (!tablaSesiones) {
+            return;
+        }
+
+        dbRestaurada.prepare(`
+            DELETE FROM sesiones_http
+        `).run();
+
+        dbRestaurada.pragma('wal_checkpoint(TRUNCATE)');
+    } catch (error) {
+        console.warn('No se pudieron limpiar sesiones HTTP restauradas:', error.message);
+    } finally {
+        if (dbRestaurada) {
+            dbRestaurada.close();
+        }
+    }
+}
+
 async function restaurarBackupDesdeArchivo(rutaZip) {
     const marcaTiempo = formatearFechaArchivo(new Date());
     const carpetaTrabajo = path.join(carpetaRestauracionesTemporales, `restore-${marcaTiempo}`);
@@ -948,6 +980,8 @@ async function restaurarBackupDesdeArchivo(rutaZip) {
 
         asegurarCarpeta(path.dirname(rutaBaseDatosPrincipal));
         fs.copyFileSync(validacion.rutaDbRestaurada, rutaBaseDatosPrincipal);
+
+        limpiarSesionesHttpRestauradas(rutaBaseDatosPrincipal);
 
         restaurarUploadsProductosDesde(validacion.rutaUploadsProductos);
 

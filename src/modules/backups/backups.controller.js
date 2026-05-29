@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 
 const backupsService = require('./backups.service');
 const env = require('../../config/env');
@@ -130,7 +131,45 @@ function abrirCarpetaBackups(req, res) {
     return res.redirect(`/backups/soporte?exito=${encodeURIComponent(resultado.mensaje)}`);
 }
 
+function estaEjecutandoConNodemon() {
+    const eventoNpm = String(process.env.npm_lifecycle_event || '').toLowerCase();
+
+    return (
+        eventoNpm === 'dev' ||
+        eventoNpm === 'dev:https' ||
+        Boolean(process.env.NODEMON)
+    );
+}
+
+function activarReinicioConNodemon() {
+    const rutaTrigger = path.join(process.cwd(), 'src', 'restart-dev-trigger.json');
+
+    const contenido = {
+        motivo: 'restauracion_backup',
+        fecha: new Date().toISOString(),
+    };
+
+    fs.writeFileSync(rutaTrigger, JSON.stringify(contenido, null, 2), 'utf8');
+}
+
+function programarReinicioDespuesDeRestauracion(res) {
+    res.once('finish', () => {
+        setTimeout(() => {
+            console.log('Restauración aplicada. Reiniciando Prismia para abrir la base restaurada...');
+
+            if (estaEjecutandoConNodemon()) {
+                activarReinicioConNodemon();
+                return;
+            }
+
+            process.exit(0);
+        }, 1500);
+    });
+}
+
 function renderRestauracionCompletada(res, resultado) {
+    programarReinicioDespuesDeRestauracion(res);
+
     return res.status(200).send(`
         <!doctype html>
         <html lang="es">
@@ -243,34 +282,56 @@ function renderRestauracionCompletada(res, resultado) {
                 </p>
 
                 <div class="warning">
-                    <strong>Prismia está aplicando la restauración.</strong><br>
-                    La conexión SQLite fue cerrada para restaurar la base de datos. No sigas usando esta ventana.
-                    En desarrollo, el servidor intentará reiniciarse automáticamente.
+                    <strong>Prismia se está reiniciando automáticamente.</strong><br>
+                    No cierres esta ventana. En unos segundos volverás a la pantalla de ingreso.
                 </div>
 
                 <div class="meta">
                     <div>
-                        <strong>Backup de emergencia:</strong>
+                        <strong>Backup de emergencia creado:</strong>
                         <code>${resultado.backup_emergencia.archivo}</code>
                     </div>
 
-                    <div>
-                        <strong>En desarrollo:</strong>
-                        espera unos segundos. Si nodemon queda en espera, escribe <code>rs</code> en la terminal.
-                    </div>
-
-                    <div>
-                        <strong>En Electron:</strong>
-                        más adelante este paso será un botón de reinicio de la app.
+                    <div id="estado-reinicio">
+                        Preparando reinicio seguro...
                     </div>
                 </div>
             </main>
 
-            <script>
-                setTimeout(function () {
-                    fetch('/__restauracion-finalizada').catch(function () {});
-                }, 600);
-            </script>
+<script>
+    const estado = document.getElementById('estado-reinicio');
+    let intentos = 0;
+
+    setTimeout(function () {
+        estado.textContent = 'Reiniciando Prismia...';
+
+        const verificador = setInterval(async function () {
+            intentos += 1;
+
+            try {
+                const respuesta = await fetch('/salud?restauracion=' + Date.now(), {
+                    cache: 'no-store'
+                });
+
+                if (respuesta.ok) {
+                    clearInterval(verificador);
+                    estado.textContent = 'Prismia está listo. Redirigiendo al ingreso...';
+
+                    setTimeout(function () {
+                        window.location.href = '/auth/login';
+                    }, 900);
+                }
+            } catch (error) {
+                estado.textContent = 'Esperando que Prismia vuelva a iniciar...';
+            }
+
+            if (intentos >= 45) {
+                clearInterval(verificador);
+                estado.textContent = 'La restauración fue aplicada. Cierra y abre Prismia nuevamente para continuar.';
+            }
+        }, 1000);
+    }, 2200);
+</script>
         </body>
         </html>
     `);
@@ -298,6 +359,8 @@ async function restaurarBackup(req, res) {
     if (!resultado.ok) {
         return res.redirect(`/backups/soporte?error=${encodeURIComponent(resultado.mensaje)}`);
     }
+
+    req.app.locals.restauracionPendiente = true;
 
     return renderRestauracionCompletada(res, resultado);
 }
