@@ -1,34 +1,47 @@
+# ==========================================
 # Dependencias
+# ==========================================
 node_modules/
 
+# ==========================================
 # Variables de entorno
+# ==========================================
 .env
 .env.*
 !.env.example
 
+# ==========================================
 # Logs
+# ==========================================
 logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Builds / distribución
+# ==========================================
+# Builds / distribución / empaquetado
+# ==========================================
 dist/
 build/
 coverage/
 out/
 release/
 
+# ==========================================
 # Sistema operativo / editores
+# ==========================================
 .DS_Store
 Thumbs.db
 desktop.ini
+
 .vscode/
 !.vscode/extensions.json
 !.vscode/settings.json
 
-# Uploads generales
+# ==========================================
+# Uploads locales generados por usuarios/clientes
+# ==========================================
 public/uploads/**
 !public/uploads/
 !public/uploads/.gitkeep
@@ -39,43 +52,75 @@ src/public/uploads/**
 !src/public/uploads/productos/
 !src/public/uploads/productos/.gitkeep
 
-# Base de datos local SQLite
-src/database/data/*.sqlite
-src/database/data/*.sqlite-shm
-src/database/data/*.sqlite-wal
-src/database/data/*.sqlite-journal
-src/database/data/*.db
-src/database/data/*.db-shm
-src/database/data/*.db-wal
-src/database/data/*.db-journal
+# ==========================================
+# Base de datos local SQLite y datos runtime
+# ==========================================
+src/database/data/**
+!src/database/data/
+!src/database/data/.gitkeep
+
 src/database/reports/
 
+# ==========================================
 # Backups locales de base de datos
-src/database/data/*backup*
-src/database/data/*respaldo*
-src/database/data/*.bak
+# ==========================================
+storage/backups/**
+!storage/backups/
+!storage/backups/.gitkeep
 
+storage/tmp/**
+!storage/tmp/
+!storage/tmp/.gitkeep
+
+*.zip.tmp
+*.bak
+
+# ==========================================
+# Runtime local generado por Prismia
+# ==========================================
+storage/runtime/**
+!storage/runtime/
+!storage/runtime/.gitkeep
+
+# ==========================================
+# Secretos locales / runtime
+# ==========================================
+secretos.local.json
+**/secretos.local.json
+**/secretos.local.json.tmp
+
+# ==========================================
 # Certificados HTTPS locales
-certs/
+# ==========================================
+certs/**
+!certs/
+!certs/.gitkeep
+
 *.pem
 *.key
 *.crt
 *.p12
 
+# ==========================================
 # Archivos temporales
+# ==========================================
 tmp/
 temp/
 *.tmp
 *.swp
 *.swo
 
-# Backups y runtime local generados por Prismia
-storage/backups/
-storage/tmp/
-storage/runtime/
-*.zip.tmp
-
+# ==========================================
 # Reinicio técnico local de desarrollo
+# ==========================================
 .restart-dev.json
 src/.restart-dev.json
 src/restart-dev-trigger.json
+
+# ==========================================
+# Carpetas temporales de pruebas runtime
+# ==========================================
+PrismiaRestoreTest/
+PrismiaSetupTest/
+PrismiaSecretsTest/
+PrismiaRuntimeTest/
