@@ -16,7 +16,8 @@
     "db:migrate:004": "node src/database/migrations/004_movimientos_caja_medios_pago.js",
     "db:migrate:005": "node src/database/migrations/005_pagos_venta_medios_pago.js",
     "db:migrate:006": "node src/database/migrations/006_gastos_medios_pago.js",
-    "check:pre-electron": "npm run db:validate && node scripts/verificar-pre-electron.js"
+    "check:pre-electron": "npm run db:validate && node scripts/verificar-pre-electron.js",
+    "check:runtime": "node scripts/diagnostico-runtime.js"
   },
   "keywords": [
     "pos",
