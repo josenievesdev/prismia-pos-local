@@ -9,7 +9,7 @@ asegurarBaseDatos();
 const app = require('./app');
 const empresa = require('./config/empresa');
 
-app.listen(env.app.port, () => {
+const server = app.listen(env.app.port, () => {
     console.log('====================================');
     console.log(`${empresa.software.nombre} ejecutándose correctamente`);
     console.log(`Versión: ${empresa.software.version}`);
@@ -18,3 +18,5 @@ app.listen(env.app.port, () => {
     console.log(`Entorno: ${env.app.nodeEnv}`);
     console.log('====================================');
 });
+
+module.exports = server;
