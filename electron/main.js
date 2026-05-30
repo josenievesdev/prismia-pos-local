@@ -1,12 +1,14 @@
 const { app, BrowserWindow, dialog } = require('electron');
-const path = require('path');
 const http = require('http');
+
+const appEvents = require('../src/config/app-events');
 
 const PUERTO_ELECTRON = Number(process.env.PRISMIA_ELECTRON_PORT || 3210);
 const URL_LOCAL = `http://localhost:${PUERTO_ELECTRON}`;
 
 let ventanaPrincipal = null;
 let servidorBackend = null;
+let reinicioElectronEnCurso = false;
 
 function configurarEntornoPrismia() {
     process.env.NODE_ENV = 'production';
@@ -64,6 +66,7 @@ async function iniciarBackendPrismia() {
         );
 
         app.quit();
+        throw error;
     }
 }
 
@@ -92,7 +95,58 @@ async function crearVentanaPrincipal() {
     await ventanaPrincipal.loadURL(URL_LOCAL);
 }
 
+function cerrarBackendAntesDeRelanzar(callback) {
+    let finalizado = false;
+
+    function continuar() {
+        if (finalizado) {
+            return;
+        }
+
+        finalizado = true;
+        callback();
+    }
+
+    if (!servidorBackend || typeof servidorBackend.close !== 'function') {
+        continuar();
+        return;
+    }
+
+    try {
+        servidorBackend.close(() => {
+            servidorBackend = null;
+            continuar();
+        });
+
+        setTimeout(continuar, 1200);
+    } catch (error) {
+        console.warn('No se pudo cerrar el backend antes de relanzar:', error.message);
+        continuar();
+    }
+}
+
+function relanzarAplicacionPorRestauracion(payload = {}) {
+    if (reinicioElectronEnCurso) {
+        return;
+    }
+
+    reinicioElectronEnCurso = true;
+
+    console.log('Restauración aplicada dentro de Electron.');
+    console.log(`Motivo: ${payload.motivo || 'reinicio_solicitado'}`);
+    console.log('Relanzando Prismia POS Local...');
+
+    setTimeout(() => {
+        cerrarBackendAntesDeRelanzar(() => {
+            app.relaunch();
+            app.exit(0);
+        });
+    }, 1200);
+}
+
 async function iniciarAplicacion() {
+    appEvents.on('prismia:reinicio-solicitado', relanzarAplicacionPorRestauracion);
+
     await iniciarBackendPrismia();
     await esperarServidorDisponible(URL_LOCAL);
     await crearVentanaPrincipal();
@@ -107,12 +161,16 @@ app.on('window-all-closed', () => {
 });
 
 app.on('activate', async () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
+    if (BrowserWindow.getAllWindows().length === 0 && !reinicioElectronEnCurso) {
         await crearVentanaPrincipal();
     }
 });
 
 app.on('before-quit', () => {
+    if (reinicioElectronEnCurso) {
+        return;
+    }
+
     if (servidorBackend && typeof servidorBackend.close === 'function') {
         servidorBackend.close();
     }

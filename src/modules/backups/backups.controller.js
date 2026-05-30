@@ -3,6 +3,7 @@ const path = require('path');
 
 const backupsService = require('./backups.service');
 const env = require('../../config/env');
+const appEvents = require('../../config/app-events');
 
 const estilosBackups = ['/css/modules/backups.css'];
 
@@ -141,6 +142,10 @@ function estaEjecutandoConNodemon() {
     );
 }
 
+function estaEjecutandoConElectron() {
+    return String(process.env.PRISMIA_ELECTRON || '').toLowerCase() === 'true';
+}
+
 function activarReinicioConNodemon() {
     const rutaTrigger = path.join(process.cwd(), 'src', 'restart-dev-trigger.json');
 
@@ -152,10 +157,22 @@ function activarReinicioConNodemon() {
     fs.writeFileSync(rutaTrigger, JSON.stringify(contenido, null, 2), 'utf8');
 }
 
+function solicitarReinicioElectron() {
+    appEvents.emit('prismia:reinicio-solicitado', {
+        motivo: 'restauracion_backup',
+        fecha: new Date().toISOString(),
+    });
+}
+
 function programarReinicioDespuesDeRestauracion(res) {
     res.once('finish', () => {
         setTimeout(() => {
             console.log('Restauración aplicada. Reiniciando Prismia para abrir la base restaurada...');
+
+            if (estaEjecutandoConElectron()) {
+                solicitarReinicioElectron();
+                return;
+            }
 
             if (estaEjecutandoConNodemon()) {
                 activarReinicioConNodemon();
