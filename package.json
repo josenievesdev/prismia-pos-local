@@ -12,6 +12,8 @@
     "start:https": "npm run native:node && node src/server.https.js",
     "electron": "npm run native:electron && electron .",
     "electron:rebuild": "npm run native:electron",
+    "pack:dir": "npm run check:pre-electron && npm run native:electron && electron-builder --dir",
+    "dist:win": "npm run check:pre-electron && npm run native:electron && electron-builder --win nsis",
     "db:validate": "npm run native:node && node src/database/validate-db.js",
     "db:migrate:001": "node src/database/migrations/001_unidades_costos_iva.js",
     "db:migrate:002": "node src/database/migrations/002_conteos_inventario.js",
@@ -49,6 +51,69 @@
   "devDependencies": {
     "@electron/rebuild": "^4.0.4",
     "electron": "37.10.3",
+    "electron-builder": "^26.8.1",
     "nodemon": "^3.1.14"
+  },
+  "build": {
+    "appId": "com.nievessystems.prismia-pos-local",
+    "productName": "Prismia POS Local",
+    "copyright": "Copyright © 2026 Nieves Systems",
+    "directories": {
+      "output": "dist"
+    },
+    "asar": true,
+    "asarUnpack": [
+      "node_modules/better-sqlite3/**/*"
+    ],
+    "npmRebuild": false,
+    "files": [
+      "electron/**/*",
+      "src/**/*",
+      "package.json",
+      "!**/.env",
+      "!**/.env.*",
+      "!**/secretos.local.json",
+      "!**/secretos.local.json.tmp",
+      "!src/database/data/**",
+      "!src/database/reports/**",
+      "!src/restart-dev-trigger.json",
+      "!storage/**",
+      "!certs/**",
+      "!scripts/**",
+      "!dist/**",
+      "!build/**",
+      "!out/**",
+      "!release/**",
+      "!PrismiaRestoreTest/**",
+      "!PrismiaSetupTest/**",
+      "!PrismiaSecretsTest/**",
+      "!PrismiaRuntimeTest/**",
+      "!PrismiaElectronRuntimeTest/**",
+      "!PrismiaElectronCleanTest/**",
+      "!PrismiaElectronRestoreTest/**",
+      "!**/*.sqlite",
+      "!**/*.sqlite-shm",
+      "!**/*.sqlite-wal",
+      "!**/*.db",
+      "!**/*.bak",
+      "!**/*.zip.tmp"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Prismia POS Local"
+    }
   }
 }
