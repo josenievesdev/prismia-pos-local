@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog } = require('electron');
+const { app, BrowserWindow, dialog, globalShortcut } = require('electron');
 const http = require('http');
 
 const appEvents = require('../src/config/app-events');
@@ -9,6 +9,8 @@ const URL_LOCAL = `http://localhost:${PUERTO_ELECTRON}`;
 let ventanaPrincipal = null;
 let servidorBackend = null;
 let reinicioElectronEnCurso = false;
+
+const ATAJO_SOPORTE_BACKUPS = 'CommandOrControl+Alt+Shift+B';
 
 function configurarEntornoPrismia() {
     process.env.NODE_ENV = 'production';
@@ -77,6 +79,7 @@ async function crearVentanaPrincipal() {
         minWidth: 1100,
         minHeight: 720,
         show: false,
+        autoHideMenuBar: true,
         title: 'Prismia POS Local',
         webPreferences: {
             contextIsolation: true,
@@ -125,6 +128,24 @@ function cerrarBackendAntesDeRelanzar(callback) {
     }
 }
 
+function abrirPanelSoporteBackups() {
+    if (!ventanaPrincipal || ventanaPrincipal.isDestroyed()) {
+        return;
+    }
+
+    ventanaPrincipal.loadURL(`${URL_LOCAL}/backups/soporte`);
+}
+
+function registrarAtajosSoporte() {
+    const registrado = globalShortcut.register(ATAJO_SOPORTE_BACKUPS, () => {
+        abrirPanelSoporteBackups();
+    });
+
+    if (!registrado) {
+        console.warn(`No se pudo registrar el atajo técnico: ${ATAJO_SOPORTE_BACKUPS}`);
+    }
+}
+
 function relanzarAplicacionPorRestauracion(payload = {}) {
     if (reinicioElectronEnCurso) {
         return;
@@ -150,6 +171,8 @@ async function iniciarAplicacion() {
     await iniciarBackendPrismia();
     await esperarServidorDisponible(URL_LOCAL);
     await crearVentanaPrincipal();
+
+    registrarAtajosSoporte();
 }
 
 app.whenReady().then(iniciarAplicacion);
@@ -174,4 +197,8 @@ app.on('before-quit', () => {
     if (servidorBackend && typeof servidorBackend.close === 'function') {
         servidorBackend.close();
     }
+});
+
+app.on('will-quit', () => {
+    globalShortcut.unregisterAll();
 });
