@@ -80,9 +80,9 @@ CREATE TABLE IF NOT EXISTS configuracion_negocio (
 
     moneda TEXT NOT NULL DEFAULT 'COP',
 
-    -- Guardado en centésimas de porcentaje.
-    -- Ejemplo: 1900 = 19.00%
-    impuesto_por_defecto INTEGER NOT NULL DEFAULT 0,
+-- Guardado como porcentaje humano.
+-- Ejemplo: 19 = 19%
+impuesto_por_defecto INTEGER NOT NULL DEFAULT 0,
 
     mensaje_recibo TEXT DEFAULT 'Gracias por su compra.',
     logo_url TEXT,

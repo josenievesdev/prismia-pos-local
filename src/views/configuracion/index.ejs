@@ -119,12 +119,8 @@
                                         </div>
 
                                         <div class="form-group">
-                                            <label for="impuesto_por_defecto">Impuesto por defecto</label>
-                                            <input type="number" id="impuesto_por_defecto" name="impuesto_por_defecto"
-                                                min="0" step="1" value="<%= configuracion.impuesto_por_defecto || 0 %>">
-                                            <small class="field-help">
-                                                Guarda el valor como centésimas de porcentaje. Ejemplo: 1900 = 19%.
-                                            </small>
+                                            <input type="hidden" id="impuesto_por_defecto" name="impuesto_por_defecto"
+                                                value="<%= configuracion.impuesto_por_defecto || 0 %>">
                                         </div>
                                     </div>
 

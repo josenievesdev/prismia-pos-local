@@ -5951,3 +5951,342 @@
         width: 100%;
     }
 }
+
+/* ===== POS táctil v12 · carrito lateral estable en Electron ===== */
+
+@media (min-width: 1181px) {
+
+    /*
+     * En Electron el POS trabaja con sidebar + carrito lateral.
+     * Si el carrito queda muy angosto, la tabla aplasta el nombre del producto.
+     */
+    .ventas-pos-shell[data-pos-mode="tactil"] {
+        grid-template-columns: minmax(380px, 0.75fr) minmax(540px, 1.25fr);
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-sale-card {
+        min-width: 0;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table-wrap {
+        overflow-x: auto;
+        overflow-y: auto;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table {
+        width: 100%;
+        min-width: 540px;
+        table-layout: fixed;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table thead th,
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table tbody td {
+        padding: 6px 5px;
+        font-size: 10.5px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table thead th:nth-child(1),
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table tbody td:nth-child(1) {
+        width: 34px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table thead th:nth-child(2),
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table tbody td:nth-child(2) {
+        width: 170px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table thead th:nth-child(3),
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table tbody td:nth-child(3) {
+        width: 96px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table thead th:nth-child(4),
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table tbody td:nth-child(4) {
+        width: 58px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table thead th:nth-child(5),
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table tbody td:nth-child(5) {
+        width: 56px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table thead th:nth-child(6),
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table tbody td:nth-child(6) {
+        width: 62px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table thead th:nth-child(7),
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table tbody td:nth-child(7) {
+        width: 34px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-line-index {
+        min-width: 24px;
+        min-height: 24px;
+        font-size: 10px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-product-visual {
+        gap: 6px;
+        align-items: center;
+        min-width: 0;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-product-image {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-product-copy {
+        min-width: 0;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-product-copy strong {
+        display: block;
+        max-width: 100%;
+        overflow: hidden;
+        color: var(--vt);
+        font-size: 11px;
+        font-weight: 800;
+        line-height: 1.15;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-product-copy small {
+        display: block;
+        max-width: 100%;
+        overflow: hidden;
+        color: var(--vm);
+        font-size: 9.5px;
+        line-height: 1.15;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-qty {
+        grid-template-columns: 24px 42px 24px;
+        gap: 3px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-qty button,
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-remove {
+        width: 24px;
+        height: 28px;
+        border-radius: 8px;
+        font-size: 13px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-cart-qty input {
+        width: 42px;
+        height: 28px;
+        padding-inline: 4px;
+        border-radius: 8px;
+        font-size: 11px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table .text-right,
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-table .text-right strong {
+        overflow: hidden;
+        font-size: 10.5px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+/* ===== POS táctil v13 · alineación cliente + búsqueda legible ===== */
+
+@media (min-width: 1181px) {
+
+    /*
+     * Mantiene el bloque izquierdo estable:
+     * Cliente, buscador y accesos rápidos deben compartir la misma línea visual.
+     */
+    .ventas-pos-shell[data-pos-mode="tactil"] {
+        grid-template-columns: minmax(400px, 0.78fr) minmax(620px, 1.22fr);
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-context-bar {
+        grid-template-columns: minmax(400px, 0.78fr) 130px 170px minmax(300px, 1.22fr);
+        gap: 8px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-context-item.is-client {
+        min-width: 0;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-client-clean-actions {
+        min-width: 0;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-client-clean-actions strong {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /*
+     * El buscador no debe comportarse como una mirilla.
+     * Si el usuario busca, necesita leer el nombre del producto.
+     */
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-search-form {
+        grid-template-columns: minmax(0, 1fr) 96px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-results-panel {
+        left: 0;
+        right: auto;
+        width: min(620px, calc(100vw - 320px));
+        max-height: 320px;
+        z-index: 120;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-result-item {
+        grid-template-columns: minmax(0, 1fr) auto 34px;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 10px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-result-info {
+        min-width: 0;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2px;
+        align-items: start;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-result-name {
+        overflow: visible;
+        color: var(--vt);
+        font-size: 13px;
+        font-weight: 800;
+        line-height: 1.18;
+        text-overflow: unset;
+        white-space: normal;
+        word-break: normal;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-result-stock {
+        color: var(--vm);
+        font-size: 10.5px;
+        line-height: 1.1;
+        white-space: nowrap;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-result-price {
+        align-self: center;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-add-button {
+        align-self: center;
+        width: 30px;
+        height: 30px;
+    }
+}
+
+/* ===== POS táctil v14 · alineación real de columnas ===== */
+
+@media (min-width: 1181px) {
+
+    /*
+     * La vista táctil se divide en dos zonas:
+     * izquierda = operación rápida
+     * derecha = detalle de venta y pago
+     *
+     * Esta proporción debe repetirse también en la barra de contexto,
+     * para que Cliente quede alineado con buscador y accesos rápidos.
+     */
+    .ventas-pos-shell[data-pos-mode="tactil"] {
+        grid-template-columns: minmax(410px, 39%) minmax(620px, 1fr);
+        column-gap: 8px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-context-bar {
+        grid-area: context;
+        display: grid;
+        grid-template-columns: minmax(410px, 39%) 120px 170px minmax(260px, 1fr);
+        column-gap: 8px;
+        align-items: stretch;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-context-item.is-client {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-search-section,
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-touch-catalog {
+        width: 100%;
+        min-width: 0;
+    }
+
+    /*
+     * Evita que el nombre del cliente y el botón + Nuevo empujen la tarjeta.
+     */
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-client-clean-head {
+        min-width: 0;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-client-clean-actions {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-client-clean-actions strong {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /*
+     * La fecha no debe robar espacio a la alineación.
+     */
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-date-item {
+        min-width: 0;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-date-item input[type="date"] {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-invoice-code-box {
+        min-width: 0;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-context-actions {
+        min-width: 0;
+    }
+}
+
+/* ===== POS táctil v15 · fecha completa visible ===== */
+
+@media (min-width: 1181px) {
+
+    /*
+     * La columna de fecha necesita más aire para mostrar día/mes/año
+     * sin cortar el texto ni chocar con el ícono del calendario.
+     */
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-context-bar {
+        grid-template-columns: minmax(410px, 39%) 150px 170px minmax(230px, 1fr);
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-date-item {
+        min-width: 150px;
+    }
+
+    .ventas-pos-shell[data-pos-mode="tactil"] .ventas-date-item input[type="date"] {
+        width: 100%;
+        min-width: 128px;
+        font-size: 13px;
+        letter-spacing: -0.2px;
+    }
+}

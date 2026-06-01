@@ -88,11 +88,38 @@ async function crearVentanaPrincipal() {
     });
 
     ventanaPrincipal.once('ready-to-show', () => {
+        ventanaPrincipal.maximize();
         ventanaPrincipal.show();
     });
 
     ventanaPrincipal.on('closed', () => {
         ventanaPrincipal = null;
+    });
+
+    ventanaPrincipal.webContents.setWindowOpenHandler(({ url }) => {
+        if (url.startsWith(URL_LOCAL)) {
+            return {
+                action: 'allow',
+                overrideBrowserWindowOptions: {
+                    width: 520,
+                    height: 760,
+                    minWidth: 420,
+                    minHeight: 620,
+                    autoHideMenuBar: true,
+                    title: 'Prismia POS Local',
+                    webPreferences: {
+                        contextIsolation: true,
+                        nodeIntegration: false,
+                    },
+                },
+            };
+        }
+
+        return { action: 'deny' };
+    });
+
+    ventanaPrincipal.webContents.on('did-create-window', (ventanaNueva) => {
+        ventanaNueva.setMenuBarVisibility(false);
     });
 
     await ventanaPrincipal.loadURL(URL_LOCAL);

@@ -42,14 +42,14 @@ function tieneDecimales(numero) {
     return Math.abs(numero % 1) > 0;
 }
 
-function convertirPorcentajeACentesimas(valor) {
+function convertirPorcentaje(valor) {
     const numero = Number(String(valor || '').replace(',', '.'));
 
     if (Number.isNaN(numero)) {
         return 0;
     }
 
-    return Math.max(0, Math.round(numero * 100));
+    return Math.max(0, Math.round(numero * 100) / 100);
 }
 
 function formatearCantidad(cantidad, abreviatura, permiteDecimales) {
@@ -65,7 +65,7 @@ function formatearCantidad(cantidad, abreviatura, permiteDecimales) {
 
 function calcularIndicadoresProducto(producto) {
     const porcentajeIva = Number(producto.porcentaje_iva || 0);
-    const tasaIva = porcentajeIva / 10000;
+    const tasaIva = porcentajeIva / 100;
 
     let precioVentaNeto = Number(producto.precio_venta || 0);
 
@@ -291,7 +291,7 @@ function validarProducto(datos, productoActual = null, opciones = {}) {
     }
 
     const manejaIva = convertirCheckbox(datos.maneja_iva);
-    const porcentajeIva = convertirPorcentajeACentesimas(
+    const porcentajeIva = convertirPorcentaje(
         datos.porcentaje_iva_visual
     );
 
@@ -364,7 +364,7 @@ function prepararDatosProducto(datos, { incluirStockInicial = false } = {}) {
         permite_cantidad_decimal: Number(unidad?.permite_decimales || 0),
         maneja_iva: manejaIva,
         porcentaje_iva: manejaIva
-            ? convertirPorcentajeACentesimas(datos.porcentaje_iva_visual)
+            ? convertirPorcentaje(datos.porcentaje_iva_visual)
             : 0,
         precio_incluye_iva: precioIncluyeIva,
         imagen_url: limpiarTexto(datos.imagen_url),

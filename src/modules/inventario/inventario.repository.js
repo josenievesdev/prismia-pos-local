@@ -887,7 +887,7 @@ function obtenerResumenOperativoInventario() {
 
           CASE
             WHEN COALESCE(p.maneja_iva, 0) = 1
-            THEN COALESCE(p.porcentaje_iva, 0) / 10000.0
+            THEN COALESCE(p.porcentaje_iva, 0) / 100.0
             ELSE 0
           END AS tasa_iva_decimal
 

@@ -16,7 +16,7 @@ function prepararProductoParaFormulario(producto) {
         porcentaje_iva_visual:
             typeof producto.porcentaje_iva_visual !== 'undefined'
                 ? producto.porcentaje_iva_visual
-                : Number(producto.porcentaje_iva || 0) / 100,
+                : Number(producto.porcentaje_iva || 0),
     };
 }
 
