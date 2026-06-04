@@ -23,7 +23,10 @@ yarn-error.log*
 # Builds / distribución / empaquetado
 # ==========================================
 dist/
-build/
+build/*
+!build/
+!build/icon.ico
+!build/icon.png
 coverage/
 out/
 release/
