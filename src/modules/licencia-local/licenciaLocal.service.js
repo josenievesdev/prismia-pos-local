@@ -28,6 +28,59 @@ function calcularDiasRestantes(fechaFinTexto) {
     return Math.max(0, Math.ceil(diferencia / milisegundosPorDia));
 }
 
+function formatearFechaSQLite(fecha) {
+    const pad = (numero) => String(numero).padStart(2, '0');
+
+    const anio = fecha.getFullYear();
+    const mes = pad(fecha.getMonth() + 1);
+    const dia = pad(fecha.getDate());
+    const hora = pad(fecha.getHours());
+    const minuto = pad(fecha.getMinutes());
+    const segundo = pad(fecha.getSeconds());
+
+    return `${anio}-${mes}-${dia} ${hora}:${minuto}:${segundo}`;
+}
+
+function sumarDias(fechaBase, dias) {
+    const fecha = new Date(fechaBase);
+    fecha.setDate(fecha.getDate() + Number(dias || 0));
+    return fecha;
+}
+
+function iniciarPruebaLocalSiHaceFalta() {
+    const licencia = licenciaRepository.obtenerLicenciaLocal();
+
+    if (!licencia) {
+        return {
+            ok: false,
+            estado: 'sin_registro',
+            prueba_iniciada: false,
+            dias_restantes: null,
+            mensaje: 'No existe registro de licencia local para iniciar prueba.',
+            licencia: null,
+        };
+    }
+
+    const pruebaYaIniciada = Boolean(
+        licencia.fecha_inicio_prueba && licencia.fecha_fin_prueba
+    );
+
+    if (pruebaYaIniciada) {
+        return obtenerResumenLicenciaLocal();
+    }
+
+    const fechaInicio = new Date();
+    const diasPrueba = Number(licencia.dias_prueba || 30);
+    const fechaFin = sumarDias(fechaInicio, diasPrueba);
+
+    licenciaRepository.actualizarInicioPrueba({
+        fechaInicioPrueba: formatearFechaSQLite(fechaInicio),
+        fechaFinPrueba: formatearFechaSQLite(fechaFin),
+    });
+
+    return obtenerResumenLicenciaLocal();
+}
+
 function obtenerResumenLicenciaLocal() {
     const licencia = licenciaRepository.obtenerLicenciaLocal();
 
@@ -65,5 +118,6 @@ function obtenerResumenLicenciaLocal() {
 
 module.exports = {
     obtenerResumenLicenciaLocal,
+    iniciarPruebaLocalSiHaceFalta,
     calcularDiasRestantes,
 };
