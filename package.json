@@ -23,7 +23,9 @@
     "db:migrate:006": "node src/database/migrations/006_gastos_medios_pago.js",
     "db:migrate:037": "node src/database/migrations/037_normalizar_iva_venta_porcentaje.js",
     "check:pre-electron": "npm run db:validate && node scripts/verificar-pre-electron.js",
-    "check:runtime": "node scripts/diagnostico-runtime.js"
+    "check:runtime": "node scripts/diagnostico-runtime.js",
+    "demo:reset": "node scripts/demo/reset-demo-landing.js",
+    "demo:electron": "set \"PRISMIA_DATA_DIR=%CD%\\PrismiaDemoLanding\" && set \"SUPPORT_BACKUP_KEY=PRM-SOP-DEMO-LAND-2026\" && npm run electron"
   },
   "keywords": [
     "pos",
