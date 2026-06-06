@@ -199,9 +199,23 @@
     </nav>
 
     <div class="sidebar-footer">
-        <small>Versión <%= empresa.software.version %></small>
-        <small>
-            <%= empresa.software.desarrollador %>
-        </small>
+        <% if (licenciaLocal && licenciaLocal.ok && licenciaLocal.estado==='prueba' ) { %>
+            <div class="sidebar-license-badge">
+                <span>Prueba local</span>
+
+                <% if (licenciaLocal.prueba_iniciada) { %>
+                    <strong>
+                        <%= licenciaLocal.dias_restantes %> día(s) restantes
+                    </strong>
+                    <% } else { %>
+                        <strong>Sin iniciar</strong>
+                        <% } %>
+            </div>
+            <% } %>
+
+                <small>Versión <%= empresa.software.version %></small>
+                <small>
+                    <%= empresa.software.desarrollador %>
+                </small>
     </div>
 </aside>
