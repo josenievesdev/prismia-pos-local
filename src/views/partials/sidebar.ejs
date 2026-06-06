@@ -203,13 +203,15 @@
             <div class="sidebar-license-badge">
                 <span>Prueba local</span>
 
-                <% if (licenciaLocal.prueba_iniciada) { %>
-                    <strong>
-                        <%= licenciaLocal.dias_restantes %> día(s) restantes
-                    </strong>
-                    <% } else { %>
-                        <strong>Sin iniciar</strong>
-                        <% } %>
+                <% if (licenciaLocal.prueba_vencida) { %>
+                    <strong>Prueba vencida</strong>
+                    <% } else if (licenciaLocal.prueba_iniciada) { %>
+                        <strong>
+                            <%= licenciaLocal.dias_restantes %> día(s) restantes
+                        </strong>
+                        <% } else { %>
+                            <strong>Sin iniciar</strong>
+                            <% } %>
             </div>
             <% } %>
 
