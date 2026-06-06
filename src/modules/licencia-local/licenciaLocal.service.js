@@ -47,6 +47,16 @@ function sumarDias(fechaBase, dias) {
     return fecha;
 }
 
+function fechaEstaVencida(fechaFinTexto) {
+    const fechaFin = convertirFechaLocal(fechaFinTexto);
+
+    if (!fechaFin) {
+        return false;
+    }
+
+    return fechaFin.getTime() < new Date().getTime();
+}
+
 function iniciarPruebaLocalSiHaceFalta() {
     const licencia = licenciaRepository.obtenerLicenciaLocal();
 
@@ -100,17 +110,23 @@ function obtenerResumenLicenciaLocal() {
     );
 
     const diasRestantes = calcularDiasRestantes(licencia.fecha_fin_prueba);
+    const pruebaVencida = pruebaIniciada && fechaEstaVencida(licencia.fecha_fin_prueba);
+    const estadoOperativo = pruebaVencida ? 'vencida' : licencia.estado;
 
     return {
         ok: true,
         estado: licencia.estado,
+        estado_operativo: estadoOperativo,
         prueba_iniciada: pruebaIniciada,
+        prueba_vencida: pruebaVencida,
         dias_prueba: licencia.dias_prueba,
         dias_restantes: diasRestantes,
         fecha_inicio_prueba: licencia.fecha_inicio_prueba,
         fecha_fin_prueba: licencia.fecha_fin_prueba,
         mensaje: pruebaIniciada
-            ? `Prueba local activa. Quedan ${diasRestantes} día(s).`
+            ? pruebaVencida
+                ? 'La prueba local está vencida.'
+                : `Prueba local activa. Quedan ${diasRestantes} día(s).`
             : 'La prueba local todavía no ha iniciado.',
         licencia,
     };
@@ -120,4 +136,5 @@ module.exports = {
     obtenerResumenLicenciaLocal,
     iniciarPruebaLocalSiHaceFalta,
     calcularDiasRestantes,
+    fechaEstaVencida,
 };
