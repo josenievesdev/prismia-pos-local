@@ -29,7 +29,7 @@ function formatearFecha(valor) {
 
 function obtenerLicenciaLocalSegura() {
     try {
-        return licenciaLocalService.obtenerResumenLicenciaLocal();
+        return licenciaLocalService.iniciarPruebaLocalSiHaceFalta();
     } catch (error) {
         console.error('No se pudo cargar el estado de licencia local:', error.message);
 
