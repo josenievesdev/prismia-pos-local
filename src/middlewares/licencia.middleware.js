@@ -27,6 +27,10 @@ function requiereLicenciaOperativa(req, res, next) {
             return next();
         }
 
+        if (!req.session || !req.session.usuario) {
+            return next();
+        }
+
         const licenciaLocal = licenciaLocalService.obtenerResumenLicenciaLocal();
 
         res.locals.licenciaLocal = licenciaLocal;
