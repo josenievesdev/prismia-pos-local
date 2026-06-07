@@ -2,46 +2,59 @@
     !=='undefined' ? whatsappPagoUrl : '#' ; const fechaFin=licencia && licencia.fecha_fin_prueba ?
     licencia.fecha_fin_prueba : 'No disponible' ; %>
 
-    <section class="page-card">
-        <div class="page-header">
-            <div>
-                <p class="page-eyebrow">Licencia local</p>
-                <h1>La prueba de Prismia POS Local ha vencido</h1>
-                <p class="page-subtitle">
-                    El periodo de prueba terminó. Tus datos siguen guardados de forma local y no se han eliminado.
+    <section class="module-page">
+        <section class="module-card license-renew-card">
+            <div class="license-renew-hero">
+                <div class="license-renew-badge">Prismia POS Local</div>
+
+                <h1>Tu prueba inicial ha finalizado</h1>
+
+                <p class="license-renew-lead">
+                    Gracias por probar Prismia. Nos alegra acompañarte en este proceso.
+                    Para seguir usando ventas, inventario, caja, reportes y demás módulos,
+                    solo necesitas activar tu servicio.
+                </p>
+
+                <div class="license-renew-date">
+                    <span>Fecha de finalización registrada</span>
+                    <strong>
+                        <%= fechaFin %>
+                    </strong>
+                </div>
+            </div>
+
+            <div class="license-renew-content">
+                <div class="license-renew-message">
+                    <h3>Continúa con tu negocio, sin perder el ritmo</h3>
+
+                    <p>
+                        Prismia sigue listo para ti. Si deseas continuar operando con normalidad,
+                        puedes escribirnos por WhatsApp y te compartimos el proceso de pago y activación
+                        de forma rápida y acompañada.
+                    </p>
+
+                    <ul class="license-renew-points">
+                        <li>Activación rápida y acompañamiento directo.</li>
+                        <li>Tu información sigue guardada localmente.</li>
+                        <li>Retoma el trabajo normal apenas actives el servicio.</li>
+                    </ul>
+                </div>
+
+                <div class="license-renew-actions">
+                    <a href="<%= urlPago %>" class="btn-primary" target="_blank" rel="noreferrer">
+                        Activar por WhatsApp
+                    </a>
+
+                    <form method="POST" action="/auth/logout">
+                        <button type="submit" class="btn-secondary">
+                            Cerrar sesión
+                        </button>
+                    </form>
+                </div>
+
+                <p class="license-renew-note">
+                    Si ya realizaste el pago o deseas continuar con Prismia, escríbenos y te ayudamos con la activación.
                 </p>
             </div>
-        </div>
-
-        <div class="empty-state">
-            <h3>Para continuar usando Prismia, solicita la reactivación del servicio.</h3>
-
-            <p>
-                Puedes contactar atención por WhatsApp para recibir instrucciones de pago y activación.
-                También puedes ingresar a backups para conservar una copia de tus datos.
-            </p>
-
-            <p>
-                Fecha de vencimiento registrada:
-                <strong>
-                    <%= fechaFin %>
-                </strong>
-            </p>
-
-            <div class="form-actions">
-                <a href="<%= urlPago %>" class="btn-primary" target="_blank" rel="noreferrer">
-                    Pagar o reactivar por WhatsApp
-                </a>
-
-                <a href="/backups" class="btn-secondary">
-                    Ir a backups
-                </a>
-
-                <form method="POST" action="/auth/logout">
-                    <button type="submit" class="btn-secondary">
-                        Cerrar sesión
-                    </button>
-                </form>
-            </div>
-        </div>
+        </section>
     </section>
