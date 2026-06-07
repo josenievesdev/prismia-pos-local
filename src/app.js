@@ -11,6 +11,7 @@ const env = require('./config/env');
 const empresa = require('./config/empresa');
 const runtimePaths = require('./config/runtime-paths');
 const localsMiddleware = require('./middlewares/locals.middleware');
+const { requiereLicenciaOperativa } = require('./middlewares/licencia.middleware');
 const errorMiddleware = require('./middlewares/error.middleware');
 
 const setupRoutes = require('./modules/setup/setup.routes');
