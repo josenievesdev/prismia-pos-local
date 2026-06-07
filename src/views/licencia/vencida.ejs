@@ -1,0 +1,47 @@
+<% const licencia=typeof licenciaLocal !=='undefined' ? licenciaLocal : null; const urlPago=typeof whatsappPagoUrl
+    !=='undefined' ? whatsappPagoUrl : '#' ; const fechaFin=licencia && licencia.fecha_fin_prueba ?
+    licencia.fecha_fin_prueba : 'No disponible' ; %>
+
+    <section class="page-card">
+        <div class="page-header">
+            <div>
+                <p class="page-eyebrow">Licencia local</p>
+                <h1>La prueba de Prismia POS Local ha vencido</h1>
+                <p class="page-subtitle">
+                    El periodo de prueba terminó. Tus datos siguen guardados de forma local y no se han eliminado.
+                </p>
+            </div>
+        </div>
+
+        <div class="empty-state">
+            <h3>Para continuar usando Prismia, solicita la reactivación del servicio.</h3>
+
+            <p>
+                Puedes contactar atención por WhatsApp para recibir instrucciones de pago y activación.
+                También puedes ingresar a backups para conservar una copia de tus datos.
+            </p>
+
+            <p>
+                Fecha de vencimiento registrada:
+                <strong>
+                    <%= fechaFin %>
+                </strong>
+            </p>
+
+            <div class="form-actions">
+                <a href="<%= urlPago %>" class="btn-primary" target="_blank" rel="noreferrer">
+                    Pagar o reactivar por WhatsApp
+                </a>
+
+                <a href="/backups" class="btn-secondary">
+                    Ir a backups
+                </a>
+
+                <form method="POST" action="/auth/logout">
+                    <button type="submit" class="btn-secondary">
+                        Cerrar sesión
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
