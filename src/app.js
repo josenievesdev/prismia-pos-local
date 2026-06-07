@@ -325,6 +325,12 @@ app.get('/salud', (req, res) => {
 });
 
 /**
+ * Control de licencia local.
+ * Se aplica después de setup/salud y antes de las rutas operativas.
+ */
+app.use(requiereLicenciaOperativa);
+
+/**
  * Ruta principal
  */
 app.get('/', (req, res) => {
