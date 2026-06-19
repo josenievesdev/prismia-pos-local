@@ -109,6 +109,7 @@
 
             resumenCantidadItems: document.getElementById('resumenCantidadItems'),
             resumenSubtotal: document.getElementById('resumenSubtotal'),
+            filaResumenDescuento: document.getElementById('filaResumenDescuento'),
             resumenDescuento: document.getElementById('resumenDescuento'),
             resumenIva: document.getElementById('resumenIva'),
             resumenTotal: document.getElementById('resumenTotal'),
@@ -1224,10 +1225,18 @@
 
             ui.carritoItems.addEventListener('change', function (evento) {
                 const inputCantidad = evento.target.closest('[data-cart-quantity]');
-                if (!inputCantidad) return;
+                const inputDescuento = evento.target.closest('[data-cart-discount]');
 
-                const idProducto = Number(inputCantidad.dataset.productId);
-                actualizarCantidadManual(idProducto, inputCantidad.value, ui, estado);
+                if (inputCantidad) {
+                    const idProducto = Number(inputCantidad.dataset.productId);
+                    actualizarCantidadManual(idProducto, inputCantidad.value, ui, estado);
+                    return;
+                }
+
+                if (inputDescuento) {
+                    const idProducto = Number(inputDescuento.dataset.productId);
+                    actualizarDescuentoManual(idProducto, inputDescuento.value, ui, estado);
+                }
             });
         }
     }
@@ -1266,6 +1275,7 @@
             estado.carrito.push({
                 ...producto,
                 cantidad: 1,
+                descuentoUnitario: 0,
             });
         }
 
@@ -1349,6 +1359,29 @@
         }
 
         item.cantidad = normalizarCantidad(nuevaCantidad, item.permiteDecimal);
+
+        renderizarCarrito(ui, estado);
+        recalcularTodo(ui, estado);
+    }
+
+    function actualizarDescuentoManual(idProducto, valor, ui, estado) {
+        const item = estado.carrito.find(function (producto) {
+            return producto.idProducto === idProducto;
+        });
+
+        if (!item) return;
+
+        let nuevoDescuento = Math.round(Math.max(0, numero(valor)));
+
+        if (nuevoDescuento > item.precio) {
+            nuevoDescuento = item.precio;
+            mostrarAviso(
+                `El descuento de "${item.nombre}" no puede superar el precio unitario.`,
+                'error'
+            );
+        }
+
+        item.descuentoUnitario = nuevoDescuento;
 
         renderizarCarrito(ui, estado);
         recalcularTodo(ui, estado);
@@ -1870,7 +1903,7 @@
         if (estado.carrito.length === 0) {
             ui.carritoItems.innerHTML = `
                 <tr class="ventas-cart-empty-row">
-                    <td colspan="7">
+                    <td colspan="8">
                         <div class="ventas-cart-empty">
                             <strong>Carrito vacío</strong>
                             <span>Busca un producto y agrégalo con el botón +.</span>
@@ -1942,6 +1975,22 @@
 
                     <td class="text-right">
                         <strong>${formatearPesos(item.precio)}</strong>
+                    </td>
+
+                    <td class="text-right">
+                        <label class="ventas-cart-discount" aria-label="Descuento unitario">
+                            <input
+                                type="number"
+                                data-cart-discount
+                                data-product-id="${item.idProducto}"
+                                min="0"
+                                max="${item.precio}"
+                                step="1"
+                                value="${Math.round(numero(item.descuentoUnitario || 0))}"
+                                title="Descuento unitario"
+                            >
+                            <span>unit.</span>
+                        </label>
                     </td>
 
                     <td class="text-right">
@@ -2514,6 +2563,7 @@
                     return {
                         id_producto: item.idProducto,
                         cantidad: item.cantidad,
+                        descuento_unitario: Math.round(numero(item.descuentoUnitario || 0)),
                     };
                 }),
                 pagos,
@@ -2607,23 +2657,36 @@
     }
 
     function calcularLinea(item) {
-        const brutoLinea = item.precio * item.cantidad;
+        const descuentoUnitario = Math.round(Math.max(0, numero(item.descuentoUnitario || 0)));
+        const descuentoAplicado = Math.min(descuentoUnitario, item.precio);
+        const precioNetoUnitario = Math.max(0, item.precio - descuentoAplicado);
+
+        const brutoLinea = precioNetoUnitario * item.cantidad;
+        const descuentoLinea = descuentoAplicado * item.cantidad;
+
         let subtotalLinea = brutoLinea;
         let ivaLinea = 0;
+        let totalLinea = brutoLinea;
 
         if (item.manejaIva && item.porcentajeIva > 0) {
+            const tasa = item.porcentajeIva / 100;
+
             if (item.precioIncluyeIva) {
-                subtotalLinea = brutoLinea / (1 + item.porcentajeIva / 100);
+                subtotalLinea = brutoLinea / (1 + tasa);
                 ivaLinea = brutoLinea - subtotalLinea;
+                totalLinea = brutoLinea;
             } else {
-                ivaLinea = brutoLinea * (item.porcentajeIva / 100);
+                subtotalLinea = brutoLinea;
+                ivaLinea = subtotalLinea * tasa;
+                totalLinea = subtotalLinea + ivaLinea;
             }
         }
 
         return {
             subtotal: subtotalLinea,
+            descuento: descuentoLinea,
             iva: ivaLinea,
-            total: subtotalLinea + ivaLinea,
+            total: totalLinea,
         };
     }
 
@@ -2633,6 +2696,7 @@
 
             resumen.cantidadItems += item.cantidad;
             resumen.subtotal += linea.subtotal;
+            resumen.descuento += linea.descuento;
             resumen.iva += linea.iva;
             resumen.total += linea.total;
 
@@ -2652,6 +2716,10 @@
         asignarTexto(ui.resumenDescuento, formatearPesos(resumen.descuento));
         asignarTexto(ui.resumenIva, formatearPesos(resumen.iva));
         asignarTexto(ui.resumenTotal, formatearPesos(resumen.total));
+
+        if (ui.filaResumenDescuento) {
+            ui.filaResumenDescuento.hidden = resumen.descuento <= 0;
+        }
     }
 
     function actualizarPago(ui, estado, resumen) {

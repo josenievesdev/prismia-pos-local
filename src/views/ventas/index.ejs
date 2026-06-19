@@ -371,7 +371,8 @@
                                                                                 data-slot-position="<%= slot.posicion %>">
 
                                                                                 <span class="ventas-quick-slot-badge">#
-                                                                                    <%= slot.posicion %></span>
+                                                                                    <%= slot.posicion %>
+                                                                                </span>
 
                                                                                 <span class="ventas-quick-image">
                                                                                     <span>+</span>
@@ -394,7 +395,8 @@
 
                                                                                     <span
                                                                                         class="ventas-quick-slot-badge">#
-                                                                                        <%= slot.posicion %></span>
+                                                                                        <%= slot.posicion %>
+                                                                                    </span>
 
                                                                                     <span class="ventas-quick-image">
                                                                                         <span>+</span>
@@ -436,6 +438,7 @@
                                                         <th>Producto</th>
                                                         <th class="text-center">Cantidad</th>
                                                         <th class="text-right">Precio</th>
+                                                        <th class="text-right">Desc. unit.</th>
                                                         <th class="text-right">IVA</th>
                                                         <th class="text-right">Total</th>
                                                         <th class="text-center">Acción</th>
@@ -444,7 +447,7 @@
 
                                                 <tbody id="ventasCarritoItems">
                                                     <tr class="ventas-cart-empty-row">
-                                                        <td colspan="7">
+                                                        <td colspan="8">
                                                             <div class="ventas-cart-empty">
                                                                 <strong>Carrito vacío</strong>
                                                                 <span>Busca un producto y agrégalo con el botón
@@ -566,6 +569,12 @@
                                                     <strong id="resumenSubtotal">$ 0</strong>
                                                 </div>
 
+                                                <div class="ventas-total-row ventas-discount-row"
+                                                    id="filaResumenDescuento" hidden>
+                                                    <span>Descuento</span>
+                                                    <strong id="resumenDescuento">$ 0</strong>
+                                                </div>
+
                                                 <div class="ventas-total-row">
                                                     <span>IVA</span>
                                                     <strong id="resumenIva">$ 0</strong>
@@ -594,7 +603,6 @@
 
                                             <div class="ventas-hidden-metrics" hidden>
                                                 <span id="resumenCantidadItems">0</span>
-                                                <span id="resumenDescuento">$ 0</span>
                                             </div>
                                         </section>
                                     </section>

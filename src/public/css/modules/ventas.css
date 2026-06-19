@@ -6315,3 +6315,45 @@
         letter-spacing: -0.2px;
     }
 }
+
+.ventas-cart-discount {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 5px;
+    min-width: 118px;
+}
+
+.ventas-cart-discount input {
+    width: 86px;
+    height: 34px;
+    padding: 0 8px;
+    border: 1px solid #dbe3ef;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 800;
+    text-align: right;
+    color: #0f172a;
+    background: #ffffff;
+}
+
+.ventas-cart-discount input:focus {
+    outline: none;
+    border-color: #2b5aa2;
+    box-shadow: 0 0 0 3px rgba(43, 90, 162, 0.12);
+}
+
+.ventas-cart-discount span {
+    font-size: 10px;
+    font-weight: 800;
+    color: #64748b;
+    text-transform: uppercase;
+}
+
+.ventas-discount-row {
+    color: #b45309;
+}
+
+.ventas-discount-row strong {
+    color: #92400e;
+}
