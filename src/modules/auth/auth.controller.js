@@ -16,6 +16,8 @@ function mostrarLogin(req, res) {
 }
 
 function procesarLogin(req, res) {
+    const correoFormulario = req.body.correo || '';
+
     const resultado = authService.iniciarSesion({
         correo: req.body.correo,
         contrasena: req.body.contrasena,
@@ -27,14 +29,44 @@ function procesarLogin(req, res) {
             titulo: 'Iniciar sesión',
             error: resultado.mensaje,
             valores: {
-                correo: req.body.correo || '',
+                correo: correoFormulario,
             },
         });
     }
 
-    req.session.usuario = resultado.usuario;
+    return req.session.regenerate((errorRegeneracion) => {
+        if (errorRegeneracion) {
+            console.error('No se pudo regenerar la sesión tras el login:', errorRegeneracion);
 
-    return res.redirect('/dashboard');
+            return res.status(500).render('auth/login', {
+                layout: false,
+                titulo: 'Iniciar sesión',
+                error: 'No se pudo iniciar sesión de forma segura. Intenta nuevamente.',
+                valores: {
+                    correo: correoFormulario,
+                },
+            });
+        }
+
+        req.session.usuario = resultado.usuario;
+
+        return req.session.save((errorGuardado) => {
+            if (errorGuardado) {
+                console.error('No se pudo guardar la sesión tras el login:', errorGuardado);
+
+                return res.status(500).render('auth/login', {
+                    layout: false,
+                    titulo: 'Iniciar sesión',
+                    error: 'No se pudo guardar la sesión. Intenta nuevamente.',
+                    valores: {
+                        correo: correoFormulario,
+                    },
+                });
+            }
+
+            return res.redirect('/dashboard');
+        });
+    });
 }
 
 function cerrarSesion(req, res) {
