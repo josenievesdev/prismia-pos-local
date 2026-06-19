@@ -9,7 +9,9 @@ asegurarBaseDatos();
 const app = require('./app');
 const empresa = require('./config/empresa');
 
-const server = app.listen(env.app.port, () => {
+const HOST = '127.0.0.1';
+
+const server = app.listen(env.app.port, HOST, () => {
     console.log('====================================');
     console.log(`${empresa.software.nombre} ejecutándose correctamente`);
     console.log(`Versión: ${empresa.software.version}`);
