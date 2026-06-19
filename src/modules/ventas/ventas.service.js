@@ -462,6 +462,7 @@ function consolidarItemsVenta(items) {
     for (const item of items) {
         const idProducto = normalizarId(item.id_producto);
         const cantidad = normalizarNumero(item.cantidad);
+        const descuentoUnitario = normalizarEntero(item.descuento_unitario, 0);
 
         if (!idProducto) {
             return {
@@ -477,24 +478,45 @@ function consolidarItemsVenta(items) {
             };
         }
 
-        const acumulado = mapa.get(idProducto) || 0;
-        mapa.set(idProducto, redondearCantidad(acumulado + cantidad));
+        if (descuentoUnitario < 0) {
+            return {
+                ok: false,
+                mensaje: 'El descuento no puede ser negativo.',
+            };
+        }
+
+        const clave = `${idProducto}:${descuentoUnitario}`;
+        const acumulado = mapa.get(clave) || {
+            id_producto: idProducto,
+            cantidad: 0,
+            descuento_unitario: descuentoUnitario,
+        };
+
+        acumulado.cantidad = redondearCantidad(acumulado.cantidad + cantidad);
+        mapa.set(clave, acumulado);
     }
 
     return {
         ok: true,
-        items: Array.from(mapa.entries()).map(([id_producto, cantidad]) => ({
-            id_producto,
-            cantidad,
-        })),
+        items: Array.from(mapa.values()),
     };
 }
 
-function calcularLineaVenta(producto, cantidad) {
+function calcularLineaVenta(producto, cantidad, descuentoUnitario = 0) {
     const precioUnitario = normalizarEntero(producto.precio_venta);
     const precioCostoUnitario = normalizarEntero(producto.precio_costo_referencia);
+    const descuentoUnitarioNormalizado = normalizarEntero(descuentoUnitario, 0);
 
-    const brutoLinea = redondearDinero(precioUnitario * cantidad);
+    if (descuentoUnitarioNormalizado < 0) {
+        throw new Error('El descuento unitario no puede ser negativo.');
+    }
+
+    if (descuentoUnitarioNormalizado > precioUnitario) {
+        throw new Error(`El descuento no puede superar el precio unitario de "${producto.nombre}".`);
+    }
+
+    const precioUnitarioNeto = Math.max(0, precioUnitario - descuentoUnitarioNormalizado);
+    const brutoLinea = redondearDinero(precioUnitarioNeto * cantidad);
 
     const manejaIva = normalizarEntero(producto.maneja_iva) === 1;
     const porcentajeIva = normalizarEntero(producto.porcentaje_iva);
@@ -512,6 +534,7 @@ function calcularLineaVenta(producto, cantidad) {
             impuestoTotal = brutoLinea - subtotal;
             totalLinea = brutoLinea;
         } else {
+            subtotal = brutoLinea;
             impuestoTotal = redondearDinero(subtotal * tasa);
             totalLinea = subtotal + impuestoTotal;
         }
@@ -523,7 +546,7 @@ function calcularLineaVenta(producto, cantidad) {
     return {
         precio_unitario: precioUnitario,
         precio_costo_unitario: precioCostoUnitario,
-        descuento_unitario: 0,
+        descuento_unitario: descuentoUnitarioNormalizado,
         porcentaje_iva: manejaIva ? porcentajeIva : 0,
         impuesto_unitario: cantidad > 0 ? redondearDinero(impuestoTotal / cantidad) : 0,
         impuesto_total: impuestoTotal,
@@ -584,7 +607,16 @@ function prepararItemsParaRegistro(itemsConsolidados) {
             };
         }
 
-        const linea = calcularLineaVenta(producto, cantidad);
+        const descuentoUnitario = normalizarEntero(item.descuento_unitario, 0);
+
+        if (descuentoUnitario > producto.precio_venta) {
+            return {
+                ok: false,
+                mensaje: `El descuento del producto "${producto.nombre}" no puede superar su precio unitario.`,
+            };
+        }
+
+        const linea = calcularLineaVenta(producto, cantidad, descuentoUnitario);
 
         itemsPreparados.push({
             id_producto: producto.id_producto,
