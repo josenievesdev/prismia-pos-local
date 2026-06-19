@@ -869,13 +869,33 @@
         const manejaIva = numero(producto.maneja_iva) === 1;
         const puedeVenderProducto = Boolean(producto.puede_vender);
         const unidad = producto.unidad_abreviatura || 'und';
+        const productoSinStock = controlaInventario && stockDisponible <= 0;
+
+        const mensajeNoDisponible = producto.mensaje_no_disponible
+            || (
+                productoSinStock
+                    ? 'Sin stock disponible. Registra una compra o ajuste de inventario antes de vender.'
+                    : 'Este producto no está disponible para la venta.'
+            );
 
         const disabled = estado.puedeVender && puedeVenderProducto ? '' : 'disabled';
         const claseDisabled = puedeVenderProducto ? '' : 'is-disabled';
 
         const stockTexto = controlaInventario
-            ? `${formatearCantidad(stockDisponible)} ${escaparHtml(unidad)}`
+            ? (
+                productoSinStock
+                    ? 'Sin stock'
+                    : `${formatearCantidad(stockDisponible)} ${escaparHtml(unidad)}`
+            )
             : 'Libre';
+
+        const claseStock = productoSinStock
+            ? 'ventas-result-stock is-empty'
+            : 'ventas-result-stock';
+
+        const ayudaStock = productoSinStock
+            ? '<span class="ventas-result-help">Registra compra o ajuste de inventario</span>'
+            : '';
 
         const ivaTexto = manejaIva
             ? `<span class="ventas-iva-tag">${numero(producto.porcentaje_iva)}%</span>`
@@ -895,11 +915,15 @@
                 data-product-has-tax="${manejaIva ? 1 : 0}"
                 data-product-price-includes-tax="${numero(producto.precio_incluye_iva)}"
                 data-product-can-sell="${puedeVenderProducto ? 1 : 0}"
-data-product-image="${escaparHtml(producto.imagen_url || '')}"
+                data-product-disabled-message="${escaparHtml(mensajeNoDisponible)}"
+                data-product-image="${escaparHtml(producto.imagen_url || '')}"
             >
                 <div class="ventas-result-info">
                     <span class="ventas-result-name">${escaparHtml(producto.nombre)}</span>
-                    <span class="ventas-result-stock">${stockTexto}</span>
+                    <span class="ventas-result-meta">
+                        <span class="${claseStock}">${stockTexto}</span>
+                        ${ayudaStock}
+                    </span>
                 </div>
 
                 <span class="ventas-result-price">
@@ -1159,7 +1183,14 @@ data-product-image="${escaparHtml(producto.imagen_url || '')}"
                 const filaProducto = evento.target.closest('.ventas-result-item');
                 if (!filaProducto) return;
 
-                if (filaProducto.classList.contains('is-disabled')) return;
+                if (filaProducto.classList.contains('is-disabled')) {
+                    mostrarAviso(
+                        filaProducto.dataset.productDisabledMessage
+                        || 'Este producto no está disponible para la venta.',
+                        'error'
+                    );
+                    return;
+                }
 
                 const botonAgregar = evento.target.closest('.ventas-add-button');
                 if (botonAgregar && botonAgregar.disabled) return;
@@ -1210,7 +1241,11 @@ data-product-image="${escaparHtml(producto.imagen_url || '')}"
         const producto = leerProductoDesdeElemento(elementoProducto);
 
         if (!producto.puedeVender) {
-            mostrarAviso('Este producto no está disponible para la venta.', 'error');
+            mostrarAviso(
+                producto.mensajeNoDisponible
+                || 'Este producto no está disponible para la venta.',
+                'error'
+            );
             return;
         }
 
@@ -1258,6 +1293,7 @@ data-product-image="${escaparHtml(producto.imagen_url || '')}"
             manejaIva: elemento.dataset.productHasTax === '1',
             precioIncluyeIva: elemento.dataset.productPriceIncludesTax === '1',
             puedeVender: elemento.dataset.productCanSell === '1',
+            mensajeNoDisponible: elemento.dataset.productDisabledMessage || '',
             imagenUrl: elemento.dataset.productImage || '',
         };
     }

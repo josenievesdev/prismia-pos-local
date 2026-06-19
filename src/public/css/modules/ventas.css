@@ -451,15 +451,21 @@
 }
 
 .ventas-result-item.is-disabled {
-    opacity: .4;
+    opacity: .72;
     cursor: not-allowed;
+    background: #fff7ed;
+}
+
+.ventas-result-item.is-disabled:hover {
+    background: #ffedd5;
 }
 
 .ventas-result-info {
     min-width: 0;
     display: flex;
-    align-items: center;
-    gap: 8px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
 }
 
 .ventas-result-name {
@@ -471,11 +477,30 @@
     text-overflow: ellipsis;
 }
 
+.ventas-result-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    flex-wrap: wrap;
+}
+
 .ventas-result-stock {
     font-size: 11px;
     color: var(--vm);
     white-space: nowrap;
     flex-shrink: 0;
+}
+
+.ventas-result-stock.is-empty {
+    color: #b45309;
+    font-weight: 850;
+}
+
+.ventas-result-help {
+    font-size: 11px;
+    color: #64748b;
+    white-space: nowrap;
 }
 
 .ventas-result-price {

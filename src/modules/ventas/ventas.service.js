@@ -193,10 +193,15 @@ function prepararProductoParaVenta(producto) {
         producto.costo_promedio || producto.ultimo_costo || producto.precio_costo
     );
 
+    const productoSinStock = controlaInventario === 1 && stockDisponible <= 0;
+
     const puedeVender =
         controlaInventario === 0
-        || permiteVentaSinStock === 1
-        || stockDisponible > 0;
+        || !productoSinStock;
+
+    const mensajeNoDisponible = productoSinStock
+        ? 'Sin stock disponible. Registra una compra o ajuste de inventario antes de vender.'
+        : null;
 
     return {
         ...producto,
@@ -227,6 +232,7 @@ function prepararProductoParaVenta(producto) {
 
         puede_vender: puedeVender,
         estado_venta: puedeVender ? 'disponible' : 'sin_stock',
+        mensaje_no_disponible: mensajeNoDisponible,
     };
 }
 
@@ -563,10 +569,14 @@ function prepararItemsParaRegistro(itemsConsolidados) {
             };
         }
 
+        const stockAnterior = normalizarNumero(producto.stock_actual);
+        const stockNuevo = producto.controla_inventario === 1
+            ? redondearCantidad(stockAnterior - cantidad)
+            : stockAnterior;
+
         if (
             producto.controla_inventario === 1
-            && producto.permite_venta_sin_stock !== 1
-            && cantidad > producto.stock_disponible
+            && stockNuevo < 0
         ) {
             return {
                 ok: false,
@@ -575,11 +585,6 @@ function prepararItemsParaRegistro(itemsConsolidados) {
         }
 
         const linea = calcularLineaVenta(producto, cantidad);
-
-        const stockAnterior = normalizarNumero(producto.stock_actual);
-        const stockNuevo = producto.controla_inventario === 1
-            ? redondearCantidad(stockAnterior - cantidad)
-            : stockAnterior;
 
         itemsPreparados.push({
             id_producto: producto.id_producto,
