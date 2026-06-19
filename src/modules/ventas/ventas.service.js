@@ -846,19 +846,6 @@ function calcularTotalesTurno(pagos) {
     });
 }
 
-function calcularTotalesTurno(medioPago, totalVenta) {
-    const tipo = medioPago.tipo;
-    const afectaEfectivo = normalizarEntero(medioPago.afecta_efectivo_caja) === 1;
-
-    return {
-        total_efectivo: tipo === 'efectivo' ? totalVenta : 0,
-        total_transferencia: tipo === 'transferencia' ? totalVenta : 0,
-        total_tarjeta: tipo === 'tarjeta' ? totalVenta : 0,
-        total_otros: !['efectivo', 'transferencia', 'tarjeta'].includes(tipo) ? totalVenta : 0,
-        monto_esperado: afectaEfectivo ? totalVenta : 0,
-    };
-}
-
 function registrarVentaPOS({ idUsuario, payload = {} } = {}) {
     const idUsuarioNormalizado = normalizarId(idUsuario);
 

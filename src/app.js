@@ -289,25 +289,63 @@ app.use((req, res, next) => {
  * Ruta técnica para finalizar restauración.
  * En desarrollo escribe un archivo dentro de src para que nodemon reinicie.
  */
-app.get('/__restauracion-finalizada', (req, res) => {
-    app.locals.restauracionPendiente = true;
 
+function esPeticionLocal(req) {
+    const ipsLocales = new Set([
+        '127.0.0.1',
+        '::1',
+        '::ffff:127.0.0.1',
+        'localhost',
+    ]);
+
+    return ipsLocales.has(req.ip) || ipsLocales.has(req.socket?.remoteAddress);
+}
+
+function usuarioEsAdministrador(req) {
+    const usuario = req.session?.usuario;
+
+    if (!usuario) {
+        return false;
+    }
+
+    if (usuario.rol === 'administrador') {
+        return true;
+    }
+
+    if (Array.isArray(usuario.roles)) {
+        return usuario.roles.some((rol) => {
+            if (typeof rol === 'string') {
+                return rol === 'administrador';
+            }
+
+            return rol?.nombre === 'administrador' || rol?.rol === 'administrador';
+        });
+    }
+
+    return false;
+}
+
+app.get('/__restauracion-finalizada', (req, res) => {
+    if (!esPeticionLocal(req)) {
+        return res.status(403).send('Acceso no permitido.');
+    }
+
+    if (!usuarioEsAdministrador(req)) {
+        return res.status(401).send('Sesión administrativa requerida.');
+    }
+
+    app.locals.restauracionPendiente = true;
     res.status(204).end();
 
-    setTimeout(() => {
-        try {
-            fs.writeFileSync(
-                path.resolve(process.cwd(), 'src/restart-dev-trigger.json'),
-                JSON.stringify({
-                    motivo: 'restauracion_backup',
-                    fecha: new Date().toISOString(),
-                }, null, 2),
-                'utf8'
-            );
-        } catch (error) {
-            console.warn('No se pudo marcar reinicio técnico:', error.message);
-        }
-    }, 300);
+    if (process.env.NODE_ENV !== 'production') {
+        const fs = require('fs');
+        const path = require('path');
+
+        fs.writeFileSync(
+            path.join(process.cwd(), 'src', 'restart-dev-trigger.json'),
+            JSON.stringify({ reiniciar: true, fecha: new Date().toISOString() })
+        );
+    }
 });
 
 /**
