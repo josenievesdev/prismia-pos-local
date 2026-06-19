@@ -22,6 +22,7 @@
     "db:migrate:005": "node src/database/migrations/005_pagos_venta_medios_pago.js",
     "db:migrate:006": "node src/database/migrations/006_gastos_medios_pago.js",
     "db:migrate:037": "node src/database/migrations/037_normalizar_iva_venta_porcentaje.js",
+    "db:migrate:038": "node src/database/migrations/038_crear_licencia_local.js",
     "check:pre-electron": "npm run db:validate && node scripts/verificar-pre-electron.js",
     "check:runtime": "node scripts/diagnostico-runtime.js",
     "demo:reset": "node scripts/demo/reset-demo-landing.js",

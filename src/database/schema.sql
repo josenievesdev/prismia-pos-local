@@ -96,6 +96,28 @@ impuesto_por_defecto INTEGER NOT NULL DEFAULT 0,
         CHECK (maneja_iva IN (0, 1)), iva_incluido_en_precio INTEGER NOT NULL DEFAULT 0
         CHECK (iva_incluido_en_precio IN (0, 1)), porcentaje_iva_defecto INTEGER NOT NULL DEFAULT 0);
 
+-- Tabla: licencia_local
+CREATE TABLE IF NOT EXISTS licencia_local (
+    id_licencia INTEGER PRIMARY KEY CHECK (id_licencia = 1),
+
+    estado TEXT NOT NULL DEFAULT 'prueba'
+        CHECK (estado IN ('prueba', 'activa', 'vencida', 'bloqueada')),
+
+    fecha_inicio_prueba TEXT,
+    fecha_fin_prueba TEXT,
+
+    fecha_inicio_periodo TEXT,
+    fecha_fin_periodo TEXT,
+
+    dias_prueba INTEGER NOT NULL DEFAULT 30,
+
+    codigo_activacion TEXT,
+    nota TEXT,
+
+    creado_en TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+    actualizado_en TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+);
+
 -- Tabla: catalogo_departamentos
 CREATE TABLE IF NOT EXISTS catalogo_departamentos (
             id_departamento INTEGER PRIMARY KEY AUTOINCREMENT,

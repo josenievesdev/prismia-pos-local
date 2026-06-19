@@ -6,6 +6,7 @@ const tablasMinimasParaArranque = [
     'usuarios',
     'usuario_roles',
     'configuracion_negocio',
+    'licencia_local',
     'catalogo_departamentos',
     'catalogo_municipios',
     'categorias_productos',

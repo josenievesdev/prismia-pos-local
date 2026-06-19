@@ -7,6 +7,7 @@ const tablasCriticas = [
     'usuarios',
     'usuario_roles',
     'configuracion_negocio',
+    'licencia_local',
     'clientes',
     'productos',
     'ventas',
@@ -29,6 +30,10 @@ const tablasCriticas = [
 ];
 
 const columnasCriticas = [
+    { tabla: 'licencia_local', columna: 'estado' },
+    { tabla: 'licencia_local', columna: 'fecha_inicio_prueba' },
+    { tabla: 'licencia_local', columna: 'fecha_fin_prueba' },
+    { tabla: 'licencia_local', columna: 'dias_prueba' },
     { tabla: 'compras', columna: 'estado_pago' },
     { tabla: 'compras', columna: 'saldo_pendiente' },
     { tabla: 'pagos_compras_proveedores', columna: 'origen_pago' },
@@ -74,6 +79,13 @@ const semillasMinimas = [
         nombre: 'cliente consumidor final = 1',
         tabla: 'clientes',
         sql: 'SELECT COUNT(*) AS total FROM clientes WHERE es_consumidor_final = 1',
+        exacto: 1,
+    },
+
+    {
+        nombre: 'licencia local inicial = 1',
+        tabla: 'licencia_local',
+        sql: 'SELECT COUNT(*) AS total FROM licencia_local WHERE id_licencia = 1',
         exacto: 1,
     },
 ];
