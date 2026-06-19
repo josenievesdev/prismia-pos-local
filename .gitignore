@@ -132,3 +132,5 @@ PrismiaRuntimeTest/
 # Entorno demo local para capturas landing
 # ==========================================
 PrismiaDemoLanding/
+# Reportes locales de auditoría
+AUDITORIA_*.md
