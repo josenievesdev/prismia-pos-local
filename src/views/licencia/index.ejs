@@ -1,11 +1,27 @@
 <% const licencia=typeof licenciaLocal !=='undefined' ? licenciaLocal : null; const urlPago=typeof whatsappPagoUrl
     !=='undefined' ? whatsappPagoUrl : '#' ; const estadoOperativo=licencia?.estado_operativo || 'no_disponible' ; const
     mensajeLicencia=licencia?.mensaje || 'No fue posible leer el estado de la licencia local.' ; const
-    fechaFinOperativa=licencia?.fecha_fin_operativa || 'No disponible' ; const fechaFinGracia=licencia?.fecha_fin_gracia
+    clienteLicencia=licencia?.cliente_licencia || 'No registrado' ; const planLicencia=licencia?.plan || 'No definido' ;
+    const fechaFinOperativa=licencia?.fecha_fin_operativa || 'No disponible' ; const
+    fechaFinGracia=licencia?.fecha_fin_gracia || 'No disponible' ; const fechaActivacion=licencia?.fecha_activacion
     || 'No disponible' ; const diasRestantes=licencia?.dias_restantes ?? 'No disponible' ; const
     diasGraciaRestantes=licencia?.dias_gracia_restantes ?? 'No disponible' ; const
     permiteOperar=Boolean(licencia?.permite_operar); const bloqueaOperacion=Boolean(licencia?.bloquea_operacion); const
-    requiereActivacion=Boolean(licencia?.requiere_activacion); %>
+    requiereActivacion=Boolean(licencia?.requiere_activacion); const firmaValida=Number(licencia?.firma_valida ||
+    0)===1; const huellaCorta=licencia?.huella_equipo_actual_corta || 'No disponible' ; const
+    huellaCompleta=licencia?.huella_equipo_actual || '' ; const estadoLabels={ prueba: 'Prueba activa' ,
+    activa: 'Licencia activa' , gracia: 'Periodo de gracia' , vencida: 'Licencia vencida' ,
+    bloqueada: 'Licencia bloqueada' , reloj_manipulado: 'Fecha del sistema irregular' ,
+    sin_registro: 'Sin registro de licencia' , no_disponible: 'Licencia no disponible' , }; const
+    estadoTitulo=estadoLabels[estadoOperativo] || 'Estado de licencia' ; let textoPrincipal=mensajeLicencia; if
+    (estadoOperativo==='activa' ) { textoPrincipal=`Licencia activa hasta ${fechaFinOperativa}.`; } if
+    (estadoOperativo==='prueba' ) { textoPrincipal=`Prueba local activa hasta ${fechaFinOperativa}.`; } if
+    (estadoOperativo==='gracia' ) { textoPrincipal=`Licencia en periodo de gracia hasta ${fechaFinGracia}.`; } if
+    (estadoOperativo==='vencida' ) { textoPrincipal='La licencia está vencida. Debes renovar para continuar operando.' ;
+    } if (estadoOperativo==='bloqueada' || estadoOperativo==='reloj_manipulado' ) { textoPrincipal=mensajeLicencia; }
+    const mostrarAvisoRenovacion=permiteOperar && requiereActivacion && !bloqueaOperacion; const
+    mostrarAvisoProximoVencimiento=permiteOperar && !requiereActivacion && typeof diasRestantes==='number' &&
+    diasRestantes <=5; %>
 
     <section class="module-page">
         <div class="module-header module-header-actions">
@@ -13,7 +29,7 @@
                 <p class="eyebrow">Licenciamiento local</p>
                 <h2>Estado de licencia</h2>
                 <p>
-                    Consulta el estado operativo de Prismia, fechas de vencimiento y opciones de activación.
+                    Consulta la vigencia de Prismia POS Local y solicita renovación cuando sea necesario.
                 </p>
             </div>
 
@@ -35,157 +51,157 @@
                     </div>
                     <% } %>
 
-                        <section class="module-card license-renew-card">
-                            <div class="license-renew-hero">
-                                <div class="license-renew-badge">Prismia POS Local</div>
-
-                                <h1>
-                                    <%= mensajeLicencia %>
-                                </h1>
-
-                                <p class="license-renew-lead">
-                                    Esta pantalla muestra el estado real que Prismia usa para permitir o bloquear la
-                                    operación.
-                                    La información del negocio permanece guardada localmente en este equipo.
-                                </p>
-
-                                <div class="license-renew-date">
-                                    <span>Estado operativo</span>
-                                    <strong>
-                                        <%= estadoOperativo %>
-                                    </strong>
-                                </div>
+                        <% if (mostrarAvisoProximoVencimiento) { %>
+                            <div class="alert alert-warning">
+                                Tu licencia vence pronto. Te recomendamos renovarla para evitar interrupciones.
                             </div>
+                            <% } %>
 
-                            <div class="license-renew-content">
-                                <div class="license-renew-message">
-                                    <h3>Resumen de licencia</h3>
+                                <% if (mostrarAvisoRenovacion) { %>
+                                    <div class="alert alert-warning">
+                                        La licencia todavía permite operar, pero requiere renovación para evitar bloqueo
+                                        al finalizar el periodo de gracia.
+                                    </div>
+                                    <% } %>
 
-                                    <ul class="license-renew-points">
-                                        <li>
-                                            Permite operar:
-                                            <strong>
-                                                <%= permiteOperar ? 'Sí' : 'No' %>
-                                            </strong>
-                                        </li>
+                                        <section class="module-card license-renew-card">
+                                            <div class="license-renew-hero">
+                                                <div class="license-renew-badge">Prismia POS Local</div>
 
-                                        <li>
-                                            Bloquea operación:
-                                            <strong>
-                                                <%= bloqueaOperacion ? 'Sí' : 'No' %>
-                                            </strong>
-                                        </li>
+                                                <h1>
+                                                    <%= estadoTitulo %>
+                                                </h1>
 
-                                        <li>
-                                            Requiere activación:
-                                            <strong>
-                                                <%= requiereActivacion ? 'Sí' : 'No' %>
-                                            </strong>
-                                        </li>
+                                                <p class="license-renew-lead">
+                                                    <%= textoPrincipal %>
+                                                        Tu información permanece guardada localmente en este equipo.
+                                                </p>
 
-                                        <li>
-                                            Plan:
-                                            <strong>
-                                                <%= licencia?.plan || 'No definido' %>
-                                            </strong>
-                                        </li>
+                                                <div class="license-renew-date">
+                                                    <span>Vigencia principal</span>
+                                                    <strong>
+                                                        <%= fechaFinOperativa %>
+                                                    </strong>
+                                                </div>
 
-                                        <li>
-                                            Cliente:
-                                            <strong>
-                                                <%= licencia?.cliente_licencia || 'No definido' %>
-                                            </strong>
-                                        </li>
+                                                <div class="license-renew-date">
+                                                    <span>Días restantes</span>
+                                                    <strong>
+                                                        <%= diasRestantes %>
+                                                    </strong>
+                                                </div>
+                                            </div>
 
-                                        <li>
-                                            Firma válida:
-                                            <strong>
-                                                <%= licencia?.firma_valida===1 ? 'Sí' : 'No' %>
-                                            </strong>
-                                        </li>
+                                            <div class="license-renew-content">
+                                                <div class="license-renew-message">
+                                                    <h3>Datos de la licencia</h3>
 
-                                        <li>
-                                            Fecha de activación:
-                                            <strong>
-                                                <%= licencia?.fecha_activacion || 'No disponible' %>
-                                            </strong>
-                                        </li>
+                                                    <ul class="license-renew-points">
+                                                        <li>
+                                                            Cliente licenciado:
+                                                            <strong>
+                                                                <%= clienteLicencia %>
+                                                            </strong>
+                                                        </li>
 
-                                        <li>
-                                            Origen de activación:
-                                            <strong>
-                                                <%= licencia?.origen_activacion || 'local' %>
-                                            </strong>
-                                        </li>
-                                        <li>
-                                            Huella de este equipo:
-                                            <strong>
-                                                <%= licencia?.huella_equipo_actual_corta || 'No disponible' %>
-                                            </strong>
-                                        </li>
-                                    </ul>
-                                </div>
+                                                        <li>
+                                                            Plan:
+                                                            <strong>
+                                                                <%= planLicencia %>
+                                                            </strong>
+                                                        </li>
 
-                                <div class="license-renew-message" style="margin-top: 1.5rem;">
-                                    <h3>Fechas y días</h3>
+                                                        <li>
+                                                            Estado operativo:
+                                                            <strong>
+                                                                <%= estadoOperativo %>
+                                                            </strong>
+                                                        </li>
 
-                                    <ul class="license-renew-points">
-                                        <li>
-                                            Fecha fin operativa:
-                                            <strong>
-                                                <%= fechaFinOperativa %>
-                                            </strong>
-                                        </li>
+                                                        <li>
+                                                            Permite operar:
+                                                            <strong>
+                                                                <%= permiteOperar ? 'Sí' : 'No' %>
+                                                            </strong>
+                                                        </li>
 
-                                        <li>
-                                            Fecha fin de gracia:
-                                            <strong>
-                                                <%= fechaFinGracia %>
-                                            </strong>
-                                        </li>
+                                                        <li>
+                                                            Firma de activación:
+                                                            <strong>
+                                                                <%= firmaValida ? 'Válida' : 'No registrada' %>
+                                                            </strong>
+                                                        </li>
+                                                    </ul>
+                                                </div>
 
-                                        <li>
-                                            Días restantes:
-                                            <strong>
-                                                <%= diasRestantes %>
-                                            </strong>
-                                        </li>
+                                                <div class="license-renew-message" style="margin-top: 1.5rem;">
+                                                    <h3>Renovación y soporte</h3>
 
-                                        <li>
-                                            Días de gracia restantes:
-                                            <strong>
-                                                <%= diasGraciaRestantes %>
-                                            </strong>
-                                        </li>
-                                    </ul>
-                                </div>
+                                                    <p>
+                                                        Si necesitas renovar, usa WhatsApp o copia la huella del equipo.
+                                                        Con esos datos se puede generar un nuevo código de activación
+                                                        para este computador.
+                                                    </p>
 
-                                <div class="license-renew-actions">
-                                    <a href="/licencia/activar" class="btn-primary">
-                                        Ingresar código de activación
-                                    </a>
+                                                    <ul class="license-renew-points">
+                                                        <li>
+                                                            Fecha de activación:
+                                                            <strong>
+                                                                <%= fechaActivacion %>
+                                                            </strong>
+                                                        </li>
 
-                                    <button type="button" class="btn-secondary"
-                                        data-copy-huella="<%= licencia?.huella_equipo_actual || '' %>">
-                                        Copiar huella
-                                    </button>
+                                                        <li>
+                                                            Periodo de gracia hasta:
+                                                            <strong>
+                                                                <%= fechaFinGracia %>
+                                                            </strong>
+                                                        </li>
 
-                                    <a href="<%= urlPago %>" class="btn-secondary" target="_blank" rel="noreferrer">
-                                        Renovar por WhatsApp
-                                    </a>
-                                </div>
-                                <p class="license-renew-note">
-                                    Prismia valida esta licencia de forma local mediante código firmado y huella del
-                                    equipo.
-                                    Más adelante podrá complementarse con validación online híbrida.
-                                    <br>
-                                    Huella técnica completa:
-                                    <span style="word-break: break-all;">
-                                        <%= licencia?.huella_equipo_actual || 'No disponible' %>
-                                    </span>
-                                </p>
-                            </div>
-                        </section>
+                                                        <li>
+                                                            Días de gracia restantes:
+                                                            <strong>
+                                                                <%= diasGraciaRestantes %>
+                                                            </strong>
+                                                        </li>
+
+                                                        <li>
+                                                            Huella corta:
+                                                            <strong>
+                                                                <%= huellaCorta %>
+                                                            </strong>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+
+                                                <div class="license-renew-actions">
+                                                    <a href="/licencia/activar" class="btn-primary">
+                                                        Ingresar código de activación
+                                                    </a>
+
+                                                    <button type="button" class="btn-secondary"
+                                                        data-copy-huella="<%= huellaCompleta %>">
+                                                        Copiar huella
+                                                    </button>
+
+                                                    <a href="<%= urlPago %>" class="btn-secondary" target="_blank"
+                                                        rel="noreferrer">
+                                                        Renovar por WhatsApp
+                                                    </a>
+                                                </div>
+
+                                                <p class="license-renew-note">
+                                                    Prismia valida esta licencia localmente mediante código firmado y
+                                                    huella del equipo.
+                                                    Más adelante podrá complementarse con validación online híbrida.
+                                                    <br>
+                                                    Huella técnica completa:
+                                                    <span style="word-break: break-all;">
+                                                        <%= huellaCompleta || 'No disponible' %>
+                                                    </span>
+                                                </p>
+                                            </div>
+                                        </section>
     </section>
 
     <script>
