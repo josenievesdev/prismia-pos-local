@@ -96,6 +96,12 @@
                                                 <%= licencia?.origen_activacion || 'local' %>
                                             </strong>
                                         </li>
+                                        <li>
+                                            Huella de este equipo:
+                                            <strong>
+                                                <%= licencia?.huella_equipo_actual_corta || 'No disponible' %>
+                                            </strong>
+                                        </li>
                                     </ul>
                                 </div>
 
@@ -142,11 +148,15 @@
                                         Renovar por WhatsApp
                                     </a>
                                 </div>
-
                                 <p class="license-renew-note">
                                     En esta versión, Prismia funciona localmente. La activación manual quedará preparada
                                     para códigos firmados
                                     y luego podrá complementarse con validación online híbrida.
+                                    <br>
+                                    Huella técnica completa:
+                                    <span style="word-break: break-all;">
+                                        <%= licencia?.huella_equipo_actual || 'No disponible' %>
+                                    </span>
                                 </p>
                             </div>
                         </section>

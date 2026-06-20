@@ -49,6 +49,13 @@
                                         <%= estadoOperativo %>
                                     </strong>
                                 </div>
+
+                                <div class="license-renew-date">
+                                    <span>Huella del equipo</span>
+                                    <strong>
+                                        <%= licencia?.huella_equipo_actual_corta || 'No disponible' %>
+                                    </strong>
+                                </div>
                             </div>
 
                             <div class="license-renew-content">
@@ -66,6 +73,10 @@
                                             <small class="field-help">
                                                 En la siguiente tanda se validará que el código esté firmado y
                                                 corresponda a este equipo.
+                                                Huella técnica:
+                                                <span style="word-break: break-all;">
+                                                    <%= licencia?.huella_equipo_actual || 'No disponible' %>
+                                                </span>
                                             </small>
                                         </div>
                                     </div>

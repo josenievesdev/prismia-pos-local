@@ -1,4 +1,5 @@
 const licenciaRepository = require('./licenciaLocal.repository');
+const huellaEquipoService = require('./huellaEquipo.service');
 
 const ESTADOS_OPERATIVOS = {
     PRUEBA: 'prueba',
@@ -417,6 +418,7 @@ function obtenerResumenLicenciaLocal() {
     }
 
     const calculo = calcularEstadoOperativo(licencia);
+    const huellaEquipoActual = huellaEquipoService.obtenerHuellaEquipo();
 
     if (calculo.estadoOperativo === ESTADOS_OPERATIVOS.RELOJ_MANIPULADO) {
         licenciaRepository.bloquearPorManipulacionFecha({
@@ -449,6 +451,9 @@ function obtenerResumenLicenciaLocal() {
                 ? 'reloj_manipulado'
                 : licencia.motivo_bloqueo,
         plan: licencia.plan,
+        huella_equipo_actual: huellaEquipoActual.huella,
+        huella_equipo_actual_corta: huellaEquipoActual.huella_corta,
+        huella_equipo_fuente: huellaEquipoActual.fuente,
         origen_activacion: licencia.origen_activacion,
         ultima_validacion_online: licencia.ultima_validacion_online,
         ultimo_intento_online: licencia.ultimo_intento_online,
