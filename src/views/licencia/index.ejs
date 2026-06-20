@@ -165,6 +165,11 @@
                                         Ingresar código de activación
                                     </a>
 
+                                    <button type="button" class="btn-secondary"
+                                        data-copy-huella="<%= licencia?.huella_equipo_actual || '' %>">
+                                        Copiar huella
+                                    </button>
+
                                     <a href="<%= urlPago %>" class="btn-secondary" target="_blank" rel="noreferrer">
                                         Renovar por WhatsApp
                                     </a>
@@ -182,3 +187,42 @@
                             </div>
                         </section>
     </section>
+
+    <script>
+        document.querySelectorAll('[data-copy-huella]').forEach((boton) => {
+            boton.addEventListener('click', async () => {
+                const huella = boton.getAttribute('data-copy-huella') || '';
+
+                if (!huella) {
+                    boton.textContent = 'Huella no disponible';
+                    return;
+                }
+
+                try {
+                    await navigator.clipboard.writeText(huella);
+                    boton.textContent = 'Huella copiada';
+
+                    setTimeout(() => {
+                        boton.textContent = 'Copiar huella';
+                    }, 1800);
+                } catch (error) {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = huella;
+                    textarea.setAttribute('readonly', '');
+                    textarea.style.position = 'absolute';
+                    textarea.style.left = '-9999px';
+
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+
+                    boton.textContent = 'Huella copiada';
+
+                    setTimeout(() => {
+                        boton.textContent = 'Copiar huella';
+                    }, 1800);
+                }
+            });
+        });
+    </script>

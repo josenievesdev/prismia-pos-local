@@ -40,7 +40,7 @@ function requiereLicenciaOperativa(req, res, next) {
             return res.status(403).render('licencia/vencida', {
                 titulo: 'Licencia no disponible',
                 licenciaLocal,
-                whatsappPagoUrl: licenciaComercial.obtenerUrlWhatsappPago(),
+                whatsappPagoUrl: licenciaComercial.obtenerUrlWhatsappPago(licenciaLocal),
             });
         }
 
@@ -51,7 +51,7 @@ function requiereLicenciaOperativa(req, res, next) {
         return res.status(403).render('licencia/vencida', {
             titulo: 'Licencia requiere activación',
             licenciaLocal,
-            whatsappPagoUrl: licenciaComercial.obtenerUrlWhatsappPago(),
+            whatsappPagoUrl: licenciaComercial.obtenerUrlWhatsappPago(licenciaLocal),
         });
     } catch (error) {
         console.error('No se pudo validar la licencia local:', error.message);

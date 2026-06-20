@@ -7,7 +7,7 @@ function obtenerDatosVista(extra = {}) {
     return {
         titulo: extra.titulo || 'Licencia',
         licenciaLocal,
-        whatsappPagoUrl: licenciaComercial.obtenerUrlWhatsappPago(),
+        whatsappPagoUrl: licenciaComercial.obtenerUrlWhatsappPago(licenciaLocal),
         error: extra.error || null,
         mensajeExito: extra.mensajeExito || null,
         valores: extra.valores || {
