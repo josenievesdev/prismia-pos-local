@@ -15,6 +15,7 @@
     "pack:dir": "npm run check:pre-electron && npm run native:electron && electron-builder --dir",
     "dist:win": "npm run check:pre-electron && npm run native:electron && electron-builder --win nsis",
     "db:validate": "npm run native:node && node src/database/validate-db.js",
+    "db:audit:contable": "npm run native:node && node src/database/audit-contable.js",
     "db:migrate:001": "node src/database/migrations/001_unidades_costos_iva.js",
     "db:migrate:002": "node src/database/migrations/002_conteos_inventario.js",
     "db:migrate:003": "node src/database/migrations/003_medios_pago_caja.js",
