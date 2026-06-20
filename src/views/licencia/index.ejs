@@ -91,6 +91,27 @@
                                         </li>
 
                                         <li>
+                                            Cliente:
+                                            <strong>
+                                                <%= licencia?.cliente_licencia || 'No definido' %>
+                                            </strong>
+                                        </li>
+
+                                        <li>
+                                            Firma válida:
+                                            <strong>
+                                                <%= licencia?.firma_valida===1 ? 'Sí' : 'No' %>
+                                            </strong>
+                                        </li>
+
+                                        <li>
+                                            Fecha de activación:
+                                            <strong>
+                                                <%= licencia?.fecha_activacion || 'No disponible' %>
+                                            </strong>
+                                        </li>
+
+                                        <li>
                                             Origen de activación:
                                             <strong>
                                                 <%= licencia?.origen_activacion || 'local' %>
@@ -149,9 +170,9 @@
                                     </a>
                                 </div>
                                 <p class="license-renew-note">
-                                    En esta versión, Prismia funciona localmente. La activación manual quedará preparada
-                                    para códigos firmados
-                                    y luego podrá complementarse con validación online híbrida.
+                                    Prismia valida esta licencia de forma local mediante código firmado y huella del
+                                    equipo.
+                                    Más adelante podrá complementarse con validación online híbrida.
                                     <br>
                                     Huella técnica completa:
                                     <span style="word-break: break-all;">

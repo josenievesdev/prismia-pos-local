@@ -71,8 +71,7 @@
                                                 required><%= valoresFormulario.codigo_activacion || '' %></textarea>
 
                                             <small class="field-help">
-                                                En la siguiente tanda se validará que el código esté firmado y
-                                                corresponda a este equipo.
+                                                Prismia validará que el código esté firmado y corresponda a este equipo.
                                                 Huella técnica:
                                                 <span style="word-break: break-all;">
                                                     <%= licencia?.huella_equipo_actual || 'No disponible' %>
@@ -95,11 +94,9 @@
                                         </a>
                                     </div>
                                 </form>
-
                                 <p class="license-renew-note">
-                                    Por ahora esta pantalla solo prepara el flujo. La activación real se implementará
-                                    con firma offline
-                                    para evitar códigos inventados o manipulaciones de fecha.
+                                    La activación se valida localmente con firma digital y huella del equipo.
+                                    Si el código no corresponde a este equipo o ya fue aplicado, Prismia lo rechazará.
                                 </p>
                             </div>
                         </section>

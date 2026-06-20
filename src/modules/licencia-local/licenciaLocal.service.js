@@ -51,6 +51,21 @@ function normalizarFechaPayloadParaSQLite(fecha) {
     return formatearFechaSQLite(fechaNormalizada);
 }
 
+function fechaEsMayorQueFechaActualLicencia(fechaNuevaTexto, fechaActualTexto) {
+    if (!fechaActualTexto) {
+        return true;
+    }
+
+    const fechaNueva = convertirFechaLocal(fechaNuevaTexto);
+    const fechaActual = convertirFechaLocal(fechaActualTexto);
+
+    if (!fechaNueva || !fechaActual) {
+        return true;
+    }
+
+    return fechaNueva.getTime() > fechaActual.getTime();
+}
+
 function sumarDias(fechaBase, dias) {
     const fecha = new Date(fechaBase);
     fecha.setDate(fecha.getDate() + Number(dias || 0));
@@ -464,6 +479,11 @@ function obtenerResumenLicenciaLocal() {
                 ? 'reloj_manipulado'
                 : licencia.motivo_bloqueo,
         plan: licencia.plan,
+        cliente_licencia: licencia.cliente_licencia,
+        fecha_activacion: licencia.fecha_activacion,
+        fecha_emision_codigo: licencia.fecha_emision_codigo,
+        firma_valida: licencia.firma_valida,
+        huella_equipo_licencia: licencia.huella_equipo,
         huella_equipo_actual: huellaEquipoActual.huella,
         huella_equipo_actual_corta: huellaEquipoActual.huella_corta,
         huella_equipo_fuente: huellaEquipoActual.fuente,
@@ -502,6 +522,7 @@ function activarConCodigoFirmado(codigoActivacion) {
     }
 
     const payload = validacion.payload;
+    const licenciaActual = licenciaRepository.obtenerLicenciaLocal();
 
     const fechaInicioPeriodo = normalizarFechaPayloadParaSQLite(
         validacion.fechaInicio
@@ -518,14 +539,40 @@ function activarConCodigoFirmado(codigoActivacion) {
         };
     }
 
+    if (
+        licenciaActual?.codigo_firmado
+        && licenciaActual.codigo_firmado === String(codigoActivacion || '').trim()
+    ) {
+        return {
+            ok: false,
+            mensaje: 'Este código de activación ya fue aplicado en este equipo.',
+        };
+    }
+
+    if (
+        licenciaActual?.fecha_fin_periodo
+        && !fechaEsMayorQueFechaActualLicencia(
+            fechaFinPeriodo,
+            licenciaActual.fecha_fin_periodo
+        )
+    ) {
+        return {
+            ok: false,
+            mensaje: 'El código ingresado no mejora la vigencia actual de la licencia.',
+        };
+    }
+
     licenciaRepository.activarLicenciaFirmada({
         plan: String(payload.plan || 'mensual').toLowerCase(),
         fechaInicioPeriodo,
         fechaFinPeriodo,
         diasGracia: validacion.diasGracia,
         huellaEquipo: huellaEquipoActual.huella,
+        clienteLicencia: payload.cliente || 'Cliente Prismia',
         codigoActivacion: String(codigoActivacion || '').trim(),
         codigoFirmado: String(codigoActivacion || '').trim(),
+        ultimoNonceLicencia: payload.nonce || null,
+        fechaEmisionCodigo: normalizarFechaPayloadParaSQLite(payload.emitido_en),
         origenActivacion: payload.origen_activacion || 'local_firmada',
         nota: `Licencia activada para ${payload.cliente || 'Cliente Prismia'} hasta ${fechaFinPeriodo}.`,
     });

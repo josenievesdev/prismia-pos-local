@@ -118,8 +118,11 @@ CREATE TABLE IF NOT EXISTS licencia_local (
     fecha_activacion TEXT,
 
     huella_equipo TEXT,
+    cliente_licencia TEXT,
     codigo_activacion TEXT,
     codigo_firmado TEXT,
+    ultimo_nonce_licencia TEXT,
+    fecha_emision_codigo TEXT,
     firma_valida INTEGER NOT NULL DEFAULT 0
         CHECK (firma_valida IN (0, 1)),
 
