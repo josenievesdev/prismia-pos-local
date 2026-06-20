@@ -504,6 +504,50 @@ function obtenerResumenLicenciaLocal() {
     return resumen;
 }
 
+function registrarAuditoriaActivacionLicencia({
+    licenciaAnterior,
+    payload,
+    fechaInicioPeriodo,
+    fechaFinPeriodo,
+    diasGracia,
+    huellaEquipo,
+}) {
+    try {
+        licenciaRepository.registrarAuditoria({
+            id_usuario: null,
+            accion: 'licencia_activada_codigo_firmado',
+            tabla_afectada: 'licencia_local',
+            id_registro_afectado: 1,
+            datos_anteriores: JSON.stringify({
+                estado: licenciaAnterior?.estado || null,
+                plan: licenciaAnterior?.plan || null,
+                cliente_licencia: licenciaAnterior?.cliente_licencia || null,
+                fecha_fin_periodo: licenciaAnterior?.fecha_fin_periodo || null,
+                firma_valida: licenciaAnterior?.firma_valida || 0,
+            }),
+            datos_nuevos: JSON.stringify({
+                estado: 'activa',
+                plan: String(payload.plan || 'mensual').toLowerCase(),
+                cliente_licencia: payload.cliente || 'Cliente Prismia',
+                fecha_inicio_periodo: fechaInicioPeriodo,
+                fecha_fin_periodo: fechaFinPeriodo,
+                dias_gracia: diasGracia,
+                origen_activacion: payload.origen_activacion || 'local_firmada',
+                nonce: payload.nonce || null,
+                emitido_en: payload.emitido_en || null,
+                huella_equipo: huellaEquipo,
+            }),
+            ip: 'local',
+            user_agent: 'licencia_local_service',
+        });
+    } catch (error) {
+        console.warn(
+            'No fue posible registrar auditoría de activación de licencia:',
+            error.message
+        );
+    }
+}
+
 function activarConCodigoFirmado(codigoActivacion) {
     const huellaEquipoActual = huellaEquipoService.obtenerHuellaEquipo();
 
@@ -575,6 +619,15 @@ function activarConCodigoFirmado(codigoActivacion) {
         fechaEmisionCodigo: normalizarFechaPayloadParaSQLite(payload.emitido_en),
         origenActivacion: payload.origen_activacion || 'local_firmada',
         nota: `Licencia activada para ${payload.cliente || 'Cliente Prismia'} hasta ${fechaFinPeriodo}.`,
+    });
+
+    registrarAuditoriaActivacionLicencia({
+        licenciaAnterior: licenciaActual,
+        payload,
+        fechaInicioPeriodo,
+        fechaFinPeriodo,
+        diasGracia: validacion.diasGracia,
+        huellaEquipo: huellaEquipoActual.huella,
     });
 
     return {
