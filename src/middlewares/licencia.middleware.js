@@ -35,12 +35,20 @@ function requiereLicenciaOperativa(req, res, next) {
 
         res.locals.licenciaLocal = licenciaLocal;
 
-        if (!licenciaLocal.ok || !licenciaLocal.prueba_vencida) {
+        if (!licenciaLocal.ok) {
+            return res.status(403).render('licencia/vencida', {
+                titulo: 'Licencia no disponible',
+                licenciaLocal,
+                whatsappPagoUrl: licenciaComercial.obtenerUrlWhatsappPago(),
+            });
+        }
+
+        if (!licenciaLocal.bloquea_operacion) {
             return next();
         }
 
         return res.status(403).render('licencia/vencida', {
-            titulo: 'Prueba vencida',
+            titulo: 'Licencia requiere activación',
             licenciaLocal,
             whatsappPagoUrl: licenciaComercial.obtenerUrlWhatsappPago(),
         });

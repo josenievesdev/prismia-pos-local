@@ -1,22 +1,25 @@
 <% const licencia=typeof licenciaLocal !=='undefined' ? licenciaLocal : null; const urlPago=typeof whatsappPagoUrl
-    !=='undefined' ? whatsappPagoUrl : '#' ; const fechaFin=licencia && licencia.fecha_fin_prueba ?
-    licencia.fecha_fin_prueba : 'No disponible' ; %>
+    !=='undefined' ? whatsappPagoUrl : '#' ; const estadoOperativo=licencia && licencia.estado_operativo ?
+    licencia.estado_operativo : 'no_disponible' ; const fechaFin=licencia && licencia.fecha_fin_operativa ?
+    licencia.fecha_fin_operativa : licencia && licencia.fecha_fin_prueba ? licencia.fecha_fin_prueba : 'No disponible' ;
+    const mensajeLicencia=licencia && licencia.mensaje ? licencia.mensaje
+    : 'La licencia local requiere revisión para continuar operando.' ; %>
 
     <section class="module-page">
         <section class="module-card license-renew-card">
             <div class="license-renew-hero">
                 <div class="license-renew-badge">Prismia POS Local</div>
 
-                <h1>Tu prueba inicial ha finalizado</h1>
+                <h1>Tu licencia requiere activación</h1>
 
                 <p class="license-renew-lead">
-                    Gracias por probar Prismia. Nos alegra acompañarte en este proceso.
-                    Para seguir usando ventas, inventario, caja, reportes y demás módulos,
-                    solo necesitas activar tu servicio.
+                    <%= mensajeLicencia %>
+                        Tu información sigue guardada localmente. Para continuar usando los módulos operativos,
+                        debes activar o renovar el servicio.
                 </p>
 
                 <div class="license-renew-date">
-                    <span>Fecha de finalización registrada</span>
+                    <span>Fecha operativa registrada</span>
                     <strong>
                         <%= fechaFin %>
                     </strong>
@@ -25,18 +28,20 @@
 
             <div class="license-renew-content">
                 <div class="license-renew-message">
-                    <h3>Continúa con tu negocio, sin perder el ritmo</h3>
+                    <h3>Activa Prismia para continuar operando</h3>
 
                     <p>
-                        Prismia sigue listo para ti. Si deseas continuar operando con normalidad,
-                        puedes escribirnos por WhatsApp y te compartimos el proceso de pago y activación
-                        de forma rápida y acompañada.
+                        Prismia conserva la información del negocio en este equipo.
+                        Para reactivar ventas, caja, inventario, reportes y demás módulos,
+                        puedes escribirnos por WhatsApp y recibir el proceso de pago y activación.
                     </p>
 
                     <ul class="license-renew-points">
-                        <li>Activación rápida y acompañamiento directo.</li>
+                        <li>Estado actual: <strong>
+                                <%= estadoOperativo %>
+                            </strong>.</li>
                         <li>Tu información sigue guardada localmente.</li>
-                        <li>Retoma el trabajo normal apenas actives el servicio.</li>
+                        <li>Retoma el trabajo normal apenas actives o renueves el servicio.</li>
                     </ul>
                 </div>
 
