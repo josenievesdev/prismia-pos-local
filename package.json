@@ -19,6 +19,7 @@
     "db:repair:turnos": "npm run native:node && node src/database/reparar-turnos-caja.js",
     "licencia:keys": "node tools/licencias/generar-claves-licencia.js",
     "licencia:code": "node tools/licencias/generar-codigo-activacion.js",
+    "licencia:audit": "npm run native:node && node src/database/audit-licencia.js",
     "db:migrate:001": "node src/database/migrations/001_unidades_costos_iva.js",
     "db:migrate:002": "node src/database/migrations/002_conteos_inventario.js",
     "db:migrate:003": "node src/database/migrations/003_medios_pago_caja.js",
