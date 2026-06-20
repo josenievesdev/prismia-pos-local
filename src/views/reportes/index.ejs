@@ -48,7 +48,8 @@
                                 <%= formatearPesos(resumenVentas.total_neto) %>
                             </strong>
                             <small>
-                                <%= resumenVentas.facturas_pagadas %> pagada(s)
+                                <%= resumenVentas.facturas_pagadas %> pagada(s) · Desc. <%=
+                                        formatearPesos(resumenVentas.descuento_neto) %>
                             </small>
                         </article>
 
@@ -278,6 +279,7 @@
                                                 <tr>
                                                     <th>Producto</th>
                                                     <th class="text-center">Cant.</th>
+                                                    <th class="text-right">Desc.</th>
                                                     <th class="text-right">Total</th>
                                                     <th class="text-right">Utilidad</th>
                                                 </tr>
@@ -298,6 +300,16 @@
 
                                                         <td class="text-center">
                                                             <%= producto.cantidad_vendida %>
+                                                        </td>
+
+                                                        <td class="text-right">
+                                                            <% if (Number(producto.descuento_neto || 0)> 0) { %>
+                                                                <span class="reportes-discount-value">
+                                                                    <%= formatearPesos(producto.descuento_neto) %>
+                                                                </span>
+                                                                <% } else { %>
+                                                                    <span class="reportes-muted-value">—</span>
+                                                                    <% } %>
                                                         </td>
 
                                                         <td class="text-right">
@@ -371,7 +383,15 @@
                                                         </td>
 
                                                         <td class="text-right">
-                                                            <%= formatearPesos(venta.total) %>
+                                                            <strong>
+                                                                <%= formatearPesos(venta.total) %>
+                                                            </strong>
+
+                                                            <% if (Number(venta.descuento_total || 0)> 0) { %>
+                                                                <small class="reportes-discount-note">
+                                                                    Desc. <%= formatearPesos(venta.descuento_total) %>
+                                                                </small>
+                                                                <% } %>
                                                         </td>
                                                     </tr>
                                                     <% }) %>

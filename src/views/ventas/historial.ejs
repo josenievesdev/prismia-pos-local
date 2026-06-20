@@ -209,11 +209,16 @@
                                                 <%= venta.medio_pago_tipo %>
                                             </small>
                                         </td>
-
                                         <td class="text-right">
                                             <strong>
                                                 <%= dinero(venta.total) %>
                                             </strong>
+
+                                            <% if (Number(venta.descuento_total || 0)> 0) { %>
+                                                <small class="ventas-history-discount">
+                                                    Desc. <%= dinero(venta.descuento_total) %>
+                                                </small>
+                                                <% } %>
                                         </td>
 
                                         <td>

@@ -157,6 +157,7 @@ function obtenerProductosMasVendidos(filtros = {}) {
 
             COALESCE(SUM(dv.cantidad), 0) AS cantidad_vendida,
             COALESCE(SUM(dv.subtotal), 0) AS subtotal_neto,
+            COALESCE(SUM(dv.descuento_unitario * dv.cantidad), 0) AS descuento_neto,
             COALESCE(SUM(dv.impuesto_total), 0) AS iva_neto,
             COALESCE(SUM(dv.total_linea), 0) AS total_neto,
             COALESCE(SUM(dv.costo_total), 0) AS costo_neto,
@@ -186,6 +187,7 @@ function obtenerVentasRecientes(filtros = {}) {
             v.estado,
             v.tipo_venta,
             v.subtotal,
+            v.descuento_total,
             v.impuesto_total,
             v.total,
             v.total_costo,

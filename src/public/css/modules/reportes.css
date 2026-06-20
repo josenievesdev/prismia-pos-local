@@ -179,10 +179,21 @@
     background: #ffffff;
 }
 
-.reportes-scroll-area-mini { max-height: 240px; }
-.reportes-scroll-area-small { max-height: 340px; }
-.reportes-scroll-area-medium { max-height: 360px; }
-.reportes-scroll-area-large { max-height: 440px; }
+.reportes-scroll-area-mini {
+    max-height: 240px;
+}
+
+.reportes-scroll-area-small {
+    max-height: 340px;
+}
+
+.reportes-scroll-area-medium {
+    max-height: 360px;
+}
+
+.reportes-scroll-area-large {
+    max-height: 440px;
+}
 
 .reportes-table {
     width: 100%;
@@ -262,44 +273,84 @@
 
 /* Column width definitions */
 .reportes-table-iva th:nth-child(1),
-.reportes-table-iva td:nth-child(1) { width: 18%; }
+.reportes-table-iva td:nth-child(1) {
+    width: 18%;
+}
+
 .reportes-table-iva th:nth-child(2),
 .reportes-table-iva td:nth-child(2),
 .reportes-table-iva th:nth-child(3),
 .reportes-table-iva td:nth-child(3),
 .reportes-table-iva th:nth-child(4),
-.reportes-table-iva td:nth-child(4) { width: 27.33%; }
+.reportes-table-iva td:nth-child(4) {
+    width: 27.33%;
+}
 
 .reportes-table-medios th:nth-child(1),
-.reportes-table-medios td:nth-child(1) { width: 27%; }
+.reportes-table-medios td:nth-child(1) {
+    width: 27%;
+}
+
 .reportes-table-medios th:nth-child(2),
-.reportes-table-medios td:nth-child(2) { width: 14%; }
+.reportes-table-medios td:nth-child(2) {
+    width: 14%;
+}
+
 .reportes-table-medios th:nth-child(3),
-.reportes-table-medios td:nth-child(3) { width: 9%; }
+.reportes-table-medios td:nth-child(3) {
+    width: 9%;
+}
+
 .reportes-table-medios th:nth-child(4),
 .reportes-table-medios td:nth-child(4),
 .reportes-table-medios th:nth-child(5),
 .reportes-table-medios td:nth-child(5),
 .reportes-table-medios th:nth-child(6),
-.reportes-table-medios td:nth-child(6) { width: 16.66%; }
+.reportes-table-medios td:nth-child(6) {
+    width: 16.66%;
+}
 
 .reportes-table-productos th:nth-child(1),
-.reportes-table-productos td:nth-child(1) { width: 38%; }
+.reportes-table-productos td:nth-child(1) {
+    width: 34%;
+}
+
 .reportes-table-productos th:nth-child(2),
-.reportes-table-productos td:nth-child(2) { width: 14%; }
+.reportes-table-productos td:nth-child(2) {
+    width: 12%;
+}
+
 .reportes-table-productos th:nth-child(3),
-.reportes-table-productos td:nth-child(3),
+.reportes-table-productos td:nth-child(3) {
+    width: 16%;
+}
+
 .reportes-table-productos th:nth-child(4),
-.reportes-table-productos td:nth-child(4) { width: 24%; }
+.reportes-table-productos td:nth-child(4),
+.reportes-table-productos th:nth-child(5),
+.reportes-table-productos td:nth-child(5) {
+    width: 19%;
+}
 
 .reportes-table-ventas th:nth-child(1),
-.reportes-table-ventas td:nth-child(1) { width: 24%; }
+.reportes-table-ventas td:nth-child(1) {
+    width: 24%;
+}
+
 .reportes-table-ventas th:nth-child(2),
-.reportes-table-ventas td:nth-child(2) { width: 34%; }
+.reportes-table-ventas td:nth-child(2) {
+    width: 34%;
+}
+
 .reportes-table-ventas th:nth-child(3),
-.reportes-table-ventas td:nth-child(3) { width: 18%; }
+.reportes-table-ventas td:nth-child(3) {
+    width: 18%;
+}
+
 .reportes-table-ventas th:nth-child(4),
-.reportes-table-ventas td:nth-child(4) { width: 24%; }
+.reportes-table-ventas td:nth-child(4) {
+    width: 24%;
+}
 
 @media (max-width: 1280px) {
     .reportes-grid-two {
@@ -314,6 +365,7 @@
 }
 
 @media (max-width: 760px) {
+
     .reportes-filtros,
     .reportes-kpi-grid,
     .reportes-grid-two,
@@ -332,7 +384,33 @@
         font-size: 12px;
     }
 
-    .reportes-table th { font-size: 10px; }
-    .reportes-table small { font-size: 9px; }
-    .reportes-status { font-size: 9px; padding-inline: 6px; }
+    .reportes-table th {
+        font-size: 10px;
+    }
+
+    .reportes-table small {
+        font-size: 9px;
+    }
+
+    .reportes-status {
+        font-size: 9px;
+        padding-inline: 6px;
+    }
+}
+
+.reportes-discount-value,
+.reportes-discount-note {
+    color: #92400e;
+    font-weight: 800;
+}
+
+.reportes-discount-note {
+    display: block;
+    margin-top: 3px;
+    font-size: 10px;
+}
+
+.reportes-muted-value {
+    color: #94a3b8;
+    font-weight: 800;
 }
