@@ -110,8 +110,24 @@ CREATE TABLE IF NOT EXISTS licencia_local (
     fecha_fin_periodo TEXT,
 
     dias_prueba INTEGER NOT NULL DEFAULT 30,
+    dias_gracia INTEGER NOT NULL DEFAULT 3,
 
+    plan TEXT NOT NULL DEFAULT 'prueba',
+
+    fecha_ultimo_uso TEXT,
+    fecha_activacion TEXT,
+
+    huella_equipo TEXT,
     codigo_activacion TEXT,
+    codigo_firmado TEXT,
+    firma_valida INTEGER NOT NULL DEFAULT 0
+        CHECK (firma_valida IN (0, 1)),
+
+    origen_activacion TEXT NOT NULL DEFAULT 'local',
+    ultima_validacion_online TEXT,
+    ultimo_intento_online TEXT,
+
+    motivo_bloqueo TEXT,
     nota TEXT,
 
     creado_en TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
