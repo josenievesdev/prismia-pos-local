@@ -132,5 +132,12 @@ PrismiaRuntimeTest/
 # Entorno demo local para capturas landing
 # ==========================================
 PrismiaDemoLanding/
-# Reportes locales de auditoría
+# Reportes locales de auditorï¿½a
 AUDITORIA_*.md
+
+# ==========================================
+# Licencias Prismia - claves privadas locales
+# ==========================================
+tools/licencias/private/
+*.license-private.pem
+*.private.pem

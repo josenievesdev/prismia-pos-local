@@ -41,11 +41,25 @@ function procesarActivacion(req, res) {
         }));
     }
 
-    return res.status(400).render('licencia/activar', obtenerDatosVista({
+    const resultado = licenciaLocalService.activarConCodigoFirmado(
+        codigoActivacion
+    );
+
+    if (!resultado.ok) {
+        return res.status(400).render('licencia/activar', obtenerDatosVista({
+            titulo: 'Activar licencia',
+            error: resultado.mensaje,
+            valores: {
+                codigo_activacion: codigoActivacion,
+            },
+        }));
+    }
+
+    return res.render('licencia/activar', obtenerDatosVista({
         titulo: 'Activar licencia',
-        error: 'El ingreso de códigos ya está listo, pero la validación firmada se implementará en la siguiente tanda.',
+        mensajeExito: resultado.mensaje,
         valores: {
-            codigo_activacion: codigoActivacion,
+            codigo_activacion: '',
         },
     }));
 }

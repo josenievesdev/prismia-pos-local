@@ -1,5 +1,6 @@
 const licenciaRepository = require('./licenciaLocal.repository');
 const huellaEquipoService = require('./huellaEquipo.service');
+const licenciaFirmaService = require('./licenciaFirma.service');
 
 const ESTADOS_OPERATIVOS = {
     PRUEBA: 'prueba',
@@ -36,6 +37,18 @@ function formatearFechaSQLite(fecha) {
     const segundo = pad(fecha.getSeconds());
 
     return `${anio}-${mes}-${dia} ${hora}:${minuto}:${segundo}`;
+}
+
+function normalizarFechaPayloadParaSQLite(fecha) {
+    const fechaNormalizada = fecha instanceof Date
+        ? fecha
+        : new Date(fecha);
+
+    if (Number.isNaN(fechaNormalizada.getTime())) {
+        return null;
+    }
+
+    return formatearFechaSQLite(fechaNormalizada);
 }
 
 function sumarDias(fechaBase, dias) {
@@ -471,9 +484,63 @@ function obtenerResumenLicenciaLocal() {
     return resumen;
 }
 
+function activarConCodigoFirmado(codigoActivacion) {
+    const huellaEquipoActual = huellaEquipoService.obtenerHuellaEquipo();
+
+    const validacion = licenciaFirmaService.validarCodigoActivacion(
+        codigoActivacion,
+        {
+            huellaEquipoActual: huellaEquipoActual.huella,
+        }
+    );
+
+    if (!validacion.ok) {
+        return {
+            ok: false,
+            mensaje: validacion.mensaje,
+        };
+    }
+
+    const payload = validacion.payload;
+
+    const fechaInicioPeriodo = normalizarFechaPayloadParaSQLite(
+        validacion.fechaInicio
+    );
+
+    const fechaFinPeriodo = normalizarFechaPayloadParaSQLite(
+        validacion.fechaFin
+    );
+
+    if (!fechaInicioPeriodo || !fechaFinPeriodo) {
+        return {
+            ok: false,
+            mensaje: 'El código contiene fechas inválidas.',
+        };
+    }
+
+    licenciaRepository.activarLicenciaFirmada({
+        plan: String(payload.plan || 'mensual').toLowerCase(),
+        fechaInicioPeriodo,
+        fechaFinPeriodo,
+        diasGracia: validacion.diasGracia,
+        huellaEquipo: huellaEquipoActual.huella,
+        codigoActivacion: String(codigoActivacion || '').trim(),
+        codigoFirmado: String(codigoActivacion || '').trim(),
+        origenActivacion: payload.origen_activacion || 'local_firmada',
+        nota: `Licencia activada para ${payload.cliente || 'Cliente Prismia'} hasta ${fechaFinPeriodo}.`,
+    });
+
+    return {
+        ok: true,
+        mensaje: `Licencia activada correctamente hasta ${fechaFinPeriodo}.`,
+        payload,
+    };
+}
+
 module.exports = {
     ESTADOS_OPERATIVOS,
     obtenerResumenLicenciaLocal,
+    activarConCodigoFirmado,
     iniciarPruebaLocalSiHaceFalta,
     calcularDiasRestantes,
     fechaEstaVencida,

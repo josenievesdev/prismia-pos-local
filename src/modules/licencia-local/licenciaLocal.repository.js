@@ -126,6 +126,50 @@ function registrarAuditoria(datos) {
         .run(datos);
 }
 
+function activarLicenciaFirmada({
+    plan,
+    fechaInicioPeriodo,
+    fechaFinPeriodo,
+    diasGracia,
+    huellaEquipo,
+    codigoActivacion,
+    codigoFirmado,
+    origenActivacion,
+    nota,
+}) {
+    return db
+        .prepare(`
+            UPDATE licencia_local
+            SET
+                estado = 'activa',
+                plan = @plan,
+                fecha_inicio_periodo = @fecha_inicio_periodo,
+                fecha_fin_periodo = @fecha_fin_periodo,
+                dias_gracia = @dias_gracia,
+                fecha_activacion = datetime('now', 'localtime'),
+                huella_equipo = @huella_equipo,
+                codigo_activacion = @codigo_activacion,
+                codigo_firmado = @codigo_firmado,
+                firma_valida = 1,
+                origen_activacion = @origen_activacion,
+                motivo_bloqueo = NULL,
+                nota = @nota,
+                actualizado_en = datetime('now', 'localtime')
+            WHERE id_licencia = 1
+        `)
+        .run({
+            plan,
+            fecha_inicio_periodo: fechaInicioPeriodo,
+            fecha_fin_periodo: fechaFinPeriodo,
+            dias_gracia: diasGracia,
+            huella_equipo: huellaEquipo,
+            codigo_activacion: codigoActivacion,
+            codigo_firmado: codigoFirmado,
+            origen_activacion: origenActivacion,
+            nota,
+        });
+}
+
 module.exports = {
     obtenerLicenciaLocal,
     actualizarInicioPrueba,
@@ -133,4 +177,5 @@ module.exports = {
     actualizarUltimoUso,
     bloquearPorManipulacionFecha,
     registrarAuditoria,
+    activarLicenciaFirmada,
 };
