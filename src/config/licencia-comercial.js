@@ -1,4 +1,8 @@
-const numeroWhatsappSoporte = '573007102409';
+const numeroWhatsappActivacionPrismia = '573215394234';
+
+// Alias de compatibilidad.
+// Se conserva este nombre por si algún módulo existente lo importa todavía.
+const numeroWhatsappSoporte = numeroWhatsappActivacionPrismia;
 
 function limpiarLinea(valor, respaldo = 'No disponible') {
     const texto = String(valor || '').trim();
@@ -36,10 +40,11 @@ function construirMensajePagoReactivacion(datosLicencia = {}) {
 function obtenerUrlWhatsappPago(datosLicencia = {}) {
     const mensaje = construirMensajePagoReactivacion(datosLicencia);
 
-    return `https://wa.me/${numeroWhatsappSoporte}?text=${encodeURIComponent(mensaje)}`;
+    return `https://wa.me/${numeroWhatsappActivacionPrismia}?text=${encodeURIComponent(mensaje)}`;
 }
 
 module.exports = {
+    numeroWhatsappActivacionPrismia,
     numeroWhatsappSoporte,
     construirMensajePagoReactivacion,
     obtenerUrlWhatsappPago,
