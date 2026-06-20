@@ -1,0 +1,95 @@
+<% const licencia=typeof licenciaLocal !=='undefined' ? licenciaLocal : null; const urlPago=typeof whatsappPagoUrl
+    !=='undefined' ? whatsappPagoUrl : '#' ; const valoresFormulario=typeof valores !=='undefined' ? valores : {
+    codigo_activacion: '' }; const estadoOperativo=licencia?.estado_operativo || 'no_disponible' ; const
+    mensajeLicencia=licencia?.mensaje || 'No fue posible leer el estado de la licencia local.' ; %>
+
+    <section class="module-page">
+        <div class="module-header module-header-actions">
+            <div>
+                <p class="eyebrow">Activación</p>
+                <h2>Activar licencia</h2>
+                <p>
+                    Ingresa el código de activación entregado después del pago o renovación.
+                </p>
+            </div>
+
+            <div class="module-actions">
+                <a href="/licencia" class="btn-secondary">Ver licencia</a>
+                <a href="/dashboard" class="btn-secondary">Volver al inicio</a>
+            </div>
+        </div>
+
+        <% if (error) { %>
+            <div class="alert alert-error">
+                <%= error %>
+            </div>
+            <% } %>
+
+                <% if (mensajeExito) { %>
+                    <div class="alert alert-success">
+                        <%= mensajeExito %>
+                    </div>
+                    <% } %>
+
+                        <section class="module-card license-renew-card">
+                            <div class="license-renew-hero">
+                                <div class="license-renew-badge">Prismia POS Local</div>
+
+                                <h1>Activación manual de servicio</h1>
+
+                                <p class="license-renew-lead">
+                                    <%= mensajeLicencia %>
+                                        Cuando tengas tu código, pégalo aquí para renovar o activar el periodo de
+                                        servicio.
+                                </p>
+
+                                <div class="license-renew-date">
+                                    <span>Estado actual</span>
+                                    <strong>
+                                        <%= estadoOperativo %>
+                                    </strong>
+                                </div>
+                            </div>
+
+                            <div class="license-renew-content">
+                                <form class="form-panel" method="POST" action="/licencia/activar">
+                                    <div class="form-section">
+                                        <h3>Código de activación</h3>
+
+                                        <div class="form-group">
+                                            <label for="codigo_activacion">Código recibido *</label>
+
+                                            <textarea id="codigo_activacion" name="codigo_activacion" rows="5"
+                                                maxlength="5000" placeholder="Ej: PRM1.xxxxx.yyyyy"
+                                                required><%= valoresFormulario.codigo_activacion || '' %></textarea>
+
+                                            <small class="field-help">
+                                                En la siguiente tanda se validará que el código esté firmado y
+                                                corresponda a este equipo.
+                                            </small>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-actions">
+                                        <button type="submit" class="btn-primary">
+                                            Validar código
+                                        </button>
+
+                                        <a href="/licencia" class="btn-secondary">
+                                            Cancelar
+                                        </a>
+
+                                        <a href="<%= urlPago %>" class="btn-secondary" target="_blank" rel="noreferrer">
+                                            Solicitar renovación
+                                        </a>
+                                    </div>
+                                </form>
+
+                                <p class="license-renew-note">
+                                    Por ahora esta pantalla solo prepara el flujo. La activación real se implementará
+                                    con firma offline
+                                    para evitar códigos inventados o manipulaciones de fecha.
+                                </p>
+                            </div>
+                        </section>
+    </section>

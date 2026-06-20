@@ -1,0 +1,153 @@
+<% const licencia=typeof licenciaLocal !=='undefined' ? licenciaLocal : null; const urlPago=typeof whatsappPagoUrl
+    !=='undefined' ? whatsappPagoUrl : '#' ; const estadoOperativo=licencia?.estado_operativo || 'no_disponible' ; const
+    mensajeLicencia=licencia?.mensaje || 'No fue posible leer el estado de la licencia local.' ; const
+    fechaFinOperativa=licencia?.fecha_fin_operativa || 'No disponible' ; const fechaFinGracia=licencia?.fecha_fin_gracia
+    || 'No disponible' ; const diasRestantes=licencia?.dias_restantes ?? 'No disponible' ; const
+    diasGraciaRestantes=licencia?.dias_gracia_restantes ?? 'No disponible' ; const
+    permiteOperar=Boolean(licencia?.permite_operar); const bloqueaOperacion=Boolean(licencia?.bloquea_operacion); const
+    requiereActivacion=Boolean(licencia?.requiere_activacion); %>
+
+    <section class="module-page">
+        <div class="module-header module-header-actions">
+            <div>
+                <p class="eyebrow">Licenciamiento local</p>
+                <h2>Estado de licencia</h2>
+                <p>
+                    Consulta el estado operativo de Prismia, fechas de vencimiento y opciones de activación.
+                </p>
+            </div>
+
+            <div class="module-actions">
+                <a href="/dashboard" class="btn-secondary">Volver al inicio</a>
+                <a href="/licencia/activar" class="btn-primary">Ingresar código</a>
+            </div>
+        </div>
+
+        <% if (error) { %>
+            <div class="alert alert-error">
+                <%= error %>
+            </div>
+            <% } %>
+
+                <% if (mensajeExito) { %>
+                    <div class="alert alert-success">
+                        <%= mensajeExito %>
+                    </div>
+                    <% } %>
+
+                        <section class="module-card license-renew-card">
+                            <div class="license-renew-hero">
+                                <div class="license-renew-badge">Prismia POS Local</div>
+
+                                <h1>
+                                    <%= mensajeLicencia %>
+                                </h1>
+
+                                <p class="license-renew-lead">
+                                    Esta pantalla muestra el estado real que Prismia usa para permitir o bloquear la
+                                    operación.
+                                    La información del negocio permanece guardada localmente en este equipo.
+                                </p>
+
+                                <div class="license-renew-date">
+                                    <span>Estado operativo</span>
+                                    <strong>
+                                        <%= estadoOperativo %>
+                                    </strong>
+                                </div>
+                            </div>
+
+                            <div class="license-renew-content">
+                                <div class="license-renew-message">
+                                    <h3>Resumen de licencia</h3>
+
+                                    <ul class="license-renew-points">
+                                        <li>
+                                            Permite operar:
+                                            <strong>
+                                                <%= permiteOperar ? 'Sí' : 'No' %>
+                                            </strong>
+                                        </li>
+
+                                        <li>
+                                            Bloquea operación:
+                                            <strong>
+                                                <%= bloqueaOperacion ? 'Sí' : 'No' %>
+                                            </strong>
+                                        </li>
+
+                                        <li>
+                                            Requiere activación:
+                                            <strong>
+                                                <%= requiereActivacion ? 'Sí' : 'No' %>
+                                            </strong>
+                                        </li>
+
+                                        <li>
+                                            Plan:
+                                            <strong>
+                                                <%= licencia?.plan || 'No definido' %>
+                                            </strong>
+                                        </li>
+
+                                        <li>
+                                            Origen de activación:
+                                            <strong>
+                                                <%= licencia?.origen_activacion || 'local' %>
+                                            </strong>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <div class="license-renew-message" style="margin-top: 1.5rem;">
+                                    <h3>Fechas y días</h3>
+
+                                    <ul class="license-renew-points">
+                                        <li>
+                                            Fecha fin operativa:
+                                            <strong>
+                                                <%= fechaFinOperativa %>
+                                            </strong>
+                                        </li>
+
+                                        <li>
+                                            Fecha fin de gracia:
+                                            <strong>
+                                                <%= fechaFinGracia %>
+                                            </strong>
+                                        </li>
+
+                                        <li>
+                                            Días restantes:
+                                            <strong>
+                                                <%= diasRestantes %>
+                                            </strong>
+                                        </li>
+
+                                        <li>
+                                            Días de gracia restantes:
+                                            <strong>
+                                                <%= diasGraciaRestantes %>
+                                            </strong>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <div class="license-renew-actions">
+                                    <a href="/licencia/activar" class="btn-primary">
+                                        Ingresar código de activación
+                                    </a>
+
+                                    <a href="<%= urlPago %>" class="btn-secondary" target="_blank" rel="noreferrer">
+                                        Renovar por WhatsApp
+                                    </a>
+                                </div>
+
+                                <p class="license-renew-note">
+                                    En esta versión, Prismia funciona localmente. La activación manual quedará preparada
+                                    para códigos firmados
+                                    y luego podrá complementarse con validación online híbrida.
+                                </p>
+                            </div>
+                        </section>
+    </section>

@@ -34,6 +34,7 @@ const backupsRoutes = require('./modules/backups/backups.routes');
 const usuariosRoutes = require('./modules/usuarios/usuarios.routes');
 const proveedoresRoutes = require('./modules/proveedores/proveedores.routes');
 const comprasRoutes = require('./modules/compras/compras.routes');
+const licenciaRoutes = require('./modules/licencia-local/licenciaLocal.routes');
 
 const app = express();
 
@@ -379,6 +380,7 @@ app.get('/', (req, res) => {
  * Rutas de módulos
  */
 app.use('/auth', authRoutes);
+app.use('/licencia', licenciaRoutes);
 app.use('/dashboard', dashboardRoutes);
 app.use('/configuracion', configuracionRoutes);
 app.use('/categorias-productos', categoriasRoutes);

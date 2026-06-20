@@ -5,6 +5,7 @@ const RUTAS_PERMITIDAS = [
     '/auth',
     '/setup',
     '/salud',
+    '/licencia',
     '/backups',
     '/favicon.ico',
     '/css',
