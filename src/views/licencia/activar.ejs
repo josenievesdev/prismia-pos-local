@@ -1,7 +1,9 @@
 <% const licencia=typeof licenciaLocal !=='undefined' ? licenciaLocal : null; const urlPago=typeof whatsappPagoUrl
     !=='undefined' ? whatsappPagoUrl : '#' ; const valoresFormulario=typeof valores !=='undefined' ? valores : {
-    codigo_activacion: '' }; const estadoOperativo=licencia?.estado_operativo || 'no_disponible' ; const
-    mensajeLicencia=licencia?.mensaje || 'No fue posible leer el estado de la licencia local.' ; %>
+    codigo_activacion: '' , }; const estadoOperativo=licencia?.estado_operativo || 'no_disponible' ; const
+    mensajeLicencia=licencia?.mensaje || 'No fue posible leer el estado de la licencia local.' ; const
+    negocioLocal=licencia?.nombre_negocio_local || 'No registrado' ; const
+    clienteLicencia=licencia?.cliente_licencia_resuelto || licencia?.cliente_licencia || negocioLocal; %>
 
     <section class="module-page">
         <div class="module-header module-header-actions">
@@ -47,6 +49,20 @@
                                     <span>Estado actual</span>
                                     <strong>
                                         <%= estadoOperativo %>
+                                    </strong>
+                                </div>
+
+                                <div class="license-renew-date">
+                                    <span>Negocio local</span>
+                                    <strong>
+                                        <%= negocioLocal %>
+                                    </strong>
+                                </div>
+
+                                <div class="license-renew-date">
+                                    <span>Cliente licencia</span>
+                                    <strong>
+                                        <%= clienteLicencia %>
                                     </strong>
                                 </div>
 

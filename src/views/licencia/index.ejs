@@ -1,11 +1,14 @@
 <% const licencia=typeof licenciaLocal !=='undefined' ? licenciaLocal : null; const urlPago=typeof whatsappPagoUrl
     !=='undefined' ? whatsappPagoUrl : '#' ; const estadoOperativo=licencia?.estado_operativo || 'no_disponible' ; const
     mensajeLicencia=licencia?.mensaje || 'No fue posible leer el estado de la licencia local.' ; const
-    clienteLicencia=licencia?.cliente_licencia || 'No registrado' ; const planLicencia=licencia?.plan || 'No definido' ;
-    const fechaFinOperativa=licencia?.fecha_fin_operativa || 'No disponible' ; const
-    fechaFinGracia=licencia?.fecha_fin_gracia || 'No disponible' ; const fechaActivacion=licencia?.fecha_activacion
-    || 'No disponible' ; const diasRestantes=licencia?.dias_restantes ?? 'No disponible' ; const
-    diasGraciaRestantes=licencia?.dias_gracia_restantes ?? 'No disponible' ; const
+    negocioLocal=licencia?.nombre_negocio_local || 'No registrado' ; const
+    documentoNegocio=licencia?.documento_negocio_local || 'No registrado' ; const
+    telefonoNegocio=licencia?.telefono_negocio_local || 'No registrado' ; const
+    clienteLicencia=licencia?.cliente_licencia_resuelto || licencia?.cliente_licencia || negocioLocal; const
+    planLicencia=licencia?.plan || 'No definido' ; const fechaFinOperativa=licencia?.fecha_fin_operativa
+    || 'No disponible' ; const fechaFinGracia=licencia?.fecha_fin_gracia || 'No disponible' ; const
+    fechaActivacion=licencia?.fecha_activacion || 'No disponible' ; const diasRestantes=licencia?.dias_restantes
+    ?? 'No disponible' ; const diasGraciaRestantes=licencia?.dias_gracia_restantes ?? 'No disponible' ; const
     permiteOperar=Boolean(licencia?.permite_operar); const bloqueaOperacion=Boolean(licencia?.bloquea_operacion); const
     requiereActivacion=Boolean(licencia?.requiere_activacion); const firmaValida=Number(licencia?.firma_valida ||
     0)===1; const huellaCorta=licencia?.huella_equipo_actual_corta || 'No disponible' ; const
@@ -98,9 +101,23 @@
 
                                                     <ul class="license-renew-points">
                                                         <li>
-                                                            Cliente licenciado:
+                                                            Negocio local:
+                                                            <strong>
+                                                                <%= negocioLocal %>
+                                                            </strong>
+                                                        </li>
+
+                                                        <li>
+                                                            Cliente de licencia:
                                                             <strong>
                                                                 <%= clienteLicencia %>
+                                                            </strong>
+                                                        </li>
+
+                                                        <li>
+                                                            Documento/NIT:
+                                                            <strong>
+                                                                <%= documentoNegocio %>
                                                             </strong>
                                                         </li>
 
@@ -169,6 +186,13 @@
                                                             Huella corta:
                                                             <strong>
                                                                 <%= huellaCorta %>
+                                                            </strong>
+                                                        </li>
+
+                                                        <li>
+                                                            Teléfono negocio:
+                                                            <strong>
+                                                                <%= telefonoNegocio %>
                                                             </strong>
                                                         </li>
                                                     </ul>

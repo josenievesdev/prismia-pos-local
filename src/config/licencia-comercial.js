@@ -17,7 +17,13 @@ function limpiarLinea(valor, respaldo = 'No disponible') {
 function construirMensajePagoReactivacion(datosLicencia = {}) {
     const estado = limpiarLinea(datosLicencia.estado_operativo);
     const plan = limpiarLinea(datosLicencia.plan);
-    const cliente = limpiarLinea(datosLicencia.cliente_licencia, 'No registrado');
+    const negocioLocal = limpiarLinea(datosLicencia.nombre_negocio_local, 'No registrado');
+    const cliente = limpiarLinea(
+        datosLicencia.cliente_licencia_resuelto || datosLicencia.cliente_licencia,
+        negocioLocal
+    );
+    const documentoNegocio = limpiarLinea(datosLicencia.documento_negocio_local, 'No registrado');
+    const telefonoNegocio = limpiarLinea(datosLicencia.telefono_negocio_local, 'No registrado');
     const fechaFin = limpiarLinea(datosLicencia.fecha_fin_operativa);
     const diasRestantes = datosLicencia.dias_restantes ?? 'No disponible';
     const huellaEquipo = limpiarLinea(datosLicencia.huella_equipo_actual);
@@ -25,9 +31,12 @@ function construirMensajePagoReactivacion(datosLicencia = {}) {
     return [
         'Hola, quiero activar o renovar Prismia POS Local.',
         '',
+        `Negocio local: ${negocioLocal}`,
+        `Cliente de licencia: ${cliente}`,
+        `Documento/NIT: ${documentoNegocio}`,
+        `Teléfono negocio: ${telefonoNegocio}`,
         `Estado actual: ${estado}`,
         `Plan: ${plan}`,
-        `Cliente registrado: ${cliente}`,
         `Fecha de vencimiento: ${fechaFin}`,
         `Días restantes: ${diasRestantes}`,
         '',

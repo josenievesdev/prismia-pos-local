@@ -448,6 +448,18 @@ function obtenerResumenLicenciaLocal() {
     const calculo = calcularEstadoOperativo(licencia);
     const huellaEquipoActual = huellaEquipoService.obtenerHuellaEquipo();
 
+    const configuracionNegocio = licenciaRepository.obtenerConfiguracionNegocio();
+
+    const nombreNegocioLocal =
+        configuracionNegocio?.nombre_negocio
+        || configuracionNegocio?.nombre_comercial
+        || null;
+
+    const clienteLicenciaResuelto =
+        licencia.cliente_licencia
+        || nombreNegocioLocal
+        || 'No registrado';
+
     if (calculo.estadoOperativo === ESTADOS_OPERATIVOS.RELOJ_MANIPULADO) {
         licenciaRepository.bloquearPorManipulacionFecha({
             fechaActual: formatearFechaSQLite(new Date()),
@@ -480,6 +492,16 @@ function obtenerResumenLicenciaLocal() {
                 : licencia.motivo_bloqueo,
         plan: licencia.plan,
         cliente_licencia: licencia.cliente_licencia,
+        cliente_licencia_resuelto: clienteLicenciaResuelto,
+
+        negocio_local: configuracionNegocio || null,
+        nombre_negocio_local: nombreNegocioLocal,
+        nombre_comercial_local: configuracionNegocio?.nombre_comercial || null,
+        documento_negocio_local: configuracionNegocio?.documento || null,
+        telefono_negocio_local: configuracionNegocio?.telefono || null,
+        correo_negocio_local: configuracionNegocio?.correo || null,
+        direccion_negocio_local: configuracionNegocio?.direccion || null,
+
         fecha_activacion: licencia.fecha_activacion,
         fecha_emision_codigo: licencia.fecha_emision_codigo,
         firma_valida: licencia.firma_valida,

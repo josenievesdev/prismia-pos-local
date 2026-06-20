@@ -36,6 +36,28 @@ function obtenerLicenciaLocal() {
         .get();
 }
 
+function obtenerConfiguracionNegocio() {
+    return db
+        .prepare(`
+            SELECT
+                id_configuracion,
+                nombre_negocio,
+                nombre_comercial,
+                tipo_documento,
+                documento,
+                direccion,
+                telefono,
+                correo,
+                moneda,
+                estado
+            FROM configuracion_negocio
+            WHERE estado = 'activo'
+            ORDER BY id_configuracion ASC
+            LIMIT 1
+        `)
+        .get();
+}
+
 function actualizarInicioPrueba({ fechaInicioPrueba, fechaFinPrueba }) {
     return db
         .prepare(`
@@ -184,6 +206,7 @@ function activarLicenciaFirmada({
 
 module.exports = {
     obtenerLicenciaLocal,
+    obtenerConfiguracionNegocio,
     actualizarInicioPrueba,
     actualizarEstado,
     actualizarUltimoUso,
