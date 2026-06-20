@@ -1210,18 +1210,6 @@ textarea {
     padding-top: 8px;
 }
 
-.alert-success {
-    background: #f0fdf4;
-    color: #166534;
-    border: 1px solid #bbf7d0;
-}
-
-.alert-warning {
-    background: #fffbeb;
-    color: #92400e;
-    border: 1px solid #fde68a;
-}
-
 @media (max-width: 720px) {
     .form-grid {
         grid-template-columns: 1fr;
@@ -1505,16 +1493,6 @@ textarea {
     line-height: 1.35;
 }
 
-.badge-warning {
-    background: #fef3c7;
-    color: #92400e;
-}
-
-.badge-danger {
-    background: #fee2e2;
-    color: #991b1b;
-}
-
 .checkbox-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1694,7 +1672,7 @@ textarea {
 
 .license-renew-date span {
     font-size: 0.82rem;
-    color: var(--color-texto-suave);
+    color: var(--color-muted);
 }
 
 .license-renew-date strong {
@@ -1742,7 +1720,7 @@ textarea {
     margin: 1rem 0 0;
     font-size: 0.92rem;
     line-height: 1.6;
-    color: var(--color-texto-suave);
+    color: var(--color-muted);
 }
 
 @media (max-width: 768px) {
