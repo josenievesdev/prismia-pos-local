@@ -6357,3 +6357,26 @@
 .ventas-discount-row strong {
     color: #92400e;
 }
+
+.ventas-detail-discount-cell {
+    white-space: nowrap;
+}
+
+.ventas-detail-discount-cell strong {
+    display: block;
+    color: #92400e;
+    font-weight: 900;
+}
+
+.ventas-detail-discount-cell small {
+    display: block;
+    margin-top: 2px;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.ventas-muted-value {
+    color: #94a3b8;
+    font-weight: 800;
+}

@@ -279,6 +279,7 @@
                                                             <th>Producto</th>
                                                             <th class="text-right">Cantidad</th>
                                                             <th class="text-right">Precio</th>
+                                                            <th class="text-right">Desc. unit.</th>
                                                             <th class="text-right">IVA</th>
                                                             <th class="text-right">Total</th>
                                                         </tr>
@@ -305,6 +306,23 @@
 
                                                                 <td class="text-right">
                                                                     <%= dinero(item.precio_unitario) %>
+                                                                </td>
+
+                                                                <td class="text-right ventas-detail-discount-cell">
+                                                                    <% const
+                                                                        descuentoLineaItem=Number(item.descuento_unitario
+                                                                        || 0) * Number(item.cantidad || 0); %>
+
+                                                                        <% if (descuentoLineaItem> 0) { %>
+                                                                            <strong>
+                                                                                <%= dinero(item.descuento_unitario) %>
+                                                                            </strong>
+                                                                            <small>Línea: <%= dinero(descuentoLineaItem)
+                                                                                    %></small>
+                                                                            <% } else { %>
+                                                                                <span
+                                                                                    class="ventas-muted-value">—</span>
+                                                                                <% } %>
                                                                 </td>
 
                                                                 <td class="text-right">

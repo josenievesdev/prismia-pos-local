@@ -9,7 +9,9 @@
     mayuscula(valor, defecto='' ) { return texto(valor, defecto).toUpperCase(); } function obtenerCantidadItem(item) {
     return ( item.cantidad ?? item.cantidad_vendida ?? item.cantidad_detalle ?? item.unidades ?? 0 ); } function
     obtenerUnidadItem(item) { return texto( item.unidad_abreviatura || item.unidad_medida_abreviatura ||
-    item.unidad_nombre, 'und' ); } const numeroComprobante=texto(comprobante.numero,
+    item.unidad_nombre, 'und' ); } function obtenerDescuentoUnitarioItem(item) { return Number(item.descuento_unitario
+    || 0); } function obtenerDescuentoLineaItem(item) { return obtenerDescuentoUnitarioItem(item) *
+    Number(obtenerCantidadItem(item) || 0); } const numeroComprobante=texto(comprobante.numero,
     texto(venta.numero_venta, 'FV-SIN-NUMERO' )); const estadoVenta=mayuscula(venta.estado, 'pagada' ); const
     nombreComercio=texto(comercio.nombre_comercio, 'Comercio sin nombre' ); const
     tipoDocumentoComercio=texto(comercio.tipo_documento, 'NIT' ); const documentoComercio=texto(comercio.nit, '' );
@@ -153,6 +155,14 @@
                                             · Sin IVA
                                         <% } %>
                                     </small>
+
+                                    <% const descuentoLineaItem = obtenerDescuentoLineaItem(item); %>
+
+                                        <% if (descuentoLineaItem > 0) { %>
+                                            <small class="ticket-item-discount">
+                                                Desc. unit. <%= pesos(item.descuento_unitario) %> · Desc. línea <%= pesos(descuentoLineaItem) %>
+                                            </small>
+                                            <% } %>
                                 </td>
 
                                 <td class="right">

@@ -211,6 +211,11 @@ body {
     line-height: 1.25;
 }
 
+.ticket-table td small.ticket-item-discount {
+    color: #92400e;
+    font-weight: 700;
+}
+
 .ticket-table .right {
     text-align: right;
     white-space: nowrap;
