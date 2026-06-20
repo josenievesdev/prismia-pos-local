@@ -168,6 +168,22 @@ function registrarAuditoriaMigracion() {
         return;
     }
 
+    const auditoriaExistente = db
+        .prepare(`
+            SELECT id_auditoria
+            FROM auditoria
+            WHERE accion = 'migracion_ampliar_licencia_mensualidades'
+              AND tabla_afectada = 'licencia_local'
+              AND id_registro_afectado = 1
+            LIMIT 1
+        `)
+        .get();
+
+    if (auditoriaExistente) {
+        console.log('Auditoría de migración 039 ya existe. Se omite.');
+        return;
+    }
+
     db.prepare(`
         INSERT INTO auditoria (
             id_usuario,
