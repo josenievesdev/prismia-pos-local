@@ -204,6 +204,33 @@ function activarLicenciaFirmada({
         });
 }
 
+function activarLicenciaFirmadaConAuditoria({ datosLicencia, datosAuditoria }) {
+    if (!datosLicencia || !datosAuditoria) {
+        throw new Error('Datos incompletos para activar licencia con auditoría.');
+    }
+
+    const ejecutarTransaccion = db.transaction(() => {
+        const resultadoActivacion = activarLicenciaFirmada(datosLicencia);
+
+        if (!resultadoActivacion || resultadoActivacion.changes !== 1) {
+            throw new Error('No fue posible actualizar la licencia local durante la activación.');
+        }
+
+        const resultadoAuditoria = registrarAuditoria(datosAuditoria);
+
+        if (!resultadoAuditoria || resultadoAuditoria.changes !== 1) {
+            throw new Error('No fue posible registrar la auditoría de activación de licencia.');
+        }
+
+        return {
+            resultadoActivacion,
+            resultadoAuditoria,
+        };
+    });
+
+    return ejecutarTransaccion();
+}
+
 module.exports = {
     obtenerLicenciaLocal,
     obtenerConfiguracionNegocio,
@@ -213,4 +240,5 @@ module.exports = {
     bloquearPorManipulacionFecha,
     registrarAuditoria,
     activarLicenciaFirmada,
+    activarLicenciaFirmadaConAuditoria,
 };
