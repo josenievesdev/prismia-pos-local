@@ -1,21 +1,37 @@
 <% const licencia=typeof licenciaLocal !=='undefined' ? licenciaLocal : null; const urlPago=typeof whatsappPagoUrl
-    !=='undefined' ? whatsappPagoUrl : '#' ; const estadoOperativo=licencia && licencia.estado_operativo ?
-    licencia.estado_operativo : 'no_disponible' ; const fechaFin=licencia && licencia.fecha_fin_operativa ?
-    licencia.fecha_fin_operativa : licencia && licencia.fecha_fin_prueba ? licencia.fecha_fin_prueba : 'No disponible' ;
-    const mensajeLicencia=licencia && licencia.mensaje ? licencia.mensaje
-    : 'La licencia local requiere revisión para continuar operando.' ; %>
+    !=='undefined' ? whatsappPagoUrl : '#' ; const estadoOperativo=licencia?.estado_operativo || 'no_disponible' ; const
+    fechaFin=licencia?.fecha_fin_operativa || licencia?.fecha_fin_periodo || licencia?.fecha_fin_prueba
+    || 'No disponible' ; const fechaFinGracia=licencia?.fecha_fin_gracia || 'No disponible' ; const
+    mensajeLicencia=licencia?.mensaje || 'La licencia local requiere revisión para continuar operando.' ; const
+    negocioLocal=licencia?.nombre_negocio_local || 'No registrado' ; const
+    clienteLicencia=licencia?.cliente_licencia_resuelto || licencia?.cliente_licencia || negocioLocal || 'No registrado'
+    ; const documentoNegocio=licencia?.documento_negocio_local || 'No registrado' ; const
+    telefonoNegocio=licencia?.telefono_negocio_local || 'No registrado' ; const
+    correoNegocio=licencia?.correo_negocio_local || 'No registrado' ; const planLicencia=licencia?.plan || 'No definido'
+    ; const diasRestantes=licencia?.dias_restantes ?? 'No disponible' ; const
+    diasGraciaRestantes=licencia?.dias_gracia_restantes ?? 'No disponible' ; const
+    huellaCorta=licencia?.huella_equipo_actual_corta || 'No disponible' ; const
+    huellaCompleta=licencia?.huella_equipo_actual || '' ; const valoresFormulario=typeof valores !=='undefined' &&
+    valores ? valores : { codigo_activacion: '' }; const estadoLabels={ prueba: 'Prueba activa' ,
+    activa: 'Licencia activa' , gracia: 'Periodo de gracia' , vencida: 'Licencia vencida' ,
+    bloqueada: 'Licencia bloqueada' , reloj_manipulado: 'Fecha del sistema irregular' ,
+    sin_registro: 'Sin registro de licencia' , no_disponible: 'Licencia no disponible' , }; const
+    estadoTitulo=estadoLabels[estadoOperativo] || 'Licencia requiere activación' ; %>
 
     <section class="module-page">
         <section class="module-card license-renew-card">
             <div class="license-renew-hero">
                 <div class="license-renew-badge">Prismia POS Local</div>
 
-                <h1>Tu licencia requiere activación</h1>
+                <h1>
+                    <%= estadoTitulo %>
+                </h1>
 
                 <p class="license-renew-lead">
                     <%= mensajeLicencia %>
-                        Tu información sigue guardada localmente. Para continuar usando los módulos operativos,
-                        debes activar o renovar el servicio.
+                        Tu información sigue guardada localmente en este equipo. Para reactivar ventas, caja,
+                        inventario, reportes y demás módulos operativos, solicita la renovación o ingresa un código
+                        válido.
                 </p>
 
                 <div class="license-renew-date">
@@ -24,46 +40,218 @@
                         <%= fechaFin %>
                     </strong>
                 </div>
+
+                <div class="license-renew-date">
+                    <span>Estado actual</span>
+                    <strong>
+                        <%= estadoOperativo %>
+                    </strong>
+                </div>
+
+                <div class="license-renew-date">
+                    <span>Huella del equipo</span>
+                    <strong>
+                        <%= huellaCorta %>
+                    </strong>
+                </div>
             </div>
 
             <div class="license-renew-content">
-                <div class="license-renew-message">
-                    <h3>Activa Prismia para continuar operando</h3>
+                <% if (typeof error !=='undefined' && error) { %>
+                    <div class="alert alert-error">
+                        <%= error %>
+                    </div>
+                    <% } %>
 
-                    <p>
-                        Prismia conserva la información del negocio en este equipo.
-                        Para reactivar ventas, caja, inventario, reportes y demás módulos,
-                        puedes escribirnos por WhatsApp y recibir el proceso de pago y activación.
-                    </p>
+                        <% if (typeof mensajeExito !=='undefined' && mensajeExito) { %>
+                            <div class="alert alert-success">
+                                <%= mensajeExito %>
+                            </div>
+                            <% } %>
 
-                    <ul class="license-renew-points">
-                        <li>Estado actual: <strong>
-                                <%= estadoOperativo %>
-                            </strong>.</li>
-                        <li>Tu información sigue guardada localmente.</li>
-                        <li>Retoma el trabajo normal apenas actives o renueves el servicio.</li>
-                    </ul>
-                </div>
+                                <div class="license-renew-message">
+                                    <h3>Datos para renovación</h3>
 
-                <div class="license-renew-actions">
-                    <a href="/licencia/activar" class="btn-primary">
-                        Ingresar código
-                    </a>
+                                    <p>
+                                        Estos son los datos que soporte necesita para generar el código correcto.
+                                        El botón de WhatsApp ya los envía completos, porque aparentemente pedirle al
+                                        cliente que copie
+                                        todo a mano era una prueba de resistencia innecesaria.
+                                    </p>
 
-                    <a href="<%= urlPago %>" class="btn-secondary" target="_blank" rel="noreferrer">
-                        Activar por WhatsApp
-                    </a>
+                                    <ul class="license-renew-points">
+                                        <li>
+                                            Negocio local:
+                                            <strong>
+                                                <%= negocioLocal %>
+                                            </strong>
+                                        </li>
 
-                    <form method="POST" action="/auth/logout">
-                        <button type="submit" class="btn-secondary">
-                            Cerrar sesión
-                        </button>
-                    </form>
-                </div>
+                                        <li>
+                                            Cliente de licencia:
+                                            <strong>
+                                                <%= clienteLicencia %>
+                                            </strong>
+                                        </li>
 
-                <p class="license-renew-note">
-                    Si ya realizaste el pago o deseas continuar con Prismia, escríbenos y te ayudamos con la activación.
-                </p>
+                                        <li>
+                                            Documento/NIT:
+                                            <strong>
+                                                <%= documentoNegocio %>
+                                            </strong>
+                                        </li>
+
+                                        <li>
+                                            Teléfono:
+                                            <strong>
+                                                <%= telefonoNegocio %>
+                                            </strong>
+                                        </li>
+
+                                        <li>
+                                            Correo:
+                                            <strong>
+                                                <%= correoNegocio %>
+                                            </strong>
+                                        </li>
+
+                                        <li>
+                                            Plan:
+                                            <strong>
+                                                <%= planLicencia %>
+                                            </strong>
+                                        </li>
+
+                                        <li>
+                                            Días restantes:
+                                            <strong>
+                                                <%= diasRestantes %>
+                                            </strong>
+                                        </li>
+
+                                        <li>
+                                            Días de gracia restantes:
+                                            <strong>
+                                                <%= diasGraciaRestantes %>
+                                            </strong>
+                                        </li>
+
+                                        <li>
+                                            Fin de gracia:
+                                            <strong>
+                                                <%= fechaFinGracia %>
+                                            </strong>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <div class="license-renew-message" style="margin-top: 1.5rem;">
+                                    <h3>Huella técnica del equipo</h3>
+
+                                    <p>
+                                        Esta huella identifica el equipo donde está instalado Prismia. El código firmado
+                                        debe generarse
+                                        para esta huella específica.
+                                    </p>
+
+                                    <div class="license-renew-date"
+                                        style="display: flex; max-width: 100%; word-break: break-all;">
+                                        <span>Huella completa</span>
+                                        <strong>
+                                            <%= huellaCompleta || 'No disponible' %>
+                                        </strong>
+                                    </div>
+                                </div>
+
+                                <form class="form-panel" method="POST" action="/licencia/activar"
+                                    style="margin-top: 1.5rem;">
+                                    <div class="form-section">
+                                        <h3>Ingresar código de activación</h3>
+
+                                        <div class="form-group">
+                                            <label for="codigo_activacion">Código recibido *</label>
+
+                                            <textarea id="codigo_activacion" name="codigo_activacion" rows="5"
+                                                maxlength="5000" placeholder="Ej: PRM1.xxxxx.yyyyy"
+                                                required><%= valoresFormulario.codigo_activacion || '' %></textarea>
+
+                                            <small class="field-help">
+                                                Prismia validará localmente la firma digital, la vigencia y la huella
+                                                del equipo.
+                                            </small>
+                                        </div>
+                                    </div>
+
+                                    <div class="license-renew-actions">
+                                        <button type="submit" class="btn-primary">
+                                            Validar código
+                                        </button>
+
+                                        <button type="button" class="btn-secondary"
+                                            data-copy-huella="<%= huellaCompleta %>">
+                                            Copiar huella
+                                        </button>
+
+                                        <a href="<%= urlPago %>" class="btn-secondary" target="_blank" rel="noreferrer">
+                                            Solicitar renovación por WhatsApp
+                                        </a>
+
+                                        <a href="/licencia" class="btn-secondary">
+                                            Ver estado de licencia
+                                        </a>
+
+                                        <form method="POST" action="/auth/logout">
+                                            <button type="submit" class="btn-secondary">
+                                                Cerrar sesión
+                                            </button>
+                                        </form>
+                                    </div>
+                                </form>
+
+                                <p class="license-renew-note">
+                                    Prismia no elimina ni bloquea la información del negocio. El bloqueo solo limita la
+                                    operación
+                                    hasta que se active una licencia válida.
+                                </p>
             </div>
         </section>
     </section>
+
+    <script>
+        document.querySelectorAll('[data-copy-huella]').forEach((boton) => {
+            boton.addEventListener('click', async () => {
+                const huella = boton.getAttribute('data-copy-huella') || '';
+
+                if (!huella) {
+                    boton.textContent = 'Huella no disponible';
+                    return;
+                }
+
+                try {
+                    await navigator.clipboard.writeText(huella);
+                    boton.textContent = 'Huella copiada';
+
+                    setTimeout(() => {
+                        boton.textContent = 'Copiar huella';
+                    }, 1800);
+                } catch (error) {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = huella;
+                    textarea.setAttribute('readonly', '');
+                    textarea.style.position = 'absolute';
+                    textarea.style.left = '-9999px';
+
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+
+                    boton.textContent = 'Huella copiada';
+
+                    setTimeout(() => {
+                        boton.textContent = 'Copiar huella';
+                    }, 1800);
+                }
+            });
+        });
+    </script>
