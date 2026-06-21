@@ -830,9 +830,235 @@ Estos datos son suficientes para crear un primer panel de control de clientes.
 
 ---
 
-## 16. Futuras mejoras recomendadas
+## 16. Riesgos aceptados del licenciamiento V1 local/offline
 
-### 16.1 Campos remotos
+El licenciamiento V1 de Prismia POS Local fue diseñado para un piloto controlado y para operación local en Windows sin dependencia obligatoria de internet.
+
+Por esa razón, existen algunas limitaciones aceptadas para esta versión. Estas limitaciones no bloquean el piloto V1, pero deben quedar documentadas y reforzarse en una versión posterior antes de una operación comercial más amplia.
+
+---
+
+### 16.1 SQLite local editable por usuario técnico
+
+El estado de la licencia se guarda en la base local SQLite, específicamente en la tabla:
+
+```txt
+licencia_local
+```
+
+Esto permite que Prismia funcione sin internet y conserve una operación local simple.
+
+Riesgo aceptado:
+
+```txt
+Un usuario con conocimientos técnicos, acceso al equipo y acceso directo al archivo SQLite podría intentar modificar manualmente campos de licencia.
+```
+
+Impacto:
+
+```txt
+No afecta el funcionamiento normal del cliente legítimo.
+No compromete la clave privada.
+No permite generar códigos firmados válidos.
+Pero sí podría alterar el estado local si el usuario manipula directamente la base de datos.
+```
+
+Decisión V1:
+
+```txt
+Riesgo aceptado para piloto controlado.
+No bloquea entrega V1.
+Debe reforzarse en V1.1/V2.
+```
+
+Mejoras futuras recomendadas:
+
+```txt
+firmar el estado local de licencia;
+agregar HMAC interno;
+validar integridad del registro licencia_local;
+registrar huellas de cambios sospechosos;
+comparar estado local contra panel central cuando exista internet.
+```
+
+---
+
+### 16.2 Limitación natural del modelo offline
+
+Prismia V1 valida códigos firmados offline usando clave pública embebida en la aplicación.
+
+Esto permite:
+
+```txt
+activar sin internet;
+validar firma digital;
+validar huella del equipo;
+validar fechas;
+validar producto;
+validar plan;
+validar vigencia.
+```
+
+Pero, al ser un modelo offline, Prismia no puede consultar en tiempo real:
+
+```txt
+si el cliente pagó o no pagó en el panel central;
+si el código fue revocado después de emitirse;
+si el cliente fue bloqueado comercialmente desde soporte;
+si existe una instalación duplicada registrada en otro equipo.
+```
+
+Decisión V1:
+
+```txt
+La validación offline es suficiente para piloto controlado.
+La validación comercial en tiempo real queda para el futuro panel central.
+```
+
+---
+
+### 16.3 Replay limitado si se elimina o restaura la base local
+
+Prismia rechaza códigos repetidos usando campos como:
+
+```txt
+codigo_firmado
+ultimo_nonce_licencia
+fecha_emision_codigo
+fecha_fin_periodo
+```
+
+Sin embargo, si una persona elimina, reemplaza o restaura una base SQLite antigua, podría intentar reutilizar información anterior.
+
+Impacto:
+
+```txt
+El sistema sigue validando firma, huella, fechas y vigencia.
+Pero la memoria local de códigos usados depende de la base SQLite actual.
+```
+
+Decisión V1:
+
+```txt
+Riesgo aceptado para piloto controlado.
+Debe reforzarse con panel central y registro remoto de códigos emitidos/usados.
+```
+
+---
+
+### 16.4 Comportamiento fail-open del middleware
+
+El middleware de licencia está diseñado para no romper completamente Prismia ante errores inesperados de lectura o validación.
+
+Riesgo aceptado:
+
+```txt
+Si ocurre una excepción interna inesperada en el middleware de licencia, el sistema puede permitir continuar temporalmente para evitar bloqueo total por error técnico.
+```
+
+Justificación V1:
+
+```txt
+En piloto controlado se prioriza no dejar al cliente sin acceso por una falla accidental del middleware.
+```
+
+Mejora futura recomendada:
+
+```txt
+registrar el error;
+mostrar advertencia administrativa;
+limitar el fail-open a rutas no críticas;
+endurecer bloqueo en V1.1/V2;
+agregar auditoría de errores de middleware.
+```
+
+---
+
+### 16.5 Columnas online preparadas pero aún sin uso completo
+
+La tabla `licencia_local` ya incluye campos pensados para una futura validación online:
+
+```txt
+ultima_validacion_online
+ultimo_intento_online
+```
+
+En V1 estos campos existen como preparación técnica, pero todavía no ejecutan una sincronización real con un servidor central.
+
+Decisión V1:
+
+```txt
+Se dejan como base futura.
+No se consideran error ni deuda crítica.
+La integración real corresponde al panel central de clientes/licencias.
+```
+
+---
+
+### 16.6 Efecto secundario de fecha_ultimo_uso
+
+El resumen de licencia puede actualizar el campo:
+
+```txt
+fecha_ultimo_uso
+```
+
+Esto permite detectar retrocesos básicos del reloj del sistema.
+
+Riesgo técnico:
+
+```txt
+Un método de consulta termina generando un pequeño efecto secundario de escritura.
+```
+
+Impacto:
+
+```txt
+No afecta la operación normal.
+Ayuda a detectar manipulación básica de fecha.
+Pero conceptualmente debería separarse mejor en una rutina explícita de validación/uso.
+```
+
+Decisión V1:
+
+```txt
+Aceptado para piloto controlado.
+Recomendado separar en V1.1 como método explícito de registro de uso o validación temporal.
+```
+
+---
+
+### 16.7 Activación y auditoría aún no completamente atómicas
+
+La activación firmada actualiza la licencia y registra auditoría de activación.
+
+Riesgo técnico:
+
+```txt
+Si ocurre un fallo justo entre la actualización de licencia y el registro de auditoría, podría quedar la licencia activada sin el registro completo de auditoría correspondiente.
+```
+
+Impacto:
+
+```txt
+No compromete la firma.
+No compromete la huella.
+No permite activar códigos inválidos.
+Pero puede afectar la trazabilidad histórica de una activación puntual.
+```
+
+Decisión V1:
+
+```txt
+No bloquea piloto.
+Debe corregirse en la siguiente tanda haciendo activación + auditoría dentro de una transacción.
+```
+
+---
+
+## 17. Futuras mejoras recomendadas
+
+### 17.1 Campos remotos
 
 Agregar en una futura migración:
 
@@ -846,7 +1072,7 @@ ultima_sincronizacion
 
 ---
 
-### 16.2 Validación híbrida online
+### 17.2 Validación híbrida online
 
 Más adelante Prismia puede consultar un backend remoto para validar:
 
@@ -862,7 +1088,7 @@ Si no hay internet, Prismia puede operar usando la licencia local y el periodo d
 
 ---
 
-### 16.3 Panel central
+### 17.3 Panel central
 
 El panel central debería permitir:
 
@@ -879,7 +1105,7 @@ ver historial de renovaciones
 
 ---
 
-### 16.4 Automatización WhatsApp
+### 17.4 Automatización WhatsApp
 
 A futuro se puede integrar envío automático de mensajes de renovación.
 
@@ -887,7 +1113,7 @@ Por ahora, el botón de WhatsApp deja el mensaje preparado para atención manual
 
 ---
 
-## 17. Estado final V1
+## 18. Estado final V1
 
 El licenciamiento V1 queda apto para piloto controlado con activación manual firmada.
 
