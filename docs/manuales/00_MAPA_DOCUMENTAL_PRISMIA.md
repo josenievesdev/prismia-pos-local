@@ -7,7 +7,8 @@
 > Cuando un dato no se pudo confirmar directamente desde el código se marca como
 > **Pendiente de confirmar**.
 >
-> Fecha de elaboración: 2026-06-22
+> Fecha de elaboración: 2026-06-22 · Ajuste (tanda 1.1): 2026-06-24 · Versión: `0.1 ajustada`
+> (ver sección 16 "Estado de revisión del mapa").
 
 ---
 
@@ -91,7 +92,7 @@ aunque no todos tienen los cuatro archivos.
 | `configuracion` | Datos del negocio, moneda, IVA, mensaje de recibo. | `configuracion.*` (routes/controller/service/repository) | `/configuracion` | `configuracion/index.ejs` | Confirmado |
 | `usuarios` | Administración de usuarios (crear/editar/activar/desactivar). | `usuarios.*` | `/usuarios` | `usuarios/index.ejs`, `formulario.ejs` | Confirmado |
 | `clientes` | Gestión de clientes y datos de facturación. | `clientes.*` + `public/js/clientes.js` | `/clientes` | `clientes/index.ejs`, `form.ejs` | Confirmado |
-| `productos` | Productos, precios, costos, IVA, stock, imagen. | `productos.repository.js`, `productos.routes.js` (controller/service **Pendiente de confirmar**) | `/productos` | `productos/index.ejs`, `formulario.ejs` | Confirmado |
+| `productos` | Productos, precios, costos, IVA, stock, imagen. | `productos.controller.js`, `productos.service.js`, `productos.repository.js`, `productos.routes.js` | `/productos` | `productos/index.ejs`, `formulario.ejs` | Confirmado |
 | `categorias-productos` | Categorías de productos. | `categorias.*` | `/categorias-productos` | `categorias-productos/index.ejs`, `formulario.ejs` | Confirmado |
 | `catalogos` | Catálogos de apoyo (departamentos / municipios DIVIPOLA). | `catalogos.*` | `/catalogos` | (API, sin vista propia) | Confirmado |
 | `inventario` | Stock, ajustes, historial, conteos físicos, reportes. | `inventario.controller.js`, `inventario.service.js`, `inventario.routes.js` | `/inventario` | `inventario/index.ejs`, `ajuste.ejs`, `historial.ejs`, `reportes.ejs`, `conteos/` | Confirmado |
@@ -111,9 +112,9 @@ Notas:
 * Los módulos solicitados como `gastos` no son un módulo independiente: los **gastos** se gestionan
   dentro de **caja** (`/caja/gasto`) y existen tablas `gastos` y `categorias_gasto`.
 * `categorias` corresponde al módulo `categorias-productos`.
-* En algunos módulos no se encontró `controller`/`service` con nombre estándar
-  (p. ej. `productos`, `compras`); la lógica puede estar concentrada en `repository`/`routes`.
-  **Pendiente de confirmar** la distribución exacta por inspección detallada.
+* **Confirmado (tanda 1.1):** `productos` y `compras` **sí** tienen los cuatro archivos
+  (`controller`, `service`, `repository`, `routes`). La nota previa que los marcaba como
+  incompletos queda corregida.
 
 ---
 
@@ -245,16 +246,28 @@ POST /:id/activar
 POST /:id/desactivar
 ```
 
-**productos** (`/productos`)
+**productos** (`/productos`)  — requiere rol `administrador` o `inventario`
 ```txt
 GET  /
 GET  /nuevo
+POST /nuevo            (sube imagen con multer: campo imagen_producto)
 GET  /:id/editar
+POST /:id/editar       (sube imagen con multer: campo imagen_producto)
 POST /:id/activar
 POST /:id/desactivar
 ```
-> El POST de creación/edición de productos no apareció como `router.post('/...')` directo
-> (puede usar middleware de carga de imagen con otra forma). **Pendiente de confirmar.**
+> **Confirmado (tanda 1.1)** en `productos.routes.js`:
+> * **Crear producto:** `POST /productos/nuevo` → `productosController.crearProducto`.
+> * **Editar producto:** `POST /productos/:id/editar` → `productosController.actualizarProducto`.
+> * **Activar producto:** `POST /productos/:id/activar`.
+> * **Desactivar producto:** `POST /productos/:id/desactivar`.
+> * **Subir imagen:** se maneja con **`multer`** (`uploadImagenProducto.single('imagen_producto')`)
+>   como middleware *antes* del controller, por eso los POST de crear/editar no eran visibles
+>   en un grep simple de `router.post('/...')`. La imagen se guarda en disco
+>   (`multer.diskStorage`) dentro de `runtime-paths.obtenerCarpetaUploadsProductos()`
+>   (servida bajo `/uploads/productos/`), con nombre seguro `producto-<timestamp>-<rand><ext>`,
+>   tipos permitidos **JPG / PNG / WEBP** y límite de **2 MB**. El controller también soporta
+>   quitar la imagen (`quitar_imagen_producto`) y elimina de forma segura el archivo anterior.
 
 **catalogos** (`/catalogos`)
 ```txt
@@ -379,7 +392,7 @@ GET  /:id
 GET  /
 ```
 
-**backups** (`/backups`)
+**backups** (`/backups`)  — requiere rol `administrador`; las acciones de soporte exigen modo soporte desbloqueado
 ```txt
 GET  /
 GET  /soporte
@@ -387,8 +400,13 @@ POST /soporte/desbloquear
 POST /soporte/cerrar
 POST /soporte/crear
 POST /soporte/abrir-carpeta
+POST /soporte/restaurar          (multer: archivo_backup; requiere confirmar_restauracion=1)
 GET  /soporte/descargar/:archivo
 ```
+> **Confirmado (tanda 1.1):** el endpoint real de restauración es
+> `POST /backups/soporte/restaurar` (`backups.routes.js` → `backupsController.restaurarBackup`),
+> protegido por `requiereRol('administrador')` + `requiereSoporteBackups`, que recibe el ZIP
+> por `multer` (campo `archivo_backup`, límite 1 GB).
 
 ---
 
@@ -561,11 +579,11 @@ Otros scripts utilitarios (no en `package.json`):
 | Pago a proveedores / CxP | Abonos y cuentas por pagar. | compras | `compras.repository.js` | `pagos_compras_proveedores`, `compras` |
 | Cotizaciones | Documento previo a venta, convertible. | cotizaciones | `cotizaciones.*` | `cotizaciones`, `detalle_cotizaciones`, `numeraciones_documentos` |
 | Remisiones | Documento de despacho, convertible. | remisiones | `remisiones.*` | `remisiones`, `detalle_remisiones`, `numeraciones_documentos` |
-| Notas crédito internas | Documento de nota crédito. | notasCredito | `notasCredito.*` | `notas_credito`, `detalle_notas_credito` |
-| Anulación de ventas | Anula una venta registrada. | ventas | `ventas-anulacion.js`, migraciones 026/027 | `anulaciones_venta`, `ventas` |
+| Notas crédito internas | Nota crédito interna (no fiscal); hoy se genera al anular una venta. Consulta/impresión. | notasCredito, ventas | `notasCredito.*`, `ventas.repository.js` | `notas_credito`, `detalle_notas_credito`, `numeraciones_documentos` |
+| Anulación de ventas | Anula venta: marca `anulada`, registra anulación, genera nota crédito interna, revierte inventario y caja, anula pagos. | ventas | `ventas.repository.js` (`anularVentaCompleta`), `ventas-anulacion.js`, migraciones 026/027 | `anulaciones_venta`, `ventas`, `pagos_venta`, `notas_credito`, `detalle_notas_credito`, `movimientos_inventario`, `movimientos_caja`, `turnos_caja`, `auditoria` |
 | Reportes | Reportes operativos/ventas. | reportes | `reportes.controller.js` | `ventas`, `detalle_ventas`, `movimientos_*` |
 | Backups | Crea backup ZIP de datos. | backups | `backups.service.js` | (archivos, no tabla) |
-| Restauración | Restaura backup con validación previa. | backups | `backups.service.js`, `app.js` (reinicio) | (archivos + base completa) |
+| Restauración | `POST /backups/soporte/restaurar`: valida ZIP/manifest/SQLite, crea backup de emergencia, restaura y reinicia. | backups | `backups.controller.js`, `backups.service.js`, `app.js`/`electron/main.js` (reinicio) | (archivos + base completa) |
 | Licencia local | Estado, activación y vencimiento. | licencia-local | `licenciaLocal.service.js` | `licencia_local` |
 
 ---
@@ -595,10 +613,18 @@ Variables por producto: `maneja_iva` (0/1), `porcentaje_iva` (entero, p. ej. 19,
      impuesto      = redondear(subtotal × tasa)
      total_linea   = subtotal + impuesto
      ```
-4. Si **no maneja IVA** o `porcentaje_iva = 0`:
+4. Si el producto **no maneja IVA** o `porcentaje_iva = 0`:
    ```txt
-   subtotal = impuesto = 0 (IVA) ; total_linea = bruto_linea
+   subtotal_linea = bruto_linea
+   impuesto_linea = 0
+   total_linea    = bruto_linea
    ```
+   > **Importante:** lo que vale **0 es el IVA (impuesto)**, **no el subtotal**.
+   > El subtotal de la línea es igual al bruto (`precio_unitario_neto × cantidad`) y
+   > el total de línea es igual al subtotal. No debe leerse como "subtotal = 0".
+   > Confirmado en `calcularLineaVenta` (`ventas.service.js`): los valores parten de
+   > `subtotal = brutoLinea; impuestoTotal = 0; totalLinea = brutoLinea` y solo se
+   > recalculan cuando `maneja_iva = 1` **y** `porcentaje_iva > 0`.
 
 ### Totales de la venta
 
@@ -617,13 +643,24 @@ cambio_entregado = total_pagado − total              (en pagos en efectivo)
 > La fórmula exacta de `descuento_total` y `cambio_entregado` a nivel de cabecera
 > debe confirmarse en el repository/controller. **Pendiente de confirmar.**
 
-### Redondeo
+### Redondeo y normalización monetaria
 
-* `redondearDinero(valor)` y `redondearCantidad(valor)` en `ventas.service.js`
-  controlan el redondeo de dinero y cantidades. Los importes se manejan como **enteros**
-  (`normalizarEntero`), lo que sugiere trabajar en la unidad mínima de la moneda.
-  El criterio exacto de redondeo (a entero / a 2 decimales) está en esas funciones —
-  **Pendiente de confirmar** el detalle.
+**Confirmado (tanda 1.1)** en `ventas.service.js`. Prismia trabaja el **dinero en pesos
+enteros** (sin decimales); solo las **cantidades** admiten decimales (hasta 3):
+
+* **`redondearDinero(valor)`** → `Math.round(normalizarNumero(valor))`.
+  Redondea **a peso entero** (al entero más cercano, 0.5 hacia arriba). Es la función que
+  se aplica a brutos, subtotales, IVA y costos de cada línea de venta.
+* **`redondearCantidad(valor)`** → `Math.round(valor * 1000) / 1000`.
+  Redondea las **cantidades a 3 decimales** (soporta venta fraccionada). Los productos que
+  no permiten decimales se truncan a entero antes de vender.
+* **`normalizarEntero(valor, defecto)`** → `Math.round(numero)` (con valor por defecto si no
+  es finito). **Normaliza a entero** precios, costos, porcentajes de IVA y banderas (0/1)
+  **antes de calcular y guardar**. `normalizarNumero` solo valida que sea numérico finito,
+  sin redondear.
+
+En resumen: **importes en pesos enteros con redondeo a entero**, **cantidades con hasta 3
+decimales**, y **normalización a entero** de los valores monetarios antes de persistir.
 
 ### Lógica del IVA (resumen)
 
@@ -643,13 +680,85 @@ cambio_entregado = total_pagado − total              (en pagos en efectivo)
   ingresos/egresos manuales y totales por medio de pago
   (`total_efectivo`, `total_transferencia`, `total_tarjeta`, `total_otros`).
 * **Compras / inventario:** las compras alimentan `movimientos_inventario`.
-* **Costo promedio / utilidad:** existe `total_costo` en ventas y costos en
-  `compras_detalle` (migración 033). La fórmula de **costo promedio** y de **utilidad**
-  no se confirmó línea por línea — **Pendiente de confirmar.**
-* **Anulación de ventas:** `anulaciones_venta` (migraciones 026/027); efecto contable
-  exacto sobre caja/inventario **Pendiente de confirmar.**
-* **Notas crédito internas:** `notas_credito` + `detalle_notas_credito`; su impacto
-  contable **Pendiente de confirmar.**
+
+### Costo, costo promedio, utilidad y margen
+
+**Confirmado (tanda 1.1)** en `ventas.service.js`, `compras.repository.js`,
+`reportes.service.js`/`reportes.repository.js` y `src/database/audit-contable.js`.
+
+* **Qué costo toma la venta:** por cada línea, el costo unitario de referencia se toma en
+  este **orden de prioridad** (en `prepararProductoParaVenta` y `calcularLineaVenta`):
+  ```txt
+  precio_costo_referencia = costo_promedio  ||  ultimo_costo  ||  precio_costo
+  ```
+  Es decir, primero el **costo promedio**; si es 0/nulo, el **último costo**; y si tampoco,
+  el **precio de costo** base del producto.
+* **Costo de la línea:** `costo_total = redondearDinero(precio_costo_referencia × cantidad)`.
+* **Cómo se llena `total_costo`:** en la cabecera de la venta es la **suma de los
+  `costo_total` de todas las líneas** (`calcularResumenRegistroVenta`). La venta también
+  guarda `utilidad_bruta` a nivel de cabecera.
+* **Utilidad bruta:** se calcula **por línea** como
+  ```txt
+  utilidad_bruta_linea = subtotal_linea − costo_total_linea
+  ```
+  (usa el **subtotal sin IVA**, no el total con IVA). La utilidad de la venta es la suma de
+  las utilidades de línea. `audit-contable.js` verifica que la venta **cuadre** contra su
+  detalle en subtotal, descuento, IVA, total, costo y utilidad.
+* **Margen bruto:** se calcula en **reportes** (`reportes.service.js`), no se guarda en la
+  venta:
+  ```txt
+  margen_bruto_porcentaje = (utilidad_bruta_neta / total_neto) × 100   (2 decimales)
+  ```
+  sobre ventas en estado `pagada` (`reportes.repository.js` suma `total_costo` y
+  `utilidad_bruta` de las ventas pagadas).
+* **Cómo se actualiza `costo_promedio` en compras:** **promedio ponderado** por compra
+  (`compras.repository.js`). Para cada producto con control de inventario y `stock_nuevo > 0`:
+  ```txt
+  valor_inventario_anterior = stock_anterior × costo_promedio_anterior
+  valor_compra              = cantidad × costo_unitario_final
+  costo_promedio_nuevo      = redondear((valor_inventario_anterior + valor_compra) / stock_nuevo)
+  ```
+  donde `costo_promedio_anterior = costo_promedio || ultimo_costo || precio_costo`.
+  Si el producto **no controla inventario** o `stock_nuevo ≤ 0`, entonces
+  `costo_promedio_nuevo = costo_unitario_final`. El detalle de compra guarda la traza
+  (`ultimo_costo_anterior`, `costo_promedio_anterior`, `costo_promedio_nuevo`).
+* **`ultimo_costo` y `precio_costo`:** en cada compra, `ultimo_costo` del producto se
+  actualiza al **`costo_unitario_final`** de la línea (costo neto + IVA según configuración).
+  `precio_costo` es el costo base/manual del producto y actúa como **último respaldo** cuando
+  no hay `costo_promedio` ni `ultimo_costo`.
+
+### Anulación de ventas (impacto contable)
+
+**Confirmado (tanda 1.1)** en `ventas.repository.js` (`anularVentaCompleta`, transacción
+atómica). Al anular una venta:
+
+* **Estado de la venta:** pasa a `estado = 'anulada'` y registra `anulado_en`,
+  `anulado_por` y `motivo_anulacion` (solo si estaba `pagada` y sin anular previo).
+* **Registro en `anulaciones_venta`:** se inserta el encabezado de la anulación con totales,
+  montos reversados por medio de pago, motivo, observaciones y `anulada_por`.
+* **Nota crédito interna:** **sí** se genera automáticamente una nota crédito interna en
+  `notas_credito` + `detalle_notas_credito`, con `tipo_nota = 'total'`,
+  `origen = 'anulacion_venta'`, `estado = 'emitida'`, `documento_fiscal_estado = 'interno'` y
+  enlazada por `id_anulacion_venta`. Usa la numeración `nota_credito` de
+  `numeraciones_documentos`.
+* **Inventario:** se **revierte** (se reintegra el stock vendido) generando
+  `movimientos_inventario` con `tipo_movimiento = 'anulacion_venta'` y la traza de stock.
+* **Caja / pagos:** se reversa la caja con `movimientos_caja` (`tipo_movimiento = 'anulacion'`,
+  `referencia_tipo = 'anulacion_venta'`) y se ajusta el turno (`turnos_caja`: resta
+  `total_ventas`, totales por medio de pago y `monto_esperado`).
+* **`pagos_venta`:** los pagos pasan a `estado = 'anulado'` con `anulado_en`, `anulado_por` y
+  `motivo_anulacion`.
+* **Trazabilidad:** queda usuario, fecha y motivo tanto en `ventas` como en
+  `anulaciones_venta`, `pagos_venta` y en la tabla `auditoria` (`tipo 'anulacion_venta'`).
+
+### Notas crédito internas
+
+**Confirmado (tanda 1.1).** Las notas crédito de Prismia son **internas** (no fiscales:
+`documento_fiscal_estado = 'interno'`). Hoy se originan principalmente como efecto de la
+**anulación de venta** (ver arriba), quedando enlazadas a la venta y a la anulación. El
+módulo `notasCredito` permite **consultar, ver detalle e imprimir** estas notas
+(`notasCredito.repository.js` / `notasCredito.routes.js`); su impacto contable es el de la
+anulación que las genera.
 
 ---
 
@@ -657,28 +766,38 @@ cambio_entregado = total_pagado − total              (en pagos en efectivo)
 
 Módulo `backups` (`/backups`) y vistas `index.ejs` (backups) y `soporte.ejs` (modo soporte).
 
+**Confirmado (tanda 1.1)** en `backups.routes.js`, `backups.controller.js`,
+`backups.service.js`, `src/app.js` y `electron/main.js`.
+
 * **Crear backup:** `POST /backups/soporte/crear` (genera ZIP de datos del negocio).
 * **Modo soporte:** acceso protegido por clave de soporte (`SUPPORT_BACKUP_KEY`):
-  `POST /backups/soporte/desbloquear`, `POST /backups/soporte/cerrar`.
+  `POST /backups/soporte/desbloquear`, `POST /backups/soporte/cerrar`. Todas las acciones
+  de soporte requieren rol `administrador` + modo soporte desbloqueado (`requiereSoporteBackups`).
 * **Abrir carpeta de backups:** `POST /backups/soporte/abrir-carpeta`.
 * **Descargar backup:** `GET /backups/soporte/descargar/:archivo`.
-* **Restauración** (según `README.md` y `app.js`):
-  1. Valida el backup.
-  2. Crea **backup de emergencia** antes de restaurar.
-  3. Restaura base de datos y archivos asociados.
-  4. Limpia sesiones restauradas.
-  5. Marca `restauracionPendiente` y **reinicia** la app
-     (en dev escribe `src/restart-dev-trigger.json` para que nodemon reinicie).
+* **Restaurar backup (endpoint real):** **`POST /backups/soporte/restaurar`**
+  (`backupsController.restaurarBackup`). Recibe el ZIP por `multer` (campo `archivo_backup`,
+  hasta 1 GB) y exige `confirmar_restauracion = 1`; si falta el archivo o la confirmación,
+  rechaza y borra el ZIP temporal.
+* **Validaciones antes de restaurar** (`restaurarBackupDesdeArchivo` →
+  `validarYExtraerBackup`): valida y extrae el ZIP, valida el **manifest** del backup
+  (`validarManifestBackup`) y valida la **base SQLite** restaurada (`validarBaseSQLite`).
+* **Backup de emergencia:** antes de sobrescribir se crea un **backup de emergencia**
+  (`crearBackupEmergenciaRestauracion`, carpeta `backups/emergencia`,
+  prefijo `prismia-backup-emergencia-restauracion`). Si falla, **se aborta** la restauración.
+* **Restauración:** reemplaza la base de datos y archivos asociados y luego **limpia las
+  sesiones HTTP** restauradas (`limpiarSesionesHttpRestauradas` → `DELETE FROM sesiones_http`).
+* **Reinicio posterior:** marca `req.app.locals.restauracionPendiente = true`, muestra la
+  pantalla de "restauración completada" y **reinicia** la app: en Electron relanza el proceso
+  (`prismia:reinicio-solicitado` → `relanzarAplicacionPorRestauracion`); en `dev` escribe
+  `src/restart-dev-trigger.json` para que nodemon reinicie. Existe la ruta interna
+  `GET /__restauracion-finalizada` (solo local + admin).
 * **Carpetas usadas** (instalación real): `backups/`, `database/`, `config/`, `uploads/`
   dentro de `AppData\Roaming\Prismia POS Local`. En el repo, variables
   `BACKUP_BASE_DIR` / `BACKUP_EXTERNAL_PATH`.
-* **Riesgos:** la restauración sobrescribe la base activa; por eso se hace backup de
-  emergencia y reinicio controlado. **No ejecutar restauraciones en esta tanda.**
-
-> El flujo exacto del endpoint de restauración (¿está en `backups.service.js` con otro
-> nombre de ruta?) debe confirmarse: en las rutas listadas aparecen las de `soporte`,
-> la operación de restauración propiamente puede dispararse desde `soporte.ejs`.
-> **Pendiente de confirmar** el endpoint exacto.
+* **Riesgos:** la restauración **sobrescribe la base activa**; por eso exige confirmación,
+  crea backup de emergencia y hace reinicio controlado. **No ejecutar restauraciones en esta
+  tanda documental.**
 
 ---
 
@@ -732,25 +851,80 @@ Tabla `licencia_local` (migraciones 038–040).
 
 ## 13. Pendientes detectados
 
-Inferidos del código y documentos existentes:
+### Resueltos en la tanda 1.1 (ya confirmados desde el código)
 
-* **Distribución de capas incompleta en algunos módulos:** `productos` y `compras` no
-  exponen `controller`/`service` con nombre estándar; conviene confirmar dónde está la
-  lógica de negocio. **Pendiente de confirmar.**
-* **POST de creación/edición de productos:** no aparece como `router.post('/...')` directo;
-  confirmar el manejo (probable middleware de imagen con `multer`). **Pendiente de confirmar.**
-* **Endpoint exacto de restauración de backups:** confirmar cómo se dispara desde
-  `soporte.ejs`. **Pendiente de confirmar.**
-* **Costo promedio y utilidad:** confirmar fórmula exacta en repositories de
-  compras/inventario/ventas. **Pendiente de confirmar.**
-* **Impacto contable de anulaciones y notas crédito** sobre caja e inventario.
+* **Distribución de capas en `productos` y `compras`:** ✅ confirmado, ambos tienen
+  `controller`, `service`, `repository` y `routes`.
+* **POST de creación/edición de productos:** ✅ confirmado (`POST /productos/nuevo` y
+  `POST /productos/:id/editar` con `multer`).
+* **Endpoint de restauración de backups:** ✅ confirmado (`POST /backups/soporte/restaurar`).
+* **Costo, costo promedio, utilidad y margen:** ✅ confirmadas las fórmulas (ver sección 9).
+* **Impacto contable de anulaciones y notas crédito:** ✅ confirmado (ver sección 9).
+* **Criterio de redondeo:** ✅ confirmado (pesos enteros / cantidades a 3 decimales).
+
+### Siguen pendientes
+
+* **`cambio_entregado` a nivel de cabecera:** la fórmula de línea está confirmada, pero el
+  cálculo exacto del cambio en pagos mixtos/efectivo conviene revisarlo en el repository.
   **Pendiente de confirmar.**
-* **Criterio de redondeo** (`redondearDinero` / `redondearCantidad`): documentar el
-  comportamiento exacto. **Pendiente de confirmar.**
+* **Bloqueo de instancia única en Electron (`requestSingleInstanceLock`):** no implementado;
+  ver "Incidente conocido: puerto local ocupado EADDRINUSE" más abajo. **Pendiente de parche.**
 * **Pendientes ya listados en `README.md`** (no bloqueantes para V1 piloto):
   facturación electrónica DIAN, sistema de licencias avanzado, actualizador automático,
   firma comercial del instalador, cuentas por pagar avanzadas, bloqueo de instancia única
   Electron, migraciones automáticas al iniciar, pulido visual avanzado, entre otros.
+
+---
+
+## Incidente conocido: puerto local ocupado EADDRINUSE
+
+Durante una instalación en el equipo de un cliente, al abrir Prismia apareció una ventana de
+Electron con el mensaje:
+
+```txt
+A JavaScript error occurred in the main process
+Error: listen EADDRINUSE: address already in use 127.0.0.1:3210
+```
+
+El problema se solucionó **cerrando/reiniciando el proceso (o el equipo)** y Prismia quedó
+funcionando correctamente.
+
+### Explicación técnica
+
+* **No** indica corrupción de la base de datos.
+* **No** indica daño de la instalación.
+* Significa que el **puerto local `3210`** (`PRISMIA_ELECTRON_PORT`, ver `electron/main.js`)
+  ya estaba **ocupado** cuando Prismia intentó escuchar en él.
+* Puede ocurrir si Prismia **ya estaba abierto**, si quedó un **proceso colgado**, si el
+  usuario hizo **doble clic varias veces** sobre el ícono, o si **otro proceso** usa el mismo
+  puerto.
+* En resumen, es un problema de **arranque / doble instancia / puerto ocupado**, no de datos.
+
+### Estado actual en el código
+
+Confirmado en la tanda 1.1: el proyecto **no** implementa `app.requestSingleInstanceLock()`,
+ni un manejador del error `EADDRINUSE`, ni el evento `second-instance` (búsqueda sin
+resultados en todo el repositorio). El puerto se define en `electron/main.js`
+(`PRISMIA_ELECTRON_PORT || 3210`).
+
+### Pendiente técnico para parche posterior (no se modifica código en esta tanda)
+
+* Implementar `app.requestSingleInstanceLock()` en Electron.
+* Evitar la doble instancia.
+* Capturar el error `EADDRINUSE` al iniciar el servidor.
+* Mostrar un **mensaje amigable** al usuario en lugar del error crudo de JavaScript.
+* **Enfocar la ventana existente** si Prismia ya está abierto.
+* Registrar el evento en un **log local**.
+* Evitar que Electron muestre el cuadro "A JavaScript error occurred in the main process".
+
+### Severidad
+
+```txt
+Severidad técnica: media
+Severidad comercial: alta
+Riesgo de datos: bajo
+Prioridad de parche: alta antes de más instalaciones piloto
+```
 
 ---
 
@@ -821,5 +995,49 @@ Por qué:
 
 ---
 
-*Fin del mapa documental inicial. Las secciones marcadas como **Pendiente de confirmar**
-deben resolverse con inspección detallada antes de cerrar las guías definitivas.*
+## 16. Estado de revisión del mapa
+
+* **Versión del mapa:** `0.1 ajustada`.
+* **Fecha de ajuste:** 2026-06-24 (tanda 1.1 de ajuste documental).
+
+### Puntos confirmados en esta tanda
+
+1. **Cálculo de IVA en productos sin IVA:** cuando el producto no maneja IVA o
+   `porcentaje_iva = 0`, `subtotal_linea = bruto_linea`, `impuesto_linea = 0`,
+   `total_linea = bruto_linea`. Lo que vale 0 es el IVA, no el subtotal.
+2. **Creación/edición de productos:** rutas reales `POST /productos/nuevo` y
+   `POST /productos/:id/editar` (subida de imagen con `multer`), más activar/desactivar.
+3. **Costo, costo promedio, utilidad y margen:** costo de venta
+   `costo_promedio || ultimo_costo || precio_costo`; `total_costo` = suma de costos de línea;
+   utilidad = subtotal − costo; margen en reportes; `costo_promedio` por promedio ponderado
+   en compras; `ultimo_costo` se actualiza al costo final de la compra.
+4. **Anulaciones y notas crédito internas:** la venta pasa a `anulada`, se registra en
+   `anulaciones_venta`, **se genera nota crédito interna**, se revierte inventario y caja, se
+   anulan los `pagos_venta` y queda trazabilidad (usuario, fecha, motivo).
+5. **Restauración de backups:** endpoint real `POST /backups/soporte/restaurar`, con
+   validación de ZIP/manifest/SQLite, backup de emergencia previo, limpieza de sesiones y
+   reinicio controlado.
+6. **Redondeo monetario:** dinero en **pesos enteros** (`redondearDinero`), cantidades a
+   **3 decimales** (`redondearCantidad`), normalización a entero (`normalizarEntero`) antes
+   de guardar.
+7. **Incidente `EADDRINUSE` (puerto 3210):** documentado como riesgo técnico/comercial; el
+   código aún no implementa instancia única ni manejo del error.
+
+### Puntos que siguen pendientes
+
+* `cambio_entregado` a nivel de cabecera (fórmula exacta en pagos mixtos/efectivo).
+* Implementación de instancia única en Electron y manejo de `EADDRINUSE` (parche posterior).
+* Pendientes de producto ya listados en `README.md` (DIAN, actualizador, firma del
+  instalador, etc.), no bloqueantes para V1 piloto.
+
+### Alcance del documento
+
+* Este archivo **sigue siendo base documental**, **no** un manual final.
+* El incidente **`EADDRINUSE`** queda **documentado como riesgo técnico/comercial** para
+  parche posterior (prioridad alta antes de más instalaciones piloto).
+
+---
+
+*Fin del mapa documental ajustado (tanda 1.1). Las secciones marcadas como
+**Pendiente de confirmar** deben resolverse con inspección detallada antes de cerrar las
+guías definitivas.*
