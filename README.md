@@ -18,30 +18,16 @@ Prismia POS Local es una aplicación para Windows orientada a la gestión diaria
 
 ## Vista del producto
 
-> Las capturas finales del producto se agregarán en esta sección.
-
-<!--
-Cuando agregues las imágenes al repositorio, una estructura recomendada es:
-
-docs/
-└── images/
-    ├── dashboard.png
-    ├── pos.png
-    ├── inventario.png
-    └── caja.png
-
-Luego puedes usar:
-
 <p align="center">
   <img src="docs/images/dashboard.png" width="48%" alt="Dashboard de Prismia POS">
   <img src="docs/images/pos.png" width="48%" alt="Punto de venta de Prismia POS">
 </p>
 
 <p align="center">
-  <img src="docs/images/inventario.png" width="48%" alt="Inventario de Prismia POS">
-  <img src="docs/images/caja.png" width="48%" alt="Caja de Prismia POS">
+  <img src="docs/images/inventario.png" width="48%" alt="Módulo de inventario de Prismia POS">
+  <img src="docs/images/caja.png" width="48%" alt="Módulo de caja de Prismia POS">
 </p>
--->
+
 
 ---
 
