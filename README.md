@@ -1,17 +1,36 @@
-Prismia POS Local
+# Prismia POS Local
 
-Sistema de punto de venta de escritorio para pequeños y medianos negocios.
+**Sistema de punto de venta de escritorio para pequeños y medianos negocios.**
 
-Prismia POS Local permite gestionar ventas, caja, inventario, compras, clientes, proveedores y documentos comerciales desde una aplicación local para Windows, sin depender de una conexión permanente a internet ni de un servidor externo de base de datos.
+Prismia POS Local es una aplicación para Windows orientada a la gestión diaria de un negocio: ventas, caja, inventario, compras, clientes, proveedores y documentos comerciales, con funcionamiento local y sin depender de una conexión permanente a internet ni de un servidor externo de base de datos.
 
-Estado actual: V1 funcional en cierre pre-piloto, preparada para pruebas reales controladas.
+> **Estado actual:** V1 funcional en cierre pre-piloto, preparada para pruebas reales controladas.
 
-Vista del producto
+<p>
+  <a href="https://prismia-landing.nievessystems.workers.dev/"><strong>Ver sitio de Prismia</strong></a>
+  ·
+  <a href="docs/manuales/README.md"><strong>Documentación</strong></a>
+  ·
+  <a href="docs/LICENCIAMIENTO_PRISMIA_V1.md"><strong>Licenciamiento V1</strong></a>
+</p>
 
-Las capturas del producto se agregarán en esta sección.
+---
+
+## Vista del producto
+
+> Las capturas finales del producto se agregarán en esta sección.
 
 <!--
-Ejemplo de estructura recomendada:
+Cuando agregues las imágenes al repositorio, una estructura recomendada es:
+
+docs/
+└── images/
+    ├── dashboard.png
+    ├── pos.png
+    ├── inventario.png
+    └── caja.png
+
+Luego puedes usar:
 
 <p align="center">
   <img src="docs/images/dashboard.png" width="48%" alt="Dashboard de Prismia POS">
@@ -24,136 +43,118 @@ Ejemplo de estructura recomendada:
 </p>
 -->
 
-¿Qué permite hacer?
+---
 
-Registrar ventas desde un POS pensado para uso táctil.
+## ¿Qué permite hacer?
 
-Abrir, operar y cerrar caja.
+### Operación comercial
 
-Gestionar productos, categorías, precios, impuestos y códigos internos.
+- Registrar ventas desde un POS pensado para escritorio y uso táctil.
+- Buscar productos y trabajar con carrito de venta.
+- Manejar distintos métodos de pago y pagos mixtos.
+- Generar tickets de venta.
+- Consultar historial de ventas.
+- Crear cotizaciones, remisiones y notas crédito.
 
-Controlar inventario, stock mínimo, ajustes y conteos físicos.
+### Caja
 
-Registrar compras y administrar proveedores.
+- Abrir y cerrar caja.
+- Registrar base inicial.
+- Manejar movimientos de caja.
+- Relacionar pagos y ventas con la caja.
+- Identificar diferencias al cierre.
 
-Administrar clientes.
+### Productos e inventario
 
-Crear cotizaciones, remisiones y notas crédito.
+- Crear y editar productos y categorías.
+- Manejar unidades de medida.
+- Registrar costo, precio de venta e IVA.
+- Gestionar códigos internos, SKU o código de barras.
+- Controlar stock y stock mínimo.
+- Realizar ajustes y conteos físicos.
+- Consultar historial y diferencias de inventario.
+- Importar y exportar información mediante Excel.
 
-Consultar reportes operativos.
+### Compras, clientes y proveedores
 
-Importar y exportar información mediante Excel.
+- Registrar compras.
+- Asociar proveedores y detalles de compra.
+- Manejar estados de pago, saldos y abonos.
+- Administrar clientes y proveedores.
+- Relacionar la información comercial con ventas, compras y documentos.
 
-Generar tickets de venta.
+### Backups y operación local
 
-Crear y restaurar backups de forma controlada.
+- Crear backups.
+- Validar backups antes de restaurarlos.
+- Generar un backup de emergencia previo a una restauración.
+- Restaurar base de datos y archivos asociados.
+- Conservar los datos del negocio aunque la aplicación sea desinstalada.
+- Trabajar con almacenamiento local mediante SQLite.
 
-Instalar la aplicación en Windows mediante un instalador NSIS.
+---
 
-Conservar los datos del negocio incluso después de desinstalar la aplicación.
+## Licenciamiento V1
 
-Stack técnico
+Prismia incorpora un sistema de licenciamiento local pensado para una primera etapa comercial y piloto.
 
-Área
+Actualmente contempla:
 
-Tecnologías
+- prueba local inicial;
+- período de gracia;
+- bloqueo operativo cuando la licencia deja de ser válida;
+- activación manual;
+- códigos de activación firmados offline;
+- validación mediante firma digital;
+- asociación de la licencia a la huella del equipo;
+- control de vigencia;
+- protección frente a reutilización de códigos;
+- auditoría de activaciones;
+- solicitud de renovación mediante WhatsApp.
 
-Backend
+La aplicación instalada contiene únicamente la **clave pública** utilizada para validar códigos. La clave privada utilizada para firmarlos se mantiene fuera del software distribuido y fuera del repositorio.
 
-Node.js, Express
+La documentación técnica completa se encuentra en:
 
-Frontend
+[`docs/LICENCIAMIENTO_PRISMIA_V1.md`](docs/LICENCIAMIENTO_PRISMIA_V1.md)
 
-EJS, JavaScript, CSS
+---
 
-Base de datos
+## Stack técnico
 
-SQLite, better-sqlite3
+| Área | Tecnologías |
+| --- | --- |
+| Backend | Node.js, Express |
+| Frontend | EJS, JavaScript, CSS |
+| Base de datos | SQLite, better-sqlite3 |
+| Desktop | Electron |
+| Empaquetado | electron-builder, NSIS |
+| Sesiones y seguridad | express-session, bcryptjs, Helmet |
+| Archivos | multer, archiver, adm-zip |
+| Importación / exportación | xlsx |
+| Control de versiones | Git, GitHub |
 
-Desktop
+SQLite permite instalar Prismia sin exigir al cliente MySQL, PostgreSQL u otro servidor de base de datos adicional.
 
-Electron
+---
 
-Empaquetado
-
-electron-builder, NSIS
-
-Sesiones y archivos
-
-express-session, multer
-
-Importación / exportación
-
-xlsx
-
-Control de versiones
-
-Git, GitHub
-
-SQLite permite que Prismia funcione de manera local sin exigir al negocio una instalación adicional de MySQL, PostgreSQL u otro servidor de base de datos.
-
-Sobre el proyecto
+## Sobre el proyecto
 
 Prismia nació como un proyecto personal orientado a construir una solución de punto de venta que pudiera evolucionar hacia un producto distribuible para pequeños negocios.
 
-El desarrollo no se limitó al flujo de ventas. También abarcó lógica de inventario y caja, persistencia local, backups y restauración, configuración inicial, empaquetado con Electron, instalación en Windows y conservación de los datos del negocio.
+El desarrollo no se limitó al flujo de ventas. También abarcó lógica de inventario y caja, persistencia local, configuración inicial, backups y restauración, empaquetado con Electron, instalación en Windows, conservación de datos y un sistema de licenciamiento local.
 
-La prioridad de esta V1 es validar estabilidad, seguridad de los datos y funcionamiento de los procesos principales antes de ampliar el producto con nuevas funcionalidades.
+La prioridad de esta V1 es validar estabilidad, seguridad de los datos y funcionamiento de los procesos principales antes de ampliar el producto.
 
-Desarrollado por José Carlos Nieves Iguarán.
+**Desarrollado por José Carlos Nieves Iguarán.**
 
-Estado actual
+---
 
-Prismia POS Local se encuentra en fase de cierre pre-piloto.
-
-Los principales bloques funcionales ya fueron validados:
-
-Instalación limpia desde instalador Windows.
-
-Configuración inicial mediante /setup.
-
-Creación del primer administrador.
-
-Configuración del negocio.
-
-Productos y categorías.
-
-Inventario.
-
-Compras.
-
-Ventas / POS.
-
-Caja.
-
-Clientes.
-
-Proveedores.
-
-Cotizaciones.
-
-Remisiones.
-
-Notas crédito.
-
-Reportes.
-
-Backups.
-
-Restauración controlada.
-
-Ticket de venta.
-
-POS táctil en Electron.
-
-Ícono de aplicación e instalador.
-
-Política de desinstalación conservando datos del negocio.
-
-Arquitectura en pocas palabras
+## Arquitectura
 
 Prismia mantiene una separación modular de responsabilidades:
 
+```text
 repository = SQL, acceso a datos y transacciones
 service    = reglas de negocio, validaciones y cálculos
 controller = request / response
@@ -161,39 +162,19 @@ routes     = rutas Express
 views      = vistas EJS
 CSS        = estilos globales o por módulo
 JS público = interacción frontend
+```
 
-La documentación técnica completa se mantiene a continuación.
+Reglas generales:
 
-Documentación técnica
+- SQL en repositories.
+- Reglas de negocio en services.
+- Controllers centrados en request/response.
+- Vistas EJS sin lógica de negocio pesada.
+- Cambios validados módulo por módulo.
 
-Arquitectura del proyecto
+### Estructura general
 
-La arquitectura debe mantenerse modular.
-
-Regla general:
-
-repository = SQL, acceso a datos y transacciones
-service    = reglas de negocio, validaciones y cálculos
-controller = request / response
-routes     = rutas Express
-views      = vistas EJS
-CSS        = global o por módulo
-JS público = interacción frontend
-
-No se debe mezclar:
-
-SQL en vistas.
-
-Reglas de negocio en EJS.
-
-Lógica pesada en controllers.
-
-Refactors innecesarios durante pruebas finales.
-
-Cambios grandes sin validación módulo por módulo.
-
-Estructura general
-
+```text
 electron/
   main.js
 
@@ -216,6 +197,7 @@ src/
     cotizaciones/
     dashboard/
     inventario/
+    licencia-local/
     notas-credito/
     productos/
     proveedores/
@@ -228,218 +210,386 @@ src/
     uploads/
   views/
 
+tools/
+  licencias/
+
+docs/
+  LICENCIAMIENTO_PRISMIA_V1.md
+  manuales/
+
 build/
   icon.ico
   icon.png
 
 dist/
+```
 
-Requisitos para desarrollo
+---
+
+## Módulos funcionales
+
+### Autenticación
+
+- Login y logout.
+- Sesiones persistentes.
+- Roles.
+- Protección de rutas.
+
+### Dashboard
+
+- Vista general del sistema.
+- Accesos principales.
+- Estado operativo.
+
+### Configuración
+
+- Datos del negocio.
+- Moneda.
+- Mensaje de recibo.
+- Información utilizada en tickets y documentos.
+
+### Productos
+
+- Creación, listado y edición.
+- Categorías.
+- Unidades de medida.
+- Stock.
+- Costos y precios.
+- IVA.
+- Imágenes.
+- Código interno.
+- Código de barras / SKU.
+
+### Inventario
+
+- Stock actual y mínimo.
+- Ajustes manuales.
+- Historial.
+- Conteos físicos.
+- Diferencias.
+- Importación y exportación Excel.
+- Reporte operativo.
+- Valoración comercial.
+
+### Caja
+
+- Apertura.
+- Base inicial.
+- Movimientos.
+- Métodos de pago.
+- Cierre.
+- Diferencias.
+- Relación con ventas.
+
+### Ventas / POS
+
+- POS táctil.
+- Búsqueda de productos.
+- Carrito.
+- Métodos de pago.
+- Pago mixto.
+- Ticket.
+- Historial.
+- Cálculo de subtotal, IVA y total.
+
+### Compras
+
+- Registro de compras.
+- Proveedores.
+- Detalle de compra.
+- Estados de pago.
+- Saldos pendientes.
+- Abonos.
+- Base para evolución futura de cuentas por pagar.
+
+### Clientes y proveedores
+
+- Administración básica.
+- Relación con ventas, compras y documentos.
+
+### Cotizaciones
+
+- Creación y consulta.
+- Documento comercial previo a venta.
+
+### Remisiones
+
+- Creación y consulta.
+- Soporte para entrega o despacho.
+
+### Notas crédito
+
+- Creación y consulta.
+- Relación con ventas según flujo comercial.
+
+### Backups
+
+- Creación de backups.
+- Restauración controlada.
+- Validación previa.
+- Backup de emergencia antes de restaurar.
+
+### Licencia local
+
+- Prueba inicial.
+- Período de gracia.
+- Activación mediante código firmado.
+- Validación por equipo.
+- Estados operativos de licencia.
+- Bloqueo de módulos operativos cuando corresponde.
+- Auditoría de activación.
+
+---
+
+# Documentación técnica
+
+## Requisitos para desarrollo
 
 Recomendado:
 
-Windows 10 o Windows 11.
+- Windows 10 o Windows 11.
+- Node.js LTS.
+- Git.
+- PowerShell.
+- VS Code, Antigravity u otro editor.
+- Permisos de administrador si Electron Builder presenta problemas de enlaces simbólicos durante el empaquetado.
 
-Node.js LTS.
+Electron está fijado en:
 
-Git.
-
-PowerShell.
-
-Antigravity, VS Code u otro editor.
-
-Permisos de administrador para empaquetar si Electron Builder falla con enlaces simbólicos.
-
-En este proyecto Electron está fijado en:
-
+```text
 electron@37.10.3
+```
 
-Se mantiene fijo por compatibilidad con better-sqlite3.
+Se mantiene fijo por compatibilidad con `better-sqlite3`.
 
-Instalación de dependencias
+---
+
+## Instalación de dependencias
 
 Después de clonar el repositorio:
 
+```powershell
 npm ci
+```
 
-Si se cambió de computador o se reinstaló Node, reconstruir dependencias nativas:
+Si se cambió de computador o se reinstaló Node, reconstruir dependencias nativas para Node:
 
+```powershell
 npm run native:node
+```
 
 Para Electron:
 
+```powershell
 npm run native:electron
+```
 
-Scripts principales
+---
 
+## Scripts principales
+
+### Desarrollo
+
+```powershell
 npm run dev
+```
 
-Levanta Prismia en modo desarrollo con Express y Nodemon.
+Levanta Prismia con Express y Nodemon.
 
+```powershell
 npm run dev:https
+```
 
-Levanta Prismia en modo desarrollo usando HTTPS local.
+Levanta el entorno de desarrollo usando HTTPS local.
 
+### Electron
+
+```powershell
 npm run electron
+```
 
-Ejecuta Prismia en Electron.
+Ejecuta Prismia como aplicación Electron.
 
+### Validaciones
+
+```powershell
 npm run check:pre-electron
+```
 
-Valida base de datos y revisa que no se estén versionando secretos, bases locales, backups o certificados sensibles.
+Valida la base de datos y revisa que no se estén versionando secretos, bases locales, backups o certificados sensibles.
 
-npm run pack:dir
+```powershell
+npm run check:runtime
+```
 
-Genera versión desempaquetada en dist/win-unpacked.
+Ejecuta diagnóstico del entorno runtime.
 
-npm run dist:win
+### Licenciamiento
 
-Genera instalador NSIS para Windows.
+```powershell
+npm run licencia:keys
+```
 
-Validación pre-Electron
+Genera un par de claves para el sistema de licencias. La clave privada no debe versionarse.
 
-Antes de empaquetar, ejecutar:
+```powershell
+npm run licencia:code -- --cliente "Cliente" --plan mensual --dias 30 --gracia 3 --huella "HUELLA_COMPLETA"
+```
 
-npm run check:pre-electron
+Genera un código de activación firmado para una instalación.
 
-Debe confirmar:
+```powershell
+npm run licencia:audit
+```
 
-Base de datos válida.
+Ejecuta la auditoría técnica del módulo de licencias.
 
-Tablas críticas existentes.
+### Empaquetado
 
-Columnas críticas existentes.
-
-Semillas mínimas existentes.
-
-Sin secretos versionados.
-
-Sin bases SQLite versionadas.
-
-Sin backups versionados.
-
-Sin certificados versionados.
-
-Empaquetado
-
-Para generar la versión instalable:
-
+```powershell
 npm run pack:dir
 npm run dist:win
+```
 
-El instalador se genera en:
+Genera la versión desempaquetada y el instalador NSIS para Windows.
 
+---
+
+## Validación pre-Electron
+
+Antes de empaquetar:
+
+```powershell
+npm run check:pre-electron
+```
+
+La validación debe comprobar:
+
+- base de datos válida;
+- tablas críticas existentes;
+- columnas críticas existentes;
+- semillas mínimas existentes;
+- ausencia de secretos versionados;
+- ausencia de bases SQLite versionadas;
+- ausencia de backups versionados;
+- ausencia de certificados sensibles versionados.
+
+---
+
+## Empaquetado
+
+Para generar una versión instalable:
+
+```powershell
+npm run pack:dir
+npm run dist:win
+```
+
+Instalador:
+
+```text
 dist/Prismia POS Local Setup 1.0.0.exe
+```
 
-La versión desempaquetada queda en:
+Versión desempaquetada:
 
+```text
 dist/win-unpacked/Prismia POS Local.exe
+```
 
-Si Electron Builder falla en Windows con errores de enlaces simbólicos relacionados con winCodeSign, abrir la terminal o el editor como administrador, limpiar caché y volver a ejecutar:
+Si Electron Builder falla en Windows por enlaces simbólicos relacionados con `winCodeSign`, puede ser necesario ejecutar la terminal con permisos de administrador y limpiar la caché correspondiente antes de volver a empaquetar.
 
-Remove-Item -Recurse -Force "$env:LOCALAPPDATA\electron-builder\Cache\winCodeSign" -ErrorAction SilentlyContinue
-Remove-Item -Recurse -Force "$env:LOCALAPPDATA\electron-builder\Cache\nsis" -ErrorAction SilentlyContinue
+---
 
-npm run pack:dir
-npm run dist:win
+## Flujo de instalación para piloto
 
-Flujo de instalación para piloto
+En una instalación inicial:
 
-Al instalar Prismia por primera vez, el sistema debe llevar a la pantalla de configuración inicial:
+1. Instalar Prismia.
+2. Abrir la aplicación.
+3. Completar la configuración inicial.
+4. Crear el primer administrador.
+5. Iniciar sesión.
+6. Configurar los datos del negocio.
+7. Crear categorías y productos.
+8. Abrir caja.
+9. Realizar una venta.
+10. Validar el ticket.
+11. Cerrar caja.
+12. Crear un backup.
+13. Validar el estado de licencia correspondiente al piloto.
 
-/setup
+---
 
-Desde ahí se crea el primer administrador.
+## Datos en producción
 
-Flujo mínimo esperado:
+En una instalación real, Prismia guarda los datos del negocio en:
 
-Instalar Prismia.
-
-Abrir la aplicación.
-
-Crear primer administrador.
-
-Iniciar sesión.
-
-Configurar datos del negocio.
-
-Crear categoría.
-
-Crear producto.
-
-Abrir caja.
-
-Realizar venta.
-
-Ver ticket.
-
-Cerrar caja.
-
-Crear backup.
-
-Ruta de datos en producción
-
-En instalación real, Prismia guarda los datos del negocio en:
-
+```text
 C:\Users\USUARIO\AppData\Roaming\Prismia POS Local
+```
 
-En esa carpeta viven los datos runtime:
+Estructura runtime:
 
+```text
 database/
 config/
 backups/
 uploads/
+```
 
-El archivo de secretos runtime se genera automáticamente por instalación:
+Los secretos runtime se generan por instalación cuando corresponde.
 
-config/secretos.local.json
+La aplicación está diseñada para separar los datos del negocio de los archivos instalados del programa.
 
-Si SESSION_SECRET o SUPPORT_BACKUP_KEY están vacíos en .env, Prismia genera valores únicos por instalación.
+---
 
-Política de desinstalación
+## Política de desinstalación
 
-Desinstalar Prismia POS Local elimina la aplicación, pero no borra los datos del negocio.
+Desinstalar Prismia elimina la aplicación, pero **no elimina automáticamente los datos del negocio**.
 
-La información queda conservada en:
+La información permanece en:
 
+```text
 C:\Users\USUARIO\AppData\Roaming\Prismia POS Local
+```
 
-Esa carpeta solo debe borrarse manualmente si el cliente solicita una limpieza total o si soporte realiza una reinstalación controlada desde cero.
+Esa carpeta solo debe eliminarse manualmente durante una limpieza total o una reinstalación controlada.
 
-Backups y restauración
+---
 
-Prismia cuenta con sistema de backups y restauración controlada.
+## Backups y restauración
 
-La restauración:
+El proceso de restauración:
 
-Valida el backup.
+- valida el backup;
+- crea un backup de emergencia antes de restaurar;
+- restaura la base de datos;
+- restaura los archivos asociados;
+- limpia sesiones restauradas;
+- reinicia la aplicación cuando corresponde.
 
-Crea backup de emergencia antes de restaurar.
+---
 
-Restaura base de datos.
+## Variables de entorno
 
-Restaura archivos asociados.
+Archivo base:
 
-Limpia sesiones restauradas.
-
-Reinicia la aplicación cuando corresponde.
-
-En desarrollo, puede usarse un archivo de reinicio técnico temporal. Ese archivo no debe versionarse.
-
-Variables de entorno
-
-El archivo base es:
-
+```text
 .env.example
+```
 
-Para desarrollo se puede crear:
+En desarrollo se puede crear:
 
+```text
 .env
+```
 
-El archivo .env real no debe subirse al repositorio.
+El archivo `.env` real no debe subirse al repositorio.
 
-Variables importantes:
+Variables principales:
 
+```text
 APP_NAME
 APP_PORT
 NODE_ENV
@@ -460,428 +610,199 @@ HTTPS_PORT
 PRISMIA_HTTPS_CERT_DIR
 PRISMIA_HTTPS_KEY
 PRISMIA_HTTPS_CERT
+```
 
-En producción instalada, si PRISMIA_DATA_DIR queda vacío, Prismia usa una carpeta segura del usuario en AppData.
+---
 
-Seguridad y archivos que no deben compartirse
+## Seguridad y archivos sensibles
 
-No se debe compartir externamente el ZIP completo del proyecto.
+No deben versionarse ni distribuirse como parte del código fuente:
 
-Puede contener datos sensibles o locales como:
+- `.env`;
+- claves privadas;
+- bases SQLite runtime;
+- archivos `.sqlite-wal`;
+- archivos `.sqlite-shm`;
+- backups;
+- certificados locales;
+- secretos runtime;
+- archivos temporales;
+- datos reales de clientes.
 
-.env
+Para una instalación piloto se entrega únicamente el instalador generado.
 
-bases SQLite
+La clave privada del sistema de licenciamiento debe mantenerse fuera del repositorio y fuera de la aplicación distribuida.
 
-archivos .sqlite-wal
+---
 
-archivos .sqlite-shm
+## Archivos ignorados por Git
 
-backups
+El proyecto debe ignorar, entre otros:
 
-certificados locales
+- `node_modules/`;
+- `.env`;
+- `dist/`;
+- almacenamiento runtime;
+- backups;
+- bases SQLite;
+- certificados;
+- archivos temporales;
+- secretos runtime;
+- clave privada del sistema de licencias.
 
-secretos runtime
+Los íconos necesarios para el empaquetado deben mantenerse versionados:
 
-archivos temporales
-
-datos de prueba
-
-Para cliente piloto se debe entregar únicamente:
-
-dist/Prismia POS Local Setup 1.0.0.exe
-
-Archivos ignorados por Git
-
-El repositorio debe ignorar:
-
-node_modules/
-
-.env
-
-dist/
-
-storage/runtime/
-
-storage/backups/
-
-src/database/data/
-
-certs/
-
-archivos SQLite
-
-archivos temporales
-
-certificados
-
-secretos runtime
-
-La carpeta build/ está ignorada por defecto, pero los archivos del ícono deben mantenerse versionados:
-
+```text
 build/icon.ico
 build/icon.png
+```
 
-Si Git los ignora al agregarlos, usar:
+---
 
-git add -f build/icon.ico
-git add -f build/icon.png
+## Branding
 
-Ícono y branding
+Prismia utiliza un ícono tipo prisma basado en tres piezas geométricas.
 
-Prismia usa un ícono tipo prisma basado en tres piezas geométricas:
+Los recursos de `build/` se utilizan en:
 
-blanco
+- ejecutable;
+- instalador;
+- acceso directo;
+- barra de tareas.
 
-turquesa
+---
 
-azul
+## Documentación del proyecto
 
-Archivos:
+Prismia cuenta con documentación separada para distintos públicos.
 
-build/icon.ico
-build/icon.png
+### Licenciamiento
 
-Estos archivos se usan para:
+- [`docs/LICENCIAMIENTO_PRISMIA_V1.md`](docs/LICENCIAMIENTO_PRISMIA_V1.md)  
+  Diseño y funcionamiento del licenciamiento local V1.
 
-ejecutable
+### Manuales
 
-instalador
+- [`docs/manuales/00_MAPA_DOCUMENTAL_PRISMIA.md`](docs/manuales/00_MAPA_DOCUMENTAL_PRISMIA.md)  
+  Mapa general de módulos, rutas, tablas y flujos.
 
-acceso directo
+- [`docs/manuales/01_MANUAL_USO_CLIENTES.md`](docs/manuales/01_MANUAL_USO_CLIENTES.md)  
+  Manual operativo para clientes, administradores y cajeros.
 
-barra de tareas
+- [`docs/manuales/02_GUIA_CONTABLE_LOGICA_NEGOCIO.md`](docs/manuales/02_GUIA_CONTABLE_LOGICA_NEGOCIO.md)  
+  Explicación de IVA, ventas, costos, utilidad, caja, compras, inventario y otras reglas de negocio.
 
-Módulos funcionales
+- [`docs/manuales/03_GUIA_TECNICA_INTERNA_JOSE.md`](docs/manuales/03_GUIA_TECNICA_INTERNA_JOSE.md)  
+  Guía técnica interna de desarrollo, soporte, instalación y mantenimiento.
 
-Autenticación
+- [`docs/manuales/CAPTURAS_REQUERIDAS.md`](docs/manuales/CAPTURAS_REQUERIDAS.md)  
+  Inventario de capturas pendientes para completar la documentación visual.
 
-Login.
+---
 
-Logout.
+## Estado de QA
 
-Sesiones persistentes.
+Para la V1 piloto se consideran suficientemente validados:
 
-Roles.
+- Dashboard.
+- Configuración.
+- Productos y categorías.
+- Inventario.
+- Compras.
+- Ventas / POS.
+- Caja.
+- Clientes.
+- Proveedores.
+- Cotizaciones.
+- Remisiones.
+- Notas crédito.
+- Reportes.
+- Backups y restauración.
+- Ticket de venta.
+- Instalador.
+- Persistencia de datos tras desinstalación.
+- Ícono y metadatos base.
+- Flujo de licencia local V1 y activación firmada.
 
-Protección de rutas.
+---
 
-Dashboard
+## Pendientes posteriores al piloto
 
-Vista general del sistema.
+No bloquean la V1 actual:
 
-Accesos principales.
+- facturación electrónica DIAN;
+- actualizador automático;
+- firma comercial del instalador;
+- integración futura del licenciamiento con un panel central;
+- PWA o aplicación móvil separada;
+- dashboard móvil;
+- cuentas por pagar avanzadas;
+- notificaciones de compras próximas a vencer;
+- auditoría de soporte más avanzada;
+- automatización adicional de migraciones;
+- certificados HTTPS automáticos para escenarios móviles;
+- pulido visual adicional.
 
-Estado operativo.
+---
 
-Configuración
+## Convenciones de trabajo del proyecto
 
-Datos del negocio.
+- Trabajar módulo por módulo.
+- Evitar refactors innecesarios durante validaciones finales.
+- Agregar a Git únicamente los archivos necesarios.
+- No versionar `dist`.
+- No versionar bases SQLite runtime.
+- No versionar backups.
+- No versionar `.env`.
+- No versionar certificados ni claves privadas.
+- Probar cada cambio antes de avanzar.
+- Mantener la arquitectura modular.
 
-Moneda.
+---
 
-Mensaje de recibo.
+## Entrega a cliente piloto
 
-Información usada en tickets y documentos.
+Para un cliente piloto se distribuye:
 
-Productos
-
-Crear, listar y editar productos.
-
-Categorías.
-
-Unidades de medida.
-
-Stock.
-
-Costo.
-
-Precio de venta.
-
-IVA de venta.
-
-Precio con IVA incluido o sin incluir.
-
-Imagen de producto.
-
-Código interno.
-
-Código de barras / SKU.
-
-Regla actual de IVA:
-
-19 = 19%
-5 = 5%
-0 = sin IVA
-
-Ya no se usa:
-
-1900 = 19%
-
-Inventario
-
-Stock actual.
-
-Stock mínimo.
-
-Ajustes manuales.
-
-Historial.
-
-Conteos físicos.
-
-Diferencias de conteo.
-
-Exportación e importación Excel.
-
-Reporte operativo.
-
-Valoración comercial.
-
-Caja
-
-Apertura de caja.
-
-Base inicial.
-
-Movimientos.
-
-Métodos de pago.
-
-Cierre.
-
-Diferencias.
-
-Relación con ventas.
-
-Ventas / POS
-
-POS táctil.
-
-Búsqueda de productos.
-
-Carrito.
-
-Métodos de pago.
-
-Pago mixto.
-
-Ticket.
-
-Historial de ventas.
-
-Cálculo correcto de subtotal, IVA y total.
-
-Compras
-
-Registro de compras.
-
-Proveedores.
-
-Detalle de compra.
-
-Estados de pago.
-
-Saldos pendientes.
-
-Abonos.
-
-Base futura para cuentas por pagar.
-
-Clientes y proveedores
-
-Administración básica.
-
-Relación con ventas, compras y documentos.
-
-Cotizaciones
-
-Creación y consulta.
-
-Documento comercial previo a venta.
-
-Remisiones
-
-Creación y consulta.
-
-Soporte para entrega o despacho.
-
-Notas crédito
-
-Creación y consulta.
-
-Relación con ventas según flujo comercial.
-
-Backups
-
-Creación de backups.
-
-Restauración controlada.
-
-Validación antes de restaurar.
-
-Backup de emergencia previo a restauración.
-
-Estado de QA
-
-Se consideran suficientemente validados para V1 piloto:
-
-Dashboard.
-
-Configuración.
-
-Productos.
-
-Categorías.
-
-Inventario.
-
-Compras.
-
-Ventas / POS.
-
-Caja.
-
-Clientes.
-
-Proveedores.
-
-Cotizaciones.
-
-Remisiones.
-
-Notas crédito.
-
-Reportes.
-
-Backups.
-
-Restauración.
-
-Ticket.
-
-Instalador.
-
-Desinstalación conservando datos.
-
-Ícono y metadatos base.
-
-Pendientes no bloqueantes para después del piloto
-
-No bloquean la V1 piloto:
-
-Facturación electrónica DIAN.
-
-Sistema de licencias avanzado.
-
-Actualizador automático.
-
-Firma comercial del instalador.
-
-PWA.
-
-App móvil separada.
-
-Dashboard móvil.
-
-Cuentas por pagar avanzadas.
-
-Notificaciones de compras próximas a vencer.
-
-Auditoría avanzada de soporte.
-
-Bloqueo de instancia única Electron.
-
-Migraciones automáticas al iniciar.
-
-Certificados HTTPS automáticos para móviles.
-
-Pulido visual avanzado.
-
-Comandos útiles
-
-Validar estado de Git:
-
-git status
-
-Validar base de datos y pre-Electron:
-
-npm run check:pre-electron
-
-Ejecutar desarrollo:
-
-npm run dev
-
-Ejecutar Electron:
-
-npm run electron
-
-Liberar puerto interno de Electron:
-
-Get-NetTCPConnection -LocalPort 3210 -ErrorAction SilentlyContinue |
-ForEach-Object {
-    Stop-Process -Id $_.OwningProcess -Force
-}
-
-Empaquetar:
-
-npm run pack:dir
-npm run dist:win
-
-Convenciones de trabajo del proyecto
-
-Trabajar módulo por módulo.
-
-No hacer refactors innecesarios.
-
-No usar git add ..
-
-Usar git add con archivos específicos.
-
-No subir dist.
-
-No subir bases SQLite.
-
-No subir backups.
-
-No subir .env.
-
-No subir certificados.
-
-No entregar ZIP completo del proyecto a clientes.
-
-Probar cada cambio antes de avanzar.
-
-Mantener la base de datos en español.
-
-Mantener la arquitectura modular.
-
-Entrega a cliente piloto
-
-Para un cliente piloto se entrega:
-
+```text
 Prismia POS Local Setup 1.0.0.exe
+```
 
-No se entrega:
+No se distribuyen:
 
-repositorio completo
+- repositorio completo;
+- ZIP del proyecto;
+- `.env`;
+- base de datos de desarrollo;
+- backups de prueba;
+- certificados locales;
+- secretos runtime;
+- claves privadas.
 
-ZIP del proyecto
+La instalación crea su propio entorno de datos y configuración en el equipo del cliente.
 
-.env
+---
 
-base de datos de desarrollo
+## Estado de la V1
 
-backups de prueba
+Prismia POS Local V1 se encuentra preparado para una **prueba piloto controlada**.
 
-certificados locales
+La prioridad de esta etapa es validar:
 
-secretos runtime
+- estabilidad;
+- integridad de los datos;
+- ventas correctas;
+- caja confiable;
+- inventario usable;
+- backups y restauración;
+- instalación limpia;
+- comportamiento del licenciamiento en un escenario real.
 
-La instalación debe crear su propio entorno en AppData y su propia configuración inicial.
+---
 
-Estado de la V1
+## Autor
 
-Prismia POS Local V1 queda listo para prueba piloto controlada.
+**Jose Carlos Nieves Iguaran**  
+Estudiante de Análisis y Desarrollo de Software - SENA
 
-La prioridad de esta etapa es estabilidad, datos seguros, ventas correctas, caja confiable, inventario usable, backups/restauración funcionales y una instalación limpia para cliente real.
+Proyecto desarrollado como parte de la evolución de **Prismia / TINAI**.
