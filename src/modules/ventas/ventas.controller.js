@@ -26,7 +26,6 @@ function mostrarPOS(req, res) {
     });
 
     return res.render('ventas/index', {
-        titulo: 'Ventas',
         turnoAbierto: estadoPOS.turnoAbierto,
         configuracion: estadoPOS.configuracion,
         clienteConsumidorFinal: estadoPOS.clienteConsumidorFinal,
@@ -42,7 +41,8 @@ function mostrarPOS(req, res) {
         mensajeBloqueo: estadoPOS.mensajeBloqueo,
         mensajeExito: req.query.exito || null,
         error: req.query.error || null,
-        estilosModulo: estilosVentas,
+        titulo: 'Punto de venta',
+        estilosModulo: ['/css/modules/pos.css'],
     });
 }
 

@@ -1271,8 +1271,10 @@ data-product-image="${escaparHtml(producto.imagen_url || '')}"
 
         const nuevaCantidad = item.cantidad + delta;
 
+        // En pantallas táctiles un toque de más en "−" borraba la línea.
+        // Ahora la cantidad no baja del mínimo; para quitar se usa el ✕.
         if (nuevaCantidad <= 0) {
-            eliminarProducto(idProducto, ui, estado);
+            mostrarAviso('Para quitar el producto usa el botón ✕.', 'error');
             return;
         }
 
@@ -2403,6 +2405,13 @@ data-product-image="${escaparHtml(producto.imagen_url || '')}"
 
         renderizarCarrito(ui, estado);
         recalcularTodo(ui, estado);
+
+        // El cuerpo del ticket tiene scroll propio: vuelve arriba para la venta nueva.
+        const cuerpoTicket = document.querySelector('.pos-ticket-cuerpo');
+
+        if (cuerpoTicket) {
+            cuerpoTicket.scrollTop = 0;
+        }
 
         if (ui.inputBusqueda) {
             ui.inputBusqueda.focus();

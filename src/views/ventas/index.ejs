@@ -112,7 +112,9 @@
                                 </div>
                                 <% } %>
 
-                                    <section class="ventas-context-bar">
+                                    <div class="pos-layout">
+                                    <div class="pos-columna-catalogo">
+                                    <section class="ventas-context-bar pos-cliente">
                                         <div
                                             class="ventas-context-item is-client ventas-client-search-box ventas-client-clean">
                                             <div class="ventas-client-clean-head">
@@ -147,48 +149,6 @@
                                             </small>
                                         </div>
 
-                                        <label class="ventas-context-item ventas-date-item" for="fechaVenta">
-                                            <span>Fecha</span>
-                                            <input type="date" id="fechaVenta" name="fecha_venta"
-                                                value="<%= fechaHoy %>" min="<%= fechaHoy %>" max="<%= fechaHoy %>"
-                                                data-fecha-hoy="<%= fechaHoy %>" readonly tabindex="-1"
-                                                title="La fecha de la venta es la del día y la asigna el sistema">
-                                        </label>
-
-                                        <div class="ventas-context-item ventas-invoice-code-box">
-                                            <span>Factura</span>
-                                            <strong data-factura-sugerida>
-                                                <%= nomenclaturaFacturaPOS %>
-                                            </strong>
-                                            <small>Número sugerido. Se confirma al guardar</small>
-                                        </div>
-
-                                        <div class="ventas-context-item ventas-context-actions">
-                                            <span>Acciones</span>
-
-                                            <div class="ventas-context-buttons">
-                                                <a href="/ventas/historial" class="btn-secondary">
-                                                    Historial
-                                                </a>
-
-                                                <button type="button" class="btn-secondary" id="btnLimpiarVenta"
-                                                    disabled>
-                                                    Limpiar
-                                                </button>
-
-                                                <button type="button" class="btn-secondary" id="btnVentaPendiente"
-                                                    disabled>
-                                                    Pendiente
-                                                </button>
-
-                                                <button type="button" class="btn-primary ventas-charge-button"
-                                                    id="btnCobrarVenta" <%=puedeVender ? '' : 'disabled' %>>
-                                                    Cobrar
-                                                </button>
-                                            </div>
-
-                                            <small>Atajos operativos de la venta</small>
-                                        </div>
                                     </section>
 
                                     <section class="ventas-search-section">
@@ -417,18 +377,51 @@
                                                 </div>
                                     </section>
 
-                                    <section class="ventas-sale-card">
-                                        <header class="ventas-sale-header">
-                                            <div>
-                                                <span class="ventas-kicker">Factura</span>
-                                                <h3>Detalle de venta</h3>
+                                    <div class="pos-guia-clasica">
+                                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none"
+                                            stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                                            <path d="M3 5v14M7 5v14M11 5v14M14 5v14M18 5v14M21 5v14" />
+                                        </svg>
+                                        <strong>Busca o escanea un producto</strong>
+                                        <span>Escribe el nombre, el código o el SKU, o usa el lector de códigos de
+                                            barras.</span>
+                                    </div>
+                                    </div>
+
+                                    <aside class="ventas-sale-card pos-ticket" aria-label="Venta actual">
+                                        <header class="ventas-sale-header pos-ticket-header">
+                                            <div class="pos-ticket-titulo">
+                                                <span class="ventas-kicker">Venta actual</span>
+                                                <strong class="ventas-ticket-state" data-factura-sugerida>
+                                                    <%= nomenclaturaFacturaPOS %>
+                                                </strong>
                                             </div>
 
-                                            <span class="ventas-ticket-state" data-factura-sugerida>
-                                                <%= nomenclaturaFacturaPOS %>
-                                            </span>
+                                            <input type="date" id="fechaVenta" name="fecha_venta"
+                                                class="pos-ticket-fecha" value="<%= fechaHoy %>"
+                                                min="<%= fechaHoy %>" max="<%= fechaHoy %>"
+                                                data-fecha-hoy="<%= fechaHoy %>" readonly tabindex="-1"
+                                                aria-label="Fecha de la venta"
+                                                title="La fecha de la venta es la del día y la asigna el sistema">
+
+                                            <div class="pos-ticket-acciones">
+                                                <a href="/ventas/historial" class="btn-secondary btn-small">
+                                                    Historial
+                                                </a>
+
+                                                <button type="button" class="btn-secondary btn-small"
+                                                    id="btnVentaPendiente" disabled>
+                                                    Pendiente
+                                                </button>
+
+                                                <button type="button" class="btn-secondary btn-small"
+                                                    id="btnLimpiarVenta" disabled>
+                                                    Limpiar
+                                                </button>
+                                            </div>
                                         </header>
 
+                                        <div class="pos-ticket-cuerpo">
                                         <div class="ventas-invoice-table-wrap">
                                             <table class="ventas-invoice-table">
                                                 <thead>
@@ -457,7 +450,6 @@
                                             </table>
                                         </div>
 
-                                        <section class="ventas-sale-footer">
                                             <div class="ventas-payment-strip">
                                                 <div class="ventas-payment-strip-header">
                                                     <div>
@@ -526,7 +518,7 @@
                                                     </small>
                                                 </div>
 
-                                                <div class="ventas-payment-info">
+                                                <div class="ventas-payment-info pos-oculto">
                                                     <div class="ventas-payment-info-card">
                                                         <span>Cliente actual</span>
                                                         <strong id="infoPagoCliente">
@@ -560,7 +552,9 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                        </div>
 
+                                        <section class="ventas-sale-footer">
                                             <div class="ventas-totals-panel">
                                                 <div class="ventas-total-row">
                                                     <span>Subtotal</span>
@@ -597,8 +591,14 @@
                                                 <span id="resumenCantidadItems">0</span>
                                                 <span id="resumenDescuento">$ 0</span>
                                             </div>
+
+                                            <button type="button" class="btn-primary ventas-charge-button pos-cobrar"
+                                                id="btnCobrarVenta" <%=puedeVender ? '' : 'disabled' %>>
+                                                Cobrar
+                                            </button>
                                         </section>
-                                    </section>
+                                    </aside>
+                                    </div>
         </div>
 
         <div class="ventas-modal-backdrop" id="modalAccesoRapidoTactil" hidden>

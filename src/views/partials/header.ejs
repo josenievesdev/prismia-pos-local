@@ -1,19 +1,31 @@
 <header class="app-header">
-    <div>
-        <p class="header-kicker">Panel administrativo</p>
-        <h1>
-            <%= titulo || 'Panel' %>
-        </h1>
+    <div class="app-header-start">
+        <button type="button" class="shell-toggle" data-shell-toggle aria-controls="appSidebar"
+            aria-label="Mostrar u ocultar el menú" title="Menú">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" aria-hidden="true">
+                <line x1="4" y1="6" x2="20" y2="6" />
+                <line x1="4" y1="12" x2="20" y2="12" />
+                <line x1="4" y1="18" x2="20" y2="18" />
+            </svg>
+        </button>
+
+        <div class="app-header-title">
+            <p class="header-kicker">Panel administrativo</p>
+            <h1>
+                <%= titulo || 'Panel' %>
+            </h1>
+        </div>
     </div>
 
     <div class="header-user">
         <% if (usuario) { %>
             <div class="user-pill">
-                <div class="user-avatar">
+                <div class="user-avatar" aria-hidden="true">
                     <%= usuario.nombre ? usuario.nombre.charAt(0).toUpperCase() : 'U' %>
                 </div>
 
-                <div>
+                <div class="user-pill-copy">
                     <strong>
                         <%= usuario.nombre %>
                     </strong>
@@ -22,12 +34,12 @@
                     </small>
                 </div>
             </div>
-            <% } %>
+        <% } %>
 
-                <form method="POST" action="/auth/logout">
-                    <button type="submit" class="btn-secondary btn-small">
-                        Salir
-                    </button>
-                </form>
+        <form method="POST" action="/auth/logout">
+            <button type="submit" class="btn-secondary btn-small">
+                Salir
+            </button>
+        </form>
     </div>
 </header>

@@ -191,8 +191,7 @@
 
                                                         <% if (Number(producto.maneja_iva)===1) { %>
                                                             <span class="table-subtext">
-                                                                IVA: <%= (Number(producto.porcentaje_iva || 0) /
-                                                                    100).toFixed(2) %>%
+                                                                IVA: <%= Number(producto.porcentaje_iva || 0).toLocaleString('es-CO', { maximumFractionDigits: 2 }) %>%
                                                                     <%= Number(producto.precio_incluye_iva)===1
                                                                         ? 'incluido' : 'no incluido' %>
                                                             </span>
