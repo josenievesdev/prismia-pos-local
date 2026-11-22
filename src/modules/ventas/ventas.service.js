@@ -1,9 +1,6 @@
 const ventasRepository = require('./ventas.repository');
 const fechas = require('../../utils/fechas');
-
-function limpiarTexto(valor) {
-    return String(valor || '').trim();
-}
+const { limpiarTexto, normalizarId, crearError } = require('../../utils/comunes');
 
 function normalizarNumero(valor, defecto = 0) {
     const numero = Number(valor);
@@ -374,16 +371,6 @@ function crearErrorVenta(mensaje, codigoEstado = 400) {
         mensaje,
         codigoEstado,
     };
-}
-
-function normalizarId(valor) {
-    const numero = Number(valor);
-
-    if (!Number.isInteger(numero) || numero <= 0) {
-        return null;
-    }
-
-    return numero;
 }
 
 function redondearDinero(valor) {
@@ -1326,14 +1313,6 @@ function obtenerTicketVenta(idVenta) {
                 fecha_emision: venta.fecha_venta,
             },
         },
-    };
-}
-
-function crearError(mensaje, codigoEstado = 400) {
-    return {
-        ok: false,
-        mensaje,
-        codigoEstado,
     };
 }
 

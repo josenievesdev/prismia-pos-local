@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const usuariosRepository = require('./usuarios.repository');
+const { normalizarId } = require('../../utils/comunes');
 
 const ROLES_PERMITIDOS = ['administrador', 'cajero'];
 const ESTADOS_PERMITIDOS = ['activo', 'inactivo', 'bloqueado'];
@@ -10,16 +11,6 @@ function normalizarTexto(valor) {
 
 function normalizarCorreo(correo) {
     return String(correo || '').trim().toLowerCase();
-}
-
-function normalizarId(valor) {
-    const numero = Number(valor);
-
-    if (!Number.isInteger(numero) || numero <= 0) {
-        return null;
-    }
-
-    return numero;
 }
 
 function correoValido(correo) {

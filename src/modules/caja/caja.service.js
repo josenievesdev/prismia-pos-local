@@ -1,12 +1,9 @@
 const XLSX = require('xlsx');
 
 const cajaRepository = require('./caja.repository');
+const { limpiarTexto } = require('../../utils/comunes');
 
 const TIPOS_MOVIMIENTO_MANUAL = ['ingreso_manual', 'egreso_manual'];
-
-function limpiarTexto(valor) {
-    return String(valor || '').trim();
-}
 
 function normalizarMontoEntero(valor) {
     const texto = String(valor ?? '')

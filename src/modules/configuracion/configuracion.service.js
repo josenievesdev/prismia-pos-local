@@ -1,10 +1,7 @@
 const configuracionRepository = require('./configuracion.repository');
 const env = require('../../config/env');
 const runtimeSecrets = require('../../config/runtime-secrets');
-
-function limpiarTexto(valor) {
-    return String(valor || '').trim();
-}
+const { limpiarTexto } = require('../../utils/comunes');
 
 function convertirEntero(valor, valorPorDefecto = 0) {
     const numero = Number(valor);

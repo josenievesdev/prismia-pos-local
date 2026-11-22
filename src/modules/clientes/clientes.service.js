@@ -1,4 +1,5 @@
 const clientesRepository = require('./clientes.repository');
+const { limpiarTexto, normalizarId } = require('../../utils/comunes');
 
 const TIPOS_CLIENTE = [
     'persona_natural',
@@ -25,10 +26,6 @@ const REGIMENES_FISCALES = [
     'gran_contribuyente',
 ];
 
-function limpiarTexto(valor) {
-    return String(valor || '').trim();
-}
-
 function contieneSoloDigitos(valor) {
     return /^\d+$/.test(String(valor || '').trim());
 }
@@ -45,16 +42,6 @@ function normalizarEntero(valor, defecto = 0) {
     }
 
     return Math.trunc(numero);
-}
-
-function normalizarId(valor) {
-    const numero = Number(valor);
-
-    if (!Number.isInteger(numero) || numero <= 0) {
-        return null;
-    }
-
-    return numero;
 }
 
 function normalizarBooleano(valor, defecto = 0) {

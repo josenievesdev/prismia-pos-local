@@ -1,5 +1,6 @@
 const comprasRepository = require('./compras.repository');
 const fechas = require('../../utils/fechas');
+const { limpiarTexto } = require('../../utils/comunes');
 
 const ESTADOS_PERMITIDOS = ['borrador', 'registrada', 'anulada'];
 const LIMITE_POR_PAGINA = 20;
@@ -25,10 +26,6 @@ const TIPOS_SOPORTE_COMPRA = [
         etiqueta: 'Otro soporte',
     },
 ];
-
-function limpiarTexto(valor) {
-    return String(valor || '').trim();
-}
 
 function formatearMoneda(valor) {
     return new Intl.NumberFormat('es-CO', {

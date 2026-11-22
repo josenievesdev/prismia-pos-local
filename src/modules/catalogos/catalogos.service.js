@@ -1,8 +1,5 @@
 const catalogosRepository = require('./catalogos.repository');
-
-function limpiarTexto(valor) {
-    return String(valor || '').trim();
-}
+const { limpiarTexto } = require('../../utils/comunes');
 
 function normalizarLimite(valor, defecto = 12) {
     const numero = Number(valor);

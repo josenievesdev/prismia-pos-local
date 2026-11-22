@@ -1,8 +1,5 @@
 const db = require('../../config/db');
-
-function limpiarTexto(valor) {
-    return String(valor || '').trim();
-}
+const { limpiarTexto } = require('../../utils/comunes');
 
 function normalizarEntero(valor, defecto = 0) {
     const numero = Number(valor);

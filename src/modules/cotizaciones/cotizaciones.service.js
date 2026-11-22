@@ -1,10 +1,7 @@
 const cotizacionesRepository = require('./cotizaciones.repository');
 const ventasRepository = require('../ventas/ventas.repository');
 const fechas = require('../../utils/fechas');
-
-function limpiarTexto(valor) {
-    return String(valor || '').trim();
-}
+const { limpiarTexto, normalizarId, crearError } = require('../../utils/comunes');
 
 function normalizarNumero(valor, defecto = 0) {
     const numero = Number(valor);
@@ -26,16 +23,6 @@ function normalizarEntero(valor, defecto = 0) {
     return Math.round(numero);
 }
 
-function normalizarId(valor) {
-    const numero = Number(valor);
-
-    if (!Number.isInteger(numero) || numero <= 0) {
-        return null;
-    }
-
-    return numero;
-}
-
 function redondearDinero(valor) {
     return Math.round(normalizarNumero(valor));
 }
@@ -46,14 +33,6 @@ function redondearCantidad(valor) {
 
 function tieneParteDecimal(valor) {
     return Math.abs(valor - Math.round(valor)) > 0.000001;
-}
-
-function crearError(mensaje, codigoEstado = 400) {
-    return {
-        ok: false,
-        mensaje,
-        codigoEstado,
-    };
 }
 
 function obtenerPrimerValor(objeto, claves, defecto = '') {

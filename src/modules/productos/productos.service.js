@@ -1,8 +1,5 @@
 const productosRepository = require('./productos.repository');
-
-function limpiarTexto(valor) {
-    return String(valor || '').trim();
-}
+const { limpiarTexto } = require('../../utils/comunes');
 
 function convertirEntero(valor, valorPorDefecto = 0) {
     const numero = Number(String(valor || '').replace(',', '.'));

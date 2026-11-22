@@ -1,24 +1,11 @@
 const proveedoresRepository = require('./proveedores.repository');
+const { limpiarTexto, normalizarId } = require('../../utils/comunes');
 
 const TIPOS_DOCUMENTO_PERMITIDOS = ['NIT', 'CC', 'CE', 'PAS', 'OTRO'];
 const ESTADOS_PERMITIDOS = ['activo', 'inactivo'];
 
-function limpiarTexto(valor) {
-    return String(valor || '').trim();
-}
-
 function limpiarCorreo(valor) {
     return limpiarTexto(valor).toLowerCase();
-}
-
-function normalizarId(valor) {
-    const numero = Number(valor);
-
-    if (!Number.isInteger(numero) || numero <= 0) {
-        return null;
-    }
-
-    return numero;
 }
 
 function normalizarEntero(valor, defecto = 1) {

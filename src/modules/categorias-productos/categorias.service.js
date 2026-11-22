@@ -1,8 +1,5 @@
 const categoriasRepository = require('./categorias.repository');
-
-function limpiarTexto(valor) {
-    return String(valor || '').trim();
-}
+const { limpiarTexto } = require('../../utils/comunes');
 
 function listarCategorias() {
     return categoriasRepository.listarCategorias();

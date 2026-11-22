@@ -1,10 +1,7 @@
 const XLSX = require('xlsx');
 const inventarioRepository = require('./inventario.repository');
 const fechas = require('../../utils/fechas');
-
-function limpiarTexto(valor) {
-    return String(valor || '').trim();
-}
+const { limpiarTexto } = require('../../utils/comunes');
 
 function convertirCantidad(valor, valorPorDefecto = 0) {
     const numero = Number(String(valor || '').replace(',', '.'));

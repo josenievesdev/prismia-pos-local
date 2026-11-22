@@ -1,8 +1,5 @@
 const reportesRepository = require('./reportes.repository');
-
-function limpiarTexto(valor) {
-    return String(valor || '').trim();
-}
+const { limpiarTexto } = require('../../utils/comunes');
 
 function normalizarEntero(valor) {
     const numero = Number(valor || 0);

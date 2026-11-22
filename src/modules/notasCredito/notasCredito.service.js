@@ -1,26 +1,5 @@
 const notasCreditoRepository = require('./notasCredito.repository');
-
-function crearError(mensaje, codigoEstado = 400) {
-    return {
-        ok: false,
-        mensaje,
-        codigoEstado,
-    };
-}
-
-function limpiarTexto(valor) {
-    return String(valor || '').trim();
-}
-
-function normalizarId(valor) {
-    const numero = Number(valor);
-
-    if (!Number.isInteger(numero) || numero <= 0) {
-        return null;
-    }
-
-    return numero;
-}
+const { limpiarTexto, normalizarId, crearError } = require('../../utils/comunes');
 
 function normalizarEntero(valor, defecto = 0) {
     const numero = Number(valor);
