@@ -1,5 +1,5 @@
 <section class="module-page ventas-page remisiones-pos-page">
-    <% const fechaHoy=new Date().toISOString().slice(0, 10); const remisionSugerida=siguienteRemision || { prefijo: 'RM'
+    <% const fechaHoy=fechaHoyLocal; const remisionSugerida=siguienteRemision || { prefijo: 'RM'
         , siguiente_numero: 'RM-BORRADOR' }; const numeroRemision=remisionSugerida.siguiente_numero || 'RM-BORRADOR' ;
         %>
 

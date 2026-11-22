@@ -365,7 +365,13 @@ function prepararProveedorParaCompra(proveedor) {
     };
 }
 
-function calcularLineaCompra(linea = {}) {
+/**
+ * @param {object} opciones.esResponsableIva Si el negocio es responsable de
+ *   IVA, el IVA de la compra es descontable y NO hace parte del costo del
+ *   inventario (la utilidad de las ventas se calcula sin IVA). Si no es
+ *   responsable, el IVA pagado sí es costo.
+ */
+function calcularLineaCompra(linea = {}, { esResponsableIva = false } = {}) {
     const cantidad = normalizarNumero(linea.cantidad, 0);
     const costoUnitario = normalizarEntero(linea.costo_unitario, 0);
     const descuentoPorcentaje = normalizarPorcentaje(linea.descuento_porcentaje, 0);
@@ -396,6 +402,9 @@ function calcularLineaCompra(linea = {}) {
         costo_unitario_neto: normalizarEntero(costoUnitarioNeto),
         iva_unitario: normalizarEntero(ivaUnitario),
         costo_unitario_final: normalizarEntero(costoUnitarioFinal),
+        costo_unitario_inventario: normalizarEntero(
+            esResponsableIva ? costoUnitarioNeto : costoUnitarioFinal
+        ),
 
         subtotal_linea: normalizarEntero(subtotalLinea),
         iva_linea: normalizarEntero(ivaLinea),
@@ -452,8 +461,11 @@ function validarYCalcularCompra(datos = {}) {
     const idsProductos = new Set();
     const lineasCalculadas = [];
 
+    const configuracion = comprasRepository.obtenerConfiguracionNegocio();
+    const esResponsableIva = Number(configuracion?.maneja_iva || 0) === 1;
+
     lineasOriginales.forEach((linea, indice) => {
-        const calculada = calcularLineaCompra(linea);
+        const calculada = calcularLineaCompra(linea, { esResponsableIva });
         const numeroLinea = indice + 1;
 
         if (!calculada.id_producto) {

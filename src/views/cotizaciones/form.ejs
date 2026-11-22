@@ -1,5 +1,5 @@
 <section class="module-page ventas-page cotizaciones-pos-page">
-    <% const fechaHoy=new Date().toISOString().slice(0, 10); const cotizacionSugerida=siguienteCotizacion || {
+    <% const fechaHoy=fechaHoyLocal; const cotizacionSugerida=siguienteCotizacion || {
         prefijo: 'COT' , siguiente_numero: 'COT-BORRADOR' }; const
         nomenclaturaCotizacion=cotizacionSugerida.siguiente_numero || 'COT-BORRADOR' ; %>
 

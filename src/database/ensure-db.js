@@ -1,5 +1,6 @@
 const db = require('../config/db');
 const { inicializarBaseDatos } = require('./init-db');
+const migrator = require('./migrator');
 
 const tablasMinimasParaArranque = [
     'roles',
@@ -56,10 +57,16 @@ function asegurarBaseDatos() {
 
         inicializarBaseDatos();
 
+        // Base nueva: se lleva a la última versión sin respaldo (no hay datos).
+        const migracion = migrator.aplicarMigracionesPendientes(db, {
+            crearRespaldo: false,
+        });
+
         return {
             creada: true,
             ok: true,
             mensaje: 'Base de datos creada automáticamente.',
+            migracion,
         };
     }
 
@@ -80,10 +87,16 @@ function asegurarBaseDatos() {
         };
     }
 
+    // Base existente: aplica migraciones pendientes con respaldo previo.
+    const migracion = migrator.aplicarMigracionesPendientes(db, {
+        crearRespaldo: true,
+    });
+
     return {
         creada: false,
         ok: true,
         mensaje: 'Base de datos existente validada para arranque.',
+        migracion,
     };
 }
 

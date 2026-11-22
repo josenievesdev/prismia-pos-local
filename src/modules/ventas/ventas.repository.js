@@ -1,4 +1,5 @@
 const db = require('../../config/db');
+const cajaTotales = require('../caja/caja.totales');
 
 function obtenerTurnoAbierto() {
     return db
@@ -727,13 +728,7 @@ function registrarVentaPOS(datos) {
 
         const tipoVenta = datos.tipo_venta || (pagosValidos.length > 1 ? 'mixta' : 'contado');
 
-        const totalesTurnoSeguro = {
-            total_efectivo: Number(datos.totales_turno && datos.totales_turno.total_efectivo || 0),
-            total_transferencia: Number(datos.totales_turno && datos.totales_turno.total_transferencia || 0),
-            total_tarjeta: Number(datos.totales_turno && datos.totales_turno.total_tarjeta || 0),
-            total_otros: Number(datos.totales_turno && datos.totales_turno.total_otros || 0),
-            monto_esperado: Number(datos.totales_turno && datos.totales_turno.monto_esperado || 0),
-        };
+        cajaTotales.exigirTurnoAbierto(db, datos.turno.id_turno_caja);
 
         const codigoDocumento = datos.codigo_documento || 'factura_venta';
 
@@ -1066,33 +1061,7 @@ function registrarVentaPOS(datos) {
             });
         }
 
-        const resultadoTurno = db
-            .prepare(`
-                UPDATE turnos_caja
-                SET
-                    total_ventas = total_ventas + @total_ventas,
-                    total_efectivo = total_efectivo + @total_efectivo,
-                    total_transferencia = total_transferencia + @total_transferencia,
-                    total_tarjeta = total_tarjeta + @total_tarjeta,
-                    total_otros = total_otros + @total_otros,
-                    monto_esperado = monto_esperado + @monto_esperado,
-                    actualizado_en = CURRENT_TIMESTAMP
-                WHERE id_turno_caja = @id_turno_caja
-                  AND estado = 'abierto'
-            `)
-            .run({
-                id_turno_caja: datos.turno.id_turno_caja,
-                total_ventas: datos.resumen.total,
-                total_efectivo: totalesTurnoSeguro.total_efectivo,
-                total_transferencia: totalesTurnoSeguro.total_transferencia,
-                total_tarjeta: totalesTurnoSeguro.total_tarjeta,
-                total_otros: totalesTurnoSeguro.total_otros,
-                monto_esperado: totalesTurnoSeguro.monto_esperado,
-            });
-
-        if (resultadoTurno.changes === 0) {
-            throw new Error('No se pudo actualizar el turno de caja abierto.');
-        }
+        cajaTotales.sincronizarTotalesTurno(db, datos.turno.id_turno_caja);
 
         db.prepare(`
             INSERT INTO comprobantes (
@@ -1156,7 +1125,7 @@ function registrarVentaPOS(datos) {
         };
     });
 
-    return transaccion();
+    return transaccion.immediate();
 }
 
 function obtenerVentaTicketPorId(idVenta) {
@@ -1438,6 +1407,8 @@ function anularVentaCompleta(datos) {
         const pagos = datos.pagos;
         const reversaCaja = datos.reversa_caja;
 
+        cajaTotales.exigirTurnoAbierto(db, venta.id_turno_caja);
+
         const resultadoAnulacion = db
             .prepare(`
                 INSERT INTO anulaciones_venta (
@@ -1699,33 +1670,7 @@ function anularVentaCompleta(datos) {
             });
         });
 
-        const turnoActualizado = db
-            .prepare(`
-                UPDATE turnos_caja
-                SET
-                    total_ventas = total_ventas - @total_ventas,
-                    total_efectivo = total_efectivo - @total_efectivo,
-                    total_transferencia = total_transferencia - @total_transferencia,
-                    total_tarjeta = total_tarjeta - @total_tarjeta,
-                    total_otros = total_otros - @total_otros,
-                    monto_esperado = monto_esperado - @monto_esperado,
-                    actualizado_en = CURRENT_TIMESTAMP
-                WHERE id_turno_caja = @id_turno_caja
-                  AND estado = 'abierto'
-            `)
-            .run({
-                id_turno_caja: venta.id_turno_caja,
-                total_ventas: reversaCaja.total_ventas,
-                total_efectivo: reversaCaja.total_efectivo,
-                total_transferencia: reversaCaja.total_transferencia,
-                total_tarjeta: reversaCaja.total_tarjeta,
-                total_otros: reversaCaja.total_otros,
-                monto_esperado: reversaCaja.monto_esperado,
-            });
-
-        if (turnoActualizado.changes === 0) {
-            throw new Error('No se pudo ajustar el turno de caja.');
-        }
+        cajaTotales.sincronizarTotalesTurno(db, venta.id_turno_caja);
 
         const numeracionNotaCredito = db
             .prepare(`
@@ -1944,7 +1889,7 @@ function anularVentaCompleta(datos) {
         };
     });
 
-    return transaccion();
+    return transaccion.immediate();
 }
 
 function configurarProductoPosTactil({ idProducto, posicion }) {

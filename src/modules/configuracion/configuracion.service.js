@@ -70,9 +70,20 @@ function prepararDatosConfiguracion(datos) {
         correo: limpiarTexto(datos.correo).toLowerCase(),
         moneda: limpiarTexto(datos.moneda) || 'COP',
         impuesto_por_defecto: convertirEntero(datos.impuesto_por_defecto, 0),
+        maneja_iva: leerCasilla(datos.maneja_iva),
         mensaje_recibo:
             limpiarTexto(datos.mensaje_recibo) || 'Gracias por su compra.',
     };
+}
+
+/**
+ * Casilla HTML con <input type="hidden" value="0"> de respaldo: si está
+ * marcada llega ['0', '1'], si no, '0'. Se toma el último valor.
+ */
+function leerCasilla(valor) {
+    const ultimo = Array.isArray(valor) ? valor[valor.length - 1] : valor;
+
+    return ['1', 'on', 'true'].includes(String(ultimo).toLowerCase()) ? 1 : 0;
 }
 
 function actualizarConfiguracionNegocio({

@@ -2473,7 +2473,7 @@ data-product-image="${escaparHtml(producto.imagen_url || '')}"
                 id_cliente: Number.isInteger(idClienteSeleccionado) && idClienteSeleccionado > 0
                     ? idClienteSeleccionado
                     : null,
-                fecha_venta: ui.fechaVenta ? ui.fechaVenta.value : '',
+                // La fecha de la venta la asigna el servidor en hora local.
                 items: estado.carrito.map(function (item) {
                     return {
                         id_producto: item.idProducto,

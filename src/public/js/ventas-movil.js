@@ -960,11 +960,9 @@
         ui.btnFacturar.disabled = true;
         ui.btnFacturar.textContent = 'Facturando...';
 
-        const hoy = new Date().toISOString().slice(0, 10);
-
+        // La fecha de la venta la asigna el servidor en hora local.
         const payload = {
             id_cliente: obtenerIdClienteMovil(ui),
-            fecha_venta: hoy,
             items: estado.carrito.map(function (item) {
                 return {
                     id_producto: item.id_producto,

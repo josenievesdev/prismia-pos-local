@@ -1,4 +1,5 @@
 const empresa = require('../config/empresa');
+const fechas = require('../utils/fechas');
 
 function formatearPesos(valor) {
     const numero = Number(valor || 0);
@@ -52,6 +53,9 @@ function localsMiddleware(req, res, next) {
     res.locals.formatearPesos = formatearPesos;
     res.locals.formatearNumero = formatearNumero;
     res.locals.formatearFecha = formatearFecha;
+
+    // "Hoy" en hora local del equipo (no UTC).
+    res.locals.fechaHoyLocal = fechas.fechaLocalISO();
 
     next();
 }

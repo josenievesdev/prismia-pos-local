@@ -1,5 +1,5 @@
 <section class="module-page ventas-page">
-    <% const fechaHoy=new Date().toISOString().slice(0, 10); const productosListado=Array.isArray(productos) ? productos
+    <% const fechaHoy=fechaHoyLocal; const productosListado=Array.isArray(productos) ? productos
         : []; const productosTactilesListado=Array.isArray(productosTactiles) ? productosTactiles : []; const
         mediosPagoListado=Array.isArray(mediosPago) ? mediosPago : []; const categoriasCatalogoPOS=Array.from(new Set(
         productosListado .map(function (producto) { return producto.categoria_nombre || 'Sin categoría' ; })
@@ -150,8 +150,9 @@
                                         <label class="ventas-context-item ventas-date-item" for="fechaVenta">
                                             <span>Fecha</span>
                                             <input type="date" id="fechaVenta" name="fecha_venta"
-                                                value="<%= fechaHoy %>" max="<%= fechaHoy %>"
-                                                data-fecha-hoy="<%= fechaHoy %>">
+                                                value="<%= fechaHoy %>" min="<%= fechaHoy %>" max="<%= fechaHoy %>"
+                                                data-fecha-hoy="<%= fechaHoy %>" readonly tabindex="-1"
+                                                title="La fecha de la venta es la del día y la asigna el sistema">
                                         </label>
 
                                         <div class="ventas-context-item ventas-invoice-code-box">

@@ -1,4 +1,5 @@
 const db = require('../../config/db');
+const cajaTotales = require('./caja.totales');
 
 function obtenerTurnoAbierto() {
     return db
@@ -39,6 +40,14 @@ function obtenerTurnoPorId(idTurnoCaja) {
 
 function crearTurnoCaja({ usuario, montoInicial, observacionesApertura, ip, userAgent }) {
     const transaccion = db.transaction(() => {
+        const turnoAbiertoExistente = db
+            .prepare(`SELECT id_turno_caja FROM turnos_caja WHERE estado = 'abierto' LIMIT 1`)
+            .get();
+
+        if (turnoAbiertoExistente) {
+            throw new Error('Ya existe una caja abierta. Debes cerrarla antes de abrir otra.');
+        }
+
         const resultado = db
             .prepare(`
                 INSERT INTO turnos_caja (
@@ -98,7 +107,7 @@ function crearTurnoCaja({ usuario, montoInicial, observacionesApertura, ip, user
         return idTurnoCaja;
     });
 
-    return transaccion();
+    return transaccion.immediate();
 }
 
 function listarMovimientosPorTurno(idTurnoCaja, limite = 50) {
@@ -338,52 +347,6 @@ function listarGastosPorTurno(idTurnoCaja) {
         .all(idTurnoCaja);
 }
 
-function actualizarTotalesTurnoPorMovimiento({ idTurnoCaja, tipoMovimiento, monto, medioPago }) {
-    const afectaEfectivo = Number(medioPago.afecta_efectivo_caja || 0) === 1;
-
-    if (!afectaEfectivo) {
-        db.prepare(`
-            UPDATE turnos_caja
-            SET actualizado_en = CURRENT_TIMESTAMP
-            WHERE id_turno_caja = ?
-        `).run(idTurnoCaja);
-
-        return;
-    }
-
-    if (tipoMovimiento === 'ingreso_manual') {
-        db.prepare(`
-            UPDATE turnos_caja
-            SET
-                total_ingresos_manuales = total_ingresos_manuales + @monto,
-                monto_esperado = monto_esperado + @monto,
-                actualizado_en = CURRENT_TIMESTAMP
-            WHERE id_turno_caja = @id_turno_caja
-              AND estado = 'abierto'
-        `).run({
-            id_turno_caja: idTurnoCaja,
-            monto,
-        });
-
-        return;
-    }
-
-    if (tipoMovimiento === 'egreso_manual') {
-        db.prepare(`
-            UPDATE turnos_caja
-            SET
-                total_egresos_manuales = total_egresos_manuales + @monto,
-                monto_esperado = monto_esperado - @monto,
-                actualizado_en = CURRENT_TIMESTAMP
-            WHERE id_turno_caja = @id_turno_caja
-              AND estado = 'abierto'
-        `).run({
-            id_turno_caja: idTurnoCaja,
-            monto,
-        });
-    }
-}
-
 function crearMovimientoManual({
     turno,
     usuario,
@@ -397,6 +360,8 @@ function crearMovimientoManual({
     userAgent,
 }) {
     const transaccion = db.transaction(() => {
+        cajaTotales.exigirTurnoAbierto(db, turno.id_turno_caja);
+
         const resultado = db
             .prepare(`
                 INSERT INTO movimientos_caja (
@@ -439,12 +404,7 @@ function crearMovimientoManual({
 
         const idMovimientoCaja = resultado.lastInsertRowid;
 
-        actualizarTotalesTurnoPorMovimiento({
-            idTurnoCaja: turno.id_turno_caja,
-            tipoMovimiento,
-            monto,
-            medioPago,
-        });
+        cajaTotales.sincronizarTotalesTurno(db, turno.id_turno_caja);
 
         db.prepare(`
             INSERT INTO auditoria (
@@ -489,14 +449,13 @@ function crearMovimientoManual({
         return idMovimientoCaja;
     });
 
-    return transaccion();
+    return transaccion.immediate();
 }
 
 function cerrarTurnoCaja({
     turno,
     usuario,
     montoContado,
-    diferencia,
     observacionesCierre,
     ip,
     userAgent,
@@ -507,6 +466,11 @@ function cerrarTurnoCaja({
         if (!turnoAnterior || turnoAnterior.estado !== 'abierto') {
             throw new Error('No existe un turno abierto válido para cerrar.');
         }
+
+        // Foto final de los totales: lo guardado queda igual a lo calculado
+        // desde los movimientos en el instante del cierre.
+        const totales = cajaTotales.sincronizarTotalesTurno(db, turno.id_turno_caja);
+        const diferencia = Number(montoContado) - totales.monto_esperado;
 
         const resultado = db
             .prepare(`
@@ -568,7 +532,7 @@ function cerrarTurnoCaja({
         return turnoCerrado;
     });
 
-    return transaccion();
+    return transaccion.immediate();
 }
 
 function listarFacturasVentasPorTurno(idTurnoCaja) {
@@ -663,6 +627,8 @@ function crearGastoDesdeCaja({
     userAgent,
 }) {
     const transaccion = db.transaction(() => {
+        cajaTotales.exigirTurnoAbierto(db, turno.id_turno_caja);
+
         const resultadoGasto = db
             .prepare(`
                 INSERT INTO gastos (
@@ -752,12 +718,7 @@ function crearGastoDesdeCaja({
 
         const idMovimientoCaja = resultadoMovimiento.lastInsertRowid;
 
-        actualizarTotalesTurnoPorMovimiento({
-            idTurnoCaja: turno.id_turno_caja,
-            tipoMovimiento: 'egreso_manual',
-            monto,
-            medioPago,
-        });
+        cajaTotales.sincronizarTotalesTurno(db, turno.id_turno_caja);
 
         db.prepare(`
             INSERT INTO auditoria (
@@ -807,7 +768,7 @@ function crearGastoDesdeCaja({
         };
     });
 
-    return transaccion();
+    return transaccion.immediate();
 }
 
 module.exports = {

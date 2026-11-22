@@ -23,7 +23,9 @@
     "db:migrate:006": "node src/database/migrations/006_gastos_medios_pago.js",
     "db:migrate:037": "node src/database/migrations/037_normalizar_iva_venta_porcentaje.js",
     "check:pre-electron": "npm run db:validate && node scripts/verificar-pre-electron.js",
-    "check:runtime": "node scripts/diagnostico-runtime.js"
+    "check:runtime": "node scripts/diagnostico-runtime.js",
+    "test": "npm run native:node && node --test \"tests/**/*.test.js\"",
+    "test:rapido": "node --test \"tests/**/*.test.js\""
   },
   "keywords": [
     "pos",
@@ -116,5 +118,10 @@
       "createStartMenuShortcut": true,
       "shortcutName": "Prismia POS Local"
     }
+  },
+  "allowScripts": {
+    "better-sqlite3@12.9.0": true,
+    "electron@37.10.3": true,
+    "electron-winstaller@5.4.0": true
   }
 }

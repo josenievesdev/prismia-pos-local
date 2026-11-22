@@ -1437,14 +1437,10 @@ function cerrarCaja({ datosFormulario, usuario, ip, userAgent }) {
         };
     }
 
-    const montoEsperado = Number(turnoAbierto.monto_esperado_calculado || 0);
-    const diferencia = montoContado - montoEsperado;
-
     const turnoCerrado = cajaRepository.cerrarTurnoCaja({
         turno: turnoAbierto,
         usuario,
         montoContado,
-        diferencia,
         observacionesCierre: valores.observaciones_cierre,
         ip,
         userAgent,

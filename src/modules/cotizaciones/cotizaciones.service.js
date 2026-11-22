@@ -1,5 +1,6 @@
 const cotizacionesRepository = require('./cotizaciones.repository');
 const ventasRepository = require('../ventas/ventas.repository');
+const fechas = require('../../utils/fechas');
 
 function limpiarTexto(valor) {
     return String(valor || '').trim();
@@ -301,10 +302,7 @@ function normalizarValidezDias(valor) {
 }
 
 function calcularFechaVencimiento(validezDias) {
-    const fecha = new Date();
-    fecha.setDate(fecha.getDate() + normalizarValidezDias(validezDias));
-
-    return fecha.toISOString().slice(0, 10);
+    return fechas.sumarDiasLocalISO(normalizarValidezDias(validezDias));
 }
 
 function consolidarItemsCotizacion(items) {
@@ -827,16 +825,9 @@ function prepararConversionCotizacion(idCotizacion) {
     };
 }
 
-function obtenerFechaVentaSQL(fechaVenta) {
-    const texto = limpiarTexto(fechaVenta);
-
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(texto)) {
-        const ahora = new Date();
-        return ahora.toISOString().slice(0, 19).replace('T', ' ');
-    }
-
-    const horaActual = new Date().toTimeString().slice(0, 8);
-    return `${texto} ${horaActual}`;
+/** La fecha de la venta la pone el servidor en hora local (ver ventas.service). */
+function obtenerFechaVentaSQL() {
+    return fechas.fechaHoraLocalSQL();
 }
 
 function prepararPagoConversionVenta(pago, medioPago, totalVenta) {
@@ -883,19 +874,6 @@ function prepararPagoConversionVenta(pago, medioPago, totalVenta) {
             cambio_entregado: afectaEfectivo ? Math.max(montoRecibido - totalVenta, 0) : 0,
             saldo_pendiente: 0,
         },
-    };
-}
-
-function calcularTotalesTurnoConversion(medioPago, totalVenta) {
-    const tipo = limpiarTexto(medioPago.tipo);
-    const afectaEfectivo = normalizarEntero(medioPago.afecta_efectivo_caja) === 1;
-
-    return {
-        total_efectivo: tipo === 'efectivo' ? totalVenta : 0,
-        total_transferencia: tipo === 'transferencia' ? totalVenta : 0,
-        total_tarjeta: tipo === 'tarjeta' ? totalVenta : 0,
-        total_otros: !['efectivo', 'transferencia', 'tarjeta'].includes(tipo) ? totalVenta : 0,
-        monto_esperado: afectaEfectivo ? totalVenta : 0,
     };
 }
 
@@ -1050,14 +1028,12 @@ function convertirCotizacionAVenta({ idCotizacion, idUsuario, payload = {} } = {
         return crearError('No hay caja abierta para convertir la cotización a venta.');
     }
 
-    const totalesTurno = calcularTotalesTurnoConversion(medioPago, resumen.total);
-
     try {
         const registro = ventasRepository.registrarVentaPOS({
             id_usuario: idUsuarioNormalizado,
             turno: turnoAbierto,
             cliente,
-            fecha_venta: obtenerFechaVentaSQL(payload.fecha_venta),
+            fecha_venta: obtenerFechaVentaSQL(),
             observaciones: limpiarTexto(
                 payload.observaciones || `Venta generada desde cotización ${cotizacion.numero_cotizacion}`
             ),
@@ -1069,7 +1045,6 @@ function convertirCotizacionAVenta({ idCotizacion, idUsuario, payload = {} } = {
             items: resultadoItems.items,
             resumen,
             pago: resultadoPago.pago,
-            totales_turno: totalesTurno,
 
             datos_fiscales: {
                 origen: 'cotizacion',

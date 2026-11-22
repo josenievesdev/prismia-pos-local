@@ -1,5 +1,6 @@
 const XLSX = require('xlsx');
 const inventarioRepository = require('./inventario.repository');
+const fechas = require('../../utils/fechas');
 
 function limpiarTexto(valor) {
     return String(valor || '').trim();
@@ -1267,7 +1268,7 @@ function generarExcelReporteOperativoInventario() {
 
     const workbook = XLSX.utils.book_new();
 
-    const fechaGeneracion = new Date().toISOString().slice(0, 10);
+    const fechaGeneracion = fechas.fechaLocalISO();
 
     const totalMovimientos30Dias = reporte.movimientos30Dias.reduce(
         (total, item) => total + Number(item.total_movimientos || 0),

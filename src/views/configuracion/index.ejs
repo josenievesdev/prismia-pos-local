@@ -125,6 +125,19 @@
                                     </div>
 
                                     <div class="form-group">
+                                        <input type="hidden" name="maneja_iva" value="0">
+                                        <label for="maneja_iva" style="display:flex;gap:8px;align-items:center;cursor:pointer">
+                                            <input type="checkbox" id="maneja_iva" name="maneja_iva" value="1"
+                                                <%= Number(configuracion.maneja_iva) === 1 ? 'checked' : '' %>>
+                                            El negocio es responsable de IVA
+                                        </label>
+                                        <small class="text-muted">
+                                            Si está activo, el IVA pagado en compras se trata como descontable
+                                            y no se suma al costo del inventario. Si no, el IVA hace parte del costo.
+                                        </small>
+                                    </div>
+
+                                    <div class="form-group">
                                         <label for="mensaje_recibo">Mensaje del recibo</label>
                                         <textarea id="mensaje_recibo" name="mensaje_recibo"
                                             rows="3"><%= configuracion.mensaje_recibo || '' %></textarea>

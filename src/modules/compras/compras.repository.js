@@ -1230,7 +1230,8 @@ function obtenerConfiguracionNegocio() {
                 correo,
                 moneda,
                 mensaje_recibo,
-                logo_url
+                logo_url,
+                maneja_iva
             FROM configuracion_negocio
             WHERE estado = 'activo'
             ORDER BY id_configuracion ASC
@@ -1589,12 +1590,22 @@ function registrarCompraConInventario({ compra, lineas, usuario, ip, userAgent }
                 normalizarEntero(producto.ultimo_costo) ||
                 normalizarEntero(producto.precio_costo);
 
-            const valorInventarioAnterior = stockAnterior * costoPromedioAnterior;
-            const valorCompra = cantidad * normalizarEntero(linea.costo_unitario_final);
+            // Costo que entra al inventario: sin IVA si el negocio es
+            // responsable de IVA (ver compras.service calcularLineaCompra).
+            const costoUnitarioInventario = normalizarEntero(
+                linea.costo_unitario_inventario ?? linea.costo_unitario_final
+            );
 
-            const costoPromedioNuevo = controlaInventario && stockNuevo > 0
-                ? normalizarEntero((valorInventarioAnterior + valorCompra) / stockNuevo)
-                : normalizarEntero(linea.costo_unitario_final);
+            // Promedio ponderado. Si el stock venía negativo (venta sin stock),
+            // esas unidades ya se vendieron: no aportan valor al promedio.
+            const stockValorizable = Math.max(stockAnterior, 0);
+            const valorInventarioAnterior = stockValorizable * costoPromedioAnterior;
+            const valorCompra = cantidad * costoUnitarioInventario;
+            const unidadesPromedio = stockValorizable + cantidad;
+
+            const costoPromedioNuevo = controlaInventario && unidadesPromedio > 0
+                ? normalizarEntero((valorInventarioAnterior + valorCompra) / unidadesPromedio)
+                : costoUnitarioInventario;
 
             const precioVentaAnterior = normalizarEntero(producto.precio_venta);
             const debeActualizarPrecio = Number(linea.actualizar_precio_venta || 0) === 1;
@@ -1632,14 +1643,14 @@ function registrarCompraConInventario({ compra, lineas, usuario, ip, userAgent }
                 ? actualizarProductoConPrecio.run({
                     id_producto: producto.id_producto,
                     stock_nuevo: stockNuevo,
-                    ultimo_costo: linea.costo_unitario_final,
+                    ultimo_costo: costoUnitarioInventario,
                     costo_promedio: costoPromedioNuevo,
                     precio_venta: precioVentaNuevo,
                 })
                 : actualizarProductoSinPrecio.run({
                     id_producto: producto.id_producto,
                     stock_nuevo: stockNuevo,
-                    ultimo_costo: linea.costo_unitario_final,
+                    ultimo_costo: costoUnitarioInventario,
                     costo_promedio: costoPromedioNuevo,
                 });
 
@@ -1656,8 +1667,8 @@ function registrarCompraConInventario({ compra, lineas, usuario, ip, userAgent }
                     cantidad,
                     stock_anterior: stockAnterior,
                     stock_nuevo: stockNuevo,
-                    costo_unitario: linea.costo_unitario_final,
-                    costo_total: linea.total_linea,
+                    costo_unitario: costoUnitarioInventario,
+                    costo_total: normalizarEntero(cantidad * costoUnitarioInventario),
                     motivo: `Compra ${numeroCompra}`,
                     referencia_id: idCompra,
                 });
@@ -1678,7 +1689,7 @@ function registrarCompraConInventario({ compra, lineas, usuario, ip, userAgent }
                     id_compra: idCompra,
                     numero_compra: numeroCompra,
                     stock_actual: stockNuevo,
-                    ultimo_costo: linea.costo_unitario_final,
+                    ultimo_costo: costoUnitarioInventario,
                     costo_promedio: costoPromedioNuevo,
                     precio_venta: precioVentaNuevo,
                     actualizar_precio_venta: debeActualizarPrecio ? 1 : 0,

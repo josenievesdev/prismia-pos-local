@@ -1,4 +1,5 @@
 const ventasRepository = require('./ventas.repository');
+const fechas = require('../../utils/fechas');
 
 function limpiarTexto(valor) {
     return String(valor || '').trim();
@@ -397,16 +398,13 @@ function tieneParteDecimal(valor) {
     return Math.abs(valor - Math.round(valor)) > 0.000001;
 }
 
-function obtenerFechaVentaSQL(fechaVenta) {
-    const texto = limpiarTexto(fechaVenta);
-
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(texto)) {
-        const ahora = new Date();
-        return ahora.toISOString().slice(0, 19).replace('T', ' ');
-    }
-
-    const horaActual = new Date().toTimeString().slice(0, 8);
-    return `${texto} ${horaActual}`;
+/**
+ * La fecha de la venta la pone siempre el servidor, en hora local.
+ * Se ignora cualquier fecha enviada por el navegador: el reloj del cliente
+ * puede estar mal y antes permitía registrar ventas en cualquier fecha.
+ */
+function obtenerFechaVentaSQL() {
+    return fechas.fechaHoraLocalSQL();
 }
 
 function obtenerClienteParaRegistro(idCliente) {
@@ -816,49 +814,6 @@ function prepararPagosRegistroVenta(pagosPayload, totalVenta) {
     };
 }
 
-function calcularTotalesTurno(pagos) {
-    return pagos.reduce((totales, pago) => {
-        const tipo = limpiarTexto(pago.medio_pago_tipo || pago.metodo_pago);
-        const monto = redondearDinero(pago.monto_pago);
-        const afectaEfectivo = normalizarEntero(pago.medio_pago_afecta_efectivo_caja) === 1;
-
-        if (tipo === 'efectivo') {
-            totales.total_efectivo += monto;
-        } else if (tipo === 'transferencia') {
-            totales.total_transferencia += monto;
-        } else if (tipo === 'tarjeta') {
-            totales.total_tarjeta += monto;
-        } else {
-            totales.total_otros += monto;
-        }
-
-        if (afectaEfectivo) {
-            totales.monto_esperado += monto;
-        }
-
-        return totales;
-    }, {
-        total_efectivo: 0,
-        total_transferencia: 0,
-        total_tarjeta: 0,
-        total_otros: 0,
-        monto_esperado: 0,
-    });
-}
-
-function calcularTotalesTurno(medioPago, totalVenta) {
-    const tipo = medioPago.tipo;
-    const afectaEfectivo = normalizarEntero(medioPago.afecta_efectivo_caja) === 1;
-
-    return {
-        total_efectivo: tipo === 'efectivo' ? totalVenta : 0,
-        total_transferencia: tipo === 'transferencia' ? totalVenta : 0,
-        total_tarjeta: tipo === 'tarjeta' ? totalVenta : 0,
-        total_otros: !['efectivo', 'transferencia', 'tarjeta'].includes(tipo) ? totalVenta : 0,
-        monto_esperado: afectaEfectivo ? totalVenta : 0,
-    };
-}
-
 function registrarVentaPOS({ idUsuario, payload = {} } = {}) {
     const idUsuarioNormalizado = normalizarId(idUsuario);
 
@@ -904,14 +859,12 @@ function registrarVentaPOS({ idUsuario, payload = {} } = {}) {
         return crearErrorVenta(resultadoPagos.mensaje);
     }
 
-    const totalesTurno = calcularTotalesTurno(resultadoPagos.pagos);
-
     try {
         const registro = ventasRepository.registrarVentaPOS({
             id_usuario: idUsuarioNormalizado,
             turno: turnoAbierto,
             cliente: resultadoCliente.cliente,
-            fecha_venta: obtenerFechaVentaSQL(payload.fecha_venta),
+            fecha_venta: obtenerFechaVentaSQL(),
             observaciones: limpiarTexto(payload.observaciones || ''),
             requiere_factura: 0,
             codigo_documento: 'factura_venta',
@@ -926,7 +879,6 @@ function registrarVentaPOS({ idUsuario, payload = {} } = {}) {
             cambio_entregado: resultadoPagos.cambio_entregado,
             saldo_pendiente: resultadoPagos.saldo_pendiente,
             tipo_venta: resultadoPagos.es_mixto ? 'mixta' : 'contado',
-            totales_turno: totalesTurno,
             datos_fiscales: {
                 cliente: {
                     id_cliente: resultadoCliente.cliente.id_cliente,
@@ -1375,40 +1327,6 @@ function obtenerTicketVenta(idVenta) {
             },
         },
     };
-}
-
-function limpiarTexto(valor) {
-    return String(valor || '').trim();
-}
-
-function normalizarNumero(valor, defecto = 0) {
-    const numero = Number(valor);
-
-    if (!Number.isFinite(numero)) {
-        return defecto;
-    }
-
-    return numero;
-}
-
-function normalizarEntero(valor, defecto = 0) {
-    const numero = Number(valor);
-
-    if (!Number.isFinite(numero)) {
-        return defecto;
-    }
-
-    return Math.round(numero);
-}
-
-function normalizarId(valor) {
-    const numero = Number(valor);
-
-    if (!Number.isInteger(numero) || numero <= 0) {
-        return null;
-    }
-
-    return numero;
 }
 
 function crearError(mensaje, codigoEstado = 400) {
