@@ -1,40 +1,72 @@
 const authService = require('./auth.service');
+const { crearLimitador, describirEspera } = require('../../utils/limitador-intentos');
+const { iniciarSesionSegura } = require('../../utils/sesion');
+
+// 5 fallos seguidos para una misma cuenta desde un mismo equipo, o 20 desde
+// un mismo equipo en total, bloquean el login durante 15 minutos.
+const limitadorCuenta = crearLimitador({ maxIntentos: 5 });
+const limitadorEquipo = crearLimitador({ maxIntentos: 20 });
+
+function renderLogin(res, { estado = 200, error = null, correo = '' } = {}) {
+    return res.status(estado).render('auth/login', {
+        layout: false,
+        titulo: 'Iniciar sesión',
+        error,
+        valores: {
+            correo,
+        },
+    });
+}
 
 function mostrarLogin(req, res) {
     if (req.session?.usuario) {
         return res.redirect('/dashboard');
     }
 
-    return res.render('auth/login', {
-        layout: false,
-        titulo: 'Iniciar sesión',
-        error: null,
-        valores: {
-            correo: '',
-        },
-    });
+    return renderLogin(res);
 }
 
-function procesarLogin(req, res) {
+function procesarLogin(req, res, next) {
+    const correo = String(req.body.correo || '').trim().toLowerCase();
+    const ip = req.ip || 'desconocida';
+    const claveCuenta = `${ip}|${correo}`;
+
+    const bloqueo = [limitadorCuenta.consultar(claveCuenta), limitadorEquipo.consultar(ip)]
+        .find((estado) => estado.bloqueado);
+
+    if (bloqueo) {
+        return renderLogin(res, {
+            estado: 429,
+            error: `Demasiados intentos fallidos. Intenta de nuevo en ${describirEspera(bloqueo.segundosRestantes)}.`,
+            correo: req.body.correo || '',
+        });
+    }
+
     const resultado = authService.iniciarSesion({
         correo: req.body.correo,
         contrasena: req.body.contrasena,
     });
 
     if (!resultado.ok) {
-        return res.status(401).render('auth/login', {
-            layout: false,
-            titulo: 'Iniciar sesión',
+        limitadorCuenta.registrarFallo(claveCuenta);
+        limitadorEquipo.registrarFallo(ip);
+
+        return renderLogin(res, {
+            estado: 401,
             error: resultado.mensaje,
-            valores: {
-                correo: req.body.correo || '',
-            },
+            correo: req.body.correo || '',
         });
     }
 
-    req.session.usuario = resultado.usuario;
+    limitadorCuenta.reiniciar(claveCuenta);
 
-    return res.redirect('/dashboard');
+    return iniciarSesionSegura(req, resultado.usuario, (error) => {
+        if (error) {
+            return next(error);
+        }
+
+        return res.redirect('/dashboard');
+    });
 }
 
 function cerrarSesion(req, res) {

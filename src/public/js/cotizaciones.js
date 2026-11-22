@@ -10,6 +10,15 @@
         return document.getElementById(id);
     }
 
+    function escaparHtml(valor) {
+        return String(valor ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     function dinero(valor) {
         return new Intl.NumberFormat('es-CO', {
             style: 'currency',
@@ -191,8 +200,8 @@
             const detalle = cliente.texto_secundario || cliente.etiqueta_documento || cliente.documento || '';
 
             boton.innerHTML = `
-                <strong>${nombre}</strong>
-                <span>${detalle}</span>
+                <strong>${escaparHtml(nombre)}</strong>
+                <span>${escaparHtml(detalle)}</span>
             `;
 
             boton.addEventListener('click', function () {
@@ -255,8 +264,8 @@
 
             boton.innerHTML = `
                 <div>
-                    <strong>${obtenerNombreProducto(producto)}</strong>
-                    <span>${producto.codigo_interno || 'Sin código'} · Stock ref: ${producto.stock_actual ?? 0} ${producto.unidad_abreviatura || 'und'}</span>
+                    <strong>${escaparHtml(obtenerNombreProducto(producto))}</strong>
+                    <span>${escaparHtml(producto.codigo_interno || 'Sin código')} · Stock ref: ${escaparHtml(producto.stock_actual ?? 0)} ${escaparHtml(producto.unidad_abreviatura || 'und')}</span>
                 </div>
                 <strong>${dinero(producto.precio_venta)}</strong>
             `;
@@ -444,11 +453,11 @@
 
             <td>
                 <div class="ventas-cart-product">
-                    <strong>${obtenerNombreProducto(producto)}</strong>
+                    <strong>${escaparHtml(obtenerNombreProducto(producto))}</strong>
                     <span>
-                        ${producto.codigo_interno || 'Sin código'}
-                        · ${producto.unidad_abreviatura || 'und'}
-                        · Stock ref: ${producto.stock_actual ?? 0}
+                        ${escaparHtml(producto.codigo_interno || 'Sin código')}
+                        · ${escaparHtml(producto.unidad_abreviatura || 'und')}
+                        · Stock ref: ${escaparHtml(producto.stock_actual ?? 0)}
                     </span>
                 </div>
             </td>
@@ -459,8 +468,8 @@
                     class="cotizaciones-table-qty"
                     min="0.001"
                     step="${entero(producto.permite_cantidad_decimal) === 1 ? '0.001' : '1'}"
-                    value="${item.cantidad}"
-                    data-id-producto="${idProducto}"
+                    value="${escaparHtml(item.cantidad)}"
+                    data-id-producto="${escaparHtml(idProducto)}"
                 >
             </td>
 
@@ -477,7 +486,7 @@
             </td>
 
             <td class="text-center">
-                <button type="button" class="ventas-cart-remove cotizaciones-item-remove" data-id-producto="${idProducto}">
+                <button type="button" class="ventas-cart-remove cotizaciones-item-remove" data-id-producto="${escaparHtml(idProducto)}">
                     Quitar
                 </button>
             </td>
@@ -1012,7 +1021,7 @@
         ui.problemas.innerHTML = `
         <strong>No se puede convertir todavía:</strong>
         <ul>
-            ${problemas.map((problema) => `<li>${problema}</li>`).join('')}
+            ${problemas.map((problema) => `<li>${escaparHtml(problema)}</li>`).join('')}
         </ul>
     `;
 

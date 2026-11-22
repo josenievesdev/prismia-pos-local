@@ -4,7 +4,8 @@ const http = require('http');
 const appEvents = require('../src/config/app-events');
 
 const PUERTO_ELECTRON = Number(process.env.PRISMIA_ELECTRON_PORT || 3210);
-const URL_LOCAL = `http://localhost:${PUERTO_ELECTRON}`;
+// IPv4 explícito: el servidor escucha solo en 127.0.0.1 (ver src/server.js).
+const URL_LOCAL = `http://127.0.0.1:${PUERTO_ELECTRON}`;
 
 let ventanaPrincipal = null;
 let servidorBackend = null;
@@ -15,6 +16,7 @@ const ATAJO_SOPORTE_BACKUPS = 'CommandOrControl+Alt+Shift+B';
 function configurarEntornoPrismia() {
     process.env.NODE_ENV = 'production';
     process.env.APP_PORT = String(PUERTO_ELECTRON);
+    process.env.APP_HOST = '127.0.0.1';
     process.env.PRISMIA_ELECTRON = 'true';
 
     if (!process.env.APP_NAME) {

@@ -3,6 +3,15 @@
         return document.getElementById(id);
     }
 
+    function escaparHtml(valor) {
+        return String(valor ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     function limpiarTexto(valor) {
         return String(valor || '').trim();
     }
@@ -68,7 +77,7 @@
         ui.problemas.innerHTML = `
             <strong>No se puede anular todavía:</strong>
             <ul>
-                ${problemas.map((problema) => `<li>${problema}</li>`).join('')}
+                ${problemas.map((problema) => `<li>${escaparHtml(problema)}</li>`).join('')}
             </ul>
         `;
 

@@ -61,6 +61,7 @@ const env = {
     app: {
         name: process.env.APP_NAME || 'Prismia POS Local',
         port: Number(process.env.APP_PORT) || 3000,
+        host: limpiarValor(process.env.APP_HOST) || '127.0.0.1',
         nodeEnv,
         isProduction: esProduccion,
     },

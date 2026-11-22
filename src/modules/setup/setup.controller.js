@@ -1,4 +1,5 @@
 const setupService = require('./setup.service');
+const { iniciarSesionSegura } = require('../../utils/sesion');
 
 function mostrarSetup(req, res) {
     if (!setupService.requiereConfiguracionInicial()) {
@@ -16,7 +17,7 @@ function mostrarSetup(req, res) {
     });
 }
 
-function procesarSetup(req, res) {
+function procesarSetup(req, res, next) {
     const resultado = setupService.crearPrimerAdministrador(req.body);
 
     if (!resultado.ok) {
@@ -31,10 +32,12 @@ function procesarSetup(req, res) {
         });
     }
 
-    req.session.usuario = resultado.usuario;
+    return iniciarSesionSegura(req, resultado.usuario, (error) => {
+        if (error) {
+            return next(error);
+        }
 
-    return req.session.save(() => {
-        res.redirect('/dashboard');
+        return res.redirect('/dashboard');
     });
 }
 

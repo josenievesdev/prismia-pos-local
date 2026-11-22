@@ -1,4 +1,3 @@
-const fs = require('fs');
 const express = require('express');
 const path = require('path');
 const helmet = require('helmet');
@@ -11,6 +10,7 @@ const env = require('./config/env');
 const empresa = require('./config/empresa');
 const runtimePaths = require('./config/runtime-paths');
 const localsMiddleware = require('./middlewares/locals.middleware');
+const verificarOrigen = require('./middlewares/origen.middleware');
 const errorMiddleware = require('./middlewares/error.middleware');
 
 const setupRoutes = require('./modules/setup/setup.routes');
@@ -226,7 +226,6 @@ app.use((req, res, next) => {
     }
 
     const rutasPermitidas = [
-        '/__restauracion-finalizada',
         '/favicon.ico',
     ];
 
@@ -245,6 +244,11 @@ app.use((req, res, next) => {
 
     return renderPantallaReinicioPendiente(res);
 });
+
+/**
+ * Protección CSRF: peticiones que modifican datos solo desde esta app.
+ */
+app.use(verificarOrigen);
 
 /**
  * Variables disponibles en todas las vistas
@@ -282,31 +286,6 @@ app.use((req, res, next) => {
     }
 
     return next();
-});
-
-/**
- * Ruta técnica para finalizar restauración.
- * En desarrollo escribe un archivo dentro de src para que nodemon reinicie.
- */
-app.get('/__restauracion-finalizada', (req, res) => {
-    app.locals.restauracionPendiente = true;
-
-    res.status(204).end();
-
-    setTimeout(() => {
-        try {
-            fs.writeFileSync(
-                path.resolve(process.cwd(), 'src/restart-dev-trigger.json'),
-                JSON.stringify({
-                    motivo: 'restauracion_backup',
-                    fecha: new Date().toISOString(),
-                }, null, 2),
-                'utf8'
-            );
-        } catch (error) {
-            console.warn('No se pudo marcar reinicio técnico:', error.message);
-        }
-    }, 300);
 });
 
 /**

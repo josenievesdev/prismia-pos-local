@@ -1,7 +1,13 @@
 const express = require('express');
 const multer = require('multer');
-const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
+
+const EXTENSIONES_IMAGEN = {
+    'image/jpeg': '.jpg',
+    'image/png': '.png',
+    'image/webp': '.webp',
+};
 
 const productosController = require('./productos.controller');
 const runtimePaths = require('../../config/runtime-paths');
@@ -21,8 +27,10 @@ const almacenamientoImagenProducto = multer.diskStorage({
         callback(null, carpetaUploadsProductos);
     },
     filename: function (_req, file, callback) {
-        const extension = path.extname(file.originalname || '').toLowerCase();
-        const nombreSeguro = `producto-${Date.now()}-${Math.round(Math.random() * 1e9)}${extension}`;
+        // La extensión sale del tipo validado, nunca del nombre que envía el
+        // cliente: así no se puede subir un .html disfrazado de imagen.
+        const extension = EXTENSIONES_IMAGEN[file.mimetype] || '.img';
+        const nombreSeguro = `producto-${Date.now()}-${crypto.randomBytes(6).toString('hex')}${extension}`;
 
         callback(null, nombreSeguro);
     },
@@ -34,9 +42,7 @@ const uploadImagenProducto = multer({
         fileSize: 2 * 1024 * 1024,
     },
     fileFilter: function (_req, file, callback) {
-        const tiposPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
-
-        if (!tiposPermitidos.includes(file.mimetype)) {
+        if (!EXTENSIONES_IMAGEN[file.mimetype]) {
             return callback(
                 new Error('La imagen del producto debe ser JPG, PNG o WEBP.')
             );

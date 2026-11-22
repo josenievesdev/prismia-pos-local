@@ -1,9 +1,13 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const backupsService = require('./backups.service');
 const env = require('../../config/env');
 const appEvents = require('../../config/app-events');
+const { crearLimitador, describirEspera } = require('../../utils/limitador-intentos');
+
+const limitadorSoporte = crearLimitador({ maxIntentos: 5 });
 
 const estilosBackups = ['/css/modules/backups.css'];
 
@@ -66,9 +70,18 @@ function mostrarBackupsSoporte(req, res) {
     });
 }
 
+function clavesIguales(a, b) {
+    // Comparación en tiempo constante (no revela cuántos caracteres coinciden).
+    const hashA = crypto.createHash('sha256').update(String(a)).digest();
+    const hashB = crypto.createHash('sha256').update(String(b)).digest();
+
+    return crypto.timingSafeEqual(hashA, hashB);
+}
+
 function desbloquearSoporteBackups(req, res) {
     const claveIngresada = String(req.body.clave_soporte || '').trim();
     const claveConfigurada = String(env.backups.supportKey || '').trim();
+    const claveLimite = `soporte|${req.ip || 'desconocida'}`;
 
     if (!claveConfigurada) {
         return res.redirect(
@@ -76,12 +89,23 @@ function desbloquearSoporteBackups(req, res) {
         );
     }
 
-    if (!claveIngresada || claveIngresada !== claveConfigurada) {
+    const bloqueo = limitadorSoporte.consultar(claveLimite);
+
+    if (bloqueo.bloqueado) {
+        return res.redirect(
+            `/backups/soporte?error=${encodeURIComponent(`Demasiados intentos. Intenta de nuevo en ${describirEspera(bloqueo.segundosRestantes)}.`)}`
+        );
+    }
+
+    if (!claveIngresada || !clavesIguales(claveIngresada, claveConfigurada)) {
+        limitadorSoporte.registrarFallo(claveLimite);
+
         return res.redirect(
             `/backups/soporte?error=${encodeURIComponent('Clave técnica incorrecta.')}`
         );
     }
 
+    limitadorSoporte.reiniciar(claveLimite);
     req.session.soporteBackupsAutorizado = true;
 
     return res.redirect(
