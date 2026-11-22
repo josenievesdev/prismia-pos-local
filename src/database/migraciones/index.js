@@ -9,4 +9,5 @@ module.exports = [
     require('./002_corregir_fechas_venta'),
     require('./003_permitir_stock_negativo'),
     require('./004_indices_rendimiento'),
+    require('./005_cargar_divipola'),
 ];
