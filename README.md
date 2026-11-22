@@ -94,6 +94,8 @@ npm test            # recompila better-sqlite3 para Node y corre todo
 npm run test:rapido # solo corre las pruebas
 ```
 
+En Windows, cierra el servidor de desarrollo o la app antes de `npm test`: mientras están abiertos bloquean el módulo nativo y la recompilación falla con `EPERM`. Si el módulo ya está compilado para Node, usa `npm run test:rapido`.
+
 | Archivo | Cubre |
 |---------|-------|
 | `tests/dinero.test.js` | ventas, cambio, pagos mixtos, IVA, decimales, stock, anulación, caja, cierre, invariantes |
