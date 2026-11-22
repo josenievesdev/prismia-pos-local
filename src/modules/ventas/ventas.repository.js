@@ -524,11 +524,11 @@ function construirFiltrosHistorialVentas(filtros = {}) {
     };
 
     if (params.fecha_desde) {
-        condiciones.push('date(v.fecha_venta) >= date(@fecha_desde)');
+        condiciones.push('v.fecha_venta >= date(@fecha_desde)');
     }
 
     if (params.fecha_hasta) {
-        condiciones.push('date(v.fecha_venta) <= date(@fecha_hasta)');
+        condiciones.push(`v.fecha_venta < date(@fecha_hasta, '+1 day')`);
     }
 
     if (params.factura) {

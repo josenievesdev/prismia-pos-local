@@ -383,11 +383,12 @@ function construirFiltrosCotizaciones(filtros = {}) {
     }
 
     if (params.fecha_desde) {
-        condiciones.push('date(cot.fecha_cotizacion) >= date(@fecha_desde)');
+        // fecha_cotizacion se guarda en UTC (CURRENT_TIMESTAMP).
+        condiciones.push(`date(cot.fecha_cotizacion, 'localtime') >= date(@fecha_desde)`);
     }
 
     if (params.fecha_hasta) {
-        condiciones.push('date(cot.fecha_cotizacion) <= date(@fecha_hasta)');
+        condiciones.push(`date(cot.fecha_cotizacion, 'localtime') <= date(@fecha_hasta)`);
     }
 
     if (params.id_cliente) {

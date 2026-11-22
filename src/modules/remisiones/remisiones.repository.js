@@ -385,11 +385,12 @@ function construirFiltrosRemisiones(filtros = {}) {
     }
 
     if (params.fecha_desde) {
-        condiciones.push('date(r.fecha_remision) >= date(@fecha_desde)');
+        // fecha_remision se guarda en UTC (CURRENT_TIMESTAMP).
+        condiciones.push(`date(r.fecha_remision, 'localtime') >= date(@fecha_desde)`);
     }
 
     if (params.fecha_hasta) {
-        condiciones.push('date(r.fecha_remision) <= date(@fecha_hasta)');
+        condiciones.push(`date(r.fecha_remision, 'localtime') <= date(@fecha_hasta)`);
     }
 
     if (params.id_cliente) {

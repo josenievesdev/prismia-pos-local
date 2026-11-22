@@ -12,7 +12,8 @@ function obtenerResumenVentasPorFecha(fechaISO) {
             COALESCE(AVG(CASE WHEN estado = 'pagada' THEN total ELSE NULL END), 0) AS ticket_promedio,
             COALESCE(SUM(CASE WHEN estado = 'pagada' THEN utilidad_bruta ELSE 0 END), 0) AS utilidad_bruta
         FROM ventas
-        WHERE date(fecha_venta) = date(@fecha)
+        WHERE fecha_venta >= date(@fecha)
+            AND fecha_venta < date(@fecha, '+1 day')
     `).get({ fecha: fechaISO });
 }
 
@@ -24,7 +25,7 @@ function obtenerProductosVendidosPorFecha(fechaISO) {
         INNER JOIN ventas v
             ON v.id_venta = dv.id_venta
         WHERE v.estado = 'pagada'
-            AND date(v.fecha_venta) = date(@fecha)
+            AND v.fecha_venta >= date(@fecha) AND v.fecha_venta < date(@fecha, '+1 day')
     `).get({ fecha: fechaISO });
 }
 
@@ -64,7 +65,7 @@ function obtenerPagosPorMedioPorFecha(fechaISO) {
             ON v.id_venta = pv.id_venta
         LEFT JOIN medios_pago mp
             ON mp.id_medio_pago = pv.id_medio_pago
-        WHERE date(v.fecha_venta) = date(@fecha)
+        WHERE v.fecha_venta >= date(@fecha) AND v.fecha_venta < date(@fecha, '+1 day')
         GROUP BY
             COALESCE(mp.nombre, pv.entidad, pv.metodo_pago, 'Sin medio'),
             COALESCE(mp.tipo, pv.metodo_pago, 'otro'),
@@ -202,7 +203,7 @@ function obtenerUltimasVentas(fechaISO) {
             ON pv.id_venta = v.id_venta
         LEFT JOIN medios_pago mp
             ON mp.id_medio_pago = pv.id_medio_pago
-        WHERE date(v.fecha_venta) = date(@fecha)
+        WHERE v.fecha_venta >= date(@fecha) AND v.fecha_venta < date(@fecha, '+1 day')
         GROUP BY v.id_venta
         ORDER BY datetime(v.fecha_venta) DESC, v.id_venta DESC
         LIMIT 6
@@ -214,7 +215,8 @@ function obtenerUltimasAnulaciones(fechaISO) {
         SELECT
             v.id_venta,
             v.numero_venta,
-            COALESCE(v.anulado_en, v.fecha_venta) AS fecha_anulacion,
+            -- anulado_en se guarda en UTC (CURRENT_TIMESTAMP): se pasa a hora local.
+            COALESCE(datetime(v.anulado_en, 'localtime'), v.fecha_venta) AS fecha_anulacion,
             v.total,
             v.motivo_anulacion,
             COALESCE(u.nombre, 'Sin usuario') AS usuario_anulacion
@@ -222,8 +224,8 @@ function obtenerUltimasAnulaciones(fechaISO) {
         LEFT JOIN usuarios u
             ON u.id_usuario = v.anulado_por
         WHERE v.estado = 'anulada'
-            AND date(COALESCE(v.anulado_en, v.fecha_venta)) = date(@fecha)
-        ORDER BY datetime(COALESCE(v.anulado_en, v.fecha_venta)) DESC, v.id_venta DESC
+            AND date(COALESCE(datetime(v.anulado_en, 'localtime'), v.fecha_venta)) = date(@fecha)
+        ORDER BY fecha_anulacion DESC, v.id_venta DESC
         LIMIT 6
     `).all({ fecha: fechaISO });
 }
@@ -240,7 +242,7 @@ function obtenerTopProductos(fechaISO) {
         INNER JOIN ventas v
             ON v.id_venta = dv.id_venta
         WHERE v.estado = 'pagada'
-            AND date(v.fecha_venta) = date(@fecha)
+            AND v.fecha_venta >= date(@fecha) AND v.fecha_venta < date(@fecha, '+1 day')
         GROUP BY
             COALESCE(dv.codigo_interno, 'Sin código'),
             dv.nombre_producto,
@@ -258,7 +260,7 @@ function obtenerVentasPorHora(fechaISO) {
             COALESCE(SUM(v.total), 0) AS total
         FROM ventas v
         WHERE v.estado = 'pagada'
-            AND date(v.fecha_venta) = date(@fecha)
+            AND v.fecha_venta >= date(@fecha) AND v.fecha_venta < date(@fecha, '+1 day')
         GROUP BY strftime('%H', v.fecha_venta)
         ORDER BY strftime('%H', v.fecha_venta) ASC
     `).all({ fecha: fechaISO });

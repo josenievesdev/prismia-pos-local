@@ -1,18 +1,26 @@
 const db = require('../../config/db');
 
-function construirFiltroFechas(filtros = {}, aliasFecha = 'v.fecha_venta') {
+/**
+ * Filtro por rango de fechas locales [desde, hasta] (ambas inclusive).
+ * Se compara la columna sin envolverla en date() para que use el índice.
+ * Con { utc: true } la columna se guarda en UTC (CURRENT_TIMESTAMP) y se
+ * convierte a hora local antes de comparar.
+ */
+function construirFiltroFechas(filtros = {}, aliasFecha = 'v.fecha_venta', { utc = false } = {}) {
     const condiciones = [];
     const params = {
         fecha_desde: String(filtros.fecha_desde || '').trim(),
         fecha_hasta: String(filtros.fecha_hasta || '').trim(),
     };
 
+    const expresion = utc ? `datetime(${aliasFecha}, 'localtime')` : aliasFecha;
+
     if (params.fecha_desde) {
-        condiciones.push(`date(${aliasFecha}) >= date(@fecha_desde)`);
+        condiciones.push(`${expresion} >= date(@fecha_desde)`);
     }
 
     if (params.fecha_hasta) {
-        condiciones.push(`date(${aliasFecha}) <= date(@fecha_hasta)`);
+        condiciones.push(`${expresion} < date(@fecha_hasta, '+1 day')`);
     }
 
     return {
@@ -55,7 +63,7 @@ function obtenerResumenVentas(filtros = {}) {
 }
 
 function obtenerResumenNotasCredito(filtros = {}) {
-    const filtro = construirFiltroFechas(filtros, 'nc.fecha_nota');
+    const filtro = construirFiltroFechas(filtros, 'nc.fecha_nota', { utc: true });
 
     return db.prepare(`
         SELECT
