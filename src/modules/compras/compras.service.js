@@ -1,4 +1,5 @@
 const comprasRepository = require('./compras.repository');
+const fechas = require('../../utils/fechas');
 
 const ESTADOS_PERMITIDOS = ['borrador', 'registrada', 'anulada'];
 const LIMITE_POR_PAGINA = 20;
@@ -1044,7 +1045,7 @@ function prepararPagoProveedorGeneralVista(pago) {
         origen_pago_etiqueta: pago.origen_pago === 'caja' ? 'Caja' : 'Tesorería',
 
         usuario_nombre: limpiarTexto(pago.usuario_nombre) || 'Sin usuario',
-        anulado_en_mostrar: pago.anulado_en ? formatearFecha(pago.anulado_en) : '',
+        anulado_en_mostrar: pago.anulado_en ? fechas.utcALocalSQL(pago.anulado_en) : '',
         usuario_anulacion_nombre: limpiarTexto(pago.usuario_anulacion_nombre) || '',
         motivo_anulacion_mostrar: limpiarTexto(pago.motivo_anulacion),
     };
@@ -1094,7 +1095,7 @@ function prepararPagoProveedorVista(pago) {
         entidad_pago_mostrar: limpiarTexto(pago.entidad_pago) || 'Sin entidad',
         observaciones_mostrar: limpiarTexto(pago.observaciones),
         usuario_nombre: limpiarTexto(pago.usuario_nombre) || 'Sin usuario',
-        anulado_en_mostrar: pago.anulado_en ? formatearFecha(pago.anulado_en) : '',
+        anulado_en_mostrar: pago.anulado_en ? fechas.utcALocalSQL(pago.anulado_en) : '',
         usuario_anulacion_nombre: limpiarTexto(pago.usuario_anulacion_nombre) || '',
         motivo_anulacion_mostrar: limpiarTexto(pago.motivo_anulacion),
         origen_pago: limpiarTexto(pago.origen_pago || 'tesoreria'),
@@ -1131,7 +1132,7 @@ function obtenerDetalleCompra(idCompra) {
                 : 'Sin documento',
             soporte_mostrar: compra.numero_soporte || 'Sin soporte',
             fecha_compra_mostrar: formatearFecha(compra.fecha_compra),
-            fecha_registro_mostrar: compra.fecha_registro || '',
+            fecha_registro_mostrar: compra.fecha_registro ? fechas.utcALocalSQL(compra.fecha_registro) : '',
             subtotal_mostrar: formatearMoneda(compra.subtotal),
             iva_total_mostrar: formatearMoneda(compra.iva_total),
             total_mostrar: formatearMoneda(compra.total),

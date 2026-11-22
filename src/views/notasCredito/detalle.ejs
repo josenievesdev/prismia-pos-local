@@ -70,7 +70,7 @@
                                     <div>
                                         <span>Fecha</span>
                                         <strong>
-                                            <%= notaCredito.fecha_nota ? String(notaCredito.fecha_nota).slice(0, 19)
+                                            <%= notaCredito.fecha_nota ? String(fechaLocal(notaCredito.fecha_nota)).slice(0, 19)
                                                 : 'Sin fecha' %>
                                         </strong>
                                     </div>

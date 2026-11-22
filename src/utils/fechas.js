@@ -38,8 +38,35 @@ function sumarDiasLocalISO(dias, desde = new Date()) {
     return fechaLocalISO(fecha);
 }
 
+/**
+ * Convierte un 'YYYY-MM-DD HH:MM:SS' guardado en UTC (CURRENT_TIMESTAMP de
+ * SQLite) a hora local, en el mismo formato. Si el valor no trae hora (una
+ * fecha sola) o tiene otro formato, se devuelve igual.
+ */
+function utcALocalSQL(valor) {
+    const texto = String(valor ?? '').trim();
+    const partes = texto.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?/);
+
+    if (!partes) {
+        return texto;
+    }
+
+    const [, anio, mes, dia, hora, minuto, segundo] = partes;
+    const fecha = new Date(Date.UTC(
+        Number(anio),
+        Number(mes) - 1,
+        Number(dia),
+        Number(hora),
+        Number(minuto),
+        Number(segundo || 0)
+    ));
+
+    return fechaHoraLocalSQL(fecha);
+}
+
 module.exports = {
     fechaLocalISO,
     fechaHoraLocalSQL,
     sumarDiasLocalISO,
+    utcALocalSQL,
 };

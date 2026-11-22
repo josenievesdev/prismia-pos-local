@@ -57,6 +57,10 @@ function localsMiddleware(req, res, next) {
     // "Hoy" en hora local del equipo (no UTC).
     res.locals.fechaHoyLocal = fechas.fechaLocalISO();
 
+    // Para columnas que SQLite guarda en UTC (CURRENT_TIMESTAMP): fecha de
+    // apertura/cierre de caja, creado_en, fecha_gasto, fecha_nota, etc.
+    res.locals.fechaLocal = fechas.utcALocalSQL;
+
     next();
 }
 

@@ -570,14 +570,14 @@
                             <div class="info-card">
                                 <span>Fecha apertura</span>
                                 <strong>
-                                    <%= formatearFecha(turno.fecha_apertura) %>
+                                    <%= formatearFecha(fechaLocal(turno.fecha_apertura)) %>
                                 </strong>
                             </div>
 
                             <div class="info-card">
                                 <span>Fecha cierre</span>
                                 <strong>
-                                    <%= turno.fecha_cierre ? formatearFecha(turno.fecha_cierre) : '—' %>
+                                    <%= turno.fecha_cierre ? formatearFecha(fechaLocal(turno.fecha_cierre)) : '—' %>
                                 </strong>
                             </div>
                         </div>
@@ -798,7 +798,7 @@
                                         <% gastos.forEach((gasto)=> { %>
                                             <tr>
                                                 <td class="nowrap">
-                                                    <%= formatearFecha(gasto.fecha_gasto || gasto.creado_en) %>
+                                                    <%= formatearFecha(fechaLocal(gasto.fecha_gasto || gasto.creado_en)) %>
                                                 </td>
 
                                                 <td>
@@ -912,7 +912,7 @@
 
                                                 <tr>
                                                     <td class="nowrap">
-                                                        <%= formatearFecha(movimiento.creado_en) %>
+                                                        <%= formatearFecha(fechaLocal(movimiento.creado_en)) %>
                                                     </td>
 
                                                     <td>

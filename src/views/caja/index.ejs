@@ -115,7 +115,7 @@
                                                     <div>
                                                         <span>Fecha de apertura</span>
                                                         <strong>
-                                                            <%= formatearFecha(turnoAbierto.fecha_apertura) %>
+                                                            <%= formatearFecha(fechaLocal(turnoAbierto.fecha_apertura)) %>
                                                         </strong>
                                                     </div>
                                                 </div>
@@ -368,7 +368,7 @@
                                                                         <tr>
                                                                             <td>
                                                                                 <span class="caja-table-date">
-                                                                                    <%= formatearFecha(movimiento.creado_en)
+                                                                                    <%= formatearFecha(fechaLocal(movimiento.creado_en))
                                                                                         %>
                                                                                 </span>
                                                                             </td>
@@ -519,13 +519,13 @@
                                                                             </td>
 
                                                                             <td>
-                                                                                <%= formatearFecha(turno.fecha_apertura)
+                                                                                <%= formatearFecha(fechaLocal(turno.fecha_apertura))
                                                                                     %>
                                                                             </td>
 
                                                                             <td>
                                                                                 <%= turno.fecha_cierre ?
-                                                                                    formatearFecha(turno.fecha_cierre)
+                                                                                    formatearFecha(fechaLocal(turno.fecha_cierre))
                                                                                     : '—' %>
                                                                             </td>
 

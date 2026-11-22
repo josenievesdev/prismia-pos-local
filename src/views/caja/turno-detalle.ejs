@@ -91,14 +91,14 @@
                                     <div>
                                         <span>Fecha apertura</span>
                                         <strong>
-                                            <%= formatearFecha(turno.fecha_apertura) %>
+                                            <%= formatearFecha(fechaLocal(turno.fecha_apertura)) %>
                                         </strong>
                                     </div>
 
                                     <div>
                                         <span>Fecha cierre</span>
                                         <strong>
-                                            <%= turno.fecha_cierre ? formatearFecha(turno.fecha_cierre) : '—' %>
+                                            <%= turno.fecha_cierre ? formatearFecha(fechaLocal(turno.fecha_cierre)) : '—' %>
                                         </strong>
                                     </div>
                                 </div>
@@ -376,7 +376,7 @@
                                                     <tr>
                                                         <td>
                                                             <span class="caja-table-date">
-                                                                <%= formatearFecha(gasto.fecha_gasto || gasto.creado_en)
+                                                                <%= formatearFecha(fechaLocal(gasto.fecha_gasto || gasto.creado_en))
                                                                     %>
                                                             </span>
                                                         </td>
@@ -511,7 +511,7 @@
                                                         <tr>
                                                             <td>
                                                                 <span class="caja-table-date">
-                                                                    <%= formatearFecha(movimiento.creado_en) %>
+                                                                    <%= formatearFecha(fechaLocal(movimiento.creado_en)) %>
                                                                 </span>
                                                             </td>
 
