@@ -123,6 +123,29 @@ test('rechaza peticiones que modifican datos desde otro sitio (CSRF)', async () 
     assert.equal(db.prepare('SELECT COUNT(*) AS total FROM turnos_caja').get().total, turnosAntes + 1);
 });
 
+test('la política de referrer permite verificar el origen de los formularios', async () => {
+    // Con 'no-referrer' (valor por defecto de helmet) los navegadores envían
+    // "Origin: null" en los POST de formularios y el login quedaba bloqueado.
+    const respuesta = await cliente().pedir('/auth/login');
+    assert.equal(respuesta.headers.get('referrer-policy'), 'same-origin');
+});
+
+test('Origin: null solo se acepta si el Referer es de la misma app', async () => {
+    const usuario = cliente();
+    const cuerpo = new URLSearchParams({ correo: 'nadie@pruebas.local', contrasena: 'x' }).toString();
+    const tipo = { 'content-type': 'application/x-www-form-urlencoded' };
+
+    const sinReferer = await usuario.pedir('/auth/login', { method: 'POST', headers: { ...tipo, origin: 'null' }, body: cuerpo });
+    assert.equal(sinReferer.status, 403);
+
+    const conRefererPropio = await usuario.pedir('/auth/login', {
+        method: 'POST',
+        headers: { ...tipo, origin: 'null', referer: `${servidor.url}/auth/login` },
+        body: cuerpo,
+    });
+    assert.equal(conRefererPropio.status, 401);
+});
+
 test('una imagen de producto nunca se guarda con extensión ejecutable', async () => {
     const usuario = cliente();
     await usuario.login(credencialesAdmin.correo, credencialesAdmin.contrasena);

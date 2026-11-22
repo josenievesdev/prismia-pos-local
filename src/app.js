@@ -53,6 +53,10 @@ app.set('layout', 'layouts/app');
 app.use(
     helmet({
         contentSecurityPolicy: false,
+        // 'same-origin' (no el 'no-referrer' por defecto): con 'no-referrer'
+        // los navegadores envían "Origin: null" en los formularios y la
+        // protección CSRF (origen.middleware) no podría verificar el origen.
+        referrerPolicy: { policy: 'same-origin' },
     })
 );
 
