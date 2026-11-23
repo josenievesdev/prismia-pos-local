@@ -1,6 +1,7 @@
 const cotizacionesRepository = require('./cotizaciones.repository');
 const ventasRepository = require('../ventas/ventas.repository');
 const fechas = require('../../utils/fechas');
+const dinero = require('../../utils/dinero');
 const { limpiarTexto, normalizarId, crearError } = require('../../utils/comunes');
 
 function normalizarNumero(valor, defecto = 0) {
@@ -336,8 +337,8 @@ function calcularLineaCotizacion(producto, cantidad, descuentoUnitario = 0) {
     }
 
     const precioDespuesDescuento = precioUnitario - descuentoSeguro;
-    const brutoLinea = redondearDinero(precioDespuesDescuento * cantidad);
-    const descuentoTotal = redondearDinero(descuentoSeguro * cantidad);
+    const brutoLinea = dinero.multiplicarPorCantidad(precioDespuesDescuento, cantidad);
+    const descuentoTotal = dinero.multiplicarPorCantidad(descuentoSeguro, cantidad);
 
     const manejaIva = normalizarEntero(producto.maneja_iva) === 1;
     const porcentajeIva = normalizarEntero(producto.porcentaje_iva);
@@ -348,19 +349,16 @@ function calcularLineaCotizacion(producto, cantidad, descuentoUnitario = 0) {
     let totalLinea = brutoLinea;
 
     if (manejaIva && porcentajeIva > 0) {
-        const tasa = porcentajeIva / 100;
-
         if (precioIncluyeIva) {
-            subtotal = redondearDinero(brutoLinea / (1 + tasa));
-            impuestoTotal = brutoLinea - subtotal;
+            ({ base: subtotal, iva: impuestoTotal } = dinero.separarIvaIncluido(brutoLinea, porcentajeIva));
             totalLinea = brutoLinea;
         } else {
-            impuestoTotal = redondearDinero(subtotal * tasa);
+            impuestoTotal = dinero.calcularIva(subtotal, porcentajeIva);
             totalLinea = subtotal + impuestoTotal;
         }
     }
 
-    const costoTotal = redondearDinero(precioCostoUnitario * cantidad);
+    const costoTotal = dinero.multiplicarPorCantidad(precioCostoUnitario, cantidad);
     const utilidadBruta = subtotal - costoTotal;
 
     return {

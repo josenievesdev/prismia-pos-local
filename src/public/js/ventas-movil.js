@@ -527,16 +527,27 @@
 
     function calcularResumen() {
         return estado.carrito.reduce(function (resumen, item) {
-            const totalLinea = item.precio_venta * item.cantidad;
-            const ivaLinea = item.maneja_iva === 1 && item.precio_incluye_iva === 1
-                ? totalLinea - (totalLinea / (1 + (item.porcentaje_iva / 100)))
-                : item.maneja_iva === 1
-                    ? totalLinea * (item.porcentaje_iva / 100)
-                    : 0;
+            // Misma regla y aritmética exacta que el servidor. Antes, con IVA no
+            // incluido, el total mostrado no sumaba el IVA y el servidor
+            // rechazaba el pago por "no cubre el total".
+            const bruto = window.PrismiaDinero.multiplicarPorCantidad(item.precio_venta, item.cantidad);
+            const porcentaje = Math.round(Number(item.porcentaje_iva) || 0);
+            let base = bruto;
+            let ivaLinea = 0;
 
-            resumen.subtotal += totalLinea - ivaLinea;
+            if (Number(item.maneja_iva) === 1 && porcentaje > 0) {
+                if (Number(item.precio_incluye_iva) === 1) {
+                    const separado = window.PrismiaDinero.separarIvaIncluido(bruto, porcentaje);
+                    base = separado.base;
+                    ivaLinea = separado.iva;
+                } else {
+                    ivaLinea = window.PrismiaDinero.calcularIva(bruto, porcentaje);
+                }
+            }
+
+            resumen.subtotal += base;
             resumen.iva += ivaLinea;
-            resumen.total += totalLinea;
+            resumen.total += base + ivaLinea;
 
             return resumen;
         }, {

@@ -2579,17 +2579,21 @@ data-product-image="${escaparHtml(producto.imagen_url || '')}"
         }
     }
 
+    // Misma regla y misma aritmética exacta que el servidor (dinero-exacto.js):
+    // lo que ve el cajero es exactamente lo que se cobra.
     function calcularLinea(item) {
-        const brutoLinea = item.precio * item.cantidad;
+        const brutoLinea = window.PrismiaDinero.multiplicarPorCantidad(item.precio, item.cantidad);
+        const porcentajeIva = Math.round(Number(item.porcentajeIva) || 0);
         let subtotalLinea = brutoLinea;
         let ivaLinea = 0;
 
-        if (item.manejaIva && item.porcentajeIva > 0) {
+        if (item.manejaIva && porcentajeIva > 0) {
             if (item.precioIncluyeIva) {
-                subtotalLinea = brutoLinea / (1 + item.porcentajeIva / 100);
-                ivaLinea = brutoLinea - subtotalLinea;
+                const separado = window.PrismiaDinero.separarIvaIncluido(brutoLinea, porcentajeIva);
+                subtotalLinea = separado.base;
+                ivaLinea = separado.iva;
             } else {
-                ivaLinea = brutoLinea * (item.porcentajeIva / 100);
+                ivaLinea = window.PrismiaDinero.calcularIva(subtotalLinea, porcentajeIva);
             }
         }
 

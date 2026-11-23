@@ -358,7 +358,7 @@
             || producto.precio_costo
         );
 
-        const brutoLinea = Math.round(precioUnitario * cantidad);
+        const brutoLinea = window.PrismiaDinero.multiplicarPorCantidad(precioUnitario, cantidad);
 
         const manejaIva = entero(producto.maneja_iva) === 1;
         const porcentajeIva = entero(producto.porcentaje_iva);
@@ -369,19 +369,18 @@
         let totalLinea = brutoLinea;
 
         if (manejaIva && porcentajeIva > 0) {
-            const tasa = porcentajeIva / 100;
-
             if (precioIncluyeIva) {
-                subtotal = Math.round(brutoLinea / (1 + tasa));
-                impuestoTotal = brutoLinea - subtotal;
+                const separado = window.PrismiaDinero.separarIvaIncluido(brutoLinea, porcentajeIva);
+                subtotal = separado.base;
+                impuestoTotal = separado.iva;
                 totalLinea = brutoLinea;
             } else {
-                impuestoTotal = Math.round(subtotal * tasa);
+                impuestoTotal = window.PrismiaDinero.calcularIva(subtotal, porcentajeIva);
                 totalLinea = subtotal + impuestoTotal;
             }
         }
 
-        const costoTotal = Math.round(costoUnitario * cantidad);
+        const costoTotal = window.PrismiaDinero.multiplicarPorCantidad(costoUnitario, cantidad);
         const utilidadBruta = subtotal - costoTotal;
 
         return {
