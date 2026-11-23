@@ -29,8 +29,8 @@ filtros ni estados propios. Todo sale de la librería (`sistema.css` +
       tabla, estado (badge), vacío, nota.
 - [ ] Componentes que faltan: formulario en secciones, paginación, modal, barra de
       acciones de tabla (se crean al migrar el primer módulo que los use).
-- [x] Parciales EJS en `views/partials/ui/` para que las vistas "hereden" el
-      diseño: `encabezado`, `kpi`, `estado`, `vacio`, `paginacion`.
+- [x] Parciales EJS en `views/partials/ui/`: `encabezado`, `kpi`, `estado`, `vacio`
+      (falta `paginacion`).
 - [ ] Reglas de botones: 1 primario por pantalla (arriba a la derecha), los
       demás secundarios; mismo alto (40 px, 32 px en tablas); acciones
       destructivas en rojo suave.
