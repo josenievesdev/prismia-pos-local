@@ -628,13 +628,18 @@ html[data-menu-estado="movil"] .shell-toggle {
 }
 
 @media (max-width: 767.98px) {
+    /* main.css (hoja vieja) ponía la barra en columna bajo 720 px: usuario y
+       "Salir" bajaban a una segunda fila. Siempre una sola fila. */
     .app-header {
+        flex-direction: row;
         flex-wrap: nowrap;
+        align-items: center;
         padding: 8px 14px;
     }
 
     .header-user {
         flex: 0 0 auto;
+        width: auto;
     }
 
     .user-pill-copy {

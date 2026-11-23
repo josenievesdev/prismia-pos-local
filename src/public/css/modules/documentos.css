@@ -1,0 +1,518 @@
+/* =========================================================
+   Prismia · Editor de documentos (cotización, remisión, compra)
+   Se carga DESPUÉS de pos.css y reutiliza sus piezas: buscador de
+   cliente/proveedor, buscador de productos, modal de cliente rápido y
+   filas de totales. Mismo patrón en los tres documentos:
+     barra de página → [tercero | buscar producto] → productos → datos
+     → pie fijo con totales y botón principal.
+   ========================================================= */
+
+.doc-editor {
+    --pos-radio: var(--radius-lg);
+}
+
+.doc-editor [hidden] {
+    display: none !important;
+}
+
+/* ---------- Barra de página ---------- */
+.doc-numero {
+    color: var(--color-text);
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 700;
+}
+
+/* ---------- Tercero (cliente / proveedor) y búsqueda de productos ---------- */
+.doc-busquedas {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+}
+
+@media (min-width: 1024px) {
+    .doc-busquedas {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
+        align-items: stretch;
+    }
+}
+
+.doc-buscador {
+    display: grid;
+    align-content: end;
+}
+
+/* Las dos tarjetas (tercero y producto) con la misma altura de rótulo y de
+   campo, para que los buscadores queden alineados. */
+.doc-busquedas .ventas-client-clean-head {
+    min-height: 30px;
+}
+
+.doc-buscador .ventas-search-input-wrap input,
+.doc-buscador .ventas-search-btn {
+    min-height: 42px;
+}
+
+.doc-buscador .ventas-search-input-wrap input {
+    font-size: 14.5px;
+}
+
+/* El nombre del tercero ya se ve en la tarjeta de selección: no se repite
+   en el encabezado ni en el buscador. */
+.doc-tercero:has(.doc-seleccion:not([hidden])) .ventas-client-search-wrap {
+    display: none;
+}
+
+/* Misma altura que el campo de búsqueda (42 px): al elegir el tercero la
+   tarjeta no cambia de tamaño y nada se mueve. */
+.doc-seleccion {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    height: 42px;
+    padding: 0 5px 0 12px;
+    line-height: 1.2;
+    border: 1px solid color-mix(in srgb, var(--pos-acento) 30%, transparent);
+    border-radius: var(--radius-md);
+    background: var(--pos-acento-suave);
+}
+
+.doc-seleccion-texto {
+    display: grid;
+    gap: 1px;
+    min-width: 0;
+}
+
+.doc-seleccion-texto strong {
+    overflow: hidden;
+    color: var(--color-text);
+    font-size: 14.5px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.doc-seleccion-texto span {
+    overflow: hidden;
+    color: var(--color-muted);
+    font-size: 12.5px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.doc-seleccion-acciones {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 6px;
+}
+
+/* Resultados que arma el JavaScript de cada documento */
+.doc-editor :is(.ventas-client-results, .ventas-results-panel) > button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 12px;
+    border: 0;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.doc-editor .ventas-client-results > button {
+    display: grid;
+    gap: 2px;
+}
+
+.doc-editor :is(.ventas-client-results, .ventas-results-panel) > button + button {
+    margin-top: 2px;
+}
+
+.doc-editor :is(.ventas-client-results, .ventas-results-panel) > button:hover:not(:disabled),
+.doc-editor :is(.ventas-client-results, .ventas-results-panel) > button:focus-visible {
+    background: var(--color-surface-hover);
+    outline: none;
+}
+
+.doc-editor :is(.ventas-client-results, .ventas-results-panel) > button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.doc-editor :is(.ventas-client-results, .ventas-results-panel) > button > div {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.doc-editor :is(.ventas-client-results, .ventas-results-panel) > button strong {
+    overflow: hidden;
+    color: var(--color-text);
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.doc-editor :is(.ventas-client-results, .ventas-results-panel) > button span {
+    color: var(--color-muted);
+    font-size: 12.5px;
+}
+
+.doc-editor .ventas-results-panel > button > strong {
+    flex: 0 0 auto;
+    font-weight: 700;
+}
+
+.doc-editor .compras-product-result-action {
+    flex: 0 0 auto;
+    padding: 4px 10px;
+    border-radius: var(--radius-pill);
+    background: var(--pos-acento-suave);
+    color: var(--pos-acento) !important;
+    font-weight: 600;
+}
+
+.doc-editor [class$="-search-empty"] {
+    padding: 18px;
+    color: var(--color-muted);
+    font-size: 13px;
+    text-align: center;
+}
+
+/* ---------- Tabla de productos ---------- */
+.doc-lineas {
+    overflow: hidden;
+}
+
+.doc-tabla td {
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+.doc-tabla .ventas-cart-empty-row {
+    display: table-row;
+}
+
+.doc-tabla .ventas-cart-empty-row > td {
+    display: table-cell;
+    padding: 0;
+}
+
+.doc-tabla .ventas-cart-empty {
+    padding: 32px 20px;
+}
+
+.doc-tabla .ventas-col-item {
+    width: 40px;
+    color: var(--color-faint);
+}
+
+.doc-tabla .ventas-cart-product {
+    display: grid;
+    gap: 2px;
+    min-width: 180px;
+}
+
+.doc-tabla .ventas-cart-product strong {
+    color: var(--color-text);
+    font-size: 13.5px;
+    font-weight: 600;
+}
+
+.doc-tabla .ventas-cart-product :is(span, small) {
+    color: var(--color-muted);
+    font-size: 12px;
+}
+
+.doc-tabla input[type="number"] {
+    width: 104px;
+    height: 34px;
+    padding: 0 8px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    font-size: 13.5px;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+.doc-tabla input[type="number"]:focus {
+    border-color: var(--pos-acento);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--pos-acento) 18%, transparent);
+    outline: none;
+}
+
+.doc-tabla :is(.cotizaciones-table-qty, .remisiones-table-qty),
+.doc-tabla .compras-line-input.is-small {
+    width: 84px;
+    text-align: center;
+}
+
+.doc-tabla .compras-line-input.is-mini {
+    width: 68px;
+}
+
+/* Compras: pares Desc./IVA y Ganancia/Actualizar debajo del valor */
+.doc-tabla :is(.compras-line-pair, .compras-price-tools) {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.doc-tabla .compras-price-tools {
+    margin-top: 6px;
+}
+
+.doc-tabla :is(.compras-line-pair, .compras-price-tools) label {
+    display: grid;
+    gap: 2px;
+    color: var(--color-muted);
+    font-size: 11px;
+    text-align: left;
+}
+
+.doc-tabla .compras-check-inline {
+    display: inline-flex !important;
+    align-items: center;
+    align-self: end;
+    gap: 4px;
+    height: 34px;
+    white-space: nowrap;
+}
+
+.doc-tabla .compras-line-muted {
+    display: block;
+    color: var(--color-muted);
+    font-size: 11.5px;
+}
+
+.doc-tabla .ventas-cart-remove {
+    width: 32px;
+    height: 32px;
+}
+
+/* Tarjeta angosta (tablet, celular, menú abierto): cada producto se dibuja
+   como una ficha apilada, sin scroll lateral. Depende del ancho de la
+   TARJETA, no de la pantalla, así responde igual con el menú abierto o
+   cerrado. */
+.doc-lineas {
+    container: lineas / inline-size;
+}
+
+@container lineas (max-width: 679.98px) {
+    .doc-tabla:not(.doc-tabla--compra) thead {
+        display: none;
+    }
+
+    .doc-tabla:not(.doc-tabla--compra),
+    .doc-tabla:not(.doc-tabla--compra) tbody,
+    .doc-tabla:not(.doc-tabla--compra) .ventas-cart-empty-row,
+    .doc-tabla:not(.doc-tabla--compra) .ventas-cart-empty-row > td {
+        display: block;
+    }
+
+    /* Cotización y remisión: # · producto · cantidad · precio · IVA · total · quitar */
+    .doc-tabla:not(.doc-tabla--compra) tbody tr:not(.ventas-cart-empty-row) {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-areas:
+            "producto producto producto quitar"
+            "cantidad precio iva total";
+        align-items: end;
+        gap: 8px 10px;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .doc-tabla:not(.doc-tabla--compra) tbody tr:not(.ventas-cart-empty-row) > td {
+        display: grid;
+        gap: 2px;
+        padding: 0;
+        border: 0;
+        text-align: left !important;
+    }
+
+    .doc-tabla:not(.doc-tabla--compra) tbody tr > td:nth-child(1) { display: none; }
+    .doc-tabla:not(.doc-tabla--compra) tbody tr > td:nth-child(2) { grid-area: producto; }
+    .doc-tabla:not(.doc-tabla--compra) tbody tr > td:nth-child(3) { grid-area: cantidad; }
+    .doc-tabla:not(.doc-tabla--compra) tbody tr > td:nth-child(4) { grid-area: precio; }
+    .doc-tabla:not(.doc-tabla--compra) tbody tr > td:nth-child(5) { grid-area: iva; }
+    .doc-tabla:not(.doc-tabla--compra) tbody tr > td:nth-child(6) { grid-area: total; text-align: right !important; }
+    .doc-tabla:not(.doc-tabla--compra) tbody tr > td:nth-child(7) { grid-area: quitar; justify-self: end; align-self: start; }
+
+    .doc-tabla:not(.doc-tabla--compra) tbody tr:not(.ventas-cart-empty-row) > td:nth-child(3)::before { content: "Cantidad"; }
+    .doc-tabla:not(.doc-tabla--compra) tbody tr:not(.ventas-cart-empty-row) > td:nth-child(4)::before { content: "Precio"; }
+    .doc-tabla:not(.doc-tabla--compra) tbody tr:not(.ventas-cart-empty-row) > td:nth-child(5)::before { content: "IVA"; }
+    .doc-tabla:not(.doc-tabla--compra) tbody tr:not(.ventas-cart-empty-row) > td:nth-child(6)::before { content: "Total"; }
+
+    .doc-tabla:not(.doc-tabla--compra) :is(.cotizaciones-table-qty, .remisiones-table-qty) {
+        width: 100%;
+    }
+
+    .doc-tabla .ventas-cart-product {
+        min-width: 0;
+    }
+}
+
+@container lineas (max-width: 979.98px) {
+    .doc-tabla--compra thead {
+        display: none;
+    }
+
+    .doc-tabla--compra,
+    .doc-tabla--compra tbody,
+    .doc-tabla--compra .ventas-cart-empty-row,
+    .doc-tabla--compra .ventas-cart-empty-row > td {
+        display: block;
+    }
+
+    /* Compra: producto · cant. · costo base · desc./IVA · costo final · precio sugerido · quitar */
+    .doc-tabla--compra tbody tr:not(.ventas-cart-empty-row) {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+        grid-template-areas:
+            "producto producto producto quitar"
+            "cantidad costo descuento descuento"
+            "final precio precio precio";
+        align-items: start;
+        gap: 10px 12px;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .doc-tabla--compra tbody tr:not(.ventas-cart-empty-row) > td {
+        display: grid;
+        align-content: start;
+        gap: 2px;
+        padding: 0;
+        border: 0;
+        text-align: left !important;
+    }
+
+    .doc-tabla--compra tbody tr > td:nth-child(1) { grid-area: producto; }
+    .doc-tabla--compra tbody tr > td:nth-child(2) { grid-area: cantidad; }
+    .doc-tabla--compra tbody tr > td:nth-child(3) { grid-area: costo; }
+    .doc-tabla--compra tbody tr > td:nth-child(4) { grid-area: descuento; }
+    .doc-tabla--compra tbody tr > td:nth-child(5) { grid-area: final; }
+    .doc-tabla--compra tbody tr > td:nth-child(6) { grid-area: precio; }
+    .doc-tabla--compra tbody tr > td:nth-child(7) { grid-area: quitar; justify-self: end; }
+
+    .doc-tabla--compra tbody tr:not(.ventas-cart-empty-row) > td:nth-child(2)::before { content: "Cantidad"; }
+    .doc-tabla--compra tbody tr:not(.ventas-cart-empty-row) > td:nth-child(3)::before { content: "Costo base"; }
+    .doc-tabla--compra tbody tr:not(.ventas-cart-empty-row) > td:nth-child(5)::before { content: "Costo final"; }
+    .doc-tabla--compra tbody tr:not(.ventas-cart-empty-row) > td:nth-child(6)::before { content: "Precio sugerido"; }
+
+    .doc-tabla--compra :is(.compras-line-pair, .compras-price-tools) {
+        justify-content: flex-start;
+    }
+
+    .doc-tabla--compra .compras-line-input:not(.is-mini) {
+        width: 100%;
+    }
+}
+
+/* Rótulo de cada dato en la ficha apilada */
+.doc-tabla td::before {
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.doc-nota {
+    margin: 0;
+    padding: 10px 16px;
+    border-top: 1px solid var(--color-border);
+    color: var(--color-muted);
+    font-size: 12.5px;
+}
+
+/* ---------- Datos del documento ---------- */
+.doc-campos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 12px;
+}
+
+@media (min-width: 700px) {
+    .doc-campo-doble {
+        grid-column: span 2;
+    }
+}
+
+.doc-campos textarea {
+    min-height: 64px;
+}
+
+/* ---------- Pie fijo: totales y botón principal ---------- */
+.doc-pie {
+    position: sticky;
+    bottom: 0;
+    z-index: 15;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 20px;
+    padding: 12px 16px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    box-shadow: 0 -10px 28px -18px rgba(16, 24, 40, 0.35);
+}
+
+.doc-pie-totales {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(96px, auto));
+    gap: 2px 20px;
+    margin-right: auto;
+}
+
+.doc-pie-total {
+    display: grid;
+    justify-items: end;
+    line-height: 1.1;
+}
+
+.doc-pie-total span {
+    color: var(--color-muted);
+    font-size: 12.5px;
+    font-weight: 600;
+}
+
+.doc-pie-total strong {
+    color: var(--color-text);
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+}
+
+.doc-guardar {
+    min-width: 160px;
+    min-height: 52px !important;
+    font-size: 16px !important;
+}
+
+@media (max-width: 899.98px) {
+    .doc-pie-totales {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+        margin-right: 0;
+    }
+
+    .doc-pie-total {
+        justify-items: start;
+    }
+
+    .doc-guardar {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+}

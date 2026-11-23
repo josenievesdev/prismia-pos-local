@@ -2,8 +2,8 @@ const remisionesService = require('./remisiones.service');
 
 const estilosRemisiones = ['/css/modules/remisiones.css'];
 const estilosRemisionesPOS = [
-    '/css/modules/ventas.css',
-    '/css/modules/remisiones.css',
+    '/css/modules/pos.css',
+    '/css/modules/documentos.css',
 ];
 
 function obtenerIdUsuarioAutenticado(req) {

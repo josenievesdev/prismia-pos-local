@@ -7,6 +7,12 @@ const estilosComprasPOS = [
     '/css/modules/compras.css',
 ];
 
+// Formulario de compra: mismo editor de documentos que cotización y remisión
+const estilosDocumento = [
+    '/css/modules/pos.css',
+    '/css/modules/documentos.css',
+];
+
 
 function mostrarImprimirCompra(req, res) {
     const documento = comprasService.obtenerDocumentoCompraImprimible(req.params.id);
@@ -59,7 +65,7 @@ function mostrarFormularioNuevaCompra(req, res) {
         condicionesPago: datosFormulario.condiciones_pago,
         proveedores: datosFormulario.proveedores,
         error: null,
-        estilosModulo: estilosComprasPOS,
+        estilosModulo: estilosDocumento,
     });
 }
 

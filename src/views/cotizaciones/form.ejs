@@ -1,292 +1,194 @@
-<section class="module-page ventas-page cotizaciones-pos-page">
-    <% const fechaHoy=fechaHoyLocal; const cotizacionSugerida=siguienteCotizacion || {
-        prefijo: 'COT' , siguiente_numero: 'COT-BORRADOR' }; const
-        nomenclaturaCotizacion=cotizacionSugerida.siguiente_numero || 'COT-BORRADOR' ; %>
+<%
+    const fechaHoy = fechaHoyLocal;
+    const cotizacionSugerida = siguienteCotizacion || { prefijo: 'COT', siguiente_numero: 'COT-BORRADOR' };
+    const numeroCotizacion = cotizacionSugerida.siguiente_numero || 'COT-BORRADOR';
+    const fechaVista = String(fechaHoy || '').split('-').reverse().join('/');
+%>
+<section class="module-page ventas-page doc-pagina">
+    <form id="formNuevaCotizacion" class="ventas-pos-shell doc-editor" data-url="/cotizaciones" novalidate>
+        <header class="ui-encabezado">
+            <div class="ui-encabezado-texto">
+                <strong class="doc-numero" id="cotizacionNumeroSugerido" title="Número sugerido: se confirma al guardar"><%= numeroCotizacion %></strong>
+                <span class="ui-meta"><%= fechaVista %></span>
+                <%- include('../partials/ui/estado', { texto: 'No descuenta inventario', tono: 'info', punto: true }) %>
+            </div>
 
-        <form id="formNuevaCotizacion" class="ventas-pos-shell cotizaciones-pos-shell" data-url="/cotizaciones"
-            novalidate>
-            <header class="ventas-pos-header">
-                <div class="ventas-header-left">
-                    <div class="ventas-header-icon">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2.2">
-                            <path d="M4 4h16v16H4z" />
-                            <path d="M8 8h8" />
-                            <path d="M8 12h8" />
-                            <path d="M8 16h5" />
-                        </svg>
-                    </div>
+            <div class="ui-acciones">
+                <a href="/cotizaciones" class="btn-secondary">Listado</a>
+                <button type="button" class="btn-secondary" id="btnLimpiarCotizacion">Limpiar</button>
+            </div>
+        </header>
 
-                    <div>
-                        <h2>Cotización</h2>
-                        <span class="ventas-header-sub">Propuesta comercial</span>
+        <% if (error) { %>
+            <div class="alert alert-error"><%= error %></div>
+        <% } %>
+        <div class="alert alert-error" id="alertaCotizacion" hidden></div>
+
+        <div class="doc-busquedas">
+            <section class="pos-cliente doc-tercero">
+                <div class="ventas-client-clean-head">
+                    <span>Cliente</span>
+
+                    <div class="ventas-client-clean-actions">
+                        <strong id="resumenClienteCotizacion" hidden>Sin seleccionar</strong>
+                        <button type="button" class="ventas-client-new-btn" id="btnAbrirClienteRapidoCotizacion">+ Nuevo</button>
                     </div>
                 </div>
 
-                <div class="ventas-header-status">
-                    <span class="ventas-status-chip is-open cotizaciones-status-chip">
-                        <span class="ventas-status-dot"></span>
-                        Sin afectar inventario
-                    </span>
+                <div class="ventas-client-search-wrap">
+                    <input type="search" id="buscarClienteCotizacion"
+                        placeholder="Nombre, documento o teléfono…" autocomplete="off">
 
-                    <span class="ventas-header-meta">
-                        Número sugerido <strong>
-                            <%= nomenclaturaCotizacion %>
-                        </strong>
-                    </span>
+                    <div class="ventas-client-results" id="resultadosClientesCotizacion" hidden>
+                        <div class="ventas-client-result-empty">Escribe para buscar un cliente.</div>
+                    </div>
+                </div>
+
+                <div class="doc-seleccion" id="clienteSeleccionadoBox" hidden>
+                    <div class="doc-seleccion-texto">
+                        <strong id="clienteSeleccionadoNombre"></strong>
+                        <span id="clienteSeleccionadoDetalle"></span>
+                    </div>
+
+                    <div class="doc-seleccion-acciones">
+                        <button type="button" class="btn-secondary btn-small" id="btnQuitarClienteCotizacion">Cambiar</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="ventas-search-section doc-buscador">
+                <div class="ventas-client-clean-head">
+                    <span>Agregar producto</span>
+                </div>
+
+                <div class="ventas-search-form">
+                    <div class="ventas-search-input-wrap">
+                        <span class="ventas-search-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" aria-hidden="true">
+                                <circle cx="11" cy="11" r="8" />
+                                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                            </svg>
+                        </span>
+
+                        <input type="search" id="buscarProductoCotizacion"
+                            placeholder="Nombre, código de barras o SKU…" autocomplete="off" autofocus>
+
+                        <div class="ventas-results-panel" id="resultadosProductosCotizacion" hidden>
+                            <div class="ventas-empty-results">
+                                <strong>Escribe para buscar</strong>
+                                <span>Los productos aparecerán aquí.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="ventas-search-btn" id="btnBuscarProductoCotizacion">Buscar</button>
+                </div>
+            </section>
+        </div>
+
+        <section class="ui-tarjeta doc-lineas">
+            <header class="ui-tarjeta-encabezado">
+                <div>
+                    <h3>Productos</h3>
+                </div>
+                <span class="ui-estado">Líneas:&nbsp;<b id="totalItemsCotizacion">0</b></span>
+            </header>
+
+            <div class="ui-tabla-contenedor">
+                <table class="ui-tabla doc-tabla">
+                    <thead>
+                        <tr>
+                            <th class="centro ventas-col-item">#</th>
+                            <th>Producto</th>
+                            <th class="centro">Cantidad</th>
+                            <th class="num">Precio</th>
+                            <th class="num">IVA</th>
+                            <th class="num">Total</th>
+                            <th class="centro" aria-label="Quitar"></th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="itemsCotizacion">
+                        <tr class="ventas-cart-empty-row">
+                            <td colspan="7">
+                                <div class="ventas-cart-empty">
+                                    <strong>Cotización vacía</strong>
+                                    <span>Busca un producto y agrégalo a la cotización.</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="ui-tarjeta doc-datos">
+            <header class="ui-tarjeta-encabezado">
+                <div>
+                    <h3>Condiciones</h3>
                 </div>
             </header>
 
-            <% if (error) { %>
-                <div class="alert alert-error">
-                    <%= error %>
+            <div class="ui-tarjeta-cuerpo doc-campos">
+                <label class="ui-campo">
+                    <span>Validez (días)</span>
+                    <input type="number" id="validezDiasCotizacion" min="0" max="365" value="15">
+                </label>
+
+                <label class="ui-campo doc-campo-doble">
+                    <span>Condiciones comerciales</span>
+                    <textarea id="condicionesCotizacion" rows="2"
+                        placeholder="Ej: Precios sujetos a disponibilidad.">Precios sujetos a disponibilidad. No afecta inventario.</textarea>
+                </label>
+
+                <label class="ui-campo doc-campo-doble">
+                    <span>Observaciones</span>
+                    <textarea id="observacionesCotizacion" rows="2" placeholder="Notas internas o aclaraciones…"></textarea>
+                </label>
+            </div>
+        </section>
+
+        <footer class="doc-pie">
+            <div class="doc-pie-totales">
+                <div class="ventas-total-row">
+                    <span>Subtotal</span>
+                    <strong id="resumenSubtotalCotizacion">$ 0</strong>
                 </div>
-                <% } %>
+                <div class="ventas-total-row">
+                    <span>Descuento</span>
+                    <strong id="resumenDescuentoCotizacion">$ 0</strong>
+                </div>
+                <div class="ventas-total-row">
+                    <span>IVA</span>
+                    <strong id="resumenIvaCotizacion">$ 0</strong>
+                </div>
+                <div class="ventas-total-row">
+                    <span>Costo</span>
+                    <strong id="resumenCostoCotizacion">$ 0</strong>
+                </div>
+                <div class="ventas-total-row">
+                    <span>Utilidad</span>
+                    <strong id="resumenUtilidadCotizacion">$ 0</strong>
+                </div>
+            </div>
 
-                    <div class="cotizaciones-form-alert" id="alertaCotizacion" hidden></div>
+            <div class="doc-pie-total">
+                <span>Total</span>
+                <strong id="resumenTotalCotizacion">$ 0</strong>
+            </div>
 
-                    <section class="ventas-context-bar">
-                        <div class="ventas-context-item is-client ventas-client-search-box ventas-client-clean">
-                            <div class="ventas-client-clean-head">
-                                <span>Cliente</span>
-
-                                <div class="ventas-client-clean-actions">
-                                    <strong id="resumenClienteCotizacion">Sin seleccionar</strong>
-
-                                    <button type="button" class="ventas-client-new-btn"
-                                        id="btnAbrirClienteRapidoCotizacion">
-                                        + Nuevo
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="ventas-client-search-wrap ventas-client-clean-search">
-                                <input type="search" id="buscarClienteCotizacion"
-                                    placeholder="Buscar cliente por nombre, documento o teléfono..." autocomplete="off">
-
-                                <div class="ventas-client-results cotizaciones-search-results"
-                                    id="resultadosClientesCotizacion" hidden>
-                                    <div class="ventas-client-result-empty">
-                                        Escribe para buscar un cliente.
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="cotizaciones-selected-box cotizaciones-selected-box-pos"
-                                id="clienteSeleccionadoBox" hidden>
-                                <span>Cliente seleccionado</span>
-                                <strong id="clienteSeleccionadoNombre"></strong>
-                                <p id="clienteSeleccionadoDetalle"></p>
-
-                                <button type="button" class="cotizaciones-link-button" id="btnQuitarClienteCotizacion">
-                                    Cambiar cliente
-                                </button>
-                            </div>
-                        </div>
-
-                        <label class="ventas-context-item ventas-date-item" for="fechaCotizacion">
-                            <span>Fecha</span>
-                            <input type="date" id="fechaCotizacion" name="fecha_cotizacion" value="<%= fechaHoy %>"
-                                max="<%= fechaHoy %>" disabled>
-                        </label>
-
-                        <div class="ventas-context-item ventas-invoice-code-box">
-                            <span>Cotización</span>
-                            <strong id="cotizacionNumeroSugerido">
-                                <%= nomenclaturaCotizacion %>
-                            </strong>
-                            <small>Número sugerido. Se confirma al guardar.</small>
-                        </div>
-
-                        <div class="ventas-context-item ventas-context-actions">
-                            <span>Acciones</span>
-
-                            <div class="ventas-context-buttons">
-                                <a href="/cotizaciones" class="btn-secondary">
-                                    Listado
-                                </a>
-
-                                <button type="button" class="btn-secondary" id="btnLimpiarCotizacion">
-                                    Limpiar
-                                </button>
-
-                                <button type="submit" class="btn-primary ventas-charge-button"
-                                    id="btnGuardarCotizacion">
-                                    Crear cotización
-                                </button>
-                            </div>
-
-                            <small>Atajos operativos de la cotización</small>
-                        </div>
-                    </section>
-
-                    <section class="ventas-search-section">
-                        <div class="ventas-search-form">
-                            <div class="ventas-search-input-wrap">
-                                <span class="ventas-search-icon">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2.5">
-                                        <circle cx="11" cy="11" r="8" />
-                                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                                    </svg>
-                                </span>
-
-                                <input type="search" id="buscarProductoCotizacion"
-                                    placeholder="Buscar producto por nombre, código de barras o SKU…" autocomplete="off"
-                                    autofocus>
-
-                                <div class="ventas-results-panel cotizaciones-product-results"
-                                    id="resultadosProductosCotizacion" hidden>
-                                    <div class="ventas-empty-results">
-                                        <strong>Escribe para buscar</strong>
-                                        <span>Los productos aparecerán aquí.</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button type="button" class="ventas-search-btn" id="btnBuscarProductoCotizacion">
-                                Buscar
-                            </button>
-                        </div>
-                    </section>
-
-                    <section class="ventas-sale-card cotizaciones-sale-card">
-                        <header class="ventas-sale-header">
-                            <div>
-                                <span class="ventas-kicker">Cotización</span>
-                                <h3>Detalle de productos</h3>
-                            </div>
-
-                            <span class="ventas-ticket-state">
-                                <%= nomenclaturaCotizacion %>
-                            </span>
-                        </header>
-
-                        <div class="ventas-invoice-table-wrap">
-                            <table class="ventas-invoice-table cotizaciones-invoice-table">
-                                <thead>
-                                    <tr>
-                                        <th class="text-center ventas-col-item">#</th>
-                                        <th>Producto</th>
-                                        <th class="text-center">Cantidad</th>
-                                        <th class="text-right">Precio</th>
-                                        <th class="text-right">IVA</th>
-                                        <th class="text-right">Total</th>
-                                        <th class="text-center">Acción</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody id="itemsCotizacion">
-                                    <tr class="ventas-cart-empty-row">
-                                        <td colspan="7">
-                                            <div class="ventas-cart-empty">
-                                                <strong>Cotización vacía</strong>
-                                                <span>Busca un producto y agrégalo a la cotización.</span>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <section class="ventas-sale-footer cotizaciones-sale-footer">
-                            <div class="ventas-payment-strip cotizaciones-conditions-strip">
-                                <div class="ventas-payment-strip-header">
-                                    <div>
-                                        <span class="ventas-kicker">Condiciones</span>
-                                        <h4>Datos comerciales</h4>
-                                    </div>
-
-                                    <small class="ventas-payment-note">
-                                        La cotización no descuenta inventario.
-                                    </small>
-                                </div>
-
-                                <div class="cotizaciones-commercial-fields">
-                                    <label class="ventas-field">
-                                        <span>Validez</span>
-                                        <input type="number" id="validezDiasCotizacion" min="0" max="365" value="15">
-                                    </label>
-
-                                    <label class="ventas-field cotizaciones-commercial-wide">
-                                        <span>Condiciones comerciales</span>
-                                        <textarea id="condicionesCotizacion" rows="2"
-                                            placeholder="Ej: Precios sujetos a disponibilidad.">Precios sujetos a disponibilidad. No afecta inventario.</textarea>
-                                    </label>
-
-                                    <label class="ventas-field cotizaciones-commercial-wide">
-                                        <span>Observaciones</span>
-                                        <textarea id="observacionesCotizacion" rows="2"
-                                            placeholder="Notas internas o aclaraciones..."></textarea>
-                                    </label>
-                                </div>
-
-                                <div class="ventas-payment-info">
-                                    <div class="ventas-payment-info-card">
-                                        <span>Cliente actual</span>
-                                        <strong id="resumenClienteInfoCotizacion">Sin seleccionar</strong>
-                                        <small>Cliente de la cotización</small>
-                                    </div>
-
-                                    <div class="ventas-payment-info-card">
-                                        <span>Líneas</span>
-                                        <strong id="totalItemsCotizacion">0</strong>
-                                        <small>Productos agregados</small>
-                                    </div>
-
-                                    <div class="ventas-payment-info-card">
-                                        <span>Documento</span>
-                                        <strong>
-                                            <%= nomenclaturaCotizacion %>
-                                        </strong>
-                                        <small>Se confirma al guardar</small>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="ventas-totals-panel">
-                                <div class="ventas-total-row">
-                                    <span>Subtotal</span>
-                                    <strong id="resumenSubtotalCotizacion">$ 0</strong>
-                                </div>
-
-                                <div class="ventas-total-row">
-                                    <span>Descuento</span>
-                                    <strong id="resumenDescuentoCotizacion">$ 0</strong>
-                                </div>
-
-                                <div class="ventas-total-row">
-                                    <span>IVA</span>
-                                    <strong id="resumenIvaCotizacion">$ 0</strong>
-                                </div>
-
-                                <div class="ventas-total-row">
-                                    <span>Costo</span>
-                                    <strong id="resumenCostoCotizacion">$ 0</strong>
-                                </div>
-
-                                <div class="ventas-total-row">
-                                    <span>Utilidad</span>
-                                    <strong id="resumenUtilidadCotizacion">$ 0</strong>
-                                </div>
-
-                                <div class="ventas-total-row is-total">
-                                    <span>Total</span>
-                                    <strong id="resumenTotalCotizacion">$ 0</strong>
-                                </div>
-                            </div>
-                        </section>
-                    </section>
-        </form>
+            <span id="resumenClienteInfoCotizacion" hidden></span>
+            <button type="submit" class="btn-primary doc-guardar" id="btnGuardarCotizacion">Crear cotización</button>
+        </footer>
+    </form>
 
         <div class="ventas-modal-backdrop" id="modalClienteRapidoCotizacion" hidden>
             <section class="ventas-modal-card" role="dialog" aria-modal="true"
                 aria-labelledby="tituloClienteRapidoCotizacion">
                 <header class="ventas-modal-header">
                     <div>
-                        <span class="ventas-kicker">Cliente rápido</span>
                         <h3 id="tituloClienteRapidoCotizacion">Nuevo cliente</h3>
-                        <p>Crea un cliente básico sin salir de la cotización.</p>
                     </div>
 
                     <button type="button" class="ventas-modal-close" id="btnCerrarClienteRapidoCotizacion"

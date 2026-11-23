@@ -485,9 +485,7 @@
             </td>
 
             <td class="text-center">
-                <button type="button" class="ventas-cart-remove cotizaciones-item-remove" data-id-producto="${escaparHtml(idProducto)}">
-                    Quitar
-                </button>
+                <button type="button" class="ventas-cart-remove cotizaciones-item-remove" data-id-producto="${escaparHtml(idProducto)}" aria-label="Quitar producto">✕</button>
             </td>
         `;
 

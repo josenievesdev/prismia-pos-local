@@ -17,8 +17,7 @@
         params.set('id_medio_pago', filtrosActuales.id_medio_pago); if (filtrosActuales.estado) params.set('estado',
         filtrosActuales.estado); if (filtrosActuales.id_turno_caja) params.set('id_turno_caja',
         filtrosActuales.id_turno_caja); if (filtrosActuales.id_cajero) params.set('id_cajero',
-        filtrosActuales.id_cajero); params.set('pagina', numeroPagina); params.set('limite', limitePagina); return
-        `/ventas/historial?${params.toString()}`; } function rangoVisible() { if (!totalResultados || totalResultados
+        filtrosActuales.id_cajero); params.set('pagina', numeroPagina); params.set('limite', limitePagina); return `/ventas/historial?${params.toString()}`; } function rangoVisible() { if (!totalResultados || totalResultados
         <=0) { return '0' ; } const inicio=((pagina - 1) * limite) + 1; const fin=Math.min(pagina * limite,
         totalResultados); return `${inicio} - ${fin}`; } %>
 

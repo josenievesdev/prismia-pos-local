@@ -14,8 +14,7 @@
         style: 'currency' , currency: 'COP' , maximumFractionDigits: 0 }).format(Number(valor || 0)); } function
         numero(valor) { return new Intl.NumberFormat('es-CO', { maximumFractionDigits: 3 }).format(Number(valor || 0));
         } function fecha(valor) { if (!valor) return 'Sin fecha' ; var textoFecha=String(valor).replace(' ', ' T'); var
-        fechaObj=new Date(textoFecha); if (Number.isNaN(fechaObj.getTime())) { return String(valor); } return
-        fechaObj.toLocaleString('es-CO'); } %>
+        fechaObj=new Date(textoFecha); if (Number.isNaN(fechaObj.getTime())) { return String(valor); } return fechaObj.toLocaleString('es-CO'); } %>
 
         <header class="ui-encabezado">
             <div class="ui-encabezado-texto"></div>

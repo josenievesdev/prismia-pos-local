@@ -656,9 +656,7 @@
 
         <td class="text-center">
             <button type="button" class="ventas-cart-remove" data-remove-index="${indice}"
-                aria-label="Quitar producto">
-                ×
-            </button>
+                aria-label="Quitar producto">✕</button>
         </td>
     </tr>
 `;

@@ -2,8 +2,8 @@ const cotizacionesService = require('./cotizaciones.service');
 
 const estilosCotizaciones = ['/css/modules/cotizaciones.css'];
 const estilosCotizacionesPOS = [
-    '/css/modules/ventas.css',
-    '/css/modules/cotizaciones.css',
+    '/css/modules/pos.css',
+    '/css/modules/documentos.css',
 ];
 
 function obtenerIdUsuarioAutenticado(req) {

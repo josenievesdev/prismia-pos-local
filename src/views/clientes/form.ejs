@@ -2,8 +2,7 @@
     <% const clienteActual=cliente || {}; const catalogosActuales=catalogos || { tipos_cliente: [], tipos_documento: [],
         regimenes_fiscales: [] }; const esEditar=modo==='editar' ; const accionFormulario=esEditar ?
         `/clientes/${clienteActual.id_cliente}/editar` : '/clientes/nuevo' ; function valor(campo, defecto='' ) { if
-        (clienteActual[campo]===undefined || clienteActual[campo]===null) { return defecto; } return
-        clienteActual[campo]; } function seleccionado(campo, opcion, defecto='' ) { const actual=valor(campo, defecto);
+        (clienteActual[campo]===undefined || clienteActual[campo]===null) { return defecto; } return clienteActual[campo]; } function seleccionado(campo, opcion, defecto='' ) { const actual=valor(campo, defecto);
         return actual===opcion ? 'selected' : '' ; } const etiquetaDepartamentoActual=valor('departamento') || '' ;
         const etiquetaMunicipioActual=valor('municipio') || '' ; %>
 
