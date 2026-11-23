@@ -2,6 +2,7 @@ const session = require('express-session');
 const db = require('./db');
 
 const OCHO_HORAS_EN_MS = 1000 * 60 * 60 * 8;
+const INTERVALO_MINIMO_TOUCH_MS = 1000 * 60;
 
 function ahoraEnMs() {
     return Date.now();
@@ -51,6 +52,7 @@ class SQLiteSessionStore extends session.Store {
 
         this.ttlMs = Number(opciones.ttlMs || OCHO_HORAS_EN_MS);
         this.intervaloLimpiezaMs = Number(opciones.intervaloLimpiezaMs || 1000 * 60 * 30);
+        this.ultimosToques = new Map();
 
         this.crearTablaSiNoExiste();
         this.limpiarSesionesExpiradas();
@@ -181,6 +183,21 @@ class SQLiteSessionStore extends session.Store {
     }
 
     touch(sid, sess, callback = () => { }) {
+        // Renovar el vencimiento en cada petición escribía en SQLite todo el
+        // tiempo. Con sesiones de 8 horas basta renovarlo una vez por minuto.
+        const ahora = Date.now();
+        const ultimoToque = this.ultimosToques.get(sid) || 0;
+
+        if (ahora - ultimoToque < INTERVALO_MINIMO_TOUCH_MS) {
+            return callback(null);
+        }
+
+        this.ultimosToques.set(sid, ahora);
+
+        if (this.ultimosToques.size > 5000) {
+            this.ultimosToques.clear();
+        }
+
         try {
             const fechaExpiraMs = obtenerFechaExpiracionMs(sess, this.ttlMs);
 

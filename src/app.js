@@ -60,6 +60,16 @@ app.use(
     })
 );
 
+/**
+ * Archivos públicos ANTES de la sesión: CSS, JS e imágenes no necesitan
+ * sesión. Antes pasaban por ella y cada archivo leía y escribía la sesión
+ * en SQLite (4–6 escrituras a disco por cada navegación).
+ */
+runtimePaths.asegurarCarpetasRuntime();
+
+app.use('/uploads', express.static(runtimePaths.obtenerCarpetaUploadsPublicos()));
+app.use(express.static(path.join(__dirname, 'public')));
+
 if (!env.app.isProduction) {
     app.use(morgan('dev'));
 }
@@ -84,14 +94,6 @@ app.use(
         },
     })
 );
-
-/**
- * Archivos públicos
- */
-runtimePaths.asegurarCarpetasRuntime();
-
-app.use('/uploads', express.static(runtimePaths.obtenerCarpetaUploadsPublicos()));
-app.use(express.static(path.join(__dirname, 'public')));
 
 function renderPantallaReinicioPendiente(res) {
     return res.status(503).send(`
