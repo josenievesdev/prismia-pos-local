@@ -1,124 +1,74 @@
-<section class="module-page usuarios-page">
-    <div class="module-header module-header-actions">
-        <div>
-            <p class="eyebrow">Seguridad operativa</p>
-            <h2>Usuarios</h2>
-            <p>
-                Administra administradores y cajeros del sistema.
-            </p>
-        </div>
-
-        <a href="/usuarios/nuevo" class="btn-primary">
-            Nuevo usuario
-        </a>
-    </div>
+<%
+    const listaUsuarios = Array.isArray(usuarios) ? usuarios : [];
+    const tonoEstado = { activo: 'exito', inactivo: '', bloqueado: 'peligro' };
+%>
+<section class="ui-pagina">
+    <%- include('../partials/ui/encabezado', {
+        eyebrow: 'Seguridad operativa',
+        titulo: 'Usuarios',
+        descripcion: 'Administradores y cajeros con acceso a Prismia.',
+        acciones: [{ texto: 'Nuevo usuario', href: '/usuarios/nuevo', tipo: 'primario' }],
+    }) %>
 
     <% if (mensajeExito) { %>
-        <div class="alert alert-success">
-            <%= mensajeExito %>
-        </div>
+        <div class="alert alert-success"><%= mensajeExito %></div>
+    <% } %>
+
+    <% if (error) { %>
+        <div class="alert alert-error"><%= error %></div>
+    <% } %>
+
+    <article class="ui-tarjeta">
+        <% if (!listaUsuarios.length) { %>
+            <%- include('../partials/ui/vacio', { titulo: 'No hay usuarios registrados', mensaje: 'Crea el primer cajero o administrador adicional.' }) %>
+        <% } else { %>
+            <div class="ui-tabla-contenedor">
+                <table class="ui-tabla">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                            <th>Último acceso</th>
+                            <th class="num">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% listaUsuarios.forEach(function (usuarioItem) { %>
+                            <tr class="<%= usuarioItem.estado !== 'activo' ? 'ui-fila-inactiva' : '' %>">
+                                <td>
+                                    <strong><%= usuarioItem.nombre %></strong>
+                                    <small>
+                                        <%= usuarioItem.correo %><% if (usuarioItem.telefono) { %> · Tel: <%= usuarioItem.telefono %><% } %>
+                                    </small>
+                                </td>
+                                <td>
+                                    <%- include('../partials/ui/estado', { texto: usuarioItem.rol_etiqueta || 'Sin rol', tono: usuarioItem.rol_principal === 'administrador' ? 'info' : '' }) %>
+                                </td>
+                                <td>
+                                    <%- include('../partials/ui/estado', { texto: usuarioItem.estado_etiqueta, tono: tonoEstado[usuarioItem.estado] || '', punto: true }) %>
+                                </td>
+                                <td><%= usuarioItem.ultimo_acceso_en ? fechaLocal(usuarioItem.ultimo_acceso_en) : 'Sin acceso' %></td>
+                                <td>
+                                    <div class="ui-acciones-fila">
+                                        <a href="/usuarios/<%= usuarioItem.id_usuario %>/editar" class="btn-secondary">Editar</a>
+
+                                        <% if (usuarioItem.estado === 'activo') { %>
+                                            <form method="POST" action="/usuarios/<%= usuarioItem.id_usuario %>/desactivar">
+                                                <button type="submit" class="btn-danger-soft">Desactivar</button>
+                                            </form>
+                                        <% } else { %>
+                                            <form method="POST" action="/usuarios/<%= usuarioItem.id_usuario %>/activar">
+                                                <button type="submit" class="btn-secondary">Activar</button>
+                                            </form>
+                                        <% } %>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
         <% } %>
-
-            <% if (error) { %>
-                <div class="alert alert-error">
-                    <%= error %>
-                </div>
-                <% } %>
-
-                    <article class="module-card usuarios-card">
-                        <% if (!Array.isArray(usuarios) || usuarios.length===0) { %>
-                            <div class="empty-state">
-                                <h3>No hay usuarios registrados</h3>
-                                <p>
-                                    Crea el primer cajero o administrador adicional.
-                                </p>
-
-                                <a href="/usuarios/nuevo" class="btn-primary">
-                                    Crear usuario
-                                </a>
-                            </div>
-                            <% } else { %>
-                                <div class="table-wrapper">
-                                    <table class="data-table usuarios-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Usuario</th>
-                                                <th>Correo</th>
-                                                <th>Rol</th>
-                                                <th>Estado</th>
-                                                <th>Último acceso</th>
-                                                <th class="text-right">Acciones</th>
-                                            </tr>
-                                        </thead>
-
-                                        <tbody>
-                                            <% usuarios.forEach(function (usuarioItem) { %>
-                                                <tr>
-                                                    <td>
-                                                        <strong>
-                                                            <%= usuarioItem.nombre %>
-                                                        </strong>
-
-                                                        <% if (usuarioItem.telefono) { %>
-                                                            <span class="table-subtext">
-                                                                Tel: <%= usuarioItem.telefono %>
-                                                            </span>
-                                                            <% } %>
-                                                    </td>
-
-                                                    <td>
-                                                        <%= usuarioItem.correo %>
-                                                    </td>
-
-                                                    <td>
-                                                        <span
-                                                            class="usuario-role-badge usuario-role-<%= usuarioItem.rol_principal || 'sin-rol' %>">
-                                                            <%= usuarioItem.rol_etiqueta %>
-                                                        </span>
-                                                    </td>
-
-                                                    <td>
-                                                        <span
-                                                            class="usuario-status usuario-status-<%= usuarioItem.estado %>">
-                                                            <%= usuarioItem.estado_etiqueta %>
-                                                        </span>
-                                                    </td>
-
-                                                    <td>
-                                                        <%= usuarioItem.ultimo_acceso_en || 'Sin acceso' %>
-                                                    </td>
-
-                                                    <td class="text-right">
-                                                        <div class="usuarios-actions">
-                                                            <a href="/usuarios/<%= usuarioItem.id_usuario %>/editar"
-                                                                class="btn-secondary btn-small">
-                                                                Editar
-                                                            </a>
-
-                                                            <% if (usuarioItem.estado==='activo' ) { %>
-                                                                <form method="POST"
-                                                                    action="/usuarios/<%= usuarioItem.id_usuario %>/desactivar">
-                                                                    <button type="submit"
-                                                                        class="btn-danger-soft btn-small">
-                                                                        Desactivar
-                                                                    </button>
-                                                                </form>
-                                                                <% } else { %>
-                                                                    <form method="POST"
-                                                                        action="/usuarios/<%= usuarioItem.id_usuario %>/activar">
-                                                                        <button type="submit"
-                                                                            class="btn-secondary btn-small">
-                                                                            Activar
-                                                                        </button>
-                                                                    </form>
-                                                                    <% } %>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                                <% }) %>
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <% } %>
-                    </article>
+    </article>
 </section>

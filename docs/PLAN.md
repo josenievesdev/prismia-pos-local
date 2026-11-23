@@ -17,6 +17,19 @@ filtros ni estados propios. Todo sale de la librería (`sistema.css` +
 `views/partials/ui/`). El CSS de módulo solo puede tener lo que de verdad es
 único de esa pantalla, y debería tender a cero.
 
+## Errores visuales reportados por el usuario
+
+Se atienden antes que la siguiente fase. Fecha del reporte entre paréntesis.
+
+- [x] (2026-11-22) El sidebar vuelve arriba al cambiar de módulo: la pantalla "salta".
+      Debe conservar su scroll y solo cambiar el contenido.
+- [x] (2026-11-22) Colapsar/expandir el sidebar es brusco y el botón no se entiende.
+      Referencia: barra lateral de ChatGPT (botón de panel arriba, animación fluida,
+      ayuda al pasar el mouse).
+- [x] (2026-11-22) Usuarios: el estado activo/inactivo y los botones se ven desordenados.
+- [x] (2026-11-22) Caja: las tarjetas "Turno activo" y "Resumen del efectivo" tienen
+      tamaños distintos.
+
 ## Fase 1 — Dinero exacto ✅
 - [x] Totales de caja derivados de movimientos, fechas locales, stock negativo, IVA en costo.
 - [x] Aritmética entera exacta compartida servidor/navegador (`dinero-exacto.js`).
@@ -27,8 +40,8 @@ filtros ni estados propios. Todo sale de la librería (`sistema.css` +
 ## Fase 2 — Librería de componentes (base de todo lo demás)
 - [x] Componentes CSS: encabezado, filtros, campo, KPI, grilla, tarjeta, métricas,
       tabla, estado (badge), vacío, nota.
-- [ ] Componentes que faltan: formulario en secciones, paginación, modal, barra de
-      acciones de tabla (se crean al migrar el primer módulo que los use).
+- [x] Formulario en secciones, opciones tipo tarjeta, acciones de fila, estado con punto.
+- [ ] Componentes que faltan: paginación y modal (se crean al migrar el primer módulo que los use).
 - [x] Parciales EJS en `views/partials/ui/`: `encabezado`, `kpi`, `estado`, `vacio`
       (falta `paginacion`).
 - [ ] Reglas de botones: 1 primario por pantalla (arriba a la derecha), los
@@ -40,7 +53,7 @@ Para cada uno: inspeccionar tarjetas/botones/tablas, pasar a componentes,
 borrar su CSS propio, revisar en 1440 / 1024 / 390 px sin scroll horizontal.
 
 - [x] Reportes (referencia: views/reportes/index.ejs, sin CSS propio)
-- [ ] Caja (índice, movimiento, gasto, cerrar, detalle de turno)
+- [ ] Caja: [x] índice · [ ] abrir, movimiento, gasto, cerrar, detalle de turno
 - [ ] Dashboard
 - [ ] Inventario (índice, ajuste, historial, conteos, reportes)
 - [ ] Productos y categorías
@@ -49,7 +62,8 @@ borrar su CSS propio, revisar en 1440 / 1024 / 390 px sin scroll horizontal.
 - [ ] Compras y cuentas por pagar
 - [ ] Cotizaciones y remisiones
 - [ ] Notas crédito
-- [ ] Proveedores, usuarios, configuración
+- [x] Usuarios (índice y formulario, sin CSS propio)
+- [ ] Proveedores, configuración
 - [ ] Login, setup y backups
 - [ ] Impresiones (ticket, arqueo, cotización, remisión, nota crédito)
 

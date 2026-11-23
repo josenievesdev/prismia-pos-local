@@ -11,8 +11,8 @@
 
     <script>
         // Estado del menú lateral calculado antes de pintar (evita parpadeo).
-        // Misma regla que /js/shell.js: movil < 768 px; riel por preferencia,
-        // en el POS o en pantallas < 1280 px; completo en el resto.
+        // Misma regla que /js/shell.js: movil < 768 px; si no, la preferencia
+        // guardada; sin preferencia, riel en pantallas < 1280 px.
         (function () {
             var raiz = document.documentElement;
             var preferencia = null;
@@ -22,7 +22,7 @@
             if (ancho < 768) estado = 'movil';
             else if (preferencia === 'compacto') estado = 'riel';
             else if (preferencia === 'expandido') estado = 'completo';
-            else if (raiz.classList.contains('ruta-pos') || ancho < 1280) estado = 'riel';
+            else if (ancho < 1280) estado = 'riel';
             raiz.setAttribute('data-menu-estado', estado);
         })();
     </script>
@@ -40,6 +40,23 @@
 <body>
     <div class="app-layout">
         <%- include('../partials/sidebar') %>
+
+        <script>
+            // El menú conserva su scroll al cambiar de módulo (se guarda en shell.js).
+            // Corre aquí, justo después de dibujar el menú, para que no se vea el salto.
+            (function () {
+                var menu = document.getElementById('appSidebar');
+                if (!menu) return;
+                var guardado = null;
+                try { guardado = sessionStorage.getItem('prismia.menu.scroll'); } catch (error) { }
+                if (guardado !== null) {
+                    menu.scrollTop = Number(guardado) || 0;
+                } else {
+                    var activo = menu.querySelector('.sidebar-link.active');
+                    if (activo) activo.scrollIntoView({ block: 'nearest' });
+                }
+            })();
+        </script>
 
         <div class="shell-backdrop" data-shell-close hidden></div>
 

@@ -1,13 +1,19 @@
 <%#
   Componente encabezado de página.
   Parámetros: eyebrow, titulo, descripcion (opcional),
+  estado (opcional): { texto, tono } se muestra junto al título,
   acciones (opcional): [{ texto, href, tipo: 'primario' | 'secundario' }]
   Regla: como máximo UNA acción primaria, y va de última (a la derecha).
 %>
 <header class="ui-encabezado">
     <div class="ui-encabezado-texto">
         <% if (locals.eyebrow) { %><span class="ui-eyebrow"><%= locals.eyebrow %></span><% } %>
-        <h2 class="ui-titulo"><%= locals.titulo %></h2>
+        <div class="ui-titulo-linea">
+            <h2 class="ui-titulo"><%= locals.titulo %></h2>
+            <% if (locals.estado) { %>
+                <%- include('estado', { texto: locals.estado.texto, tono: locals.estado.tono, punto: true }) %>
+            <% } %>
+        </div>
         <% if (locals.descripcion) { %><p class="ui-descripcion"><%= locals.descripcion %></p><% } %>
     </div>
 

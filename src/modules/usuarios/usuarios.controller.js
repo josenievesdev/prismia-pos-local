@@ -1,6 +1,6 @@
 const usuariosService = require('./usuarios.service');
 
-const estilosUsuarios = ['/css/modules/usuarios.css'];
+const estilosUsuarios = [];
 
 function listarUsuarios(req, res) {
     const usuarios = usuariosService.listarUsuarios();

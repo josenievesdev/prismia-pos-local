@@ -59,7 +59,7 @@
     --font-mono: "Cascadia Mono", "Consolas", ui-monospace, monospace;
 
     --menu-ancho: 252px;
-    --menu-riel: 72px;
+    --menu-riel: 64px;
     --header-alto: 60px;
     --contenido-max: 1480px;
 
@@ -106,13 +106,18 @@ textarea:focus-visible {
 }
 
 /* =========================================================
-   Shell
+   Shell · menú lateral
+   Se colapsa a un riel de íconos con una animación fluida.
+   Los íconos NO cambian de posición entre estados: solo cambia el
+   ancho del menú y los textos se desvanecen (centro de cada ícono
+   a 32 px del borde en ambos estados; riel de 64 px).
    ========================================================= */
 .app-layout {
     display: grid;
     grid-template-columns: var(--menu-ancho) minmax(0, 1fr);
     min-height: 100vh;
     background: var(--color-bg);
+    transition: grid-template-columns 240ms cubic-bezier(0.2, 0, 0, 1);
 }
 
 html[data-menu-estado="riel"] .app-layout {
@@ -126,26 +131,64 @@ html[data-menu-estado="riel"] .app-layout {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    padding: 14px 12px;
+    padding: 12px;
     background: var(--color-surface);
     border-right: 1px solid var(--color-border);
     color: var(--color-text-soft);
-    overflow-y: auto;
     overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
     z-index: 40;
 }
 
+.app-sidebar:hover {
+    scrollbar-color: var(--color-border-strong) transparent;
+}
+
+/* Marca + botón del panel */
 .sidebar-brand {
+    position: relative;
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 6px 8px 14px;
-    margin-bottom: 4px;
+    justify-content: space-between;
+    gap: 6px;
+    flex: 0 0 auto;
+    min-height: 52px;
+    padding: 0 0 10px;
+    margin: 0 0 6px;
     border-bottom: 1px solid var(--color-border);
 }
 
-.sidebar-brand strong {
-    display: block;
+.sidebar-brand-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    padding: 4px 3px;
+    border-radius: var(--radius-md);
+    color: inherit;
+    text-decoration: none;
+}
+
+.sidebar-logo {
+    transition: opacity 120ms ease;
+}
+
+/* Antes era blanco (para el menú oscuro) y en el menú claro no se veía */
+.sidebar-logo span:nth-child(1) {
+    background: var(--color-primary);
+}
+
+.sidebar-brand-copy {
+    display: grid;
+    min-width: 0;
+    white-space: nowrap;
+    transition: opacity 160ms ease;
+}
+
+.sidebar-brand-copy strong {
     color: var(--color-text);
     font-family: var(--font-display);
     font-size: 16px;
@@ -153,12 +196,32 @@ html[data-menu-estado="riel"] .app-layout {
     letter-spacing: -0.01em;
 }
 
-.sidebar-brand small {
-    display: block;
+.sidebar-brand-copy small {
     color: var(--color-muted);
     font-size: 11.5px;
 }
 
+.sidebar-toggle {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 0;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-muted);
+    cursor: pointer;
+    transition: background var(--transicion), color var(--transicion), opacity 140ms ease;
+}
+
+.sidebar-toggle:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-text);
+}
+
+/* Navegación */
 .sidebar-nav {
     display: flex;
     flex-direction: column;
@@ -166,26 +229,34 @@ html[data-menu-estado="riel"] .app-layout {
 }
 
 .sidebar-section-label {
-    margin: 14px 10px 6px;
+    height: 30px;
+    margin: 6px 0 0;
+    padding: 12px 10px 0;
+    overflow: hidden;
     color: var(--color-faint);
     font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
+    white-space: nowrap;
+    transition: color 160ms ease;
 }
 
 .sidebar-link {
     position: relative;
     display: flex;
+    flex: 0 0 auto;
     align-items: center;
-    gap: 11px;
-    min-height: 40px;
+    gap: 12px;
+    height: 40px;
     padding: 0 10px;
+    overflow: hidden;
     border-radius: var(--radius-md);
     color: var(--color-text-soft);
     font-size: 14px;
     font-weight: 500;
     text-decoration: none;
+    white-space: nowrap;
     transition: background var(--transicion), color var(--transicion);
 }
 
@@ -195,6 +266,7 @@ html[data-menu-estado="riel"] .app-layout {
 }
 
 .sidebar-link.active {
+    overflow: visible;
     background: var(--color-primary-soft);
     color: var(--color-primary-dark);
     font-weight: 600;
@@ -233,64 +305,184 @@ html[data-menu-estado="riel"] .app-layout {
 }
 
 .sidebar-label {
-    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    transition: opacity 160ms ease;
 }
 
 .sidebar-footer {
+    display: grid;
+    gap: 2px;
     margin-top: auto;
     padding: 12px 10px 4px;
     border-top: 1px solid var(--color-border);
     color: var(--color-faint);
     font-size: 11.5px;
-    display: grid;
-    gap: 2px;
+    white-space: nowrap;
+    transition: opacity 160ms ease;
 }
 
-/* Riel de íconos */
-html[data-menu-estado="riel"] .app-sidebar {
-    padding: 14px 10px;
-    align-items: center;
-}
-
-html[data-menu-estado="riel"] .sidebar-brand {
-    padding: 6px 0 14px;
-    justify-content: center;
-    width: 100%;
-}
-
-html[data-menu-estado="riel"] .sidebar-brand > div:not(.sidebar-logo),
+/* Riel: los textos se desvanecen; nada se mueve */
+html[data-menu-estado="riel"] .sidebar-brand-copy,
 html[data-menu-estado="riel"] .sidebar-label,
 html[data-menu-estado="riel"] .sidebar-footer {
-    display: none;
+    opacity: 0;
+    pointer-events: none;
+}
+
+html[data-menu-estado="riel"] .app-sidebar {
+    scrollbar-width: none;
+}
+
+/* Los títulos de sección se vuelven separadores finos en el mismo espacio:
+   así el hueco se lee como división de grupos y los íconos no se mueven. */
+.sidebar-section-label {
+    position: relative;
+}
+
+.sidebar-section-label::after {
+    content: "";
+    position: absolute;
+    top: 19px;
+    left: 10px;
+    right: 10px;
+    height: 1px;
+    background: var(--color-border);
+    opacity: 0;
+    transition: opacity 160ms ease;
 }
 
 html[data-menu-estado="riel"] .sidebar-section-label {
-    width: 28px;
-    height: 1px;
-    margin: 10px auto;
-    padding: 0;
-    overflow: hidden;
     color: transparent;
-    background: var(--color-border);
 }
 
-html[data-menu-estado="riel"] .sidebar-nav {
-    width: 100%;
-    align-items: center;
+html[data-menu-estado="riel"] .sidebar-section-label::after {
+    opacity: 1;
 }
 
-html[data-menu-estado="riel"] .sidebar-link {
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    padding: 0;
+/* En el riel, el botón del panel aparece sobre el logo al pasar el mouse
+   (igual que ChatGPT). */
+html[data-menu-estado="riel"] .sidebar-toggle {
+    position: absolute;
+    top: 5px;
+    left: 2px;
+    opacity: 0;
 }
 
-html[data-menu-estado="riel"] .sidebar-link.active::before {
-    left: -10px;
+html[data-menu-estado="riel"] .sidebar-brand:hover .sidebar-toggle,
+html[data-menu-estado="riel"] .sidebar-toggle:focus-visible {
+    opacity: 1;
 }
+
+html[data-menu-estado="riel"] .sidebar-brand:hover .sidebar-logo,
+html[data-menu-estado="riel"] .sidebar-brand:focus-within .sidebar-logo {
+    opacity: 0;
+}
+
+/* Pantallas táctiles (sin mouse): en el riel el botón queda siempre visible */
+@media (hover: none) {
+    html[data-menu-estado="riel"] .sidebar-brand {
+        flex-direction: column;
+        align-items: flex-start;
+        min-height: 0;
+    }
+
+    html[data-menu-estado="riel"] .sidebar-toggle {
+        position: static;
+        margin-left: 2px;
+        opacity: 1;
+    }
+
+    html[data-menu-estado="riel"] .sidebar-brand:hover .sidebar-logo {
+        opacity: 1;
+    }
+}
+
+/* Ayuda flotante del menú (se posiciona desde shell.js) */
+.menu-tooltip {
+    position: fixed;
+    z-index: 90;
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    background: var(--color-text);
+    color: #fff;
+    font-size: 12.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateX(-4px);
+    transition: opacity 120ms ease, transform 120ms ease;
+}
+
+.menu-tooltip.is-visible {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.menu-tooltip kbd {
+    margin-left: 6px;
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.16);
+    font: inherit;
+    font-size: 11px;
+}
+
+/* Navegación entre módulos sin "salto": el menú y el header quedan quietos
+   y solo el contenido cambia con un fundido corto (View Transitions). */
+@view-transition {
+    navigation: auto;
+}
+
+.app-sidebar {
+    view-transition-name: menu-lateral;
+}
+
+.app-header {
+    view-transition-name: encabezado-app;
+}
+
+::view-transition-group(menu-lateral),
+::view-transition-group(encabezado-app),
+::view-transition-old(menu-lateral),
+::view-transition-new(menu-lateral),
+::view-transition-old(encabezado-app),
+::view-transition-new(encabezado-app) {
+    animation: none;
+}
+
+::view-transition-old(root) {
+    animation: 80ms ease-out both prismia-salida;
+}
+
+::view-transition-new(root) {
+    animation: 160ms cubic-bezier(0.2, 0, 0, 1) both prismia-entrada;
+}
+
+@keyframes prismia-salida {
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes prismia-entrada {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    @view-transition {
+        navigation: none;
+    }
+
+    .app-layout {
+        transition: none;
+    }
+}
+
 
 /* Panel deslizable en móvil */
 .shell-backdrop {
@@ -381,7 +573,13 @@ html[data-menu-estado="riel"] .sidebar-link.active::before {
     text-overflow: ellipsis;
 }
 
+/* Botón de menú del header: solo en celular (abre el panel deslizable).
+   En pantallas grandes el control vive dentro del propio menú. */
 .shell-toggle {
+    display: none;
+}
+
+html[data-menu-estado="movil"] .shell-toggle {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1053,4 +1251,178 @@ html[data-menu-estado="riel"] .sidebar-link.active::before {
     .ui-titulo { font-size: 20px; }
     .ui-kpi-valor { font-size: 22px; }
     .ui-encabezado .ui-acciones { width: 100%; }
+}
+
+/* Estado con punto de color (para activo/inactivo y similares) */
+.ui-estado--con-punto::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    margin-right: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* Fila inactiva: se atenúa para que lo activo resalte al escanear la tabla */
+.ui-tabla tr.ui-fila-inactiva td:not(:last-child) {
+    color: var(--color-faint);
+}
+
+/* Acciones de una fila: siempre a la derecha, mismo ancho para que las
+   columnas de botones queden alineadas entre filas. */
+.ui-acciones-fila {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.ui-acciones-fila form {
+    margin: 0;
+}
+
+.ui-acciones-fila .btn-primary,
+.ui-acciones-fila .btn-secondary,
+.ui-acciones-fila .btn-danger-soft {
+    min-width: 96px;
+    min-height: 32px;
+    padding: 0 12px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+}
+
+/* ---------- Formularios ---------- */
+.ui-formulario {
+    display: grid;
+    min-width: 0;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+}
+
+/* Sección: título y ayuda a la izquierda, campos a la derecha */
+.ui-seccion {
+    display: grid;
+    grid-template-columns: minmax(200px, 280px) minmax(0, 1fr);
+    gap: 16px 32px;
+    padding: 20px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.ui-seccion-texto h3 {
+    margin: 0;
+    color: var(--color-text);
+    font-size: 15px;
+    font-weight: 650;
+}
+
+.ui-ayuda {
+    margin: 4px 0 0;
+    color: var(--color-muted);
+    font-size: 13px;
+}
+
+.ui-campos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+    gap: 14px;
+    min-width: 0;
+}
+
+.ui-campo--ancho {
+    grid-column: 1 / -1;
+}
+
+/* Opciones tipo tarjeta (radio o checkbox) */
+.ui-opciones {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+    gap: 10px;
+}
+
+.ui-opcion {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    cursor: pointer;
+    transition: border-color var(--transicion), background var(--transicion), box-shadow var(--transicion);
+}
+
+.ui-opcion:hover {
+    border-color: var(--color-primary);
+}
+
+.ui-opcion:has(input:checked) {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+    box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+.ui-opcion input {
+    margin-top: 3px;
+    accent-color: var(--color-primary);
+}
+
+.ui-opcion strong {
+    display: block;
+    color: var(--color-text);
+    font-size: 14px;
+}
+
+.ui-opcion small {
+    display: block;
+    margin-top: 2px;
+    color: var(--color-muted);
+    font-size: 12.5px;
+}
+
+.ui-formulario-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 16px 20px;
+    background: var(--color-surface-soft);
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+@media (max-width: 767.98px) {
+    .ui-seccion {
+        grid-template-columns: minmax(0, 1fr);
+        padding: 16px;
+    }
+
+    .ui-formulario-acciones > * {
+        flex: 1;
+    }
+}
+
+.ui-titulo-linea {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+}
+
+/* KPI principal de la pantalla (p. ej. efectivo esperado) */
+.ui-kpi--destacado {
+    border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
+    background: var(--color-primary-soft);
+}
+
+.ui-kpi--destacado .ui-kpi-etiqueta,
+.ui-kpi--destacado .ui-kpi-valor {
+    color: var(--color-primary-dark);
+}
+
+.ui-nota--info {
+    border-color: rgba(42, 107, 209, 0.2);
+    background: var(--color-info-soft);
+    color: var(--color-info);
 }

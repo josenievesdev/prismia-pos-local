@@ -1,23 +1,30 @@
 <aside class="app-sidebar" id="appSidebar" aria-label="Navegación principal">
     <div class="sidebar-brand">
-        <div class="sidebar-logo" aria-hidden="true">
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
+        <a href="/dashboard" class="sidebar-brand-link" aria-label="<%= empresa.software.nombreCorto %>: ir al inicio">
+            <div class="sidebar-logo" aria-hidden="true">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
 
-        <div>
-            <strong>
-                <%= empresa.software.nombreCorto %>
-            </strong>
-            <small>
-                <%= empresa.producto.tipo %>
-            </small>
-        </div>
+            <span class="sidebar-brand-copy">
+                <strong><%= empresa.software.nombreCorto %></strong>
+                <small><%= empresa.producto.tipo %></small>
+            </span>
+        </a>
+
+        <button type="button" class="sidebar-toggle" data-menu-toggle aria-controls="appSidebar"
+            aria-expanded="true" aria-label="Cerrar menú lateral" data-tooltip="Cerrar menú" data-tooltip-atajo="Ctrl B">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="4" width="18" height="16" rx="3" />
+                <line x1="9.5" y1="4" x2="9.5" y2="20" />
+            </svg>
+        </button>
     </div>
 
     <nav class="sidebar-nav">
-        <a href="/dashboard" title="Inicio" class="sidebar-link <%= rutaActual.startsWith('/dashboard') ? 'active' : '' %>">
+        <a href="/dashboard" data-tooltip="Inicio" class="sidebar-link <%= rutaActual.startsWith('/dashboard') ? 'active' : '' %>">
             <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
@@ -28,7 +35,7 @@
 
         <div class="sidebar-section-label">Ventas</div>
 
-        <a href="/ventas" title="POS" class="sidebar-link <%= rutaActual.startsWith('/ventas') ? 'active' : '' %>">
+        <a href="/ventas" data-tooltip="POS" class="sidebar-link <%= rutaActual.startsWith('/ventas') ? 'active' : '' %>">
             <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="1" y="4" width="22" height="16" rx="2" />
@@ -37,7 +44,7 @@
             <span class="sidebar-label">POS</span>
         </a>
 
-        <a href="/cotizaciones" title="Cotizaciones" class="sidebar-link <%= rutaActual.startsWith('/cotizaciones') ? 'active' : '' %>">
+        <a href="/cotizaciones" data-tooltip="Cotizaciones" class="sidebar-link <%= rutaActual.startsWith('/cotizaciones') ? 'active' : '' %>">
             <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -48,7 +55,7 @@
             <span class="sidebar-label">Cotizaciones</span>
         </a>
 
-        <a href="/remisiones" title="Remisiones" class="sidebar-link <%= rutaActual.startsWith('/remisiones') ? 'active' : '' %>">
+        <a href="/remisiones" data-tooltip="Remisiones" class="sidebar-link <%= rutaActual.startsWith('/remisiones') ? 'active' : '' %>">
             <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
@@ -57,7 +64,7 @@
             <span class="sidebar-label">Remisiones</span>
         </a>
 
-        <a href="/notas-credito" title="Notas crédito" class="sidebar-link <%= rutaActual.startsWith('/notas-credito') ? 'active' : '' %>">
+        <a href="/notas-credito" data-tooltip="Notas crédito" class="sidebar-link <%= rutaActual.startsWith('/notas-credito') ? 'active' : '' %>">
             <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="9 14 4 9 9 4" />
@@ -69,7 +76,7 @@
         <% if (esAdministrador) { %>
             <div class="sidebar-section-label">Catálogo</div>
 
-            <a href="/productos" title="Productos" class="sidebar-link <%= rutaActual.startsWith('/productos') ? 'active' : '' %>">
+            <a href="/productos" data-tooltip="Productos" class="sidebar-link <%= rutaActual.startsWith('/productos') ? 'active' : '' %>">
                 <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path
@@ -80,7 +87,7 @@
                 <span class="sidebar-label">Productos</span>
             </a>
 
-            <a href="/categorias-productos" title="Categorías"
+            <a href="/categorias-productos" data-tooltip="Categorías"
                 class="sidebar-link <%= rutaActual.startsWith('/categorias-productos') ? 'active' : '' %>">
                 <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -92,7 +99,7 @@
                 <span class="sidebar-label">Categorías</span>
             </a>
 
-            <a href="/inventario" title="Inventario" class="sidebar-link <%= rutaActual.startsWith('/inventario') ? 'active' : '' %>">
+            <a href="/inventario" data-tooltip="Inventario" class="sidebar-link <%= rutaActual.startsWith('/inventario') ? 'active' : '' %>">
                 <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
@@ -102,7 +109,7 @@
                 <span class="sidebar-label">Inventario</span>
             </a>
 
-            <a href="/proveedores" title="Proveedores" class="sidebar-link <%= rutaActual.startsWith('/proveedores') ? 'active' : '' %>">
+            <a href="/proveedores" data-tooltip="Proveedores" class="sidebar-link <%= rutaActual.startsWith('/proveedores') ? 'active' : '' %>">
                 <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M16 3h5v5" />
@@ -114,7 +121,7 @@
                 <span class="sidebar-label">Proveedores</span>
             </a>
 
-            <a href="/compras" title="Compras" class="sidebar-link <%= rutaActual.startsWith('/compras') ? 'active' : '' %>">
+            <a href="/compras" data-tooltip="Compras" class="sidebar-link <%= rutaActual.startsWith('/compras') ? 'active' : '' %>">
                 <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M6 2l1.5 4L12 7.5 16.5 6 18 2" />
@@ -128,7 +135,7 @@
 
                 <div class="sidebar-section-label">Operación</div>
 
-                <a href="/clientes" title="Clientes" class="sidebar-link <%= rutaActual.startsWith('/clientes') ? 'active' : '' %>">
+                <a href="/clientes" data-tooltip="Clientes" class="sidebar-link <%= rutaActual.startsWith('/clientes') ? 'active' : '' %>">
                     <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -139,7 +146,7 @@
                     <span class="sidebar-label">Clientes</span>
                 </a>
 
-                <a href="/caja" title="Caja"
+                <a href="/caja" data-tooltip="Caja"
                     class="sidebar-link <%= rutaActual.startsWith('/caja') && !rutaActual.startsWith('/caja/gasto') ? 'active' : '' %>">
                     <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -149,7 +156,7 @@
                     <span class="sidebar-label">Caja</span>
                 </a>
 
-                <a href="/caja/gasto" title="Gastos" class="sidebar-link <%= rutaActual.startsWith('/caja/gasto') ? 'active' : '' %>">
+                <a href="/caja/gasto" data-tooltip="Gastos" class="sidebar-link <%= rutaActual.startsWith('/caja/gasto') ? 'active' : '' %>">
                     <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="10" />
@@ -159,7 +166,7 @@
                 </a>
 
                 <% if (esAdministrador) { %>
-                    <a href="/reportes" title="Reportes" class="sidebar-link <%= rutaActual.startsWith('/reportes') ? 'active' : '' %>">
+                    <a href="/reportes" data-tooltip="Reportes" class="sidebar-link <%= rutaActual.startsWith('/reportes') ? 'active' : '' %>">
                         <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                 stroke-linejoin="round">
@@ -172,7 +179,7 @@
 
                     <div class="sidebar-section-label">Sistema</div>
 
-                    <a href="/usuarios" title="Usuarios" class="sidebar-link <%= rutaActual.startsWith('/usuarios') ? 'active' : '' %>">
+                    <a href="/usuarios" data-tooltip="Usuarios" class="sidebar-link <%= rutaActual.startsWith('/usuarios') ? 'active' : '' %>">
                         <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                 stroke-linejoin="round">
@@ -184,7 +191,7 @@
                         <span class="sidebar-label">Usuarios</span>
                     </a>
 
-                    <a href="/configuracion" title="Configuración"
+                    <a href="/configuracion" data-tooltip="Configuración"
                         class="sidebar-link <%= rutaActual.startsWith('/configuracion') ? 'active' : '' %>">
                         <span class="sidebar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
