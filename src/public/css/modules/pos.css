@@ -1412,6 +1412,22 @@
     }
 }
 
+/* Ventanas bajas (portátiles con poca altura útil): la página hace scroll,
+   pero totales y "Cobrar" quedan fijos abajo, siempre a mano. */
+@media (min-width: 900px) and (max-height: 559.98px) {
+    .pos-ticket {
+        overflow: visible;
+    }
+
+    .ventas-sale-footer {
+        position: sticky;
+        bottom: 0;
+        z-index: 5;
+        border-radius: 0 0 var(--pos-radio) var(--pos-radio);
+        box-shadow: 0 -8px 24px -16px rgba(16, 24, 40, 0.3);
+    }
+}
+
 @media (max-width: 899.98px) {
     .pos-layout {
         grid-template-columns: minmax(0, 1fr);
