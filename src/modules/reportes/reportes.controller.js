@@ -1,6 +1,6 @@
 const reportesService = require('./reportes.service');
 
-const estilosReportes = ['/css/modules/reportes.css'];
+const estilosReportes = [];
 
 function mostrarReportes(req, res) {
     const reporte = reportesService.obtenerReporteComercial({

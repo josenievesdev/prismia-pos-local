@@ -1,0 +1,21 @@
+<%#
+  Componente encabezado de página.
+  Parámetros: eyebrow, titulo, descripcion (opcional),
+  acciones (opcional): [{ texto, href, tipo: 'primario' | 'secundario' }]
+  Regla: como máximo UNA acción primaria, y va de última (a la derecha).
+%>
+<header class="ui-encabezado">
+    <div class="ui-encabezado-texto">
+        <% if (locals.eyebrow) { %><span class="ui-eyebrow"><%= locals.eyebrow %></span><% } %>
+        <h2 class="ui-titulo"><%= locals.titulo %></h2>
+        <% if (locals.descripcion) { %><p class="ui-descripcion"><%= locals.descripcion %></p><% } %>
+    </div>
+
+    <% if (Array.isArray(locals.acciones) && locals.acciones.length) { %>
+        <div class="ui-acciones">
+            <% locals.acciones.forEach(function (accion) { %>
+                <a href="<%= accion.href %>" class="<%= accion.tipo === 'primario' ? 'btn-primary' : 'btn-secondary' %>"><%= accion.texto %></a>
+            <% }) %>
+        </div>
+    <% } %>
+</header>

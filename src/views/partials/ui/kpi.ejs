@@ -1,0 +1,6 @@
+<%# Componente KPI. Parámetros: etiqueta, valor, detalle (opcional), tono: exito|peligro|aviso (opcional) %>
+<article class="ui-kpi<%= locals.tono ? ' ui-kpi--' + locals.tono : '' %>">
+    <span class="ui-kpi-etiqueta"><%= locals.etiqueta %></span>
+    <strong class="ui-kpi-valor"><%= locals.valor %></strong>
+    <% if (locals.detalle) { %><small class="ui-kpi-detalle"><%= locals.detalle %></small><% } %>
+</article>
