@@ -2260,33 +2260,8 @@
     }
 }
 
-/* ===== Anulación total de venta ===== */
-
-.btn-danger {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 36px;
-    padding: 0 14px;
-    border: 1px solid #b91c1c;
-    border-radius: 11px;
-    background: #dc2626;
-    color: #ffffff;
-    font-size: 13px;
-    font-weight: 750;
-    text-decoration: none;
-    cursor: pointer;
-}
-
-.btn-danger:hover {
-    background: #b91c1c;
-    border-color: #991b1b;
-}
-
-.btn-danger:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-}
+/* ===== Anulación total de venta =====
+   (.btn-danger viene del sistema de diseño: misma altura que los demás botones) */
 
 .anulacion-venta-card {
     width: min(700px, 100%);

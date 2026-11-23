@@ -56,7 +56,7 @@ function mostrarDetalleCotizacion(req, res) {
     }
 
     return res.render('cotizaciones/detalle', {
-        titulo: resultado.cotizacion.numero_cotizacion || 'Detalle de cotización',
+        titulo: 'Cotización ' + (resultado.cotizacion.numero_cotizacion || ''),
         cotizacion: resultado.cotizacion,
         detalle: resultado.detalle,
         mensajeExito: req.query.exito || null,

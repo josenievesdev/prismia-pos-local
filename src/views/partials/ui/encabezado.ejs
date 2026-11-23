@@ -1,27 +1,29 @@
 <%#
-  Componente encabezado de página.
-  Parámetros: eyebrow, titulo, descripcion (opcional),
-  estado (opcional): { texto, tono } se muestra junto al título,
-  acciones (opcional): [{ texto, href, tipo: 'primario' | 'secundario' }]
+  Barra de página (debajo de la barra superior).
+  El TÍTULO de la pantalla NO va aquí: vive en la barra superior (título del
+  controlador), siempre en el mismo lugar en todos los módulos.
+  Parámetros (todos opcionales):
+    estado: { texto, tono }   estado de lo que se ve (p. ej. "Abierta")
+    meta: 'texto corto'       un dato útil, no una explicación
+    acciones: [{ texto, href, tipo: 'primario' | 'secundario' }]
   Regla: como máximo UNA acción primaria, y va de última (a la derecha).
 %>
-<header class="ui-encabezado">
-    <div class="ui-encabezado-texto">
-        <% if (locals.eyebrow) { %><span class="ui-eyebrow"><%= locals.eyebrow %></span><% } %>
-        <div class="ui-titulo-linea">
-            <h2 class="ui-titulo"><%= locals.titulo %></h2>
+<% const hayAcciones = Array.isArray(locals.acciones) && locals.acciones.length; %>
+<% if (locals.estado || locals.meta || hayAcciones) { %>
+    <header class="ui-encabezado">
+        <div class="ui-encabezado-texto">
             <% if (locals.estado) { %>
                 <%- include('estado', { texto: locals.estado.texto, tono: locals.estado.tono, punto: true }) %>
             <% } %>
+            <% if (locals.meta) { %><span class="ui-meta"><%= locals.meta %></span><% } %>
         </div>
-        <% if (locals.descripcion) { %><p class="ui-descripcion"><%= locals.descripcion %></p><% } %>
-    </div>
 
-    <% if (Array.isArray(locals.acciones) && locals.acciones.length) { %>
-        <div class="ui-acciones">
-            <% locals.acciones.forEach(function (accion) { %>
-                <a href="<%= accion.href %>" class="<%= accion.tipo === 'primario' ? 'btn-primary' : 'btn-secondary' %>"><%= accion.texto %></a>
-            <% }) %>
-        </div>
-    <% } %>
-</header>
+        <% if (hayAcciones) { %>
+            <div class="ui-acciones">
+                <% locals.acciones.forEach(function (accion) { %>
+                    <a href="<%= accion.href %>" class="<%= accion.tipo === 'primario' ? 'btn-primary' : 'btn-secondary' %>"><%= accion.texto %></a>
+                <% }) %>
+            </div>
+        <% } %>
+    </header>
+<% } %>

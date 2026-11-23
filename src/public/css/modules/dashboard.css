@@ -1,134 +1,25 @@
 .dashboard-monitor {
     width: 100%;
-    height: calc(100vh - 112px);
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
     gap: 12px;
-    overflow: hidden;
 }
 
-.dashboard-monitor-head {
-    display: grid;
-    grid-template-columns: 280px minmax(0, 1fr);
-    gap: 12px;
-    min-height: 76px;
+/* Modo "monitor" (todo en una pantalla, sin scroll) solo cuando la ventana
+   es ancha y alta. En ventanas bajas la página hace scroll en lugar de
+   recortar tarjetas (antes la gráfica se montaba sobre los totales). */
+@media (min-width: 1181px) and (min-height: 660px) {
+    .dashboard-monitor {
+        height: calc(100dvh - var(--header-alto) - 49px);
+        overflow: hidden;
+    }
 }
 
-.dashboard-title-box,
-.dash-kpi,
 .dash-panel {
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background: var(--color-surface);
     box-shadow: var(--shadow-soft);
-}
-
-.dashboard-title-box {
-    display: grid;
-    align-content: center;
-    gap: 2px;
-    padding: 12px 14px;
-    background:
-        linear-gradient(135deg, rgba(36, 79, 143, 0.08), rgba(20, 184, 166, 0.08)),
-        var(--color-surface);
-}
-
-.dashboard-title-box span,
-.dash-panel-head span,
-.dash-kpi span {
-    color: var(--color-muted);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-}
-
-.dashboard-title-box h2 {
-    margin: 0;
-    color: var(--color-text);
-    font-size: 17px;
-    font-weight: 700;
-    letter-spacing: -0.03em;
-}
-
-.dashboard-title-box p {
-    margin: 0;
-    color: var(--color-muted);
-    font-size: 12px;
-    line-height: 1.25;
-}
-
-.dashboard-quick-kpis {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 12px;
-}
-
-.dash-kpi {
-    position: relative;
-    overflow: hidden;
-    display: grid;
-    align-content: center;
-    gap: 3px;
-    min-width: 0;
-    padding: 10px 12px 10px 14px;
-}
-
-.dash-kpi::before {
-    content: "";
-    position: absolute;
-    inset: 0 auto 0 0;
-    width: 4px;
-    background: var(--kpi-color, var(--color-primary));
-}
-
-.dash-kpi strong {
-    overflow: hidden;
-    color: var(--color-text);
-    font-size: 19px;
-    font-weight: 700;
-    letter-spacing: -0.04em;
-    line-height: 1.08;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.dash-kpi small {
-    color: var(--color-muted);
-    font-size: 11px;
-    font-weight: 600;
-}
-
-.dash-kpi small.is-up {
-    color: var(--color-success);
-}
-
-.dash-kpi small.is-down {
-    color: var(--color-danger);
-}
-
-.dash-kpi small.is-flat {
-    color: var(--color-muted);
-}
-
-.tone-blue {
-    --kpi-color: #2563eb;
-    background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), #fff 55%);
-}
-
-.tone-teal {
-    --kpi-color: #0d9488;
-    background: linear-gradient(135deg, rgba(13, 148, 136, 0.09), #fff 55%);
-}
-
-.tone-amber {
-    --kpi-color: #d97706;
-    background: linear-gradient(135deg, rgba(217, 119, 6, 0.11), #fff 55%);
-}
-
-.tone-red {
-    --kpi-color: #dc2626;
-    background: linear-gradient(135deg, rgba(220, 38, 38, 0.08), #fff 55%);
 }
 
 .dashboard-grid {
@@ -632,13 +523,6 @@
         overflow: visible;
     }
 
-    .dashboard-monitor-head {
-        grid-template-columns: 1fr;
-    }
-
-    .dashboard-quick-kpis {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
 
     .dashboard-grid {
         grid-template-columns: 1fr;
@@ -669,10 +553,6 @@
 }
 
 @media (max-width: 720px) {
-    .dashboard-quick-kpis {
-        grid-template-columns: 1fr;
-    }
-
     .cash-grid {
         grid-template-columns: 1fr;
     }

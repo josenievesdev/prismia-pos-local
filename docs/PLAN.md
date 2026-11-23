@@ -30,6 +30,47 @@ Se atienden antes que la siguiente fase. Fecha del reporte entre paréntesis.
 - [x] (2026-11-22) Caja: las tarjetas "Turno activo" y "Resumen del efectivo" tienen
       tamaños distintos.
 
+- [x] (2026-11-22, 2.º reporte) La pantalla sigue saltando al cambiar de módulo:
+      el título del módulo y el bloque "Administrador / Salir" cambian de tamaño o
+      posición según el módulo; algunos módulos saltan entre sí.
+      Causas medidas y corregidas: (1) la barra de scroll aparecía/desaparecía
+      según el largo de la página → `scrollbar-gutter: stable`; (2) el POS tenía
+      otro margen (10 px más arriba) → mismo margen en todos; (3) en pantallas
+      grandes los módulos se centraban con ancho máximo y el POS no (~100 px de
+      salto lateral) → ancho completo en todos; (4) la transición movía el
+      contenido 4 px → solo fundido de 90 ms. Verificado: las 16 pantallas
+      principales tienen título, usuario y contenido en la misma posición exacta
+      a 1366 y a 1920 px.
+- [x] (2026-11-22, 2.º reporte) Algunos módulos cargan lento y se nota.
+      Causa: cada archivo estático (CSS, JS, imágenes) pasaba por la sesión y
+      escribía en SQLite. Ahora los estáticos se sirven antes de la sesión y la
+      sesión se renueva como máximo una vez por minuto. Medido en Electron: las
+      pantallas quedan listas en 14–23 ms y cargan completas en 16–34 ms.
+- [x] (2026-11-22, 2.º reporte) Demasiado texto: título, subtítulo y más subtítulos
+      dentro del mismo módulo. La vista debe ser limpia y minimalista.
+      Regla nueva: UN solo título por pantalla (el de la barra superior). Se
+      quitaron etiquetas encima de títulos, descripciones de encabezado, 27
+      subtítulos decorativos y todas las MAYÚSCULAS forzadas. Se conservan los
+      estados vacíos, las advertencias de acciones irreversibles y las
+      explicaciones de dinero (cierre de caja).
+      Pendiente al migrar cada módulo: textos de ayuda de formularios (Cerrar
+      caja, Productos) y la cabecera de Cotización/Remisión/Compra, que repite
+      el número del documento tres veces.
+
+## Idea del usuario: "corazón del dinero" (anotada, no implementada aún)
+
+Un núcleo de cálculo de dinero aparte, muy limpio y perfecto en las cuentas, al
+estilo de los sistemas bancarios (que usan COBOL por su aritmética decimal de
+punto fijo). Propuesta técnica para cuando se aborde:
+- Un solo módulo (`src/nucleo-dinero/`) con TODAS las cuentas: líneas, IVA,
+  descuentos, totales, cambio, pagos mixtos, efectivo esperado, costo promedio.
+- Tipos explícitos: pesos (enteros), cantidades (milésimas enteras), porcentajes
+  (centésimas enteras). Cero números decimales de JavaScript.
+- Funciones puras, una política de redondeo documentada, pruebas exhaustivas
+  (incluidas pruebas contra BigInt) y el mismo código en servidor y navegador.
+- No hace falta otro lenguaje: lo que hace confiable a COBOL es el punto fijo
+  decimal, y eso se logra con enteros/BigInt. Base ya hecha: `dinero-exacto.js`.
+
 ## Fase 1 — Dinero exacto ✅
 - [x] Totales de caja derivados de movimientos, fechas locales, stock negativo, IVA en costo.
 - [x] Aritmética entera exacta compartida servidor/navegador (`dinero-exacto.js`).
@@ -47,6 +88,11 @@ Se atienden antes que la siguiente fase. Fecha del reporte entre paréntesis.
 - [ ] Reglas de botones: 1 primario por pantalla (arriba a la derecha), los
       demás secundarios; mismo alto (40 px, 32 px en tablas); acciones
       destructivas en rojo suave.
+      Hecho: el botón rojo ya no se redefine en ventas.css (medía 36 px).
+      Falta: Cotización/Compra nueva usan botones de 36 px (ventas.css).
+- [x] Barra de página (`partials/ui/encabezado`): ya no repite el título; muestra
+      estado + dato breve a la izquierda y acciones a la derecha. Si no hay
+      nada que mostrar, no se dibuja.
 
 ## Fase 3 — Migrar módulo por módulo (por uso diario)
 Para cada uno: inspeccionar tarjetas/botones/tablas, pasar a componentes,
@@ -54,7 +100,8 @@ borrar su CSS propio, revisar en 1440 / 1024 / 390 px sin scroll horizontal.
 
 - [x] Reportes (referencia: views/reportes/index.ejs, sin CSS propio)
 - [ ] Caja: [x] índice · [ ] abrir, movimiento, gasto, cerrar, detalle de turno
-- [ ] Dashboard
+- [ ] Dashboard: [x] título "Inicio", KPIs de la librería, sin rótulos, sin recortes
+      en ventanas bajas · [ ] tarjetas internas a componentes y borrar dashboard.css
 - [ ] Inventario (índice, ajuste, historial, conteos, reportes)
 - [ ] Productos y categorías
 - [ ] Historial y detalle de ventas

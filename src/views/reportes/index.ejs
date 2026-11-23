@@ -5,12 +5,6 @@
     const ventasListado = Array.isArray(ventasRecientes) ? ventasRecientes : [];
 %>
 <section class="ui-pagina">
-    <%- include('../partials/ui/encabezado', {
-        eyebrow: 'Indicadores comerciales',
-        titulo: 'Reportes',
-        descripcion: 'Ventas, anulaciones, IVA, utilidad y medios de pago del periodo.',
-    }) %>
-
     <form class="ui-filtros" method="GET" action="/reportes">
         <label class="ui-campo">
             <span>Desde</span>
@@ -39,9 +33,7 @@
         <article class="ui-tarjeta">
             <header class="ui-tarjeta-encabezado">
                 <div>
-                    <span class="ui-eyebrow">Impuestos</span>
                     <h3>IVA del periodo</h3>
-                    <p>IVA bruto, anulado y neto según las facturas del rango.</p>
                 </div>
             </header>
 
@@ -84,9 +76,7 @@
         <article class="ui-tarjeta">
             <header class="ui-tarjeta-encabezado">
                 <div>
-                    <span class="ui-eyebrow">Notas crédito</span>
                     <h3>Soportes internos</h3>
-                    <p>Notas crédito internas emitidas por anulación.</p>
                 </div>
             </header>
 
@@ -107,9 +97,7 @@
     <article class="ui-tarjeta">
         <header class="ui-tarjeta-encabezado">
             <div>
-                <span class="ui-eyebrow">Medios de pago</span>
                 <h3>Ingresos, anulaciones y neto</h3>
-                <p>Consolidado por efectivo, transferencias, tarjetas y otros medios.</p>
             </div>
         </header>
 
@@ -152,9 +140,7 @@
         <article class="ui-tarjeta">
             <header class="ui-tarjeta-encabezado">
                 <div>
-                    <span class="ui-eyebrow">Productos</span>
                     <h3>Más vendidos</h3>
-                    <p>Top 10 por valor neto vendido.</p>
                 </div>
             </header>
 
@@ -192,9 +178,7 @@
         <article class="ui-tarjeta">
             <header class="ui-tarjeta-encabezado">
                 <div>
-                    <span class="ui-eyebrow">Ventas recientes</span>
                     <h3>Últimas facturas</h3>
-                    <p>Últimos 12 documentos del rango filtrado.</p>
                 </div>
                 <a href="/ventas/historial" class="btn-secondary btn-small">Ver historial</a>
             </header>

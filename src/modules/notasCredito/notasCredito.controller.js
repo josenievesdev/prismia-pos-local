@@ -43,7 +43,7 @@ function mostrarDetalleNotaCredito(req, res) {
     }
 
     return res.render('notasCredito/detalle', {
-        titulo: resultado.notaCredito.numero_nota_credito || 'Detalle nota crédito',
+        titulo: 'Nota crédito ' + (resultado.notaCredito.numero_nota_credito || ''),
         notaCredito: resultado.notaCredito,
         detalle: resultado.detalle,
         mensajeExito: req.query.exito || null,

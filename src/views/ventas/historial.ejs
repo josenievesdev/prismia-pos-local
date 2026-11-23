@@ -22,17 +22,9 @@
         <=0) { return '0' ; } const inicio=((pagina - 1) * limite) + 1; const fin=Math.min(pagina * limite,
         totalResultados); return `${inicio} - ${fin}`; } %>
 
-        <header class="ventas-history-header">
-            <div>
-                <span class="ventas-kicker">Ventas</span>
-                <h2>Historial de facturas</h2>
-                <p>Consulta ventas registradas, filtra resultados y reimprime tickets cuando lo necesites.</p>
-            </div>
-
-            <div class="ventas-history-actions">
-                <a href="/ventas" class="btn-secondary">Volver al POS</a>
-            </div>
-        </header>
+        <%- include('../partials/ui/encabezado', {
+            acciones: [{ texto: 'Volver al POS', href: '/ventas', tipo: 'secundario' }],
+        }) %>
 
         <section class="ventas-history-filters">
             <form method="GET" action="/ventas/historial" class="ventas-history-filter-grid">

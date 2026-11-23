@@ -56,7 +56,7 @@ function mostrarDetalleRemision(req, res) {
     }
 
     return res.render('remisiones/detalle', {
-        titulo: resultado.remision.numero_remision || 'Detalle de remisión',
+        titulo: 'Remisión ' + (resultado.remision.numero_remision || ''),
         remision: resultado.remision,
         detalle: resultado.detalle,
         mensajeExito: req.query.exito || null,

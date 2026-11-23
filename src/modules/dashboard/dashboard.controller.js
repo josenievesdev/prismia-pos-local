@@ -7,7 +7,7 @@ function mostrarDashboard(req, res, next) {
         const dashboard = dashboardService.obtenerDashboardOperativo();
 
         return res.render('dashboard/index', {
-            titulo: 'Dashboard',
+            titulo: 'Inicio',
             dashboard,
             estilosModulo: estilosDashboard,
         });

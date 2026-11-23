@@ -1,8 +1,5 @@
 <section class="ui-pagina">
     <%- include('../partials/ui/encabezado', {
-        eyebrow: 'Seguridad operativa',
-        titulo: modo === 'crear' ? 'Nuevo usuario' : 'Editar usuario',
-        descripcion: 'Acceso, rol y estado del usuario dentro de Prismia.',
         acciones: [{ texto: 'Volver', href: '/usuarios', tipo: 'secundario' }],
     }) %>
 
@@ -13,7 +10,6 @@
     <form method="POST" action="<%= action %>" class="ui-formulario">
         <section class="ui-seccion">
             <div class="ui-seccion-texto">
-                <span class="ui-eyebrow">Datos del usuario</span>
                 <h3>Información básica</h3>
                 <p class="ui-ayuda">El correo es el usuario para iniciar sesión.</p>
             </div>
@@ -47,9 +43,7 @@
 
         <section class="ui-seccion">
             <div class="ui-seccion-texto">
-                <span class="ui-eyebrow">Permisos</span>
                 <h3>Rol operativo</h3>
-                <p class="ui-ayuda">Define qué módulos puede usar.</p>
             </div>
 
             <div class="ui-opciones">
@@ -67,7 +61,6 @@
 
         <section class="ui-seccion">
             <div class="ui-seccion-texto">
-                <span class="ui-eyebrow">Acceso</span>
                 <h3>Contraseña</h3>
                 <% if (modo === 'editar') { %>
                     <p class="ui-ayuda">Déjala vacía si no quieres cambiarla.</p>

@@ -17,14 +17,10 @@
         fechaObj=new Date(textoFecha); if (Number.isNaN(fechaObj.getTime())) { return String(valor); } return
         fechaObj.toLocaleString('es-CO'); } %>
 
-        <header class="ventas-detail-header">
-            <div>
-                <span class="ventas-kicker">Ventas</span>
-                <h2>Detalle de venta</h2>
-                <p>Consulta la información completa de la factura registrada desde el POS.</p>
-            </div>
+        <header class="ui-encabezado">
+            <div class="ui-encabezado-texto"></div>
 
-            <div class="ventas-detail-actions">
+            <div class="ui-acciones">
                 <a href="/ventas/historial" class="btn-secondary">
                     Volver al historial
                 </a>

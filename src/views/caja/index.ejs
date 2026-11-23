@@ -15,10 +15,8 @@
 <section class="ui-pagina">
     <% if (turnoAbierto) { %>
         <%- include('../partials/ui/encabezado', {
-            eyebrow: 'Control de efectivo',
-            titulo: 'Caja #' + turnoAbierto.id_turno_caja,
-            estado: { texto: 'Abierta', tono: 'exito' },
-            descripcion: 'Abierta por ' + (turnoAbierto.usuario_apertura_nombre || 'Usuario') + ' el ' + formatearFecha(fechaLocal(turnoAbierto.fecha_apertura)) + '.',
+            estado: { texto: 'Caja #' + turnoAbierto.id_turno_caja + ' abierta', tono: 'exito' },
+            meta: (turnoAbierto.usuario_apertura_nombre || 'Usuario') + ' · ' + formatearFecha(fechaLocal(turnoAbierto.fecha_apertura)),
             acciones: [
                 { texto: 'Ver arqueo', href: '/caja/turnos/' + turnoAbierto.id_turno_caja },
                 { texto: 'Movimiento', href: '/caja/movimiento' },
@@ -28,10 +26,7 @@
         }) %>
     <% } else { %>
         <%- include('../partials/ui/encabezado', {
-            eyebrow: 'Control de efectivo',
-            titulo: 'Caja',
-            estado: { texto: 'Cerrada', tono: 'peligro' },
-            descripcion: 'Apertura del turno, base inicial y control del dinero.',
+            estado: { texto: 'Caja cerrada', tono: 'peligro' },
             acciones: [{ texto: 'Abrir caja', href: '/caja/abrir', tipo: 'primario' }],
         }) %>
     <% } %>
@@ -62,9 +57,7 @@
         <article class="ui-tarjeta">
             <header class="ui-tarjeta-encabezado">
                 <div>
-                    <span class="ui-eyebrow">Resumen operativo</span>
                     <h3>Ingresos y egresos por medio de pago</h3>
-                    <p>Consolidado del turno por efectivo, transferencias, tarjetas y otros medios.</p>
                 </div>
                 <%- include('../partials/ui/estado', { texto: totalesResumen.cantidad_operaciones + ' operaciones' }) %>
             </header>
@@ -113,9 +106,7 @@
         <article class="ui-tarjeta">
             <header class="ui-tarjeta-encabezado">
                 <div>
-                    <span class="ui-eyebrow">Detalle operativo</span>
                     <h3>Movimientos del turno</h3>
-                    <p>Ventas, ingresos, egresos y anulaciones en orden cronológico.</p>
                 </div>
                 <%- include('../partials/ui/estado', { texto: movimientosListado.length + ' registrados' }) %>
             </header>
@@ -161,9 +152,7 @@
     <article class="ui-tarjeta">
         <header class="ui-tarjeta-encabezado">
             <div>
-                <span class="ui-eyebrow">Historial de caja</span>
                 <h3>Últimos turnos</h3>
-                <p>Aperturas, cierres, valores esperados, conteos y diferencias.</p>
             </div>
             <%- include('../partials/ui/estado', { texto: turnosListado.length + ' turnos' }) %>
         </header>

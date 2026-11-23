@@ -5,11 +5,9 @@
    Perfiles: data-pos-business="general" | "comidas" | "boutique".
    ========================================================= */
 
-/* ---------- Marco de la página ---------- */
-.ruta-pos .app-content {
-    max-width: none;
-    padding: 14px 18px 18px;
-}
+/* ---------- Marco de la página ----------
+   El POS usa el mismo margen que el resto de módulos (sistema.css): así el
+   contenido no brinca al entrar o salir del POS. */
 
 .ventas-pos-shell {
     --pos-acento: var(--color-primary);
@@ -1455,10 +1453,6 @@
 }
 
 @media (max-width: 599.98px) {
-    .ruta-pos .app-content {
-        padding: 10px;
-    }
-
     /* En el celular basta con el estado de la caja */
     .ventas-header-meta,
     .ventas-mode-toggle-copy small {

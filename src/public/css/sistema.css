@@ -61,7 +61,6 @@
     --menu-ancho: 252px;
     --menu-riel: 64px;
     --header-alto: 60px;
-    --contenido-max: 1480px;
 
     --transicion: 160ms cubic-bezier(0.2, 0, 0, 1);
 }
@@ -452,25 +451,12 @@ html[data-menu-estado="riel"] .sidebar-brand:focus-within .sidebar-logo {
     animation: none;
 }
 
-::view-transition-old(root) {
-    animation: 80ms ease-out both prismia-salida;
-}
-
+/* Cambio de contenido: fundido corto y SIN movimiento (un desplazamiento,
+   aunque sea de pocos píxeles, se percibe como un brinco). */
+::view-transition-old(root),
 ::view-transition-new(root) {
-    animation: 160ms cubic-bezier(0.2, 0, 0, 1) both prismia-entrada;
-}
-
-@keyframes prismia-salida {
-    to {
-        opacity: 0;
-    }
-}
-
-@keyframes prismia-entrada {
-    from {
-        opacity: 0;
-        transform: translateY(4px);
-    }
+    animation-duration: 90ms;
+    animation-timing-function: ease-out;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -661,10 +647,14 @@ html[data-menu-estado="movil"] .shell-toggle {
 }
 
 /* ---------- Contenido ---------- */
+/* Mismo marco en TODOS los módulos (POS incluido): ancho completo y el mismo
+   margen. Antes el contenido se centraba con un ancho máximo y el POS no, así
+   que en pantallas grandes el contenido brincaba ~100px de lado al cambiar de
+   módulo y no quedaba alineado con el título de la barra superior. */
 .app-content {
     width: 100%;
-    max-width: var(--contenido-max);
-    margin: 0 auto;
+    max-width: none;
+    margin: 0;
     padding: 24px;
 }
 
@@ -1425,4 +1415,93 @@ html[data-menu-estado="movil"] .shell-toggle {
     border-color: rgba(42, 107, 209, 0.2);
     background: var(--color-info-soft);
     color: var(--color-info);
+}
+
+/* =========================================================
+   Estabilidad y limpieza visual entre módulos
+   ========================================================= */
+
+/* El espacio de la barra de scroll se reserva siempre: antes, los módulos con
+   scroll vertical le quitaban ancho a la ventana y todo (incluido el bloque
+   del usuario) se corría de lado al cambiar de módulo. */
+html {
+    scrollbar-gutter: stable;
+}
+
+/* Un solo título por pantalla: el de la barra superior (fija, igual en todos
+   los módulos). En los encabezados viejos de cada módulo se oculta el bloque
+   de texto (etiqueta + título repetido + descripción) y quedan las acciones. */
+html .app-content .module-header > div:first-child {
+    display: none !important;
+}
+
+html .app-content .module-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+}
+
+html .app-content .module-header:not(:has(> :nth-child(2))) {
+    display: none;
+}
+
+/* Menos texto: fuera las etiquetas decorativas sobre los títulos y las
+   descripciones que explican lo obvio. */
+html .app-content :is(.eyebrow, .page-eyebrow, .ui-eyebrow, [class$="-eyebrow"], [class*="section-eyebrow"]) {
+    display: none !important;
+}
+
+html .app-content :is([class*="section-head"], [class*="panel-head"], .ui-tarjeta-encabezado) p {
+    display: none;
+}
+
+/* Barra de página: estado + dato breve a la izquierda, acciones a la derecha */
+.ui-encabezado {
+    align-items: center;
+    min-height: 40px;
+}
+
+.ui-encabezado-texto {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+}
+
+.ui-meta {
+    color: var(--color-muted);
+    font-size: 13.5px;
+}
+
+/* Menos "gritos": encabezados de tabla y etiquetas de datos en escritura
+   normal (gris y pequeños) en lugar de MAYÚSCULAS. */
+html .app-content :is(th, .ui-tabla th, .data-table th) {
+    letter-spacing: 0;
+    text-transform: none;
+    font-size: 12.5px;
+}
+
+/* Regla global: el contenido no usa MAYÚSCULAS forzadas (etiquetas de estado,
+   indicadores, rótulos). Se quita también el espaciado extra entre letras que
+   acompañaba a las mayúsculas, sin tocar títulos ni cifras grandes. */
+html .app-content :where(*) {
+    text-transform: none !important;
+}
+
+html .app-content :where(span, small, label, th, b, p):not(.ui-kpi-valor) {
+    letter-spacing: normal !important;
+}
+
+/* Subtítulo bajo el nombre del documento (Cotización / Remisión / Compra):
+   repite lo que ya dice la barra superior. */
+html .app-content .ventas-header-sub {
+    display: none;
 }

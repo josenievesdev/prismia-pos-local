@@ -46,6 +46,13 @@
         return numeroValor + '%';
         };
 
+        const tonoVariacion = (valor) => {
+        const numeroValor = Number(valor || 0);
+        if (numeroValor > 0) return 'exito';
+        if (numeroValor < 0) return 'peligro';
+        return '';
+        };
+
         const estadoVentaBadge = (estado) => {
         if (estado === 'pagada') return 'badge-success';
         if (estado === 'anulada') return 'badge-danger';
@@ -89,62 +96,18 @@
         %>
 
         <section class="dashboard-monitor">
-            <header class="dashboard-monitor-head">
-                <div class="dashboard-title-box">
-                    <span>Monitor operativo</span>
-                    <h2>Dashboard del día</h2>
-                    <p>Resumen diario de ventas, pagos e inventario. La caja muestra solo el turno abierto.</p>
-                </div>
-
-                <div class="dashboard-quick-kpis">
-                    <article class="dash-kpi tone-blue">
-                        <span>Ventas netas hoy</span>
-                        <strong>
-                            <%= moneda(resumenHoy.total_neto) %>
-                        </strong>
-                        <small class="<%= variacionClase(comparacion.total_neto_porcentaje) %>">
-                            <%= variacionTexto(comparacion.total_neto_porcentaje) %> vs ayer
-                        </small>
-                    </article>
-
-                    <article class="dash-kpi tone-teal">
-                        <span>Tickets hoy</span>
-                        <strong>
-                            <%= numero(resumenHoy.ventas_pagadas) %>
-                        </strong>
-                        <small class="<%= variacionClase(comparacion.ventas_pagadas_porcentaje) %>">
-                            <%= variacionTexto(comparacion.ventas_pagadas_porcentaje) %> vs ayer
-                        </small>
-                    </article>
-
-                    <article class="dash-kpi tone-amber">
-                        <span>Ticket promedio hoy</span>
-                        <strong>
-                            <%= moneda(resumenHoy.ticket_promedio) %>
-                        </strong>
-                        <small class="<%= variacionClase(comparacion.ticket_promedio_porcentaje) %>">
-                            <%= variacionTexto(comparacion.ticket_promedio_porcentaje) %> vs ayer
-                        </small>
-                    </article>
-
-                    <article class="dash-kpi tone-red">
-                        <span>Anulado hoy</span>
-                        <strong>
-                            <%= moneda(resumenHoy.total_anulado) %>
-                        </strong>
-                        <small>
-                            <%= numero(resumenHoy.ventas_anuladas) %> documentos
-                        </small>
-                    </article>
-                </div>
-            </header>
+            <section class="ui-kpis">
+                <%- include('../partials/ui/kpi', { etiqueta: 'Ventas netas hoy', valor: moneda(resumenHoy.total_neto), detalle: variacionTexto(comparacion.total_neto_porcentaje) + ' vs ayer', tonoDetalle: tonoVariacion(comparacion.total_neto_porcentaje) }) %>
+                <%- include('../partials/ui/kpi', { etiqueta: 'Tickets hoy', valor: numero(resumenHoy.ventas_pagadas), detalle: variacionTexto(comparacion.ventas_pagadas_porcentaje) + ' vs ayer', tonoDetalle: tonoVariacion(comparacion.ventas_pagadas_porcentaje) }) %>
+                <%- include('../partials/ui/kpi', { etiqueta: 'Ticket promedio', valor: moneda(resumenHoy.ticket_promedio), detalle: variacionTexto(comparacion.ticket_promedio_porcentaje) + ' vs ayer', tonoDetalle: tonoVariacion(comparacion.ticket_promedio_porcentaje) }) %>
+                <%- include('../partials/ui/kpi', { etiqueta: 'Anulado hoy', valor: moneda(resumenHoy.total_anulado), detalle: numero(resumenHoy.ventas_anuladas) + ' documento(s)', tono: Number(resumenHoy.total_anulado || 0) > 0 ? 'peligro' : '' }) %>
+            </section>
 
             <section class="dashboard-grid">
                 <article class="dash-panel panel-sales">
                     <div class="dash-panel-head">
                         <div>
-                            <span>Ventas del día</span>
-                            <h3>Ritmo por hora</h3>
+                            <h3>Ventas por hora</h3>
                         </div>
                         <strong>
                             <%= numero(resumenHoy.productos_vendidos) %> productos
@@ -190,8 +153,7 @@
                 <article class="dash-panel panel-cash">
                     <div class="dash-panel-head">
                         <div>
-                            <span>Caja</span>
-                            <h3>Turno actual</h3>
+                            <h3>Caja</h3>
                         </div>
 
                         <% if (turnoActual.abierto) { %>
@@ -251,7 +213,6 @@
                 <article class="dash-panel panel-payments">
                     <div class="dash-panel-head">
                         <div>
-                            <span>Pagos del día</span>
                             <h3>Medios de pago</h3>
                         </div>
                         <strong>
@@ -293,10 +254,8 @@
                 <article class="dash-panel panel-products">
                     <div class="dash-panel-head">
                         <div>
-                            <span>Productos del día</span>
-                            <h3>Top vendidos</h3>
+                            <h3>Más vendidos</h3>
                         </div>
-                        <strong>Hoy</strong>
                     </div>
 
                     <% if (topProductosVista.length> 0) { %>
@@ -340,7 +299,6 @@
                 <article class="dash-panel panel-activity">
                     <div class="dash-panel-head">
                         <div>
-                            <span>Actividad del día</span>
                             <h3>Últimas ventas</h3>
                         </div>
                         <a href="/ventas/historial" class="btn-secondary btn-sm">Historial</a>
@@ -381,8 +339,7 @@
                 <article class="dash-panel panel-alerts">
                     <div class="dash-panel-head">
                         <div>
-                            <span>Control operativo</span>
-                            <h3>Alertas generales</h3>
+                            <h3>Alertas</h3>
                         </div>
 
                         <span class="badge <%= totalAlertas > 0 ? 'badge-warning' : 'badge-success' %>">
