@@ -25,9 +25,10 @@ filtros ni estados propios. Todo sale de la librería (`sistema.css` +
       revisar cada pantalla que recibe montos o cantidades.
 
 ## Fase 2 — Librería de componentes (base de todo lo demás)
-- [x] Componentes CSS únicos en `sistema.css`: encabezado de página, barra de
-      filtros, KPI, tarjeta, tabla, estado (badge), estado vacío, formulario en
-      secciones, grupo de botones, paginación, modal.
+- [x] Componentes CSS: encabezado, filtros, campo, KPI, grilla, tarjeta, métricas,
+      tabla, estado (badge), vacío, nota.
+- [ ] Componentes que faltan: formulario en secciones, paginación, modal, barra de
+      acciones de tabla (se crean al migrar el primer módulo que los use).
 - [x] Parciales EJS en `views/partials/ui/` para que las vistas "hereden" el
       diseño: `encabezado`, `kpi`, `estado`, `vacio`, `paginacion`.
 - [ ] Reglas de botones: 1 primario por pantalla (arriba a la derecha), los
