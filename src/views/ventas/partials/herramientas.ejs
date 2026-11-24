@@ -1,0 +1,36 @@
+<%# Herramientas del punto de venta en la barra superior: modo, perfil,
+    estado de la caja y modo enfoque. Los valores iniciales los pone el script
+    del <head> (data-pos-*) y pos.js los mantiene sincronizados. %>
+<div class="pos-herramientas">
+    <div class="pos-segmento" role="group" aria-label="Modo del punto de venta">
+        <button type="button" data-pos-modo="clasico" aria-pressed="true">Clásico</button>
+        <button type="button" data-pos-modo="tactil" aria-pressed="false">Táctil</button>
+    </div>
+
+    <label class="pos-perfil" title="Perfil del negocio: cambia el color de acento">
+        <span class="pos-perfil-punto" aria-hidden="true"></span>
+        <select id="perfilPOS" aria-label="Perfil del negocio">
+            <option value="general">General</option>
+            <option value="comidas">Comidas</option>
+            <option value="boutique">Boutique</option>
+        </select>
+    </label>
+
+    <span class="pos-caja <%= turnoAbierto ? 'is-abierta' : 'is-cerrada' %>">
+        <span class="pos-caja-punto" aria-hidden="true"></span>
+        <%= turnoAbierto ? 'Caja abierta · Turno ' + turnoAbierto.id_turno_caja : 'Caja cerrada' %>
+    </span>
+
+    <button type="button" class="pos-enfoque" id="btnEnfoquePOS" aria-pressed="false"
+        title="Modo enfoque: ocultar el menú (Esc dos veces para salir)">
+        <svg class="pos-icono-expandir" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M15 3h6v6" /><path d="M9 21H3v-6" /><path d="M21 3l-7 7" /><path d="M3 21l7-7" />
+        </svg>
+        <svg class="pos-icono-contraer" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 14h6v6" /><path d="M20 10h-6V4" /><path d="M14 10l7-7" /><path d="M3 21l7-7" />
+        </svg>
+        <span class="visualmente-oculto">Modo enfoque</span>
+    </button>
+</div>

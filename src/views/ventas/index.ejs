@@ -1,736 +1,440 @@
-<section class="module-page ventas-page">
-    <% const fechaHoy=fechaHoyLocal; const productosListado=Array.isArray(productos) ? productos
-        : []; const productosTactilesListado=Array.isArray(productosTactiles) ? productosTactiles : []; const
-        mediosPagoListado=Array.isArray(mediosPago) ? mediosPago : []; const categoriasCatalogoPOS=Array.from(new Set(
-        productosListado .map(function (producto) { return producto.categoria_nombre || 'Sin categoría' ; })
-        .filter(Boolean) )).slice(0, 10); const clienteActual=clienteConsumidorFinal || { id_cliente: null,
-        nombre: 'Consumidor final' , documento: '0000000000' }; const nombreCajero=turnoAbierto ?
-        (turnoAbierto.usuario_apertura_nombre || 'Usuario' ) : 'Sin caja abierta' ; const
-        facturaSugeridaPOS=siguienteFactura || { prefijo: 'FV' , siguiente_numero: 'FV-BORRADOR' }; const
-        prefijoFacturaPOS=facturaSugeridaPOS.prefijo || 'FV' ; const
-        nomenclaturaFacturaPOS=facturaSugeridaPOS.siguiente_numero || (prefijoFacturaPOS + '-BORRADOR' ); function
-        nombreTipoMedio(t) { if (t==='efectivo' ) return 'Efectivo' ; if (t==='transferencia' ) return 'Transferencia' ;
-        if (t==='tarjeta' ) return 'Tarjeta' ; return 'Otro' ; } %>
+<%
+    const fechaHoy = fechaHoyLocal;
+    const fechaVista = String(fechaHoy || '').split('-').reverse().join('/');
+    const mediosPagoListado = Array.isArray(mediosPago) ? mediosPago : [];
+    const productosTactilesListado = Array.isArray(productosTactiles) ? productosTactiles : [];
+    const clienteActual = clienteConsumidorFinal || { id_cliente: null, nombre: 'Consumidor final', tipo_documento: 'CF', documento: '0000000000' };
+    const numeroFactura = (siguienteFactura && siguienteFactura.siguiente_numero) || 'FV-BORRADOR';
 
-        <div class="ventas-pos-shell" data-puede-vender="<%= puedeVender ? 1 : 0 %>" data-pos-mode="clasico">
+    // Frecuentes: las 6 posiciones de acceso rápido configuradas en Productos.
+    const frecuentes = [null, null, null, null, null, null];
+    productosTactilesListado.forEach(function (producto) {
+        const posicion = Number(producto.orden_pos_tactil || 0);
+        if (posicion >= 1 && posicion <= 6 && !frecuentes[posicion - 1]) frecuentes[posicion - 1] = producto;
+    });
 
-            <header class="ventas-pos-header">
-                <div class="ventas-header-left">
-                    <div class="ventas-header-icon">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2.2">
-                            <rect x="2" y="3" width="20" height="14" rx="2" />
-                            <line x1="8" y1="21" x2="16" y2="21" />
-                            <line x1="12" y1="17" x2="12" y2="21" />
-                        </svg>
-                    </div>
+    // Solo los campos que usa pos.js (mismo formato que /ventas/productos/buscar).
+    function productoPOS(p) {
+        if (!p) return null;
+        return {
+            id_producto: p.id_producto, nombre: p.nombre, codigo_interno: p.codigo_interno, codigo_barras: p.codigo_barras,
+            categoria_nombre: p.categoria_nombre, precio_venta: p.precio_venta, stock_disponible: p.stock_disponible,
+            controla_inventario: p.controla_inventario, permite_venta_sin_stock: p.permite_venta_sin_stock,
+            permite_cantidad_decimal: p.permite_cantidad_decimal, unidad_abreviatura: p.unidad_abreviatura,
+            maneja_iva: p.maneja_iva, porcentaje_iva: p.porcentaje_iva, precio_incluye_iva: p.precio_incluye_iva,
+            puede_vender: p.puede_vender, imagen_url: p.imagen_url,
+        };
+    }
 
-                    <div>
-                        <h2>Punto de Venta</h2>
-                        <span class="ventas-header-sub">Factura central</span>
-                    </div>
-                </div>
+    const datosPOS = {
+        puedeVender: Boolean(puedeVender),
+        esAdministrador: Boolean(esAdministrador),
+        numeroFactura,
+        consumidorFinal: {
+            id: clienteActual.id_cliente || null,
+            nombre: clienteActual.nombre || 'Consumidor final',
+            documento: clienteActual.etiqueta_documento || [clienteActual.tipo_documento, clienteActual.documento].filter(Boolean).join(' '),
+        },
+        mediosPago: mediosPagoListado.map(function (medio) {
+            return {
+                id: medio.id_medio_pago, nombre: medio.nombre, tipo: medio.tipo,
+                afectaEfectivo: Number(medio.afecta_efectivo_caja) === 1,
+                requiereReferencia: Number(medio.requiere_referencia) === 1,
+            };
+        }),
+        frecuentes: frecuentes.map(productoPOS),
+    };
 
-                <div class="ventas-mode-tools">
-                    <div class="ventas-mode-switch">
-                        <button type="button" class="ventas-mode-toggle" id="btnCambiarModoPOS" aria-pressed="false"
-                            title="Cambiar modo de vista del POS">
-                            <span class="ventas-mode-toggle-track" aria-hidden="true">
-                                <span class="ventas-mode-toggle-thumb"></span>
-                            </span>
+    function iconoMedio(medio) {
+        const nombre = String(medio.nombre || '').toLowerCase();
+        if (medio.tipo === 'efectivo') return 'efectivo';
+        if (/nequi|daviplata|movil|móvil|billetera/.test(nombre)) return 'celular';
+        if (/bre-?b|llave/.test(nombre)) return 'rayo';
+        if (medio.tipo === 'tarjeta') return 'tarjeta';
+        if (medio.tipo === 'transferencia') return 'transferencia';
+        return 'otro';
+    }
 
-                            <span class="ventas-mode-toggle-copy">
-                                <strong id="textoModoPOS">Modo clásico</strong>
-                                <small>Vista POS</small>
-                            </span>
-                        </button>
-                    </div>
+    const iconos = {
+        efectivo: '<rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 9.5v5M18 9.5v5"/>',
+        tarjeta: '<rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M2.5 10h19M6 15h4"/>',
+        transferencia: '<path d="M4 8h14l-3-3M20 16H6l3 3"/>',
+        celular: '<rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18.5h2"/>',
+        rayo: '<path d="M13 2.5 5 13.5h6l-1 8 8-11h-6z"/>',
+        otro: '<circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/>',
+    };
+%>
+<section class="pos" id="pos" data-puede-vender="<%= puedeVender ? 1 : 0 %>" aria-label="Punto de venta">
+    <script type="application/json" id="datosPOS"><%- JSON.stringify(datosPOS).replace(/</g, '\\u003c') %></script>
 
-                    <div class="ventas-business-switch" id="selectorPerfilPOS" aria-label="Perfil visual del POS">
-                        <button type="button" class="ventas-business-option is-active"
-                            data-pos-business-option="general">
-                            General
-                        </button>
+    <div class="pos-principal">
+        <% if (mensajeExito) { %><div class="alert alert-success"><%= mensajeExito %></div><% } %>
+        <% if (error) { %><div class="alert alert-error"><%= error %></div><% } %>
 
-                        <button type="button" class="ventas-business-option" data-pos-business-option="comidas">
-                            Comidas
-                        </button>
+        <div class="pos-busqueda-fila">
+            <div class="pos-buscador" id="buscadorPOS">
+                <svg class="pos-buscador-icono" viewBox="0 0 24 24" width="20" height="20" fill="none"
+                    stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+                    <path d="M4 7V5.5A1.5 1.5 0 0 1 5.5 4H7M17 4h1.5A1.5 1.5 0 0 1 20 5.5V7M20 17v1.5a1.5 1.5 0 0 1-1.5 1.5H17M7 20H5.5A1.5 1.5 0 0 1 4 18.5V17M8 8v8M11 8v8M14 8v8M16.5 8v8" />
+                </svg>
 
-                        <button type="button" class="ventas-business-option" data-pos-business-option="boutique">
-                            Boutique
-                        </button>
-                    </div>
-                </div>
+                <button type="button" class="pos-multiplicador" id="multiplicadorPOS" hidden
+                    title="Cantidad para el próximo producto (clic para quitar)"></button>
 
-                <div class="ventas-header-status">
-                    <span class="ventas-status-chip <%= turnoAbierto ? 'is-open' : 'is-closed' %>">
-                        <span class="ventas-status-dot"></span>
-                        <%= turnoAbierto ? 'Caja abierta' : 'Caja cerrada' %>
+                <input type="search" id="buscarProducto" placeholder="Buscar por nombre, código o SKU"
+                    autocomplete="off" spellcheck="false" autofocus <%= puedeVender ? '' : 'disabled' %>
+                    role="combobox" aria-autocomplete="list" aria-controls="resultadosPOS" aria-expanded="false">
+
+                <kbd>F2</kbd>
+
+                <div class="pos-resultados" id="resultadosPOS" role="listbox" hidden></div>
+            </div>
+
+            <div class="pos-cliente-zona">
+                <button type="button" class="pos-cliente" id="btnClientePOS" aria-haspopup="dialog"
+                    aria-expanded="false" <%= puedeVender ? '' : 'disabled' %>>
+                    <span class="pos-cliente-avatar" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round"><circle cx="12" cy="8" r="4" /><path d="M4.5 21a7.5 7.5 0 0 1 15 0" /></svg>
                     </span>
+                    <span class="pos-cliente-texto">
+                        <strong id="clienteNombrePOS"><%= datosPOS.consumidorFinal.nombre %></strong>
+                        <small id="clienteDocumentoPOS"><%= datosPOS.consumidorFinal.documento %></small>
+                    </span>
+                    <kbd>F4</kbd>
+                </button>
 
-                    <% if (turnoAbierto) { %>
-                        <span class="ventas-header-meta">
-                            Turno <strong>#<%= turnoAbierto.id_turno_caja %></strong>
-                        </span>
-                        <% } else { %>
-                            <span class="ventas-header-meta">Sin turno</span>
-                            <% } %>
-
-                                <span class="ventas-header-meta ventas-header-cajero">
-                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2">
-                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                                        <circle cx="12" cy="7" r="4" />
-                                    </svg>
-                                    <%= nombreCajero %>
-                                </span>
+                <div class="pos-cliente-panel" id="panelClientePOS" role="dialog" aria-label="Cliente de la venta" hidden>
+                    <input type="search" id="buscarCliente" placeholder="Nombre, cédula o NIT" autocomplete="off"
+                        spellcheck="false">
+                    <div class="pos-cliente-resultados" id="resultadosClientes">
+                        <p class="pos-cliente-vacio">Escribe para buscar un cliente.</p>
+                    </div>
+                    <footer>
+                        <button type="button" class="btn-secondary btn-small" id="btnClienteFinalPOS">Consumidor final</button>
+                        <button type="button" class="btn-primary btn-small" id="btnAbrirClienteRapido">+ Nuevo cliente</button>
+                    </footer>
                 </div>
+            </div>
+        </div>
+
+        <section class="pos-ticket" aria-label="Venta actual">
+            <header class="pos-ticket-cabecera">
+                <strong class="pos-ticket-numero" id="numeroFacturaPOS" title="Número sugerido: se confirma al registrar"><%= numeroFactura %></strong>
+                <span class="pos-ticket-fecha"><%= fechaVista %></span>
+                <span class="pos-ticket-resumen" id="resumenTicketPOS">Sin productos</span>
             </header>
 
-            <% if (mensajeExito) { %>
-                <div class="alert alert-success">
-                    <%= mensajeExito %>
+            <div class="pos-ticket-tabla" id="tablaTicketPOS">
+                <table class="pos-lineas">
+                    <colgroup>
+                        <col class="pos-col-indice"><col><col class="pos-col-cantidad"><col class="pos-col-precio"><col class="pos-col-total">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th class="centro">#</th>
+                            <th>Producto</th>
+                            <th class="centro">Cantidad</th>
+                            <th class="num">Precio</th>
+                            <th class="num">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lineasPOS"></tbody>
+                </table>
+
+                <div class="pos-ticket-vacio" id="vacioTicketPOS">
+                    <svg viewBox="0 0 24 24" width="38" height="38" fill="none" stroke="currentColor" stroke-width="1.6"
+                        stroke-linecap="round" aria-hidden="true">
+                        <path d="M4 7V5.5A1.5 1.5 0 0 1 5.5 4H7M17 4h1.5A1.5 1.5 0 0 1 20 5.5V7M20 17v1.5a1.5 1.5 0 0 1-1.5 1.5H17M7 20H5.5A1.5 1.5 0 0 1 4 18.5V17M8 8v8M11 8v8M14 8v8M16.5 8v8" />
+                    </svg>
+                    <span>Escanea o busca un producto</span>
                 </div>
-                <% } %>
+            </div>
 
-                    <% if (error) { %>
-                        <div class="alert alert-error">
-                            <%= error %>
-                        </div>
+            <button type="button" class="pos-ticket-arriba" id="btnArribaPOS" hidden></button>
+        </section>
+
+        <footer class="pos-barra">
+            <div class="pos-atajos" aria-hidden="true">
+                <span><kbd>F8</kbd> Cantidad</span>
+                <span><kbd>Supr</kbd> Quitar línea</span>
+                <span><kbd>Esc</kbd> Cancelar</span>
+            </div>
+
+            <nav class="pos-acciones" aria-label="Acciones de la venta">
+                <a href="/ventas/historial">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>
+                    Historial
+                </a>
+                <button type="button" id="btnPendientePOS" disabled>
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg>
+                    Dejar pendiente
+                </button>
+                <span class="pos-pendientes-zona">
+                    <button type="button" id="btnPendientesPOS" aria-haspopup="dialog" aria-expanded="false" hidden></button>
+                    <div class="pos-pendientes-panel" id="panelPendientesPOS" role="dialog" aria-label="Ventas pendientes" hidden></div>
+                </span>
+                <a href="/cotizaciones">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>
+                    Traer cotización
+                </a>
+                <button type="button" id="btnLimpiarVenta" disabled>
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>
+                    Limpiar
+                </button>
+            </nav>
+        </footer>
+    </div>
+
+    <aside class="pos-lateral" id="lateralPOS" aria-label="Cobro">
+        <section class="pos-exito" id="exitoPOS" role="status" hidden>
+            <header>
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="m8 12.5 2.6 2.5L16 9.5" /></svg>
+                <strong id="exitoNumeroPOS"></strong>
+                <span id="exitoTotalPOS"></span>
+            </header>
+            <span class="pos-exito-etiqueta">Cambio</span>
+            <strong class="pos-exito-cambio" id="exitoCambioPOS">$ 0</strong>
+            <div class="pos-exito-acciones">
+                <a class="pos-exito-imprimir" id="exitoImprimirPOS" href="#" target="_blank" rel="noopener">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M7 9V3h10v6M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"/><path d="M7 14h10v7H7z"/></svg>
+                    Imprimir ticket <kbd>Ctrl+P</kbd>
+                </a>
+                <button type="button" class="pos-exito-ocultar" id="exitoOcultarPOS">Ocultar</button>
+            </div>
+            <small>Se oculta al escanear el siguiente producto.</small>
+        </section>
+
+        <div class="pos-lateral-venta" id="lateralVentaPOS">
+            <section class="pos-frecuentes" id="frecuentesPOS" aria-labelledby="tituloFrecuentesPOS">
+                <header>
+                    <h2 id="tituloFrecuentesPOS">Frecuentes</h2>
+                    <div class="pos-frecuentes-herramientas">
+                        <% if (esAdministrador) { %>
+                            <button type="button" id="btnEditarFrecuentesPOS" aria-pressed="false">Editar</button>
                         <% } %>
-
-                            <% if (mensajeBloqueo) { %>
-                                <div class="ventas-lock-banner">
-                                    <div>
-                                        <strong>Venta bloqueada</strong>
-                                        <span>
-                                            <%= mensajeBloqueo %>
-                                        </span>
-                                    </div>
-
-                                    <a href="/caja/abrir" class="btn-primary">Abrir caja</a>
-                                </div>
-                                <% } %>
-
-                                    <div class="pos-layout">
-                                    <div class="pos-columna-catalogo">
-                                    <section class="ventas-context-bar pos-cliente">
-                                        <div
-                                            class="ventas-context-item is-client ventas-client-search-box ventas-client-clean">
-                                            <div class="ventas-client-clean-head">
-                                                <span>Cliente</span>
-
-                                                <div class="ventas-client-clean-actions">
-                                                    <strong>Consumidor final</strong>
-
-                                                    <button type="button" class="ventas-client-new-btn"
-                                                        id="btnAbrirClienteRapido">
-                                                        + Nuevo
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                            <div class="ventas-client-search-wrap ventas-client-clean-search">
-                                                <input type="search" id="buscarCliente" name="buscar_cliente"
-                                                    value="<%= clienteActual.nombre %>"
-                                                    placeholder="Buscar cliente por nombre, documento o teléfono..."
-                                                    autocomplete="off" data-search-clients-url="/ventas/clientes/buscar"
-                                                    data-selected-client-id="<%= clienteActual.id_cliente || '' %>">
-
-                                                <div class="ventas-client-results" id="resultadosClientes" hidden>
-                                                    <div class="ventas-client-result-empty">
-                                                        Escribe para buscar un cliente.
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <small id="clienteDocumentoActual" hidden>
-                                                <%= clienteActual.documento || '' %>
-                                            </small>
-                                        </div>
-
-                                    </section>
-
-                                    <section class="ventas-search-section">
-                                        <form class="ventas-search-form" method="GET" action="/ventas"
-                                            id="formBusquedaProductos">
-                                            <div class="ventas-search-input-wrap">
-                                                <span class="ventas-search-icon">
-                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                                                        stroke="currentColor" stroke-width="2.5">
-                                                        <circle cx="11" cy="11" r="8" />
-                                                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                                                    </svg>
-                                                </span>
-
-                                                <input type="search" id="buscarProducto" name="busqueda" value=""
-                                                    placeholder="Buscar producto por nombre, código de barras o SKU…"
-                                                    autocomplete="off" autofocus
-                                                    data-search-products-url="/ventas/productos/buscar">
-
-                                                <div class="ventas-results-panel" id="panelResultados" hidden>
-                                                    <div class="ventas-empty-results">
-                                                        <strong>Escribe para buscar</strong>
-                                                        <span>Los productos aparecerán aquí.</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <button type="submit" class="ventas-search-btn">Buscar</button>
-                                        </form>
-
-                                        <div class="ventas-search-loading-bar">
-                                            <span class="ventas-search-loading" id="searchLoading">
-                                                <span class="ventas-loading-spinner"></span>
-                                                Buscando…
-                                            </span>
-                                        </div>
-                                    </section>
-
-                                    <section class="ventas-touch-catalog ventas-quick-access" id="catalogoTactilPOS"
-                                        aria-label="Accesos rápidos táctiles">
-                                        <% const totalSlotsTactiles=6; const productosRapidosPorPosicion=new Map();
-                                            productosTactilesListado.forEach(function (producto) { const
-                                            posicion=Number(producto.orden_pos_tactil || 0); if (posicion>= 1 &&
-                                            posicion <= totalSlotsTactiles &&
-                                                !productosRapidosPorPosicion.has(posicion)) {
-                                                productosRapidosPorPosicion.set(posicion, producto); } }); const
-                                                slotsTactiles=Array.from({ length: totalSlotsTactiles }, function (_,
-                                                indice) { const posicion=indice + 1; return { posicion, producto:
-                                                productosRapidosPorPosicion.get(posicion) || null, }; }); const
-                                                totalAccesosTactilesActivos=slotsTactiles.filter(function (slot) {
-                                                return Boolean(slot.producto); }).length; %>
-
-                                                <header class="ventas-quick-head">
-                                                    <div>
-                                                        <span class="ventas-kicker">Venta rápida</span>
-                                                        <h3>Accesos rápidos</h3>
-                                                        <p>En modo venta toca una card para agregar al carrito. En modo
-                                                            configuración puedes cambiar, quitar o mover accesos.</p>
-                                                    </div>
-
-                                                    <div class="ventas-quick-head-actions">
-                                                        <strong class="ventas-quick-count" id="conteoCatalogoTactil">
-                                                            <%= totalAccesosTactilesActivos %> activos
-                                                        </strong>
-
-                                                        <% if (esAdministrador) { %>
-                                                            <button type="button" class="ventas-quick-config-toggle"
-                                                                id="btnModoConfigAccesosRapidos" aria-pressed="false">
-                                                                Configurar
-                                                            </button>
-                                                            <% } %>
-                                                    </div>
-                                                </header>
-
-                                                <div class="ventas-quick-grid" id="gridCatalogoTactil">
-                                                    <% slotsTactiles.forEach(function (slot) { %>
-                                                        <% const producto=slot.producto; %>
-
-                                                            <% if (producto) { %>
-                                                                <% const
-                                                                    stockDisponible=Number(producto.stock_disponible ||
-                                                                    0); const
-                                                                    controlaInventario=Number(producto.controla_inventario
-                                                                    || 0)===1; const
-                                                                    permiteDecimal=Number(producto.permite_cantidad_decimal
-                                                                    || 0)===1; const
-                                                                    manejaIva=Number(producto.maneja_iva || 0)===1;
-                                                                    const
-                                                                    puedeVenderProducto=Boolean(producto.puede_vender);
-                                                                    const unidad=producto.unidad_abreviatura || 'und' ;
-                                                                    const categoria=producto.categoria_nombre
-                                                                    || 'Sin categoría' ; const
-                                                                    nombreProducto=String(producto.nombre || 'Producto'
-                                                                    ).trim(); const partesNombre=nombreProducto.split(' ');
-                    const inicialUno = partesNombre[0] ? partesNombre[0].charAt(0).toUpperCase() : ' P'; const
-                                                                    inicialDos=partesNombre[1] ?
-                                                                    partesNombre[1].charAt(0).toUpperCase() : '' ; const
-                                                                    iniciales=inicialUno + inicialDos; const
-                                                                    estadoStock=controlaInventario && stockDisponible
-                                                                    <=0 ? 'Sin stock' : 'Disponible' ; %>
-
-                                                                    <article
-                                                                        class="ventas-quick-card <%= puedeVenderProducto ? '' : 'is-disabled' %>"
-                                                                        data-touch-product-card
-                                                                        data-slot-position="<%= slot.posicion %>"
-                                                                        data-touch-category="<%= categoria %>"
-                                                                        data-product-id="<%= producto.id_producto %>"
-                                                                        data-product-name="<%= producto.nombre %>"
-                                                                        data-product-price="<%= Number(producto.precio_venta || 0) %>"
-                                                                        data-product-stock="<%= stockDisponible %>"
-                                                                        data-product-controls-stock="<%= controlaInventario ? 1 : 0 %>"
-                                                                        data-product-decimal="<%= permiteDecimal ? 1 : 0 %>"
-                                                                        data-product-unit="<%= unidad %>"
-                                                                        data-product-tax="<%= Number(producto.porcentaje_iva || 0) %>"
-                                                                        data-product-has-tax="<%= manejaIva ? 1 : 0 %>"
-                                                                        data-product-price-includes-tax="<%= Number(producto.precio_incluye_iva || 0) %>"
-                                                                        data-product-can-sell="<%= puedeVenderProducto ? 1 : 0 %>"
-                                                                        data-product-image="<%= producto.imagen_url || '' %>"
-                                                                        aria-disabled="<%= puedeVenderProducto && puedeVender ? 'false' : 'true' %>">
-
-                                                                        <span class="ventas-quick-slot-badge">#<%=
-                                                                                slot.posicion %></span>
-
-                                                                        <span class="ventas-quick-image">
-                                                                            <% if (producto.imagen_url) { %>
-                                                                                <img src="<%= producto.imagen_url %>"
-                                                                                    alt="<%= producto.nombre %>"
-                                                                                    loading="lazy">
-                                                                                <% } else { %>
-                                                                                    <span>
-                                                                                        <%= iniciales %>
-                                                                                    </span>
-                                                                                    <% } %>
-                                                                        </span>
-
-                                                                        <span class="ventas-quick-info">
-                                                                            <strong>
-                                                                                <%= producto.nombre %>
-                                                                            </strong>
-                                                                            <small>
-                                                                                <%= estadoStock %>
-                                                                            </small>
-                                                                        </span>
-
-                                                                        <span class="ventas-quick-price">
-                                                                            $ <%= Number(producto.precio_venta ||
-                                                                                0).toLocaleString('es-CO') %>
-                                                                        </span>
-
-                                                                        <% if (esAdministrador) { %>
-                                                                            <span class="ventas-quick-config-actions"
-                                                                                data-touch-config-actions>
-                                                                                <button type="button"
-                                                                                    data-touch-config-action="mover-izquierda"
-                                                                                    data-slot-position="<%= slot.posicion %>"
-                                                                                    <%=slot.posicion <=1 ? 'disabled'
-                                                                                    : '' %>>←</button>
-
-                                                                                <button type="button"
-                                                                                    data-touch-config-action="editar"
-                                                                                    data-slot-position="<%= slot.posicion %>">Cambiar</button>
-
-                                                                                <button type="button"
-                                                                                    data-touch-config-action="quitar"
-                                                                                    data-slot-position="<%= slot.posicion %>">Quitar</button>
-
-                                                                                <button type="button"
-                                                                                    data-touch-config-action="mover-derecha"
-                                                                                    data-slot-position="<%= slot.posicion %>"
-                                                                                    <%=slot.posicion>=
-                                                                                    totalSlotsTactiles ?
-                                                                                    'disabled' : '' %>>→</button>
-                                                                            </span>
-                                                                            <% } %>
-                                                                    </article>
-                                                                    <% } else { %>
-                                                                        <% if (esAdministrador) { %>
-                                                                            <button type="button"
-                                                                                class="ventas-quick-card ventas-quick-card-empty"
-                                                                                data-touch-empty-slot
-                                                                                data-slot-position="<%= slot.posicion %>">
-
-                                                                                <span class="ventas-quick-slot-badge">#
-                                                                                    <%= slot.posicion %></span>
-
-                                                                                <span class="ventas-quick-image">
-                                                                                    <span>+</span>
-                                                                                </span>
-
-                                                                                <span class="ventas-quick-info">
-                                                                                    <strong>Espacio disponible</strong>
-                                                                                    <small>Producto rápido</small>
-                                                                                </span>
-
-                                                                                <span class="ventas-quick-price">
-                                                                                    Configurar
-                                                                                </span>
-                                                                            </button>
-                                                                            <% } else { %>
-                                                                                <article
-                                                                                    class="ventas-quick-card ventas-quick-card-empty is-disabled"
-                                                                                    data-slot-position="<%= slot.posicion %>"
-                                                                                    aria-disabled="true">
-
-                                                                                    <span
-                                                                                        class="ventas-quick-slot-badge">#
-                                                                                        <%= slot.posicion %></span>
-
-                                                                                    <span class="ventas-quick-image">
-                                                                                        <span>+</span>
-                                                                                    </span>
-
-                                                                                    <span class="ventas-quick-info">
-                                                                                        <strong>Espacio
-                                                                                            disponible</strong>
-                                                                                        <small>Producto rápido</small>
-                                                                                    </span>
-
-                                                                                    <span class="ventas-quick-price">
-                                                                                        No asignado
-                                                                                    </span>
-                                                                                </article>
-                                                                                <% } %>
-                                                                                    <% } %>
-                                                                                        <% }) %>
-                                                </div>
-                                    </section>
-
-                                    <div class="pos-guia-clasica">
-                                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none"
-                                            stroke="currentColor" stroke-width="1.6" aria-hidden="true">
-                                            <path d="M3 5v14M7 5v14M11 5v14M14 5v14M18 5v14M21 5v14" />
-                                        </svg>
-                                        <strong>Busca o escanea un producto</strong>
-                                        <span>Escribe el nombre, el código o el SKU, o usa el lector de códigos de
-                                            barras.</span>
-                                    </div>
-                                    </div>
-
-                                    <aside class="ventas-sale-card pos-ticket" aria-label="Venta actual">
-                                        <header class="ventas-sale-header pos-ticket-header">
-                                            <div class="pos-ticket-titulo">
-                                                <span class="ventas-kicker">Venta actual</span>
-                                                <strong class="ventas-ticket-state" data-factura-sugerida>
-                                                    <%= nomenclaturaFacturaPOS %>
-                                                </strong>
-                                            </div>
-
-                                            <input type="date" id="fechaVenta" name="fecha_venta"
-                                                class="pos-ticket-fecha" value="<%= fechaHoy %>"
-                                                min="<%= fechaHoy %>" max="<%= fechaHoy %>"
-                                                data-fecha-hoy="<%= fechaHoy %>" readonly tabindex="-1"
-                                                aria-label="Fecha de la venta"
-                                                title="La fecha de la venta es la del día y la asigna el sistema">
-
-                                            <div class="pos-ticket-acciones">
-                                                <a href="/ventas/historial" class="btn-secondary btn-small">
-                                                    Historial
-                                                </a>
-
-                                                <button type="button" class="btn-secondary btn-small"
-                                                    id="btnVentaPendiente" disabled>
-                                                    Pendiente
-                                                </button>
-
-                                                <button type="button" class="btn-secondary btn-small"
-                                                    id="btnLimpiarVenta" disabled>
-                                                    Limpiar
-                                                </button>
-                                            </div>
-                                        </header>
-
-                                        <div class="pos-ticket-cuerpo">
-                                        <div class="ventas-invoice-table-wrap">
-                                            <table class="ventas-invoice-table">
-                                                <thead>
-                                                    <tr>
-                                                        <th class="text-center ventas-col-item">#</th>
-                                                        <th>Producto</th>
-                                                        <th class="text-center">Cantidad</th>
-                                                        <th class="text-right">Precio</th>
-                                                        <th class="text-right">IVA</th>
-                                                        <th class="text-right">Total</th>
-                                                        <th class="text-center">Acción</th>
-                                                    </tr>
-                                                </thead>
-
-                                                <tbody id="ventasCarritoItems">
-                                                    <tr class="ventas-cart-empty-row">
-                                                        <td colspan="7">
-                                                            <div class="ventas-cart-empty">
-                                                                <strong>Carrito vacío</strong>
-                                                                <span>Busca un producto y agrégalo con el botón
-                                                                    +.</span>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-
-                                            <div class="ventas-payment-strip">
-                                                <div class="ventas-payment-strip-header">
-                                                    <div>
-                                                        <span class="ventas-kicker">Pago</span>
-                                                        <h4>Pasarela rápida</h4>
-                                                    </div>
-
-                                                    <small class="ventas-payment-note">
-                                                        Cambio automático al ingresar el valor recibido.
-                                                    </small>
-                                                </div>
-
-                                                <div class="ventas-payment-list" id="listaPagosVenta">
-                                                    <div class="ventas-payment-fields ventas-payment-row"
-                                                        data-payment-row>
-                                                        <label class="ventas-field">
-                                                            <span>Medio de pago</span>
-
-                                                            <select id="medioPagoPrincipal" name="medio_pago_principal"
-                                                                class="ventas-pago-medio" data-pago-medio>
-                                                                <% if (mediosPagoListado.length===0) { %>
-                                                                    <option value="">Sin medios activos</option>
-                                                                    <% } else { %>
-                                                                        <% mediosPagoListado.forEach((medio)=> { %>
-                                                                            <option value="<%= medio.id_medio_pago %>"
-                                                                                data-payment-type="<%= medio.tipo %>"
-                                                                                data-affects-cash="<%= medio.afecta_efectivo_caja %>"
-                                                                                data-requires-reference="<%= medio.requiere_referencia || 0 %>">
-                                                                                <%= medio.nombre %> · <%=
-                                                                                        nombreTipoMedio(medio.tipo) %>
-                                                                            </option>
-                                                                            <% }) %>
-                                                                                <% } %>
-                                                            </select>
-                                                        </label>
-
-                                                        <label class="ventas-field">
-                                                            <span>Recibido</span>
-                                                            <input type="number" id="montoPagadoPrincipal"
-                                                                class="ventas-pago-monto" data-pago-monto min="0"
-                                                                step="1" placeholder="0" disabled>
-                                                        </label>
-
-                                                        <label class="ventas-field">
-                                                            <span>Referencia</span>
-                                                            <input type="text" id="referenciaPagoPrincipal"
-                                                                class="ventas-pago-referencia" data-pago-referencia
-                                                                placeholder="Opcional" disabled>
-                                                        </label>
-
-                                                        <button type="button" class="ventas-payment-remove"
-                                                            data-remove-payment hidden aria-label="Quitar pago">
-                                                            ×
-                                                        </button>
-                                                    </div>
-                                                </div>
-
-                                                <div class="ventas-payment-tools">
-                                                    <button type="button" class="btn-secondary ventas-payment-add"
-                                                        id="btnAgregarPagoMixto" disabled>
-                                                        + Agregar pago mixto
-                                                    </button>
-
-                                                    <small id="resumenPagosMixtos">
-                                                        Un solo pago
-                                                    </small>
-                                                </div>
-
-                                                <div class="ventas-payment-info pos-oculto">
-                                                    <div class="ventas-payment-info-card">
-                                                        <span>Cliente actual</span>
-                                                        <strong id="infoPagoCliente">
-                                                            <%= clienteActual.nombre || 'Consumidor final' %>
-                                                        </strong>
-                                                        <small>Cliente por defecto</small>
-                                                    </div>
-
-                                                    <div class="ventas-payment-info-card">
-                                                        <span>Medio seleccionado</span>
-                                                        <strong id="infoPagoMedio">
-                                                            <%= mediosPagoListado.length ? (mediosPagoListado[0].nombre
-                                                                + ' · ' + nombreTipoMedio(mediosPagoListado[0].tipo))
-                                                                : 'Sin medio activo' %>
-                                                        </strong>
-                                                        <small>Pago principal</small>
-                                                    </div>
-
-                                                    <div class="ventas-payment-info-card">
-                                                        <span>Líneas en carrito</span>
-                                                        <strong id="infoPagoItems">0</strong>
-                                                        <small>Productos agregados</small>
-                                                    </div>
-
-                                                    <div class="ventas-payment-info-card">
-                                                        <span>Factura sugerida</span>
-                                                        <strong data-factura-sugerida>
-                                                            <%= nomenclaturaFacturaPOS %>
-                                                        </strong>
-                                                        <small>Se confirma al guardar</small>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <section class="ventas-sale-footer">
-                                            <div class="ventas-totals-panel">
-                                                <div class="ventas-total-row">
-                                                    <span>Subtotal</span>
-                                                    <strong id="resumenSubtotal">$ 0</strong>
-                                                </div>
-
-                                                <div class="ventas-total-row">
-                                                    <span>IVA</span>
-                                                    <strong id="resumenIva">$ 0</strong>
-                                                </div>
-
-                                                <div class="ventas-total-row">
-                                                    <span>Recibido</span>
-                                                    <strong id="resumenPagado">$ 0</strong>
-                                                </div>
-
-                                                <div class="ventas-total-row">
-                                                    <span>Saldo</span>
-                                                    <strong id="resumenSaldo">$ 0</strong>
-                                                </div>
-
-                                                <div class="ventas-total-row">
-                                                    <span>Cambio</span>
-                                                    <strong id="resumenCambio">$ 0</strong>
-                                                </div>
-
-                                                <div class="ventas-total-row is-total">
-                                                    <span>Total</span>
-                                                    <strong id="resumenTotal">$ 0</strong>
-                                                </div>
-                                            </div>
-
-                                            <div class="ventas-hidden-metrics" hidden>
-                                                <span id="resumenCantidadItems">0</span>
-                                                <span id="resumenDescuento">$ 0</span>
-                                            </div>
-
-                                            <button type="button" class="btn-primary ventas-charge-button pos-cobrar"
-                                                id="btnCobrarVenta" <%=puedeVender ? '' : 'disabled' %>>
-                                                Cobrar
-                                            </button>
-                                        </section>
-                                    </aside>
-                                    </div>
-        </div>
-
-        <div class="ventas-modal-backdrop" id="modalAccesoRapidoTactil" hidden>
-            <section class="ventas-modal ventas-quick-config-modal" role="dialog" aria-modal="true">
-                <header class="ventas-modal-header">
-                    <div>
-                        <span class="ventas-kicker">POS táctil</span>
-                        <h3>Configurar acceso rápido</h3>
-                        <p>Selecciona un producto existente para ocupar este espacio.</p>
+                        <button type="button" id="btnPlegarFrecuentesPOS" aria-expanded="true">
+                            <span>Plegar</span>
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>
+                        </button>
                     </div>
-
-                    <button type="button" class="ventas-modal-close" id="btnCerrarAccesoRapidoTactil">
-                        ×
-                    </button>
                 </header>
-
-                <form id="formAccesoRapidoTactil" class="ventas-quick-config-form"
-                    data-config-url="/ventas/pos-tactil/acceso-rapido"
-                    data-remove-url="/ventas/pos-tactil/acceso-rapido/quitar"
-                    data-move-url="/ventas/pos-tactil/acceso-rapido/mover">
-                    <input type="hidden" id="slotAccesoRapidoTactil" name="posicion">
-                    <input type="hidden" id="productoAccesoRapidoTactil" name="id_producto">
-                    <input type="hidden" id="productoActualAccesoRapidoTactil" name="id_producto_actual">
-
-                    <label class="ventas-field">
-                        <span>Buscar producto</span>
-                        <input type="search" id="buscarProductoAccesoRapido" placeholder="Nombre, código o SKU..."
-                            autocomplete="off" data-search-url="/ventas/productos/buscar">
-                    </label>
-
-                    <div class="ventas-quick-config-selected" id="productoAccesoRapidoSeleccionado" hidden>
-                        Producto seleccionado
-                    </div>
-
-                    <div class="ventas-quick-config-results" id="resultadosAccesoRapidoTactil">
-                        <div class="ventas-quick-config-empty">
-                            Escribe para buscar un producto.
-                        </div>
-                    </div>
-
-                    <footer class="ventas-modal-actions ventas-modal-actions-split">
-                        <button type="button" class="btn-danger-soft" id="btnQuitarAccesoRapidoTactil" hidden>
-                            Quitar acceso
-                        </button>
-
-                        <span class="ventas-modal-actions-group">
-                            <button type="button" class="btn-secondary" id="btnCancelarAccesoRapidoTactil">
-                                Cancelar
-                            </button>
-
-                            <button type="submit" class="btn-primary" id="btnGuardarAccesoRapidoTactil" disabled>
-                                Guardar acceso
-                            </button>
-                        </span>
-                    </footer>
-                </form>
+                <ul class="pos-frecuentes-lista" id="listaFrecuentesPOS"></ul>
             </section>
+
+            <section class="pos-totales" aria-label="Totales">
+                <div class="pos-total-fila"><span>Subtotal</span><strong id="subtotalPOS">$ 0</strong></div>
+                <div class="pos-total-fila"><span id="etiquetaIvaPOS">IVA</span><strong id="ivaPOS">$ 0</strong></div>
+                <div class="pos-total">
+                    <span>Total</span>
+                    <strong id="totalPOS">$ 0</strong>
+                </div>
+            </section>
+
+            <button type="button" class="pos-cobrar" id="btnCobrarVenta" disabled>
+                <span>Cobrar</span>
+                <kbd>F9</kbd>
+                <strong id="cobrarMontoPOS">$ 0</strong>
+            </button>
         </div>
 
-        <div class="ventas-modal-backdrop" id="modalClienteRapido" hidden>
-            <section class="ventas-modal-card" role="dialog" aria-modal="true" aria-labelledby="tituloClienteRapido">
-                <header class="ventas-modal-header">
-                    <div>
-                        <h3 id="tituloClienteRapido">Nuevo cliente</h3>
-                    </div>
+        <section class="pos-pago" id="pagoPOS" aria-labelledby="tituloPagoPOS" hidden>
+            <header class="pos-pago-cabecera">
+                <button type="button" class="pos-pago-volver" id="btnVolverPagoPOS" aria-label="Volver a la venta">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+                </button>
+                <h2 id="tituloPagoPOS">Cobrar</h2>
+                <kbd>Esc</kbd>
+            </header>
 
-                    <button type="button" class="ventas-modal-close" id="btnCerrarClienteRapido" aria-label="Cerrar">
-                        ×
+            <div class="pos-pago-cuerpo">
+            <div class="pos-pago-total">
+                <span>Total</span>
+                <strong id="pagoTotalPOS">$ 0</strong>
+            </div>
+
+            <div class="pos-medios" id="mediosPOS" role="radiogroup" aria-label="Medio de pago">
+                <% if (!mediosPagoListado.length) { %>
+                    <p class="pos-medios-vacio">No hay medios de pago activos. Actívalos en Configuración.</p>
+                <% } %>
+                <% mediosPagoListado.forEach(function (medio, indice) { %>
+                    <button type="button" class="pos-medio" role="radio" aria-checked="false"
+                        aria-label="<%= medio.nombre %>" data-id-medio="<%= medio.id_medio_pago %>"
+                        <% if (indice < 9) { %>title="Alt + <%= indice + 1 %>"<% } %>>
+                        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8"
+                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><%- iconos[iconoMedio(medio)] %></svg>
+                        <span><%= medio.nombre %></span>
+                        <% if (indice < 9) { %><small><%= indice + 1 %></small><% } %>
                     </button>
-                </header>
+                <% }) %>
+            </div>
 
-                <form class="ventas-client-quick-form" id="formClienteRapido" data-url="/clientes/rapido" novalidate>
-                    <div class="ventas-client-quick-alert" id="avisoClienteRapido" hidden></div>
+            <div class="pos-monto" id="montoZonaPOS">
+                <label for="montoPOS" id="montoEtiquetaPOS">Monto</label>
+                <input type="text" id="referenciaPOS" class="pos-monto-referencia" placeholder="Ref." autocomplete="off"
+                    spellcheck="false" aria-label="Referencia del pago" hidden>
+                <span class="pos-monto-valor">
+                    <span aria-hidden="true">$</span>
+                    <input type="text" id="montoPOS" inputmode="numeric" autocomplete="off" spellcheck="false" value="0">
+                </span>
+            </div>
 
-                    <div class="ventas-client-quick-grid">
-                        <label class="ventas-field">
-                            <span>Tipo documento *</span>
-                            <select name="tipo_documento" id="clienteRapidoTipoDocumento">
-                                <option value="CC">Cédula de ciudadanía</option>
-                                <option value="NIT">NIT</option>
-                                <option value="CE">Cédula de extranjería</option>
-                                <option value="PP">Pasaporte</option>
-                            </select>
-                        </label>
+            <div class="pos-billetes" id="billetesPOS">
+                <button type="button" data-billete="exacto">Exacto</button>
+                <button type="button" data-billete="10000" aria-label="Billete de 10.000">10.000</button>
+                <button type="button" data-billete="20000" aria-label="Billete de 20.000">20.000</button>
+                <button type="button" data-billete="50000" aria-label="Billete de 50.000">50.000</button>
+                <button type="button" data-billete="100000" aria-label="Billete de 100.000">100.000</button>
+            </div>
 
-                        <label class="ventas-field">
-                            <span>Documento *</span>
-                            <input type="text" name="documento" id="clienteRapidoDocumento" autocomplete="off">
-                        </label>
+            <ul class="pos-pagos" id="pagosPOS" aria-label="Pagos agregados"></ul>
 
-                        <label class="ventas-field" id="campoClienteRapidoDv" hidden>
-                            <span>DV *</span>
-                            <input type="text" name="digito_verificacion" id="clienteRapidoDv" maxlength="1"
-                                inputmode="numeric" autocomplete="off">
-                        </label>
+            <div class="pos-teclado" id="tecladoPOS" aria-label="Teclado numérico">
+                <% ['7', '8', '9', '4', '5', '6', '1', '2', '3', '000', '0'].forEach(function (tecla) { %>
+                    <button type="button" data-tecla="<%= tecla %>"><%= tecla %></button>
+                <% }) %>
+                <button type="button" data-tecla="borrar" aria-label="Borrar">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 5H9l-6 7 6 7h12z"/><path d="m13 9.5 5 5M18 9.5l-5 5"/></svg>
+                </button>
+            </div>
+            </div>
 
-                        <label class="ventas-field ventas-client-quick-wide">
-                            <span>Nombre / razón social *</span>
-                            <input type="text" name="nombre" id="clienteRapidoNombre" autocomplete="off"
-                                placeholder="Ej: Carlos Ramírez / Empresa SAS">
-                        </label>
+            <%# Pie fijo: el estado del pago y "Registrar venta" siempre a la vista %>
+            <div class="pos-pago-pie">
+            <div class="pos-pago-error" id="errorPagoPOS" role="alert" hidden>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5h.01"/></svg>
+                <div>
+                    <strong>No se pudo registrar la venta</strong>
+                    <p id="errorPagoTextoPOS"></p>
+                </div>
+            </div>
 
-                        <label class="ventas-field">
-                            <span>Celular</span>
-                            <input type="text" name="celular" id="clienteRapidoCelular" autocomplete="off"
-                                inputmode="tel">
-                        </label>
+            <div class="pos-pago-estado" id="estadoPagoPOS">
+                <span id="estadoPagoEtiquetaPOS">Falta</span>
+                <strong id="estadoPagoMontoPOS">$ 0</strong>
+            </div>
 
-                        <label class="ventas-field">
-                            <span>Correo</span>
-                            <input type="email" name="correo" id="clienteRapidoCorreo" autocomplete="off">
-                        </label>
-                    </div>
+            <button type="button" class="pos-registrar" id="btnRegistrarVentaPOS" disabled>
+                <span id="textoRegistrarPOS">Registrar venta</span>
+                <kbd>Enter</kbd>
+            </button>
+            </div>
+        </section>
+    </aside>
 
-                    <label class="ventas-client-quick-check">
-                        <input type="checkbox" id="clienteRapidoAutoriza" checked>
-                        <span>Autoriza tratamiento de datos.</span>
-                    </label>
-
-                    <footer class="ventas-modal-actions">
-                        <button type="button" class="btn-secondary" id="btnCancelarClienteRapido">
-                            Cancelar
-                        </button>
-
-                        <button type="submit" class="btn-primary" id="btnGuardarClienteRapido">
-                            Crear y seleccionar
-                        </button>
-                    </footer>
-                </form>
-            </section>
+    <% if (!puedeVender) { %>
+        <div class="pos-bloqueo" role="dialog" aria-modal="true" aria-labelledby="tituloBloqueoPOS">
+            <div class="pos-bloqueo-tarjeta">
+                <span class="pos-bloqueo-icono" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+                </span>
+                <h2 id="tituloBloqueoPOS">La caja está cerrada</h2>
+                <p>Abre la caja con la base del turno para empezar a vender.</p>
+                <a href="/caja/abrir" class="pos-bloqueo-boton" autofocus>Abrir caja <kbd>Enter</kbd></a>
+            </div>
         </div>
-
-        <script src="/js/dinero-exacto.js"></script>
-        <script src="/js/ventas.js"></script>
+    <% } %>
 </section>
+
+<div class="ventas-modal-backdrop" id="modalAccesoRapidoTactil" hidden>
+    <section class="ventas-modal ventas-quick-config-modal" role="dialog" aria-modal="true" aria-labelledby="tituloAccesoRapidoPOS">
+        <header class="ventas-modal-header">
+            <div>
+                <h3 id="tituloAccesoRapidoPOS">Producto frecuente</h3>
+            </div>
+            <button type="button" class="ventas-modal-close" id="btnCerrarAccesoRapidoTactil" aria-label="Cerrar">×</button>
+        </header>
+
+        <form id="formAccesoRapidoTactil" class="ventas-quick-config-form"
+            data-config-url="/ventas/pos-tactil/acceso-rapido"
+            data-remove-url="/ventas/pos-tactil/acceso-rapido/quitar"
+            data-move-url="/ventas/pos-tactil/acceso-rapido/mover">
+            <input type="hidden" id="slotAccesoRapidoTactil" name="posicion">
+            <input type="hidden" id="productoAccesoRapidoTactil" name="id_producto">
+
+            <label class="ventas-field">
+                <span>Buscar producto</span>
+                <input type="search" id="buscarProductoAccesoRapido" placeholder="Nombre, código o SKU…" autocomplete="off">
+            </label>
+
+            <div class="ventas-quick-config-selected" id="productoAccesoRapidoSeleccionado" hidden></div>
+
+            <div class="ventas-quick-config-results" id="resultadosAccesoRapidoTactil">
+                <div class="ventas-quick-config-empty">Escribe para buscar un producto.</div>
+            </div>
+
+            <footer class="ventas-modal-actions">
+                <button type="button" class="btn-secondary" id="btnCancelarAccesoRapidoTactil">Cancelar</button>
+                <button type="submit" class="btn-primary" id="btnGuardarAccesoRapidoTactil" disabled>Guardar</button>
+            </footer>
+        </form>
+    </section>
+</div>
+
+<div class="ventas-modal-backdrop" id="modalClienteRapido" hidden>
+    <section class="ventas-modal-card" role="dialog" aria-modal="true" aria-labelledby="tituloClienteRapido">
+        <header class="ventas-modal-header">
+            <div>
+                <h3 id="tituloClienteRapido">Nuevo cliente</h3>
+            </div>
+            <button type="button" class="ventas-modal-close" id="btnCerrarClienteRapido" aria-label="Cerrar">×</button>
+        </header>
+
+        <form class="ventas-client-quick-form" id="formClienteRapido" data-url="/clientes/rapido" novalidate>
+            <div class="ventas-client-quick-alert" id="avisoClienteRapido" hidden></div>
+
+            <div class="ventas-client-quick-grid">
+                <label class="ventas-field">
+                    <span>Tipo documento *</span>
+                    <select name="tipo_documento" id="clienteRapidoTipoDocumento">
+                        <option value="CC">Cédula de ciudadanía</option>
+                        <option value="NIT">NIT</option>
+                        <option value="CE">Cédula de extranjería</option>
+                        <option value="PP">Pasaporte</option>
+                    </select>
+                </label>
+
+                <label class="ventas-field">
+                    <span>Documento *</span>
+                    <input type="text" name="documento" id="clienteRapidoDocumento" autocomplete="off">
+                </label>
+
+                <label class="ventas-field" id="campoClienteRapidoDv" hidden>
+                    <span>DV *</span>
+                    <input type="text" name="digito_verificacion" id="clienteRapidoDv" maxlength="1" inputmode="numeric"
+                        autocomplete="off">
+                </label>
+
+                <label class="ventas-field ventas-client-quick-wide">
+                    <span>Nombre / razón social *</span>
+                    <input type="text" name="nombre" id="clienteRapidoNombre" autocomplete="off"
+                        placeholder="Ej: Carlos Ramírez / Constructora Andina S.A.S.">
+                </label>
+
+                <label class="ventas-field">
+                    <span>Celular</span>
+                    <input type="text" name="celular" id="clienteRapidoCelular" autocomplete="off" inputmode="tel">
+                </label>
+
+                <label class="ventas-field">
+                    <span>Correo</span>
+                    <input type="email" name="correo" id="clienteRapidoCorreo" autocomplete="off">
+                </label>
+            </div>
+
+            <label class="ventas-client-quick-check">
+                <input type="checkbox" id="clienteRapidoAutoriza" checked>
+                <span>Autoriza tratamiento de datos.</span>
+            </label>
+
+            <footer class="ventas-modal-actions">
+                <button type="button" class="btn-secondary" id="btnCancelarClienteRapido">Cancelar</button>
+                <button type="submit" class="btn-primary" id="btnGuardarClienteRapido">Crear y seleccionar</button>
+            </footer>
+        </form>
+    </section>
+</div>
+
+<script src="/js/dinero-exacto.js"></script>
+<script src="/js/pos.js"></script>

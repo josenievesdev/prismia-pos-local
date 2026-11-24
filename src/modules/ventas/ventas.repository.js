@@ -283,7 +283,31 @@ function buscarProductosParaVenta({ busqueda = '', limite = 30 } = {}) {
             .all(limite);
     }
 
-    const patron = `%${termino}%`;
+    // Cada palabra debe aparecer en el nombre, el código, el código de barras
+    // o la categoría, en cualquier orden y sin importar tildes:
+    // "cable 12 blanco" encuentra "Cable THHN calibre 12 AWG · blanco".
+    const quitarTildes = (texto) => String(texto)
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .toLowerCase();
+    const terminoNormalizado = quitarTildes(termino);
+    const palabras = terminoNormalizado.split(/\s+/).filter(Boolean).slice(0, 8);
+    const parametros = {
+        termino,
+        inicio: `${terminoNormalizado}%`,
+        frase: `%${terminoNormalizado}%`,
+        limite,
+    };
+    const condicionesPalabras = palabras.map((palabra, indice) => {
+        parametros[`p${indice}`] = `%${palabra}%`;
+
+        return `(
+                    sin_tildes(p.nombre) LIKE @p${indice}
+                 OR sin_tildes(p.codigo_interno) LIKE @p${indice}
+                 OR sin_tildes(p.codigo_barras) LIKE @p${indice}
+                 OR sin_tildes(cp.nombre) LIKE @p${indice}
+              )`;
+    });
 
     return db
         .prepare(`
@@ -329,27 +353,19 @@ function buscarProductosParaVenta({ busqueda = '', limite = 30 } = {}) {
                 ON um.id_unidad_medida = p.id_unidad_medida
             WHERE p.estado = 'activo'
               AND p.eliminado_en IS NULL
-              AND (
-                    p.nombre LIKE @patron
-                 OR p.codigo_interno LIKE @patron
-                 OR p.codigo_barras LIKE @patron
-                 OR cp.nombre LIKE @patron
-              )
+              AND ${condicionesPalabras.join('\n              AND ')}
             ORDER BY
                 CASE
                     WHEN p.codigo_barras = @termino THEN 1
-                    WHEN p.codigo_interno = @termino THEN 2
-                    WHEN p.nombre LIKE @patron THEN 3
-                    ELSE 4
+                    WHEN p.codigo_interno = @termino COLLATE NOCASE THEN 2
+                    WHEN sin_tildes(p.nombre) LIKE @inicio THEN 3
+                    WHEN sin_tildes(p.nombre) LIKE @frase THEN 4
+                    ELSE 5
                 END,
-                p.nombre ASC
+                p.nombre COLLATE NOCASE ASC
             LIMIT @limite
         `)
-        .all({
-            termino,
-            patron,
-            limite,
-        });
+        .all(parametros);
 }
 
 function listarProductosPosTactil({ limite = 6 } = {}) {

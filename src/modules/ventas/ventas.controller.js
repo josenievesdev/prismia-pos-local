@@ -42,7 +42,8 @@ function mostrarPOS(req, res) {
         mensajeExito: req.query.exito || null,
         error: req.query.error || null,
         titulo: 'Punto de venta',
-        estilosModulo: ['/css/modules/pos.css'],
+        estilosModulo: ['/css/modules/facturacion.css'],
+        herramientasEncabezado: 'ventas/partials/herramientas',
     });
 }
 

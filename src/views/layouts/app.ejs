@@ -24,6 +24,19 @@
             else if (preferencia === 'expandido') estado = 'completo';
             else if (ancho < 1280) estado = 'riel';
             raiz.setAttribute('data-menu-estado', estado);
+
+            // Punto de venta: modo, perfil y modo enfoque también antes de pintar.
+            if (raiz.classList.contains('ruta-pos')) {
+                var modo = null, perfil = null, enfoque = null;
+                try {
+                    modo = localStorage.getItem('prismia.pos.modoVista');
+                    perfil = localStorage.getItem('prismia.pos.perfilVista');
+                    enfoque = localStorage.getItem('prismia.pos.enfoque');
+                } catch (error) { }
+                raiz.setAttribute('data-pos-mode', modo === 'tactil' ? 'tactil' : 'clasico');
+                raiz.setAttribute('data-pos-business', perfil === 'comidas' || perfil === 'boutique' ? perfil : 'general');
+                if (enfoque === '1' && ancho >= 768) raiz.setAttribute('data-pos-enfoque', '1');
+            }
         })();
     </script>
 

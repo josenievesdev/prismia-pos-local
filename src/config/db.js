@@ -17,6 +17,18 @@ db.pragma('foreign_keys = ON');
 db.pragma('journal_mode = WAL');
 db.pragma('busy_timeout = 5000');
 
+// Búsquedas sin tildes ni mayúsculas: "electrico" encuentra "Eléctrico".
+db.function('sin_tildes', { deterministic: true }, function (texto) {
+    if (texto === null || texto === undefined) {
+        return null;
+    }
+
+    return String(texto)
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .toLowerCase();
+});
+
 if (runtimePaths.estaEnProduccion()) {
     console.log('Base de datos SQLite conectada correctamente.');
 } else {

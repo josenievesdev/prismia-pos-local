@@ -114,13 +114,32 @@ borrar su CSS propio, revisar en 1440 / 1024 / 390 px sin scroll horizontal.
 - [ ] Login, setup y backups
 - [ ] Impresiones (ticket, arqueo, cotización, remisión, nota crédito)
 
-## Fase 4 — POS fácil de manejar
-- [ ] Botones de pago rápido: "Exacto", $10.000, $20.000, $50.000, $100.000.
-- [ ] Cambio grande y visible al digitar lo recibido.
-- [ ] Atajos de teclado (F2 buscar, F9 cobrar, Esc cancelar) con ayuda visible.
-- [ ] Modo táctil con catálogo completo por categorías (hoy solo 6 accesos rápidos).
-- [ ] Lector de código de barras: Enter agrega directo al carrito.
-- [ ] Barra superior más simple (perfil de negocio dentro de configuración).
+## Fase 4 — POS fácil de manejar (diseño de pen.dev en `designe/`)
+Parte 1 — modo clásico (2026-11-23):
+- [x] Ticket como tira de papel térmico; cada línea como cuenta ("25 m × $ 3.900").
+- [x] Buscador por palabras sueltas y sin tildes ("cable 12 blanco"); código exacto primero.
+- [x] Cantidad antes del código: "25*" o "25x " muestra la ficha "25 ×".
+- [x] Lector de código de barras: Enter agrega el exacto; escribir fuera del buscador va al buscador.
+- [x] Producto por medida o peso: el foco va directo a la cantidad.
+- [x] "−" en 1 se vuelve papelera; la línea quitada queda 5 s con Deshacer (Ctrl+Z).
+- [x] Stock: aviso amarillo si el producto permite vender sin stock; si no, se bloquea
+      (respeta la opción del producto, igual que el servidor).
+- [x] Cobro en la columna derecha (el ticket no se mueve): medios con Alt+1…9,
+      billetes rápidos, pago mixto, "Falta"/"Cambio" en grande, pie fijo con Registrar.
+- [x] Venta registrada: cambio en grande, Imprimir ticket (Ctrl+P); se oculta al escanear.
+- [x] Caja cerrada: aviso con "Abrir caja".
+- [x] Atajos: F2 buscar · F4 cliente · F8 cantidad · F9 cobrar/registrar · Supr · Esc · Alt+1…6.
+- [x] Ventas pendientes reales (antes decía "se conectará después").
+- [x] La venta en curso sobrevive si el cajero va a otro módulo y vuelve.
+- [x] Frecuentes editables sin recargar la página (antes se perdía la venta en curso).
+- [x] Modo enfoque: oculta el menú (Esc dos veces para salir).
+Parte 2 — táctil y pantallas pequeñas:
+- [ ] Táctil: categorías + catálogo con fotos, teclado numérico "¿Cuántos metros?",
+      barra inferior con total y Cobrar, cobro a pantalla completa con teclado.
+- [ ] Tablet 1024 y celular 390 según el diseño (ticket como hoja inferior).
+- [ ] Fuentes IBM Plex (hay que descargarlas e incluirlas en la app: pedir permiso).
+- [ ] Balanza (espacio previsto en el diseño de 1920).
+- [ ] Adelgazar `pos.css`: hoy solo lo usan cotización, remisión y compra.
 
 ## Fase 5 — Calidad de código
 - [ ] Unificar cotizaciones y remisiones (~80 % duplicado).

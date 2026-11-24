@@ -47,7 +47,7 @@ src/
   public/
     css/main.css     base de componentes
     css/sistema.css  sistema de diseño 2026 (tokens, shell, componentes)
-    css/modules/     estilos por módulo (pos.css = punto de venta)
+    css/modules/     estilos por módulo (facturacion.css = punto de venta)
     js/              JavaScript de cliente por pantalla + shell.js
   views/             plantillas EJS
 tests/               pruebas automáticas (cada archivo usa una base temporal)
@@ -118,7 +118,7 @@ Cada archivo crea su propia base en la carpeta temporal del sistema; las pruebas
 ## Diseño
 
 - `sistema.css` define los tokens (colores, tipografía, radios, sombras) y el shell: menú completo, riel de íconos (POS y pantallas < 1280 px) o panel deslizable en celular (< 768 px).
-- `modules/pos.css` es el punto de venta: dos paneles (catálogo y ticket), modo clásico y táctil, perfiles General / Comidas / Boutique. En escritorio y tablet horizontal ocupa la ventana exacta, con "Cobrar" siempre visible.
+- `modules/facturacion.css` + `js/pos.js` son el punto de venta: ticket como tira de papel térmico, cobro en la columna derecha, atajos de teclado (F2 buscar, F4 cliente, F8 cantidad, F9 cobrar, Supr, Esc, Alt+1…6), modo clásico y táctil, perfiles General / Comidas / Boutique y modo enfoque. En escritorio ocupa la ventana exacta, con "Cobrar" siempre visible. `modules/pos.css` + `documentos.css` son el editor de cotización, remisión y compra.
 
 ## Datos en producción
 

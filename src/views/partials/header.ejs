@@ -18,6 +18,14 @@
         </div>
     </div>
 
+    <% if (locals.herramientasEncabezado) { %>
+        <%# Herramientas propias de una pantalla (p. ej. el POS). El título y el
+            bloque del usuario no se mueven: las herramientas van entre ambos. %>
+        <div class="app-header-tools">
+            <%- include('../' + locals.herramientasEncabezado) %>
+        </div>
+    <% } %>
+
     <div class="header-user">
         <% if (usuario) { %>
             <div class="user-pill">
