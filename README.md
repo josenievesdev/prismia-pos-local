@@ -117,6 +117,7 @@ Cada archivo crea su propia base en la carpeta temporal del sistema; las pruebas
 
 ## Diseño
 
+- Letras: IBM Plex Sans e IBM Plex Mono (licencia SIL OFL 1.1), incluidas en `public/fonts` para funcionar sin internet; `css/fuentes.css` las declara.
 - `sistema.css` define los tokens (colores, tipografía, radios, sombras) y el shell: menú completo, riel de íconos (POS y pantallas < 1280 px) o panel deslizable en celular (< 768 px).
 - `modules/facturacion.css` + `js/pos.js` son el punto de venta: ticket como tira de papel térmico, cobro en la columna derecha, atajos de teclado (F2 buscar, F4 cliente, F8 cantidad, F9 cobrar, Supr, Esc, Alt+1…6), modo clásico y táctil, perfiles General / Comidas / Boutique y modo enfoque. En escritorio ocupa la ventana exacta, con "Cobrar" siempre visible. `modules/pos.css` + `documentos.css` son el editor de cotización, remisión y compra.
 

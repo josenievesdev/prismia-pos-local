@@ -1,269 +1,188 @@
-<% const data=ticket || {}; const comercio=data.comercio || {}; const venta=data.venta || {}; const
-    detalle=Array.isArray(data.detalle) ? data.detalle : []; const pagos=Array.isArray(data.pagos) ? data.pagos : [];
-    const comprobante=data.comprobante || {}; function pesos(valor) { const numero=Number(valor || 0); return '$ ' +
-    Math.round(numero).toLocaleString('es-CO'); } function cantidadFormateada(valor) { const numero=Number(valor || 0);
-    if (!Number.isFinite(numero)) { return '0' ; } return numero.toLocaleString('es-CO', { minimumFractionDigits:
-    Number.isInteger(numero) ? 0 : 2, maximumFractionDigits: 3, }); } function fecha(valor) { if (!valor) return '' ;
-    return String(valor).replace('T', ' ' ).slice(0, 19); } function texto(valor, defecto='' ) { if (valor===null ||
-    valor===undefined) { return defecto; } const limpio=String(valor).trim(); return limpio || defecto; } function
-    mayuscula(valor, defecto='' ) { return texto(valor, defecto).toUpperCase(); } function obtenerCantidadItem(item) {
-    return ( item.cantidad ?? item.cantidad_vendida ?? item.cantidad_detalle ?? item.unidades ?? 0 ); } function
-    obtenerUnidadItem(item) { return texto( item.unidad_abreviatura || item.unidad_medida_abreviatura ||
-    item.unidad_nombre, 'und' ); } const numeroComprobante=texto(comprobante.numero,
-    texto(venta.numero_venta, 'FV-SIN-NUMERO' )); const estadoVenta=mayuscula(venta.estado, 'pagada' ); const
-    nombreComercio=texto(comercio.nombre_comercio, 'Comercio sin nombre' ); const
-    tipoDocumentoComercio=texto(comercio.tipo_documento, 'NIT' ); const documentoComercio=texto(comercio.nit, '' );
-    const nombreCliente=texto(venta.cliente_nombre, 'Consumidor final' ); const
-    documentoCliente=texto(venta.cliente_documento, '0000000000' ); const
-    tipoDocumentoCliente=texto(venta.cliente_tipo_documento, 'CF' ); const cajero=texto(venta.cajero_nombre, 'Usuario'
-    ); const mensajeTicket=texto(comercio.mensaje_ticket, 'Gracias por su compra.' ); %>
+<%
+    const datos = ticket || {};
+    const comercio = datos.comercio || {};
+    const venta = datos.venta || {};
+    const detalle = Array.isArray(datos.detalle) ? datos.detalle : [];
+    const pagos = Array.isArray(datos.pagos) ? datos.pagos : [];
+    const comprobante = datos.comprobante || {};
 
-    <!DOCTYPE html>
-    <html lang="es">
+    function texto(valor, defecto) {
+        if (valor === null || valor === undefined) return defecto || '';
+        const limpio = String(valor).trim();
+        return limpio || defecto || '';
+    }
 
-    <head>
-        <meta charset="UTF-8">
-        <title>Ticket <%= numeroComprobante %>
-        </title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" href="/css/modules/ventas-ticket.css">
-    </head>
+    function pesos(valor) {
+        return '$ ' + Math.round(Number(valor) || 0).toLocaleString('es-CO');
+    }
 
-    <body>
-        <main class="ticket-page">
-            <section class="ticket-paper">
-                <header class="ticket-header">
-                    <h1>
-                        <%= mayuscula(nombreComercio) %>
-                    </h1>
+    function cantidad(valor) {
+        const numero = Number(valor) || 0;
+        return numero.toLocaleString('es-CO', { maximumFractionDigits: 3, useGrouping: false });
+    }
 
-                    <% if (documentoComercio) { %>
-                        <p>
-                            <%= tipoDocumentoComercio %>: <%= documentoComercio %>
-                        </p>
-                        <% } %>
+    // "2026-11-23 21:06:19" → "23/11/2026 · 21:06"
+    function fechaHora(valor) {
+        const coincidencia = String(valor || '').match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);
+        return coincidencia
+            ? `${coincidencia[3]}/${coincidencia[2]}/${coincidencia[1]} · ${coincidencia[4]}:${coincidencia[5]}`
+            : texto(valor);
+    }
 
-                            <% if (comercio.direccion) { %>
-                                <p>
-                                    <%= comercio.direccion %>
-                                </p>
-                                <% } %>
+    const numero = texto(comprobante.numero, texto(venta.numero_venta, 'FV-SIN-NUMERO'));
+    const anulada = texto(venta.estado).toLowerCase() === 'anulada';
+    const nombreComercio = texto(comercio.nombre_comercio, 'Comercio');
+    const documentoComercio = texto(comercio.nit)
+        ? `${texto(comercio.tipo_documento, 'NIT')} ${texto(comercio.nit)}`
+        : '';
+    const ubicacion = [texto(comercio.direccion), texto(comercio.ciudad)].filter(Boolean).join(' · ');
+    const contacto = [texto(comercio.telefono) ? 'Tel. ' + texto(comercio.telefono) : '', texto(comercio.correo)].filter(Boolean).join(' · ');
+    const documentoCliente = [texto(venta.cliente_tipo_documento, 'CF'), texto(venta.cliente_documento, '0000000000')].join(' ');
 
-                                    <% if (comercio.telefono) { %>
-                                        <p>
-                                            <%= comercio.telefono %>
-                                        </p>
-                                        <% } %>
+    // IVA por tarifa (base gravable e impuesto), como lo pide un comprobante claro.
+    const ivaPorTarifa = new Map();
+    detalle.forEach(function (item) {
+        const tarifa = Number(item.porcentaje_iva) || 0;
+        if (tarifa <= 0) return;
+        const grupo = ivaPorTarifa.get(tarifa) || { base: 0, iva: 0 };
+        grupo.base += Number(item.subtotal) || 0;
+        grupo.iva += Number(item.impuesto_total) || 0;
+        ivaPorTarifa.set(tarifa, grupo);
+    });
+    const tarifas = Array.from(ivaPorTarifa.entries()).sort(function (a, b) { return a[0] - b[0]; });
 
-                                            <% if (comercio.correo) { %>
-                                                <p>
-                                                    <%= comercio.correo %>
-                                                </p>
-                                                <% } %>
-                </header>
+    const cambioTotal = pagos.reduce(function (suma, pago) { return suma + (Number(pago.cambio_entregado) || 0); }, 0);
+    const unidades = new Set(detalle.map(function (item) { return texto(item.unidad_abreviatura, 'und'); }));
+    const sumaCantidades = detalle.reduce(function (suma, item) { return suma + (Number(item.cantidad) || 0); }, 0);
+    const resumenLineas = `${detalle.length} ${detalle.length === 1 ? 'producto' : 'productos'}`
+        + (unidades.size === 1 ? ` · ${cantidad(Math.round(sumaCantidades * 1000) / 1000)} ${Array.from(unidades)[0]}` : '');
+%>
+<!DOCTYPE html>
+<html lang="es">
 
-                <section class="ticket-block ticket-center ticket-document">
-                    <strong class="ticket-title">COMPROBANTE DE VENTA</strong>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket <%= numero %></title>
+    <link rel="stylesheet" href="/css/fuentes.css">
+    <link rel="stylesheet" href="/css/modules/ticket-venta.css">
+</head>
 
-                    <div class="ticket-document-number">
-                        <span>Factura No.</span>
-                        <strong>
-                            <%= numeroComprobante %>
-                        </strong>
+<body>
+    <div class="recibo-barra">
+        <span class="recibo-barra-titulo">Ticket <strong><%= numero %></strong></span>
+        <div class="recibo-barra-acciones">
+            <button type="button" class="recibo-boton recibo-boton--primario" id="btnImprimirTicket" autofocus>
+                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" aria-hidden="true"><path d="M7 9V3h10v6M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2" /><path d="M7 14h10v7H7z" /></svg>
+                Imprimir
+            </button>
+            <button type="button" class="recibo-boton" id="btnCerrarTicket">Cerrar</button>
+        </div>
+    </div>
+
+    <main class="recibo" aria-label="Ticket de venta <%= numero %>">
+        <header class="recibo-comercio">
+            <h1><%= nombreComercio %></h1>
+            <% if (documentoComercio) { %><p><%= documentoComercio %></p><% } %>
+            <% if (ubicacion) { %><p><%= ubicacion %></p><% } %>
+            <% if (contacto) { %><p><%= contacto %></p><% } %>
+        </header>
+
+        <section class="recibo-documento">
+            <span class="recibo-etiqueta">Comprobante de venta</span>
+            <strong class="recibo-numero"><%= numero %></strong>
+            <span class="recibo-fecha"><%= fechaHora(venta.fecha_venta) %></span>
+            <% if (anulada) { %><span class="recibo-anulada">Venta anulada</span><% } %>
+        </section>
+
+        <dl class="recibo-datos">
+            <div><dt>Cliente</dt><dd><%= texto(venta.cliente_nombre, 'Consumidor final') %></dd></div>
+            <div><dt>Documento</dt><dd class="recibo-mono"><%= documentoCliente %></dd></div>
+            <div><dt>Atendió</dt><dd><%= texto(venta.cajero_nombre, 'Usuario') %> · Turno #<%= texto(venta.id_turno_caja, '-') %></dd></div>
+        </dl>
+
+        <section class="recibo-items" aria-label="Productos">
+            <% detalle.forEach(function (item) {
+                const unidad = texto(item.unidad_abreviatura, 'und');
+                const tarifa = Number(item.porcentaje_iva) || 0;
+                const codigo = texto(item.codigo_interno) || texto(item.codigo_barras);
+                const descuento = Number(item.descuento_unitario) || 0; %>
+                <div class="recibo-item">
+                    <div class="recibo-item-nombre"><%= texto(item.nombre_producto, 'Producto') %></div>
+                    <div class="recibo-item-cuenta">
+                        <span><%= cantidad(item.cantidad) %> <%= unidad %> × <%= pesos(item.precio_unitario) %></span>
+                        <strong><%= pesos(item.total_linea) %></strong>
                     </div>
-
-                    <div class="ticket-document-state">
-                        Estado: <strong>
-                            <%= estadoVenta %>
-                        </strong>
+                    <div class="recibo-item-meta">
+                        <%= [codigo, tarifa > 0 ? `IVA ${tarifa} %` : 'Sin IVA', descuento > 0 ? `Desc. ${pesos(descuento)} c/u` : ''].filter(Boolean).join(' · ') %>
                     </div>
-                </section>
-
-                <section class="ticket-block">
-                    <div class="ticket-row">
-                        <span>Fecha</span>
-                        <strong>
-                            <%= fecha(venta.fecha_venta) %>
-                        </strong>
-                    </div>
-
-                    <div class="ticket-row">
-                        <span>Cajero</span>
-                        <strong>
-                            <%= cajero %>
-                        </strong>
-                    </div>
-
-                    <div class="ticket-row">
-                        <span>Turno</span>
-                        <strong>#<%= texto(venta.id_turno_caja, '-' ) %></strong>
-                    </div>
-                </section>
-
-                <section class="ticket-block">
-                    <h2>Cliente</h2>
-
-                    <div class="ticket-row">
-                        <span>Nombre</span>
-                        <strong>
-                            <%= nombreCliente %>
-                        </strong>
-                    </div>
-
-                    <div class="ticket-row">
-                        <span>Documento</span>
-                        <strong>
-                            <%= tipoDocumentoCliente %>
-                                <%= documentoCliente %>
-                        </strong>
-                    </div>
-                </section>
-
-                <section class="ticket-block">
-                    <h2>Productos</h2>
-
-                    <table class="ticket-table">
-                        <thead>
-                            <tr>
-                                <th>Producto</th>
-                                <th class="right">Cant.</th>
-                                <th class="right">Vlr. Unit.</th>
-                                <th class="right">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% detalle.forEach((item)=> { %>
-                                <tr>
-                                    <td>
-                                        <strong>
-                                            <%= texto(item.nombre_producto, 'Producto' ) %>
-                                        </strong>
-
-                                        <% if (item.codigo_interno || item.codigo_barras) { %>
-                                            <small>
-                                                <%= [item.codigo_interno, item.codigo_barras].filter(Boolean).join(' · ') %>
-                                        </small>
-                                    <% } %>
-
-                                    <small>
-                                        <%= obtenerUnidadItem(item) %>
-                                        <% if (Number(item.porcentaje_iva || 0) > 0) { %>
-                                            · IVA <%= item.porcentaje_iva %>%
-                                        <% } else { %>
-                                            · Sin IVA
-                                        <% } %>
-                                    </small>
-                                </td>
-
-                                <td class="right">
-                                    <%= cantidadFormateada(obtenerCantidadItem(item)) %>
-                                </td>
-
-                                <td class="right">
-                                    <%= pesos(item.precio_unitario) %>
-                                </td>
-
-                                <td class="right">
-                                    <%= pesos(item.total_linea) %>
-                                </td>
-                            </tr>
-                        <% }) %>
-                    </tbody>
-                </table>
-            </section>
-
-            <section class="ticket-block ticket-totals">
-                <div class="ticket-row">
-                    <span>Subtotal</span>
-                    <strong><%= pesos(venta.subtotal) %></strong>
                 </div>
+            <% }) %>
+        </section>
 
-                <% if (Number(venta.descuento_total || 0) > 0) { %>
-                    <div class="ticket-row">
-                        <span>Descuento</span>
-                        <strong><%= pesos(venta.descuento_total) %></strong>
+        <section class="recibo-totales" aria-label="Totales">
+            <div class="recibo-fila"><span>Subtotal</span><span><%= pesos(venta.subtotal) %></span></div>
+            <% if (Number(venta.descuento_total) > 0) { %>
+                <div class="recibo-fila"><span>Descuento</span><span>− <%= pesos(venta.descuento_total) %></span></div>
+            <% } %>
+            <% if (tarifas.length) { %>
+                <% tarifas.forEach(function (entrada) { %>
+                    <div class="recibo-fila">
+                        <span>IVA <%= entrada[0] %> % <small>base <%= pesos(entrada[1].base) %></small></span>
+                        <span><%= pesos(entrada[1].iva) %></span>
                     </div>
-                <% } %>
+                <% }) %>
+            <% } else { %>
+                <div class="recibo-fila"><span>IVA</span><span><%= pesos(venta.impuesto_total) %></span></div>
+            <% } %>
+            <div class="recibo-total"><span>Total</span><strong><%= pesos(venta.total) %></strong></div>
+        </section>
 
-                <div class="ticket-row">
-                    <span>IVA</span>
-                    <strong><%= pesos(venta.impuesto_total) %></strong>
-                </div>
-
-                <div class="ticket-row ticket-total-main">
-                    <span>Total</span>
-                    <strong><%= pesos(venta.total) %></strong>
-                </div>
-            </section>
-
-            <section class="ticket-block">
-                <h2>Pago</h2>
-
-                <% pagos.forEach((pago) => { %>
-                    <div class="ticket-row">
-                        <span>Medio</span>
-                        <strong><%= texto(pago.medio_pago_nombre, pago.entidad || pago.metodo_pago) %></strong>
+        <section class="recibo-pagos" aria-label="Pago">
+            <h2>Pago</h2>
+            <% pagos.forEach(function (pago) {
+                const esEfectivo = texto(pago.medio_pago_tipo || pago.metodo_pago).toLowerCase() === 'efectivo';
+                const recibido = Number(pago.monto_recibido) || 0;
+                const cambio = Number(pago.cambio_entregado) || 0;
+                const detallePago = esEfectivo
+                    ? (cambio > 0 || recibido > Number(pago.monto) ? `Recibido ${pesos(recibido)}` : '')
+                    : (texto(pago.referencia) ? `Ref. ${texto(pago.referencia)}` : ''); %>
+                <div class="recibo-pago">
+                    <div class="recibo-fila">
+                        <span><%= texto(pago.medio_pago_nombre, texto(pago.metodo_pago, 'Pago')) %></span>
+                        <span><%= pesos(pago.monto) %></span>
                     </div>
+                    <% if (detallePago) { %><div class="recibo-pago-detalle"><%= detallePago %></div><% } %>
+                </div>
+            <% }) %>
+            <% if (cambioTotal > 0) { %>
+                <div class="recibo-cambio"><span>Cambio entregado</span><strong><%= pesos(cambioTotal) %></strong></div>
+            <% } %>
+        </section>
 
-                    <div class="ticket-row">
-                        <span>Tipo</span>
-                        <strong><%= texto(pago.metodo_pago, ' efectivo') %></strong>
-                                                    </div>
+        <footer class="recibo-pie">
+            <p class="recibo-resumen"><%= resumenLineas %></p>
+            <p class="recibo-gracias"><%= texto(comercio.mensaje_ticket, 'Gracias por su compra.') %></p>
+            <p class="recibo-software"><%= texto(comercio.software, 'Prismia POS Local') %></p>
+        </footer>
+    </main>
 
-                                                    <% if (pago.referencia) { %>
-                                                        <div class="ticket-row">
-                                                            <span>Referencia</span>
-                                                            <strong>
-                                                                <%= pago.referencia %>
-                                                            </strong>
-                                                        </div>
-                                                        <% } %>
+    <script>
+        document.getElementById('btnImprimirTicket').addEventListener('click', function () {
+            window.print();
+        });
 
-                                                            <div class="ticket-row">
-                                                                <span>Pagado</span>
-                                                                <strong>
-                                                                    <%= pesos(pago.monto) %>
-                                                                </strong>
-                                                            </div>
+        document.getElementById('btnCerrarTicket').addEventListener('click', function () {
+            window.close();
+        });
 
-                                                            <div class="ticket-row">
-                                                                <span>Recibido</span>
-                                                                <strong>
-                                                                    <%= pesos(pago.monto_recibido) %>
-                                                                </strong>
-                                                            </div>
+        document.addEventListener('keydown', function (evento) {
+            if (evento.key === 'Escape') {
+                window.close();
+            }
+        });
+    </script>
+</body>
 
-                                                            <div class="ticket-row">
-                                                                <span>Cambio</span>
-                                                                <strong>
-                                                                    <%= pesos(pago.cambio_entregado) %>
-                                                                </strong>
-                                                            </div>
-                                                            <% }) %>
-                </section>
-
-                <footer class="ticket-footer">
-                    <p>
-                        <%= mensajeTicket %>
-                    </p>
-                    <p>Generado por <strong>
-                            <%= comercio.software || 'Prismia POS Local' %>
-                        </strong></p>
-                </footer>
-            </section>
-
-            <div class="ticket-actions">
-                <button type="button" onclick="window.print()">Imprimir</button>
-                <button type="button" onclick="window.close()">Cerrar</button>
-            </div>
-        </main>
-        <script>
-            window.addEventListener('load', () => {
-                setTimeout(() => {
-                    window.scrollTo(0, 0);
-                }, 50);
-            });
-        </script>
-    </body>
-
-    </html>
+</html>

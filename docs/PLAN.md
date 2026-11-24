@@ -141,6 +141,21 @@ Parte 2 — táctil y pantallas pequeñas:
 - [ ] Balanza (espacio previsto en el diseño de 1920).
 - [ ] Adelgazar `pos.css`: hoy solo lo usan cotización, remisión y compra.
 
+## Sistema visual del POS en toda la app (2026-11-24)
+- [x] Letras IBM Plex Sans (texto) e IBM Plex Mono (cifras y códigos), locales en
+      `public/fonts` (licencia OFL), en todas las pantallas y en las impresiones.
+- [x] Paleta del POS como tokens globales (`sistema.css`); el POS usa esos tokens.
+- [x] Cifras en Mono: indicadores (KPI), métricas y columnas de dinero.
+- [x] Avisos fijos (`.alert`) con ícono y texto oscuro; aviso flotante `ui-aviso`
+      (tarjeta blanca con ícono) en el POS.
+- [x] Caja cerrada sin candado rojo; confirmaciones sin el "!" rojo.
+- [x] Ticket de venta rediseñado (papel térmico, cada producto como cuenta, IVA por
+      tarifa, pagos con referencia); cotización y remisión impresas con el mismo estilo.
+- [ ] Arqueo de caja, nota crédito y compra impresas: ya tienen la letra nueva, falta
+      su diseño.
+- [ ] Usar `ui-aviso` también en los demás módulos (hoy muestran el aviso fijo).
+- [ ] Módulos sin migrar con colores propios (Inicio, KPIs de Compras).
+
 ## Fase 5 — Calidad de código
 - [ ] Unificar cotizaciones y remisiones (~80 % duplicado).
 - [ ] Actualizar `xlsx` a 0.20.3 (requiere que el usuario lo instale).

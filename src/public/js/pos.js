@@ -276,20 +276,28 @@
         return etiqueta === 'INPUT' || etiqueta === 'TEXTAREA' || etiqueta === 'SELECT' || elemento.isContentEditable;
     }
 
+    // Aviso flotante (componente ui-aviso de sistema.css) sobre la parte baja
+    // del ticket: cerca de lo que mira el cajero, sin tapar buscador ni Cobrar.
     function aviso(mensaje, tipo) {
-        let nodo = document.querySelector('.pos-aviso');
+        const contenedor = document.querySelector('.pos-principal') || document.body;
+        let nodo = contenedor.querySelector(':scope > .ui-aviso');
 
         if (!nodo) {
             nodo = document.createElement('div');
-            nodo.className = 'pos-aviso';
-            nodo.setAttribute('role', 'status');
-            nodo.setAttribute('aria-live', 'polite');
-            document.body.appendChild(nodo);
+            nodo.className = 'ui-aviso';
+            nodo.setAttribute('role', tipo === 'error' ? 'alert' : 'status');
+            nodo.setAttribute('aria-live', tipo === 'error' ? 'assertive' : 'polite');
+            contenedor.appendChild(nodo);
         }
 
         nodo.textContent = mensaje;
-        nodo.classList.remove('is-ok', 'is-error', 'is-visible');
-        nodo.classList.add(tipo === 'error' ? 'is-error' : 'is-ok');
+        nodo.classList.remove('is-error', 'is-info', 'is-visible');
+
+        if (tipo === 'error') {
+            nodo.classList.add('is-error');
+        } else if (tipo === 'info') {
+            nodo.classList.add('is-info');
+        }
 
         window.requestAnimationFrame(function () {
             nodo.classList.add('is-visible');
@@ -298,7 +306,7 @@
         window.clearTimeout(nodo._temporizador);
         nodo._temporizador = window.setTimeout(function () {
             nodo.classList.remove('is-visible');
-        }, tipo === 'error' ? 4200 : 2600);
+        }, tipo === 'error' ? 4500 : 2600);
     }
 
     function confirmar(opciones) {
@@ -310,17 +318,13 @@
             const fondo = document.createElement('div');
             fondo.className = 'ventas-confirm-backdrop';
             fondo.innerHTML = `
-                <div class="ventas-confirm-card" role="alertdialog" aria-modal="true" aria-labelledby="tituloConfirmarPOS">
-                    <header class="ventas-confirm-header">
-                        <span class="ventas-confirm-icon" aria-hidden="true">!</span>
-                        <div>
-                            <h3 id="tituloConfirmarPOS">${escapar(titulo)}</h3>
-                            <p>${escapar(mensaje)}</p>
-                        </div>
-                    </header>
+                <div class="ventas-confirm-card" role="alertdialog" aria-modal="true"
+                    aria-labelledby="tituloConfirmarPOS" aria-describedby="textoConfirmarPOS">
+                    <h3 id="tituloConfirmarPOS">${escapar(titulo)}</h3>
+                    <p id="textoConfirmarPOS">${escapar(mensaje)}</p>
                     <footer class="ventas-confirm-actions">
                         <button type="button" class="btn-secondary" data-cancelar>Cancelar</button>
-                        <button type="button" class="btn-danger-soft" data-confirmar>${escapar(textoConfirmar)}</button>
+                        <button type="button" class="btn-danger" data-confirmar>${escapar(textoConfirmar)}</button>
                     </footer>
                 </div>`;
 
@@ -1490,7 +1494,9 @@
 
             const confirmado = await confirmar({
                 titulo: 'Limpiar la venta',
-                mensaje: `Se quitarán ${estado.carrito.length} ${estado.carrito.length === 1 ? 'línea' : 'líneas'} y los pagos digitados.`,
+                mensaje: estado.carrito.length === 1
+                    ? 'Se quitará la línea y los pagos digitados.'
+                    : `Se quitarán ${estado.carrito.length} líneas y los pagos digitados.`,
                 textoConfirmar: 'Limpiar venta',
             });
 

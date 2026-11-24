@@ -1,0 +1,396 @@
+/* =========================================================
+   Ticket de venta (impresora térmica de 80 mm)
+   Mismo lenguaje del punto de venta: IBM Plex, cifras en Mono, cada producto
+   como una cuenta. En pantalla se ve como papel térmico; al imprimir sale
+   limpio y en negro (las térmicas no imprimen grises claros).
+   ========================================================= */
+
+:root {
+    --recibo-ancho: 76mm;
+    --recibo-papel: #fffdf7;
+    --recibo-tinta: #14161b;
+    --recibo-suave: #545b6a;
+    --recibo-linea: #d9dce3;
+    --recibo-sans: "IBM Plex Sans", "Segoe UI", Arial, sans-serif;
+    --recibo-mono: "IBM Plex Mono", Consolas, "Courier New", monospace;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    padding: 0 16px 40px;
+    background: #f3f4f7;
+    color: var(--recibo-tinta);
+    font-family: var(--recibo-sans);
+    font-size: 12px;
+    line-height: 1.4;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Barra de acciones (solo en pantalla) ---------- */
+.recibo-barra {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    max-width: 520px;
+    margin: 0 auto 20px;
+    padding: 12px 0;
+    background: #f3f4f7;
+}
+
+.recibo-barra-titulo {
+    color: var(--recibo-suave);
+    font-size: 13.5px;
+}
+
+.recibo-barra-titulo strong {
+    color: var(--recibo-tinta);
+    font-family: var(--recibo-mono);
+}
+
+.recibo-barra-acciones {
+    display: flex;
+    gap: 8px;
+}
+
+.recibo-boton {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 38px;
+    padding: 0 16px;
+    border: 1px solid #e2e4ea;
+    border-radius: 10px;
+    background: #ffffff;
+    color: var(--recibo-tinta);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.recibo-boton:hover {
+    border-color: #cfd4dd;
+}
+
+.recibo-boton--primario {
+    border-color: #0d9668;
+    background: #0d9668;
+    color: #ffffff;
+}
+
+.recibo-boton--primario:hover {
+    border-color: #0a7a54;
+    background: #0a7a54;
+}
+
+.recibo-boton:focus-visible {
+    outline: 3px solid rgba(13, 150, 104, 0.3);
+    outline-offset: 2px;
+}
+
+/* ---------- Papel ---------- */
+.recibo {
+    position: relative;
+    width: var(--recibo-ancho);
+    margin: 0 auto;
+    padding: 16px 14px 18px;
+    border-top: 5px solid #1e2129;
+    background: var(--recibo-papel);
+    box-shadow: 0 1px 2px rgba(20, 22, 27, 0.06), 0 12px 32px -12px rgba(20, 22, 27, 0.18);
+}
+
+/* Borde rasgado (solo en pantalla) */
+.recibo::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: -8px;
+    left: 0;
+    height: 8px;
+    background:
+        linear-gradient(135deg, var(--recibo-papel) 50%, transparent 50%) 0 0 / 12px 8px repeat-x,
+        linear-gradient(225deg, var(--recibo-papel) 50%, transparent 50%) 0 0 / 12px 8px repeat-x;
+}
+
+.recibo section,
+.recibo dl,
+.recibo footer {
+    padding: 10px 0;
+    border-top: 1px dashed var(--recibo-linea);
+}
+
+/* ---------- Comercio ---------- */
+.recibo-comercio {
+    padding-bottom: 12px;
+    text-align: center;
+}
+
+.recibo-comercio h1 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.recibo-comercio p {
+    margin: 1px 0;
+    color: var(--recibo-suave);
+    font-size: 11px;
+}
+
+/* ---------- Documento ---------- */
+.recibo-documento {
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    text-align: center;
+}
+
+.recibo-etiqueta {
+    color: var(--recibo-suave);
+    font-size: 11px;
+}
+
+.recibo-numero {
+    font-family: var(--recibo-mono);
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.recibo-fecha {
+    color: var(--recibo-suave);
+    font-family: var(--recibo-mono);
+    font-size: 11.5px;
+}
+
+.recibo-anulada {
+    margin-top: 6px;
+    padding: 3px 10px;
+    border: 1.5px solid var(--recibo-tinta);
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* ---------- Datos de la venta ---------- */
+.recibo-datos {
+    display: grid;
+    gap: 3px;
+    margin: 0;
+}
+
+.recibo-datos div {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.recibo-datos dt {
+    flex: 0 0 auto;
+    color: var(--recibo-suave);
+}
+
+.recibo-datos dd {
+    margin: 0;
+    font-weight: 500;
+    text-align: right;
+}
+
+.recibo-mono {
+    font-family: var(--recibo-mono);
+}
+
+/* ---------- Productos: cada uno como una cuenta ---------- */
+.recibo-items {
+    display: grid;
+    gap: 8px;
+}
+
+.recibo-item-nombre {
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.recibo-item-cuenta {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    font-family: var(--recibo-mono);
+    font-size: 11.5px;
+}
+
+.recibo-item-cuenta span {
+    color: var(--recibo-suave);
+}
+
+.recibo-item-cuenta strong {
+    font-size: 12.5px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.recibo-item-meta {
+    color: var(--recibo-suave);
+    font-size: 10.5px;
+}
+
+/* ---------- Totales ---------- */
+.recibo-fila {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.recibo-fila > span:last-child {
+    font-family: var(--recibo-mono);
+    white-space: nowrap;
+}
+
+.recibo-fila small {
+    color: var(--recibo-suave);
+    font-family: var(--recibo-mono);
+    font-size: 10px;
+}
+
+.recibo-totales {
+    display: grid;
+    gap: 3px;
+}
+
+.recibo-total {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 6px;
+    padding-top: 8px;
+    border-top: 2px solid var(--recibo-tinta);
+}
+
+.recibo-total span {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.recibo-total strong {
+    font-family: var(--recibo-mono);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+/* ---------- Pagos ---------- */
+.recibo-pagos {
+    display: grid;
+    gap: 5px;
+}
+
+.recibo-pagos h2 {
+    margin: 0 0 2px;
+    color: var(--recibo-suave);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.recibo-pago-detalle {
+    color: var(--recibo-suave);
+    font-family: var(--recibo-mono);
+    font-size: 10.5px;
+}
+
+.recibo-cambio {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-top: 4px;
+    padding: 6px 8px;
+    border: 1px solid var(--recibo-tinta);
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.recibo-cambio strong {
+    font-family: var(--recibo-mono);
+    font-size: 14px;
+}
+
+/* ---------- Pie ---------- */
+.recibo-pie {
+    display: grid;
+    gap: 3px;
+    text-align: center;
+}
+
+.recibo-pie p {
+    margin: 0;
+}
+
+.recibo-resumen {
+    color: var(--recibo-suave);
+    font-size: 11px;
+}
+
+.recibo-gracias {
+    margin-top: 4px !important;
+    font-size: 12.5px;
+    font-weight: 600;
+}
+
+.recibo-software {
+    color: var(--recibo-suave);
+    font-size: 10px;
+}
+
+/* ---------- Impresión ---------- */
+@page {
+    size: auto;
+    margin: 3mm;
+}
+
+@media print {
+    :root {
+        --recibo-papel: #ffffff;
+        --recibo-suave: #222222;
+        --recibo-linea: #000000;
+    }
+
+    body {
+        min-height: 0;
+        padding: 0;
+        background: #ffffff;
+        color: #000000;
+    }
+
+    .recibo-barra {
+        display: none;
+    }
+
+    .recibo {
+        width: 72mm;
+        margin: 0;
+        padding: 0;
+        border-top: 0;
+        box-shadow: none;
+    }
+
+    .recibo::after {
+        display: none;
+    }
+}

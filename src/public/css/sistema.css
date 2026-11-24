@@ -4,7 +4,9 @@
    componentes base. Los módulos siguen pudiendo especializar.
    ========================================================= */
 
-/* ---------- Tokens ---------- */
+/* ---------- Tokens ----------
+   Paleta y letras del punto de venta (diseño de pen.dev), para toda la app:
+   IBM Plex Sans en el texto, IBM Plex Mono en cifras y códigos. */
 :root {
     color-scheme: light;
 
@@ -13,11 +15,13 @@
     --color-surface: #ffffff;
     --color-surface-soft: #f8f9fb;
     --color-surface-hover: #f2f4f8;
+    --color-paper: #fffdf7;
 
-    --color-text: #10131a;
-    --color-text-soft: #323844;
-    --color-muted: #687080;
-    --color-faint: #9aa1ad;
+    --color-text: #14161b;
+    --color-text-soft: #2f343f;
+    --color-muted: #545b6a;
+    --color-faint: #8b92a1;
+    --color-ink: #1e2129;
 
     --color-primary: #3456d6;
     --color-primary-dark: #2944b5;
@@ -28,24 +32,25 @@
     --color-accent-soft: #e2f6f4;
 
     --color-cobrar: #0d9668;
-    --color-cobrar-dark: #0a7b55;
+    --color-cobrar-dark: #0a7a54;
 
-    --color-border: #e3e6ec;
+    --color-border: #e2e4ea;
     --color-border-strong: #cfd4dd;
 
-    --color-success: #12804f;
-    --color-success-soft: #e5f5ed;
-    --color-warning: #b26b00;
-    --color-warning-soft: #fdf3e1;
-    --color-danger: #cf3434;
-    --color-danger-soft: #fdecec;
-    --color-info: #2a6bd1;
-    --color-info-soft: #e8f0fd;
+    --color-success: #0a7a54;
+    --color-success-soft: #e2f3ec;
+    --color-warning: #8a5a00;
+    --color-warning-soft: #fff3d1;
+    --color-danger: #c9302c;
+    --color-danger-soft: #fdeceb;
+    --color-info: #3456d6;
+    --color-info-soft: #edf1ff;
 
-    --shadow-soft: 0 1px 2px rgba(16, 24, 40, 0.04);
-    --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.04);
-    --shadow-md: 0 8px 24px -8px rgba(16, 24, 40, 0.14);
-    --shadow-lg: 0 24px 56px -16px rgba(16, 24, 40, 0.24);
+    --shadow-soft: 0 1px 2px rgba(20, 22, 27, 0.04);
+    --shadow-card: 0 1px 2px rgba(20, 22, 27, 0.05), 0 1px 3px rgba(20, 22, 27, 0.04);
+    --shadow-md: 0 8px 24px -8px rgba(20, 22, 27, 0.14);
+    --shadow-lg: 0 24px 56px -16px rgba(20, 22, 27, 0.24);
+    --shadow-pop: 0 12px 32px rgba(20, 22, 27, 0.15);
 
     --radius-xs: 6px;
     --radius-sm: 8px;
@@ -54,9 +59,9 @@
     --radius-xl: 18px;
     --radius-pill: 999px;
 
-    --font-main: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-    --font-display: "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, sans-serif;
-    --font-mono: "Cascadia Mono", "Consolas", ui-monospace, monospace;
+    --font-main: "IBM Plex Sans", "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+    --font-display: "IBM Plex Sans", "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
 
     --menu-ancho: 252px;
     --menu-riel: 64px;
@@ -858,30 +863,134 @@ html[data-menu-estado="movil"] .shell-toggle {
     background: var(--color-surface-hover);
 }
 
-/* Alertas y badges */
+/* Avisos: fondo suave del color, ícono a la izquierda y texto oscuro
+   (se lee bien y no grita). Mismo lenguaje que los avisos flotantes. */
 .alert {
+    --aviso-color: var(--color-info);
+    --aviso-icono: var(--icono-info);
+
+    position: relative;
+    display: block;
+    padding: 11px 14px 11px 40px;
+    border: 1px solid color-mix(in srgb, var(--aviso-color) 28%, transparent);
     border-radius: var(--radius-md);
-    border: 1px solid transparent;
+    background: color-mix(in srgb, var(--aviso-color) 7%, #ffffff);
+    color: var(--color-text);
     font-size: 14px;
+    line-height: 1.45;
+}
+
+/* El ícono va aparte (absoluto): el contenido del aviso fluye normal,
+   aunque traiga negritas, enlaces o varias frases. */
+.alert::before {
+    content: "";
+    position: absolute;
+    top: 12px;
+    left: 14px;
+    width: 18px;
+    height: 18px;
+    background: var(--aviso-color);
+    -webkit-mask: var(--aviso-icono) center / contain no-repeat;
+    mask: var(--aviso-icono) center / contain no-repeat;
 }
 
 .alert-success {
-    background: var(--color-success-soft);
-    border-color: rgba(18, 128, 79, 0.2);
-    color: var(--color-success);
+    --aviso-color: var(--color-success);
+    --aviso-icono: var(--icono-exito);
 }
 
 .alert-error,
 .alert-danger {
-    background: var(--color-danger-soft);
-    border-color: rgba(207, 52, 52, 0.2);
-    color: var(--color-danger);
+    --aviso-color: var(--color-danger);
+    --aviso-icono: var(--icono-error);
 }
 
 .alert-warning {
-    background: var(--color-warning-soft);
-    border-color: rgba(178, 107, 0, 0.2);
-    color: var(--color-warning);
+    --aviso-color: #b07400;
+    --aviso-icono: var(--icono-advertencia);
+}
+
+:root {
+    --icono-exito: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='m8 12.5 2.6 2.5L16 9.5'/%3E%3C/svg%3E");
+    --icono-error: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7.5v5.5M12 16.5h.01'/%3E%3C/svg%3E");
+    --icono-advertencia: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3.5 2.5 20h19z'/%3E%3Cpath d='M12 10v4.5M12 17.5h.01'/%3E%3C/svg%3E");
+    --icono-info: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 11v5.5M12 7.5h.01'/%3E%3C/svg%3E");
+}
+
+/* Aviso flotante (ui-aviso): tarjeta blanca con ícono de color.
+   Lo crea el JavaScript de cada pantalla (p. ej. el punto de venta). */
+.ui-aviso {
+    --aviso-color: var(--color-success);
+    --aviso-icono: var(--icono-exito);
+
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    z-index: 80;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: min(520px, calc(100vw - 32px));
+    padding: 11px 16px 11px 13px;
+    border: 1px solid var(--color-border);
+    border-left: 3px solid var(--aviso-color);
+    border-radius: 12px;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-pop);
+    color: var(--color-text);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+    opacity: 0;
+    transform: translate(-50%, 8px);
+    pointer-events: none;
+    transition: opacity 160ms ease-out, transform 160ms ease-out;
+}
+
+.ui-aviso::before {
+    content: "";
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+    background: var(--aviso-color);
+    -webkit-mask: var(--aviso-icono) center / contain no-repeat;
+    mask: var(--aviso-icono) center / contain no-repeat;
+}
+
+.ui-aviso.is-visible {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+.ui-aviso.is-error {
+    --aviso-color: var(--color-danger);
+    --aviso-icono: var(--icono-error);
+}
+
+.ui-aviso.is-info {
+    --aviso-color: var(--color-info);
+    --aviso-icono: var(--icono-info);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ui-aviso {
+        transition: opacity 120ms linear;
+    }
+}
+
+/* Cifras en IBM Plex Mono con números tabulares, como en el punto de venta:
+   las columnas de dinero se comparan de un vistazo. */
+.app-content table {
+    font-variant-numeric: tabular-nums;
+}
+
+.ui-kpi-valor,
+.ui-metrica strong,
+.ui-tabla td.num,
+.app-content table td.text-right > strong,
+.app-content table td.text-right:not(:has(a, button, input, select, span, div)) {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
 }
 
 .badge {
@@ -949,10 +1058,11 @@ html[data-menu-estado="movil"] .shell-toggle {
 }
 
 /* Barra de filtros */
+/* Fila flexible: campos de ancho moderado y los botones al final, sin partirse */
 .ui-filtros {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    align-items: end;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
     gap: 12px;
     padding: 14px 16px;
     background: var(--color-surface);
@@ -1024,13 +1134,15 @@ html[data-menu-estado="movil"] .shell-toggle {
     font-weight: 600;
 }
 
+/* Cifras grandes en IBM Plex Mono, como el total del punto de venta */
 .ui-kpi-valor {
     overflow: hidden;
     color: var(--color-text);
-    font-family: var(--font-display);
-    font-size: 26px;
+    font-family: var(--font-mono);
+    font-size: 25px;
     font-weight: 700;
     letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
     white-space: nowrap;
     text-overflow: ellipsis;
 }
@@ -1520,4 +1632,14 @@ html .app-content .ventas-header-sub {
     clip: rect(0 0 0 0);
     clip-path: inset(50%);
     white-space: nowrap;
+}
+
+.ui-filtros > .ui-campo {
+    flex: 1 1 170px;
+    max-width: 280px;
+}
+
+.ui-filtros > .ui-acciones {
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
 }

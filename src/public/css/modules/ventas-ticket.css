@@ -1,16 +1,18 @@
 /* =========================================================
-   Ticket de Venta · Prismia POS Local
-   Alineado al sistema de diseño global v2.0
+   Impresión térmica de cotización y remisión (80 mm)
+   Mismo lenguaje del ticket de venta (ticket-venta.css): papel térmico en
+   pantalla, IBM Plex, cifras en Mono, sin mayúsculas forzadas, y al imprimir
+   todo en negro (las térmicas no imprimen grises claros).
    ========================================================= */
 
 :root {
-    --ticket-width: 80mm;
-    --ticket-bg: #ffffff;
-    --ticket-text: #111827;
-    --ticket-muted: #6b7280;
-    --ticket-line: #d1d5db;
-    --ticket-strong: #0f172a;
-    --ticket-accent: #244f8f;
+    --ticket-ancho: 76mm;
+    --ticket-papel: #fffdf7;
+    --ticket-tinta: #14161b;
+    --ticket-suave: #545b6a;
+    --ticket-linea: #d9dce3;
+    --ticket-sans: "IBM Plex Sans", "Segoe UI", Arial, sans-serif;
+    --ticket-mono: "IBM Plex Mono", Consolas, "Courier New", monospace;
 }
 
 * {
@@ -21,67 +23,74 @@ html,
 body {
     margin: 0;
     padding: 0;
-    background: #f1f3f6;
-    color: var(--ticket-text);
-    font-family: Arial, Helvetica, sans-serif;
 }
 
 body {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
     min-height: 100vh;
-    overflow-y: auto;
+    background: #f3f4f7;
+    color: var(--ticket-tinta);
+    font-family: var(--ticket-sans);
+    font-size: 12px;
+    line-height: 1.4;
+    font-variant-numeric: tabular-nums;
 }
 
 .ticket-page {
-    width: 100%;
-    min-height: 100vh;
-    padding: 32px 14px 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
+    width: 100%;
+    min-height: 100vh;
+    padding: 28px 16px 32px;
 }
 
+/* ---------- Papel ---------- */
 .ticket-paper {
-    width: var(--ticket-width);
-    background: var(--ticket-bg);
-    color: var(--ticket-text);
-    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
-    padding: 14px 12px 16px;
-    margin: 0 auto;
+    position: relative;
+    width: var(--ticket-ancho);
+    margin: 0 auto 8px;
+    padding: 16px 14px 18px;
+    border-top: 5px solid #1e2129;
+    background: var(--ticket-papel);
+    box-shadow: 0 1px 2px rgba(20, 22, 27, 0.06), 0 12px 32px -12px rgba(20, 22, 27, 0.18);
 }
 
+.ticket-paper::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: -8px;
+    left: 0;
+    height: 8px;
+    background:
+        linear-gradient(135deg, var(--ticket-papel) 50%, transparent 50%) 0 0 / 12px 8px repeat-x,
+        linear-gradient(225deg, var(--ticket-papel) 50%, transparent 50%) 0 0 / 12px 8px repeat-x;
+}
+
+/* ---------- Comercio ---------- */
 .ticket-header {
+    padding-bottom: 12px;
     text-align: center;
-    border-bottom: 1px dashed var(--ticket-line);
-    padding-bottom: 8px;
-    margin-bottom: 8px;
 }
 
 .ticket-header h1 {
     margin: 0 0 4px;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 700;
-    color: var(--ticket-strong);
-    letter-spacing: 0.3px;
+    line-height: 1.2;
 }
 
 .ticket-header p {
-    margin: 2px 0;
-    font-size: 10px;
-    color: #374151;
-    line-height: 1.25;
+    margin: 1px 0;
+    color: var(--ticket-suave);
+    font-size: 11px;
 }
 
+/* ---------- Bloques ---------- */
 .ticket-block {
-    border-bottom: 1px dashed var(--ticket-line);
-    padding: 8px 0;
-}
-
-.ticket-block:last-of-type {
-    border-bottom: none;
+    padding: 10px 0;
+    border-top: 1px dashed var(--ticket-linea);
 }
 
 .ticket-center {
@@ -89,67 +98,74 @@ body {
 }
 
 .ticket-document {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+    display: grid;
+    justify-items: center;
+    gap: 2px;
 }
 
+/* "COTIZACIÓN COMERCIAL" llega en mayúsculas: se muestra como frase */
 .ticket-title {
+    display: block;
+    color: var(--ticket-suave);
     font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    color: var(--ticket-strong);
+    font-weight: 500;
+    text-transform: lowercase;
+}
+
+.ticket-title::first-letter {
+    text-transform: uppercase;
 }
 
 .ticket-document-number {
     display: grid;
-    gap: 2px;
+    gap: 1px;
+    color: var(--ticket-suave);
     font-size: 11px;
 }
 
 .ticket-document-number strong {
-    font-size: 14px;
+    color: var(--ticket-tinta);
+    font-family: var(--ticket-mono);
+    font-size: 18px;
     font-weight: 700;
-    color: var(--ticket-accent);
+    letter-spacing: 0.02em;
 }
 
 .ticket-document-state {
-    font-size: 10px;
-    color: var(--ticket-muted);
+    color: var(--ticket-suave);
+    font-size: 11px;
 }
 
 .ticket-document-state strong {
-    color: var(--ticket-strong);
+    color: var(--ticket-tinta);
 }
 
 .ticket-block h2 {
     margin: 0 0 6px;
+    color: var(--ticket-suave);
     font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    color: var(--ticket-strong);
+    font-weight: 600;
 }
 
 .ticket-row {
     display: flex;
+    align-items: baseline;
     justify-content: space-between;
-    align-items: flex-start;
-    gap: 8px;
+    gap: 10px;
     margin: 2px 0;
-    font-size: 10px;
 }
 
 .ticket-row span {
-    color: #4b5563;
+    flex: 0 0 auto;
+    color: var(--ticket-suave);
 }
 
 .ticket-row strong {
-    color: #111827;
+    font-weight: 500;
     text-align: right;
-    font-weight: 700;
 }
 
+/* ---------- Productos ---------- */
 .ticket-table {
     width: 100%;
     border-collapse: collapse;
@@ -157,12 +173,12 @@ body {
 }
 
 .ticket-table thead th {
-    font-size: 9px;
-    text-transform: uppercase;
-    color: #4b5563;
-    font-weight: 700;
     padding: 0 0 4px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--ticket-linea);
+    color: var(--ticket-suave);
+    font-size: 10.5px;
+    font-weight: 600;
+    text-align: left;
 }
 
 .ticket-table th:nth-child(1),
@@ -187,129 +203,143 @@ body {
 
 .ticket-table tbody td {
     padding: 6px 0;
+    border-bottom: 1px dotted var(--ticket-linea);
+    font-size: 11px;
     vertical-align: top;
-    font-size: 10px;
-    border-bottom: 1px solid #f3f4f6;
 }
 
 .ticket-table tbody tr:last-child td {
-    border-bottom: none;
+    border-bottom: 0;
 }
 
 .ticket-table td strong {
     display: block;
-    font-size: 10.5px;
-    color: #111827;
-    line-height: 1.2;
+    font-weight: 600;
+    line-height: 1.25;
 }
 
 .ticket-table td small {
     display: block;
     margin-top: 2px;
-    font-size: 8.5px;
-    color: #6b7280;
+    color: var(--ticket-suave);
+    font-size: 10px;
     line-height: 1.25;
 }
 
 .ticket-table .right {
+    font-family: var(--ticket-mono);
     text-align: right;
     white-space: nowrap;
 }
 
-.ticket-totals {
-    padding-top: 10px;
+.ticket-table th.right {
+    font-family: var(--ticket-sans);
+}
+
+/* ---------- Totales ---------- */
+.ticket-totals .ticket-row strong {
+    font-family: var(--ticket-mono);
 }
 
 .ticket-total-main {
-    margin-top: 4px;
-    padding-top: 6px;
-    border-top: 1px solid var(--ticket-line);
+    margin-top: 6px;
+    padding-top: 8px;
+    border-top: 2px solid var(--ticket-tinta);
 }
 
-.ticket-total-main span,
-.ticket-total-main strong {
-    font-size: 13px;
+.ticket-total-main span {
+    color: var(--ticket-tinta);
+    font-size: 14px;
     font-weight: 700;
-    color: #111827;
 }
 
+.ticket-total-main strong {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+/* ---------- Pie ---------- */
 .ticket-footer {
-    text-align: center;
+    margin-top: 2px;
     padding-top: 10px;
-    border-top: 1px dashed var(--ticket-line);
-    margin-top: 8px;
+    border-top: 1px dashed var(--ticket-linea);
+    text-align: center;
 }
 
 .ticket-footer p {
-    margin: 3px 0;
-    font-size: 9.5px;
-    color: #4b5563;
+    margin: 2px 0;
+    color: var(--ticket-suave);
+    font-size: 11px;
 }
 
+/* ---------- Botones (solo en pantalla) ---------- */
 .ticket-actions {
     display: flex;
-    gap: 8px;
     justify-content: center;
+    gap: 8px;
 }
 
 .ticket-actions button {
-    border: none;
-    border-radius: 8px;
-    padding: 8px 16px;
-    font-size: 13px;
-    font-weight: 700;
+    min-height: 38px;
+    padding: 0 18px;
+    border: 1px solid #e2e4ea;
+    border-radius: 10px;
+    background: #ffffff;
+    color: var(--ticket-tinta);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
     cursor: pointer;
-    color: white;
-    background: #244f8f;
-    transition: background 150ms ease;
+}
+
+.ticket-actions button:first-child {
+    border-color: #0d9668;
+    background: #0d9668;
+    color: #ffffff;
+}
+
+.ticket-actions button:first-child:hover {
+    background: #0a7a54;
 }
 
 .ticket-actions button:hover {
-    background: #1a3a6a;
+    border-color: #cfd4dd;
 }
 
-.ticket-actions button:last-child {
-    background: #64748b;
-}
-
-.ticket-actions button:last-child:hover {
-    background: #475569;
-}
-
+/* ---------- Impresión ---------- */
 @page {
     size: auto;
-    margin: 12mm;
+    margin: 3mm;
 }
 
 @media print {
+    :root {
+        --ticket-papel: #ffffff;
+        --ticket-suave: #222222;
+        --ticket-linea: #000000;
+    }
 
     html,
     body {
         background: #ffffff;
-        width: 100%;
-        margin: 0;
-        padding: 0;
-    }
-
-    body {
-        display: block;
+        color: #000000;
     }
 
     .ticket-page {
-        min-height: auto;
-        padding: 0;
-        margin: 0 auto;
-        width: 100%;
         display: block;
+        min-height: 0;
+        padding: 0;
     }
 
     .ticket-paper {
-        width: var(--ticket-width);
-        margin: 0 auto;
-        box-shadow: none;
+        width: 72mm;
+        margin: 0;
         padding: 0;
+        border-top: 0;
+        box-shadow: none;
     }
 
+    .ticket-paper::after,
     .ticket-actions {
         display: none !important;
     }

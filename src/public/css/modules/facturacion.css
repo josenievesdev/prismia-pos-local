@@ -7,27 +7,29 @@
    Enfoque: html[data-pos-enfoque="1"] oculta el menú lateral.
    ========================================================= */
 
+/* Los colores y letras salen de los tokens globales (sistema.css): el POS y
+   el resto de la app comparten exactamente la misma paleta. */
 html.ruta-pos {
-    --pos-superficie: #ffffff;
-    --pos-papel: #fffdf7;
-    --pos-linea: #e2e4ea;
-    --pos-texto: #14161b;
-    --pos-texto-2: #545b6a;
-    --pos-texto-3: #8b92a1;
-    --pos-tinta: #1e2129;
-    --pos-acento: #3456d6;
-    --pos-cobrar: #0d9668;
-    --pos-cobrar-oscuro: #0a7a54;
-    --pos-cobrar-suave: #e2f3ec;
-    --pos-peligro: #c9302c;
-    --pos-peligro-suave: #fdeceb;
-    --pos-aviso-suave: #fff3d1;
-    --pos-aviso-texto: #8a5a00;
-    --pos-mono: "IBM Plex Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
-    --pos-r-sm: 6px;
-    --pos-r-md: 10px;
-    --pos-r-lg: 14px;
-    --pos-sombra-pop: 0 12px 32px rgba(20, 22, 27, 0.15);
+    --pos-superficie: var(--color-surface);
+    --pos-papel: var(--color-paper);
+    --pos-linea: var(--color-border);
+    --pos-texto: var(--color-text);
+    --pos-texto-2: var(--color-muted);
+    --pos-texto-3: var(--color-faint);
+    --pos-tinta: var(--color-ink);
+    --pos-acento: var(--color-primary);
+    --pos-cobrar: var(--color-cobrar);
+    --pos-cobrar-oscuro: var(--color-cobrar-dark);
+    --pos-cobrar-suave: var(--color-success-soft);
+    --pos-peligro: var(--color-danger);
+    --pos-peligro-suave: var(--color-danger-soft);
+    --pos-aviso-suave: var(--color-warning-soft);
+    --pos-aviso-texto: var(--color-warning);
+    --pos-mono: var(--font-mono);
+    --pos-r-sm: var(--radius-xs);
+    --pos-r-md: var(--radius-md);
+    --pos-r-lg: var(--radius-lg);
+    --pos-sombra-pop: var(--shadow-pop);
     --pos-movimiento: 120ms ease-out;
     --pos-lateral: 380px;
     --pos-fila: 50px;
@@ -1852,7 +1854,9 @@ html[data-pos-mode="tactil"] .pos-teclado {
     font-size: 12px;
 }
 
-/* ---------- Caja cerrada ---------- */
+/* ---------- Caja cerrada ----------
+   Una tarjeta tranquila sobre el POS en pausa: ícono de caja registradora en
+   el color de la marca (no un candado rojo), qué pasa y qué hacer. */
 .pos-bloqueo {
     position: absolute;
     inset: 0;
@@ -1860,39 +1864,45 @@ html[data-pos-mode="tactil"] .pos-teclado {
     display: grid;
     place-items: center;
     padding: 20px;
+    background: color-mix(in srgb, var(--color-bg) 45%, transparent);
+    backdrop-filter: blur(1.5px);
 }
 
 .pos-bloqueo-tarjeta {
     display: grid;
-    gap: 10px;
-    width: min(440px, 100%);
-    padding: 24px;
+    justify-items: center;
+    gap: 8px;
+    width: min(400px, 100%);
+    padding: 28px 28px 22px;
     border: 1px solid var(--pos-linea);
-    border-radius: var(--pos-r-lg);
+    border-radius: 16px;
     background: var(--pos-superficie);
     box-shadow: var(--pos-sombra-pop);
+    text-align: center;
 }
 
 .pos-bloqueo-icono {
     display: grid;
     place-items: center;
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: var(--pos-peligro-suave);
-    color: var(--pos-peligro);
+    width: 52px;
+    height: 52px;
+    margin-bottom: 6px;
+    border-radius: 14px;
+    background: var(--pos-acento-suave);
+    color: var(--pos-acento);
 }
 
 .pos-bloqueo h2 {
-    margin: 6px 0 0;
-    font-size: 20px;
-    font-weight: 700;
+    margin: 0;
+    font-size: 19px;
+    font-weight: 600;
 }
 
 .pos-bloqueo p {
     margin: 0;
     color: var(--pos-texto-2);
     font-size: 14px;
+    line-height: 1.5;
 }
 
 .pos-bloqueo-boton {
@@ -1900,17 +1910,30 @@ html[data-pos-mode="tactil"] .pos-teclado {
     align-items: center;
     justify-content: center;
     gap: 10px;
+    width: 100%;
     min-height: 48px;
-    margin-top: 8px;
+    margin-top: 14px;
     border-radius: var(--pos-r-md);
     background: var(--color-primary);
     color: #ffffff;
-    font-weight: 700;
+    font-weight: 600;
     text-decoration: none;
 }
 
 .pos-bloqueo-boton:hover {
-    background: var(--color-primary-dark, #2a46b8);
+    background: var(--color-primary-dark);
+}
+
+.pos-bloqueo-secundario {
+    margin-top: 6px;
+    color: var(--pos-texto-2);
+    font-size: 13.5px;
+    text-decoration: none;
+}
+
+.pos-bloqueo-secundario:hover {
+    color: var(--pos-texto);
+    text-decoration: underline;
 }
 
 /* =========================================================
@@ -2332,22 +2355,32 @@ body.ventas-modal-open {
     font-size: 13px;
 }
 
-.ventas-confirm-header {
-    justify-content: flex-start;
+/* Confirmación: título, una frase y dos botones. Sin íconos de alarma. */
+.ventas-confirm-backdrop {
+    background: rgba(20, 22, 27, 0.32);
+    backdrop-filter: blur(2px);
 }
 
-.ventas-confirm-icon {
-    display: inline-flex;
-    flex: 0 0 auto;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--color-danger-soft);
-    color: var(--color-danger);
-    font-size: 18px;
-    font-weight: 800;
+.ventas-confirm-card {
+    width: min(420px, 100%);
+    padding: 20px 22px 18px;
+}
+
+.ventas-confirm-card h3 {
+    margin: 0 0 6px;
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.ventas-confirm-card p {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.ventas-confirm-card .ventas-confirm-actions {
+    padding: 18px 0 0;
 }
 
 @media (max-width: 599.98px) {
@@ -2356,37 +2389,16 @@ body.ventas-modal-open {
     }
 }
 
-/* Aviso flotante */
-.pos-aviso {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    z-index: 80;
-    max-width: min(460px, calc(100vw - 40px));
-    padding: 12px 16px;
-    border-radius: var(--pos-r-md);
-    background: var(--pos-tinta);
-    box-shadow: var(--pos-sombra-pop);
-    color: #ffffff;
-    font-size: 14px;
-    font-weight: 600;
-    opacity: 0;
-    transform: translate(-50%, 10px);
-    pointer-events: none;
-    transition: opacity 160ms ease, transform 160ms ease;
+/* Aviso flotante: el componente global ui-aviso (sistema.css), ubicado sobre
+   la parte baja del ticket, encima de la barra de acciones. Así queda cerca
+   de lo que el cajero está mirando y no tapa el buscador ni "Cobrar". */
+.pos-principal {
+    position: relative;
 }
 
-.pos-aviso.is-visible {
-    opacity: 1;
-    transform: translate(-50%, 0);
-}
-
-.pos-aviso.is-error {
-    background: var(--pos-peligro);
-}
-
-.pos-aviso.is-ok {
-    background: var(--pos-cobrar-oscuro);
+.pos-principal > .ui-aviso {
+    position: absolute;
+    bottom: 52px;
 }
 
 @media (prefers-reduced-motion: reduce) {

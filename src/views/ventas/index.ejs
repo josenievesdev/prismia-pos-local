@@ -324,14 +324,17 @@
     </aside>
 
     <% if (!puedeVender) { %>
-        <div class="pos-bloqueo" role="dialog" aria-modal="true" aria-labelledby="tituloBloqueoPOS">
+        <div class="pos-bloqueo" role="dialog" aria-modal="true" aria-labelledby="tituloBloqueoPOS"
+            aria-describedby="textoBloqueoPOS">
             <div class="pos-bloqueo-tarjeta">
                 <span class="pos-bloqueo-icono" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+                    <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8"
+                        stroke-linecap="round" stroke-linejoin="round"><path d="M6 11V6a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v5" /><path d="M9 8h6" /><rect x="3" y="11" width="18" height="9" rx="2" /><path d="M8 15.5h.01M12 15.5h.01M16 15.5h.01" /></svg>
                 </span>
-                <h2 id="tituloBloqueoPOS">La caja está cerrada</h2>
-                <p>Abre la caja con la base del turno para empezar a vender.</p>
+                <h2 id="tituloBloqueoPOS">Caja cerrada</h2>
+                <p id="textoBloqueoPOS">Para vender, abre la caja con la base del turno.</p>
                 <a href="/caja/abrir" class="pos-bloqueo-boton" autofocus>Abrir caja <kbd>Enter</kbd></a>
+                <a href="/caja" class="pos-bloqueo-secundario">Ver turnos anteriores</a>
             </div>
         </div>
     <% } %>

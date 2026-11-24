@@ -124,3 +124,5 @@ PrismiaRestoreTest/
 PrismiaSetupTest/
 PrismiaSecretsTest/
 PrismiaRuntimeTest/
+# Referencias de diseño (pen.dev): fuera del repositorio
+/designe/

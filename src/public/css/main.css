@@ -46,7 +46,8 @@
     --radius-sm: 8px;
     --radius-xs: 6px;
 
-    --font-main: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    --font-main: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+    --font-mono: "IBM Plex Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
 
     --layout-max: 1260px;
 }
