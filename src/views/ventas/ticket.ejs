@@ -123,9 +123,6 @@
 
         <section class="recibo-totales" aria-label="Totales">
             <div class="recibo-fila"><span>Subtotal</span><span><%= pesos(venta.subtotal) %></span></div>
-            <% if (Number(venta.descuento_total) > 0) { %>
-                <div class="recibo-fila"><span>Descuento</span><span>− <%= pesos(venta.descuento_total) %></span></div>
-            <% } %>
             <% if (tarifas.length) { %>
                 <% tarifas.forEach(function (entrada) { %>
                     <div class="recibo-fila">
@@ -137,6 +134,10 @@
                 <div class="recibo-fila"><span>IVA</span><span><%= pesos(venta.impuesto_total) %></span></div>
             <% } %>
             <div class="recibo-total"><span>Total</span><strong><%= pesos(venta.total) %></strong></div>
+            <% if (Number(venta.descuento_total) > 0) { %>
+                <%# Informativo: el subtotal y el total ya vienen con el descuento aplicado %>
+                <div class="recibo-fila recibo-ahorro"><span>Descuentos aplicados</span><span><%= pesos(venta.descuento_total) %></span></div>
+            <% } %>
         </section>
 
         <section class="recibo-pagos" aria-label="Pago">

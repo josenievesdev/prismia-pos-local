@@ -424,6 +424,38 @@ function insertarNumeracionesDocumentosIniciales() {
     console.log('Numeraciones documentales iniciales verificadas.');
 }
 
+function insertarLicenciaLocalInicial() {
+    const existe = db
+        .prepare(`
+            SELECT id_licencia
+            FROM licencia_local
+            WHERE id_licencia = 1
+            LIMIT 1
+        `)
+        .get();
+
+    if (existe) {
+        console.log('Licencia local inicial ya existe.');
+        return;
+    }
+
+    db.prepare(`
+        INSERT INTO licencia_local (
+            id_licencia,
+            estado,
+            dias_prueba,
+            nota
+        ) VALUES (
+            1,
+            'prueba',
+            30,
+            'Registro inicial para prueba local de Prismia POS Local.'
+        )
+    `).run();
+
+    console.log('Licencia local inicial creada.');
+}
+
 function insertarClienteConsumidorFinal() {
     const existe = db
         .prepare(`
@@ -586,6 +618,7 @@ function inicializarBaseDatos() {
     insertarUnidadesMedidaIniciales();
     insertarMediosPagoIniciales();
     insertarNumeracionesDocumentosIniciales();
+    insertarLicenciaLocalInicial();
     insertarClienteConsumidorFinal();
     console.log('Primer administrador pendiente de configuración desde /setup.');
     registrarAuditoriaInicial();

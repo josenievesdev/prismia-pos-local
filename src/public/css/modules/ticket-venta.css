@@ -394,3 +394,10 @@ body {
         display: none;
     }
 }
+
+/* Descuentos: dato informativo (el total ya los incluye) */
+.recibo-ahorro {
+    margin-top: 4px;
+    color: var(--recibo-suave);
+    font-size: 11.5px;
+}

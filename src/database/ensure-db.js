@@ -5,14 +5,42 @@ const migrator = require('./migrator');
 const tablasMinimasParaArranque = [
     'roles',
     'usuarios',
-    'clientes',
+    'usuario_roles',
+    'configuracion_negocio',
+    'licencia_local',
+    'catalogo_departamentos',
+    'catalogo_municipios',
+    'categorias_productos',
+    'unidades_medida',
     'productos',
+    'clientes',
+    'proveedores',
+    'medios_pago',
+    'numeraciones_documentos',
+    'turnos_caja',
+    'movimientos_caja',
     'ventas',
     'detalle_ventas',
-    'turnos_caja',
-    'medios_pago',
-    'unidades_medida',
-    'numeraciones_documentos',
+    'pagos_venta',
+    'comprobantes',
+    'anulaciones_venta',
+    'devoluciones_venta',
+    'detalle_devoluciones_venta',
+    'notas_credito',
+    'detalle_notas_credito',
+    'movimientos_inventario',
+    'conteos_inventario',
+    'detalle_conteos_inventario',
+    'categorias_gasto',
+    'gastos',
+    'compras',
+    'compras_detalle',
+    'pagos_compras_proveedores',
+    'cotizaciones',
+    'detalle_cotizaciones',
+    'remisiones',
+    'detalle_remisiones',
+    'auditoria',
 ];
 
 function contarTablasUsuario() {
@@ -42,8 +70,14 @@ function tablaExiste(nombreTabla) {
     return Boolean(tabla);
 }
 
-function obtenerTablasMinimasFaltantes() {
-    return tablasMinimasParaArranque.filter((tabla) => !tablaExiste(tabla));
+// Tablas que crean las migraciones versionadas (no el esquema base): en una base
+// existente pueden faltar ANTES de migrar; se verifican después de migrar.
+const tablasCreadasPorMigraciones = new Set(['licencia_local']);
+
+function obtenerTablasMinimasFaltantes({ incluirMigradas = true } = {}) {
+    return tablasMinimasParaArranque
+        .filter((tabla) => incluirMigradas || !tablasCreadasPorMigraciones.has(tabla))
+        .filter((tabla) => !tablaExiste(tabla));
 }
 
 function asegurarBaseDatos() {
@@ -70,7 +104,7 @@ function asegurarBaseDatos() {
         };
     }
 
-    const tablasFaltantes = obtenerTablasMinimasFaltantes();
+    const tablasFaltantes = obtenerTablasMinimasFaltantes({ incluirMigradas: false });
 
     if (tablasFaltantes.length > 0) {
         console.warn('====================================');
@@ -91,6 +125,21 @@ function asegurarBaseDatos() {
     const migracion = migrator.aplicarMigracionesPendientes(db, {
         crearRespaldo: true,
     });
+
+    // Después de migrar deben estar todas (incluida licencia_local).
+    const faltantesTrasMigrar = obtenerTablasMinimasFaltantes();
+
+    if (faltantesTrasMigrar.length > 0) {
+        console.warn(`Tablas mínimas faltantes tras migrar: ${faltantesTrasMigrar.join(', ')}`);
+
+        return {
+            creada: false,
+            ok: false,
+            mensaje: 'Base de datos existente con estructura mínima incompleta.',
+            tablas_faltantes: faltantesTrasMigrar,
+            migracion,
+        };
+    }
 
     return {
         creada: false,

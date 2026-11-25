@@ -192,10 +192,18 @@ function prepararProductoParaVenta(producto) {
         producto.costo_promedio || producto.ultimo_costo || producto.precio_costo
     );
 
+    const productoSinStock = controlaInventario === 1 && stockDisponible <= 0;
+
+    // Regla de cada producto: si permite vender sin stock, se vende (el stock queda
+    // en negativo y el POS lo avisa en amarillo); si no, se bloquea con un mensaje claro.
     const puedeVender =
         controlaInventario === 0
         || permiteVentaSinStock === 1
-        || stockDisponible > 0;
+        || !productoSinStock;
+
+    const mensajeNoDisponible = puedeVender
+        ? null
+        : 'Sin stock disponible. Registra una compra o ajuste de inventario antes de vender.';
 
     return {
         ...producto,
@@ -226,6 +234,7 @@ function prepararProductoParaVenta(producto) {
 
         puede_vender: puedeVender,
         estado_venta: puedeVender ? 'disponible' : 'sin_stock',
+        mensaje_no_disponible: mensajeNoDisponible,
     };
 }
 
@@ -442,6 +451,7 @@ function consolidarItemsVenta(items) {
     for (const item of items) {
         const idProducto = normalizarId(item.id_producto);
         const cantidad = normalizarNumero(item.cantidad);
+        const descuentoUnitario = normalizarEntero(item.descuento_unitario, 0);
 
         if (!idProducto) {
             return {
@@ -457,24 +467,46 @@ function consolidarItemsVenta(items) {
             };
         }
 
-        const acumulado = mapa.get(idProducto) || 0;
-        mapa.set(idProducto, redondearCantidad(acumulado + cantidad));
+        if (descuentoUnitario < 0) {
+            return {
+                ok: false,
+                mensaje: 'El descuento no puede ser negativo.',
+            };
+        }
+
+        const clave = `${idProducto}:${descuentoUnitario}`;
+        const acumulado = mapa.get(clave) || {
+            id_producto: idProducto,
+            cantidad: 0,
+            descuento_unitario: descuentoUnitario,
+        };
+
+        acumulado.cantidad = redondearCantidad(acumulado.cantidad + cantidad);
+        mapa.set(clave, acumulado);
     }
 
     return {
         ok: true,
-        items: Array.from(mapa.entries()).map(([id_producto, cantidad]) => ({
-            id_producto,
-            cantidad,
-        })),
+        items: Array.from(mapa.values()),
     };
 }
 
-function calcularLineaVenta(producto, cantidad) {
+function calcularLineaVenta(producto, cantidad, descuentoUnitario = 0) {
     const precioUnitario = normalizarEntero(producto.precio_venta);
     const precioCostoUnitario = normalizarEntero(producto.precio_costo_referencia);
+    const descuentoUnitarioNormalizado = normalizarEntero(descuentoUnitario, 0);
 
-    const brutoLinea = dinero.multiplicarPorCantidad(precioUnitario, cantidad);
+    if (descuentoUnitarioNormalizado < 0) {
+        throw new Error('El descuento unitario no puede ser negativo.');
+    }
+
+    if (descuentoUnitarioNormalizado > precioUnitario) {
+        throw new Error(`El descuento no puede superar el precio unitario de "${producto.nombre}".`);
+    }
+
+    const precioUnitarioNeto = Math.max(0, precioUnitario - descuentoUnitarioNormalizado);
+    // Aritmética entera exacta (dinero-exacto): sin errores de punto flotante
+    const brutoLinea = dinero.multiplicarPorCantidad(precioUnitarioNeto, cantidad);
 
     const manejaIva = normalizarEntero(producto.maneja_iva) === 1;
     const porcentajeIva = normalizarEntero(producto.porcentaje_iva);
@@ -500,7 +532,7 @@ function calcularLineaVenta(producto, cantidad) {
     return {
         precio_unitario: precioUnitario,
         precio_costo_unitario: precioCostoUnitario,
-        descuento_unitario: 0,
+        descuento_unitario: descuentoUnitarioNormalizado,
         porcentaje_iva: manejaIva ? porcentajeIva : 0,
         impuesto_unitario: cantidad > 0 ? redondearDinero(impuestoTotal / cantidad) : 0,
         impuesto_total: impuestoTotal,
@@ -546,10 +578,15 @@ function prepararItemsParaRegistro(itemsConsolidados) {
             };
         }
 
+        const stockAnterior = normalizarNumero(producto.stock_actual);
+        const stockNuevo = producto.controla_inventario === 1
+            ? redondearCantidad(stockAnterior - cantidad)
+            : stockAnterior;
+
         if (
             producto.controla_inventario === 1
             && producto.permite_venta_sin_stock !== 1
-            && cantidad > producto.stock_disponible
+            && stockNuevo < 0
         ) {
             return {
                 ok: false,
@@ -557,12 +594,16 @@ function prepararItemsParaRegistro(itemsConsolidados) {
             };
         }
 
-        const linea = calcularLineaVenta(producto, cantidad);
+        const descuentoUnitario = normalizarEntero(item.descuento_unitario, 0);
 
-        const stockAnterior = normalizarNumero(producto.stock_actual);
-        const stockNuevo = producto.controla_inventario === 1
-            ? redondearCantidad(stockAnterior - cantidad)
-            : stockAnterior;
+        if (descuentoUnitario > producto.precio_venta) {
+            return {
+                ok: false,
+                mensaje: `El descuento del producto "${producto.nombre}" no puede superar su precio unitario.`,
+            };
+        }
+
+        const linea = calcularLineaVenta(producto, cantidad, descuentoUnitario);
 
         itemsPreparados.push({
             id_producto: producto.id_producto,
@@ -588,7 +629,8 @@ function prepararItemsParaRegistro(itemsConsolidados) {
 function calcularResumenRegistroVenta(items) {
     return items.reduce((resumen, item) => {
         resumen.subtotal += item.subtotal;
-        resumen.descuento_total += item.descuento_unitario * item.cantidad;
+        // Aritmética exacta: con cantidades decimales (0,450 kg) no aparecen centavos falsos
+        resumen.descuento_total += dinero.multiplicarPorCantidad(item.descuento_unitario, item.cantidad);
         resumen.impuesto_total += item.impuesto_total;
         resumen.total += item.total_linea;
         resumen.total_costo += item.costo_total;

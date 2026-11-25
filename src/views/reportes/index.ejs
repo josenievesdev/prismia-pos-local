@@ -24,7 +24,7 @@
 
     <section class="ui-kpis">
         <%- include('../partials/ui/kpi', { etiqueta: 'Total bruto', valor: formatearPesos(resumenVentas.total_bruto), detalle: resumenVentas.total_facturas + ' factura(s)' }) %>
-        <%- include('../partials/ui/kpi', { etiqueta: 'Total neto', valor: formatearPesos(resumenVentas.total_neto), detalle: resumenVentas.facturas_pagadas + ' pagada(s)', tono: 'exito' }) %>
+        <%- include('../partials/ui/kpi', { etiqueta: 'Total neto', valor: formatearPesos(resumenVentas.total_neto), detalle: resumenVentas.facturas_pagadas + ' pagada(s)' + (Number(resumenVentas.descuento_neto) > 0 ? ' · Desc. ' + formatearPesos(resumenVentas.descuento_neto) : ''), tono: 'exito' }) %>
         <%- include('../partials/ui/kpi', { etiqueta: 'Total anulado', valor: formatearPesos(resumenVentas.total_anulado), detalle: resumenVentas.facturas_anuladas + ' anulada(s)', tono: 'peligro' }) %>
         <%- include('../partials/ui/kpi', { etiqueta: 'Utilidad bruta neta', valor: formatearPesos(resumenVentas.utilidad_bruta_neta), detalle: 'Margen: ' + resumenVentas.margen_bruto_porcentaje + '%' }) %>
     </section>
@@ -153,6 +153,7 @@
                             <tr>
                                 <th>Producto</th>
                                 <th class="num">Cantidad</th>
+                                <th class="num">Desc.</th>
                                 <th class="num">Total</th>
                                 <th class="num">Utilidad</th>
                             </tr>
@@ -165,6 +166,7 @@
                                         <small><%= producto.codigo_interno %> · <%= producto.unidad_abreviatura %></small>
                                     </td>
                                     <td class="num"><%= producto.cantidad_vendida %></td>
+                                    <td class="num"><%= Number(producto.descuento_neto) > 0 ? formatearPesos(producto.descuento_neto) : '—' %></td>
                                     <td class="num"><%= formatearPesos(producto.total_neto) %></td>
                                     <td class="num"><%= formatearPesos(producto.utilidad_bruta) %></td>
                                 </tr>
@@ -208,7 +210,10 @@
                                         <small><%= venta.medios_pago %></small>
                                     </td>
                                     <td><%- include('../partials/ui/estado', { texto: venta.estado, tono: venta.estado === 'anulada' ? 'peligro' : 'exito' }) %></td>
-                                    <td class="num"><%= formatearPesos(venta.total) %></td>
+                                    <td class="num">
+                                        <%= formatearPesos(venta.total) %>
+                                        <% if (Number(venta.descuento_total) > 0) { %><small>Desc. <%= formatearPesos(venta.descuento_total) %></small><% } %>
+                                    </td>
                                 </tr>
                             <% }) %>
                         </tbody>

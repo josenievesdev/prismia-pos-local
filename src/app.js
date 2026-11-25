@@ -11,6 +11,7 @@ const empresa = require('./config/empresa');
 const runtimePaths = require('./config/runtime-paths');
 const localsMiddleware = require('./middlewares/locals.middleware');
 const verificarOrigen = require('./middlewares/origen.middleware');
+const { requiereLicenciaOperativa } = require('./middlewares/licencia.middleware');
 const errorMiddleware = require('./middlewares/error.middleware');
 
 const setupRoutes = require('./modules/setup/setup.routes');
@@ -33,6 +34,7 @@ const backupsRoutes = require('./modules/backups/backups.routes');
 const usuariosRoutes = require('./modules/usuarios/usuarios.routes');
 const proveedoresRoutes = require('./modules/proveedores/proveedores.routes');
 const comprasRoutes = require('./modules/compras/compras.routes');
+const licenciaRoutes = require('./modules/licencia-local/licenciaLocal.routes');
 
 const app = express();
 
@@ -309,6 +311,12 @@ app.get('/salud', (req, res) => {
 });
 
 /**
+ * Control de licencia local.
+ * Se aplica después de setup/salud y antes de las rutas operativas.
+ */
+app.use(requiereLicenciaOperativa);
+
+/**
  * Ruta principal
  */
 app.get('/', (req, res) => {
@@ -319,6 +327,7 @@ app.get('/', (req, res) => {
  * Rutas de módulos
  */
 app.use('/auth', authRoutes);
+app.use('/licencia', licenciaRoutes);
 app.use('/dashboard', dashboardRoutes);
 app.use('/configuracion', configuracionRoutes);
 app.use('/categorias-productos', categoriasRoutes);

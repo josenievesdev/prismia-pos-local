@@ -15,6 +15,11 @@
     "pack:dir": "npm run check:pre-electron && npm run native:electron && electron-builder --dir",
     "dist:win": "npm run check:pre-electron && npm run native:electron && electron-builder --win nsis",
     "db:validate": "npm run native:node && node src/database/validate-db.js",
+    "db:audit:contable": "npm run native:node && node src/database/audit-contable.js",
+    "db:repair:turnos": "npm run native:node && node src/database/reparar-turnos-caja.js",
+    "licencia:keys": "node tools/licencias/generar-claves-licencia.js",
+    "licencia:code": "node tools/licencias/generar-codigo-activacion.js",
+    "licencia:audit": "npm run native:node && node src/database/audit-licencia.js",
     "db:migrate:001": "node src/database/migrations/001_unidades_costos_iva.js",
     "db:migrate:002": "node src/database/migrations/002_conteos_inventario.js",
     "db:migrate:003": "node src/database/migrations/003_medios_pago_caja.js",
@@ -22,10 +27,15 @@
     "db:migrate:005": "node src/database/migrations/005_pagos_venta_medios_pago.js",
     "db:migrate:006": "node src/database/migrations/006_gastos_medios_pago.js",
     "db:migrate:037": "node src/database/migrations/037_normalizar_iva_venta_porcentaje.js",
+    "db:migrate:038": "node src/database/migrations/038_crear_licencia_local.js",
+    "db:migrate:039": "npm run native:node && node src/database/migrations/039_ampliar_licencia_local_mensualidades.js",
+    "db:migrate:040": "npm run native:node && node src/database/migrations/040_ampliar_datos_licencia_activada.js",
     "check:pre-electron": "npm run db:validate && node scripts/verificar-pre-electron.js",
     "check:runtime": "node scripts/diagnostico-runtime.js",
     "test": "npm run native:node && node --test \"tests/**/*.test.js\"",
-    "test:rapido": "node --test \"tests/**/*.test.js\""
+    "test:rapido": "node --test \"tests/**/*.test.js\"",
+    "demo:reset": "node scripts/demo/reset-demo-landing.js",
+    "demo:electron": "set \"PRISMIA_DATA_DIR=%CD%\\PrismiaDemoLanding\" && set \"SUPPORT_BACKUP_KEY=PRM-SOP-DEMO-LAND-2026\" && npm run electron"
   },
   "keywords": [
     "pos",
@@ -101,7 +111,9 @@
       "!**/*.bak",
       "!**/*.zip.tmp"
     ],
+    "icon": "build/icon.ico",
     "win": {
+      "icon": "build/icon.ico",
       "target": [
         {
           "target": "nsis",
@@ -116,7 +128,10 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Prismia POS Local"
+      "shortcutName": "Prismia POS Local",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico"
     }
   },
   "allowScripts": {

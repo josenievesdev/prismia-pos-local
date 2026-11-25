@@ -96,6 +96,47 @@ impuesto_por_defecto INTEGER NOT NULL DEFAULT 0,
         CHECK (maneja_iva IN (0, 1)), iva_incluido_en_precio INTEGER NOT NULL DEFAULT 0
         CHECK (iva_incluido_en_precio IN (0, 1)), porcentaje_iva_defecto INTEGER NOT NULL DEFAULT 0);
 
+-- Tabla: licencia_local
+CREATE TABLE IF NOT EXISTS licencia_local (
+    id_licencia INTEGER PRIMARY KEY CHECK (id_licencia = 1),
+
+    estado TEXT NOT NULL DEFAULT 'prueba'
+        CHECK (estado IN ('prueba', 'activa', 'vencida', 'bloqueada')),
+
+    fecha_inicio_prueba TEXT,
+    fecha_fin_prueba TEXT,
+
+    fecha_inicio_periodo TEXT,
+    fecha_fin_periodo TEXT,
+
+    dias_prueba INTEGER NOT NULL DEFAULT 30,
+    dias_gracia INTEGER NOT NULL DEFAULT 3,
+
+    plan TEXT NOT NULL DEFAULT 'prueba',
+
+    fecha_ultimo_uso TEXT,
+    fecha_activacion TEXT,
+
+    huella_equipo TEXT,
+    cliente_licencia TEXT,
+    codigo_activacion TEXT,
+    codigo_firmado TEXT,
+    ultimo_nonce_licencia TEXT,
+    fecha_emision_codigo TEXT,
+    firma_valida INTEGER NOT NULL DEFAULT 0
+        CHECK (firma_valida IN (0, 1)),
+
+    origen_activacion TEXT NOT NULL DEFAULT 'local',
+    ultima_validacion_online TEXT,
+    ultimo_intento_online TEXT,
+
+    motivo_bloqueo TEXT,
+    nota TEXT,
+
+    creado_en TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+    actualizado_en TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+);
+
 -- Tabla: catalogo_departamentos
 CREATE TABLE IF NOT EXISTS catalogo_departamentos (
             id_departamento INTEGER PRIMARY KEY AUTOINCREMENT,

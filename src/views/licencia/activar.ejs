@@ -1,0 +1,163 @@
+<% const licencia=typeof licenciaLocal !=='undefined' ? licenciaLocal : null; const urlPago=typeof whatsappPagoUrl
+    !=='undefined' ? whatsappPagoUrl : '#' ; const valoresFormulario=typeof valores !=='undefined' ? valores : {
+    codigo_activacion: '' , }; const estadoOperativo=licencia?.estado_operativo || 'no_disponible' ; const
+    mensajeLicencia=licencia?.mensaje || 'No fue posible leer el estado de la licencia local.' ; const
+    negocioLocal=licencia?.nombre_negocio_local || 'No registrado' ; const
+    clienteLicencia=licencia?.cliente_licencia_resuelto || licencia?.cliente_licencia || negocioLocal; %>
+
+    <section class="module-page">
+        <div class="module-header module-header-actions">
+            <div>
+                <p class="eyebrow">Activación</p>
+                <h2>Activar licencia</h2>
+                <p>
+                    Ingresa el código de activación entregado después del pago o renovación.
+                </p>
+            </div>
+
+            <div class="module-actions">
+                <a href="/licencia" class="btn-secondary">Ver licencia</a>
+                <a href="/dashboard" class="btn-secondary">Volver al inicio</a>
+            </div>
+        </div>
+
+        <% if (error) { %>
+            <div class="alert alert-error">
+                <%= error %>
+            </div>
+            <% } %>
+
+                <% if (mensajeExito) { %>
+                    <div class="alert alert-success">
+                        <%= mensajeExito %>
+                    </div>
+                    <% } %>
+
+                        <section class="module-card license-renew-card">
+                            <div class="license-renew-hero">
+                                <div class="license-renew-badge">Prismia POS Local</div>
+
+                                <h1>Activación manual de servicio</h1>
+
+                                <p class="license-renew-lead">
+                                    <%= mensajeLicencia %>
+                                        Cuando tengas tu código, pégalo aquí para renovar o activar el periodo de
+                                        servicio.
+                                </p>
+
+                                <div class="license-renew-date">
+                                    <span>Estado actual</span>
+                                    <strong>
+                                        <%= estadoOperativo %>
+                                    </strong>
+                                </div>
+
+                                <div class="license-renew-date">
+                                    <span>Negocio local</span>
+                                    <strong>
+                                        <%= negocioLocal %>
+                                    </strong>
+                                </div>
+
+                                <div class="license-renew-date">
+                                    <span>Cliente licencia</span>
+                                    <strong>
+                                        <%= clienteLicencia %>
+                                    </strong>
+                                </div>
+
+                                <div class="license-renew-date">
+                                    <span>Huella del equipo</span>
+                                    <strong>
+                                        <%= licencia?.huella_equipo_actual_corta || 'No disponible' %>
+                                    </strong>
+                                </div>
+                            </div>
+
+                            <div class="license-renew-content">
+                                <form class="form-panel" method="POST" action="/licencia/activar">
+                                    <div class="form-section">
+                                        <h3>Código de activación</h3>
+
+                                        <div class="form-group">
+                                            <label for="codigo_activacion">Código recibido *</label>
+
+                                            <textarea id="codigo_activacion" name="codigo_activacion" rows="5"
+                                                maxlength="5000" placeholder="Ej: PRM1.xxxxx.yyyyy"
+                                                required><%= valoresFormulario.codigo_activacion || '' %></textarea>
+
+                                            <small class="field-help">
+                                                Prismia validará que el código esté firmado y corresponda a este equipo.
+                                                Huella técnica:
+                                                <span style="word-break: break-all;">
+                                                    <%= licencia?.huella_equipo_actual || 'No disponible' %>
+                                                </span>
+                                            </small>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-actions">
+                                        <button type="submit" class="btn-primary">
+                                            Validar código
+                                        </button>
+
+                                        <button type="button" class="btn-secondary"
+                                            data-copy-huella="<%= licencia?.huella_equipo_actual || '' %>">
+                                            Copiar huella
+                                        </button>
+
+                                        <a href="/licencia" class="btn-secondary">
+                                            Cancelar
+                                        </a>
+
+                                        <a href="<%= urlPago %>" class="btn-secondary" target="_blank" rel="noreferrer">
+                                            Solicitar renovación
+                                        </a>
+                                    </div>
+                                </form>
+                                <p class="license-renew-note">
+                                    La activación se valida localmente con firma digital y huella del equipo.
+                                    Si el código no corresponde a este equipo o ya fue aplicado, Prismia lo rechazará.
+                                </p>
+                            </div>
+                        </section>
+    </section>
+
+    <script>
+        document.querySelectorAll('[data-copy-huella]').forEach((boton) => {
+            boton.addEventListener('click', async () => {
+                const huella = boton.getAttribute('data-copy-huella') || '';
+
+                if (!huella) {
+                    boton.textContent = 'Huella no disponible';
+                    return;
+                }
+
+                try {
+                    await navigator.clipboard.writeText(huella);
+                    boton.textContent = 'Huella copiada';
+
+                    setTimeout(() => {
+                        boton.textContent = 'Copiar huella';
+                    }, 1800);
+                } catch (error) {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = huella;
+                    textarea.setAttribute('readonly', '');
+                    textarea.style.position = 'absolute';
+                    textarea.style.left = '-9999px';
+
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+
+                    boton.textContent = 'Huella copiada';
+
+                    setTimeout(() => {
+                        boton.textContent = 'Copiar huella';
+                    }, 1800);
+                }
+            });
+        });
+    </script>

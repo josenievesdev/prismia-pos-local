@@ -157,6 +157,7 @@
         <footer class="pos-barra">
             <div class="pos-atajos" aria-hidden="true">
                 <span><kbd>F8</kbd> Cantidad</span>
+                <span><kbd>F6</kbd> Descuento</span>
                 <span><kbd>Supr</kbd> Quitar línea</span>
                 <span><kbd>Esc</kbd> Cancelar</span>
             </div>
@@ -224,6 +225,9 @@
             </section>
 
             <section class="pos-totales" aria-label="Totales">
+                <div class="pos-total-fila pos-total-descuento" id="filaDescuentoPOS" hidden>
+                    <span>Descuentos aplicados</span><strong id="descuentoPOS">$ 0</strong>
+                </div>
                 <div class="pos-total-fila"><span>Subtotal</span><strong id="subtotalPOS">$ 0</strong></div>
                 <div class="pos-total-fila"><span id="etiquetaIvaPOS">IVA</span><strong id="ivaPOS">$ 0</strong></div>
                 <div class="pos-total">

@@ -1,5 +1,6 @@
 const empresa = require('../config/empresa');
 const fechas = require('../utils/fechas');
+const licenciaLocalService = require('../modules/licencia-local/licenciaLocal.service');
 
 function formatearPesos(valor) {
     const numero = Number(valor || 0);
@@ -27,6 +28,23 @@ function formatearFecha(valor) {
     return String(valor);
 }
 
+function obtenerLicenciaLocalSegura() {
+    try {
+        return licenciaLocalService.iniciarPruebaLocalSiHaceFalta();
+    } catch (error) {
+        console.error('No se pudo cargar el estado de licencia local:', error.message);
+
+        return {
+            ok: false,
+            estado: 'no_disponible',
+            prueba_iniciada: false,
+            dias_restantes: null,
+            mensaje: 'Estado de licencia local no disponible.',
+            licencia: null,
+        };
+    }
+}
+
 function localsMiddleware(req, res, next) {
     const usuario = req.session?.usuario || null;
     const rolesUsuario = Array.isArray(usuario?.roles)
@@ -40,6 +58,7 @@ function localsMiddleware(req, res, next) {
 
     res.locals.usuario = usuario;
     res.locals.rutaActual = req.originalUrl;
+    res.locals.licenciaLocal = obtenerLicenciaLocalSegura();
 
     res.locals.rolesUsuario = rolesUsuario;
     res.locals.tieneRol = function (...rolesPermitidos) {

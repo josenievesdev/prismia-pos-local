@@ -5,9 +5,9 @@ const empresa = {
         nombre: env.app.name || 'Prismia POS Local',
         nombreCorto: 'Prismia',
         logoTexto: 'P',
-        descripcion: 'POS local para ventas, caja, inventario y reportes.',
-        version: '0.1.0',
-        desarrollador: 'Nieves Systems',
+        descripcion: 'POS local para ventas, caja, inventario, clientes, compras y reportes.',
+        version: '1.0.0',
+        desarrollador: 'TINAI',
         sitioWeb: '',
     },
 
@@ -15,11 +15,12 @@ const empresa = {
         tipo: 'POS Local',
         modo: 'local',
         preparadoParaNube: true,
+        ecosistema: 'TINAI',
     },
 
     soporte: {
         correo: '',
-        telefono: '',
+        telefono: '3215394234',
     },
 };
 

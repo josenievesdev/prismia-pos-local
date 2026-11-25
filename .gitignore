@@ -23,7 +23,10 @@ yarn-error.log*
 # Builds / distribución / empaquetado
 # ==========================================
 dist/
-build/
+build/*
+!build/
+!build/icon.ico
+!build/icon.png
 coverage/
 out/
 release/
@@ -126,3 +129,17 @@ PrismiaSecretsTest/
 PrismiaRuntimeTest/
 # Referencias de diseño (pen.dev): fuera del repositorio
 /designe/
+
+# ==========================================
+# Entorno demo local para capturas landing
+# ==========================================
+PrismiaDemoLanding/
+# Reportes locales de auditor�a
+AUDITORIA_*.md
+
+# ==========================================
+# Licencias Prismia - claves privadas locales
+# ==========================================
+tools/licencias/private/
+*.license-private.pem
+*.private.pem

@@ -10,4 +10,5 @@ module.exports = [
     require('./003_permitir_stock_negativo'),
     require('./004_indices_rendimiento'),
     require('./005_cargar_divipola'),
+    require('./006_licencia_local'),
 ];

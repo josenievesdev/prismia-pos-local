@@ -4,7 +4,21 @@ env.seguridad.validarConfigProduccion();
 
 const { asegurarBaseDatos } = require('./database/ensure-db');
 
-asegurarBaseDatos();
+const resultadoBaseDatos = asegurarBaseDatos();
+
+if (!resultadoBaseDatos.ok) {
+    console.error('====================================');
+    console.error('No se puede iniciar Prismia POS Local.');
+    console.error(resultadoBaseDatos.mensaje);
+
+    if (Array.isArray(resultadoBaseDatos.tablas_faltantes) && resultadoBaseDatos.tablas_faltantes.length > 0) {
+        console.error(`Tablas faltantes: ${resultadoBaseDatos.tablas_faltantes.join(', ')}`);
+    }
+
+    console.error('Ejecuta npm run db:validate y corrige la base de datos antes de abrir el POS.');
+    console.error('====================================');
+    process.exit(1);
+}
 
 const app = require('./app');
 const empresa = require('./config/empresa');

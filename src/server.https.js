@@ -10,13 +10,27 @@ env.seguridad.validarConfigProduccion();
 
 const { asegurarBaseDatos } = require('./database/ensure-db');
 
-asegurarBaseDatos();
+const resultadoBaseDatos = asegurarBaseDatos();
+
+if (!resultadoBaseDatos.ok) {
+    console.error('====================================');
+    console.error('No se puede iniciar Prismia POS Local con HTTPS.');
+    console.error(resultadoBaseDatos.mensaje);
+
+    if (Array.isArray(resultadoBaseDatos.tablas_faltantes) && resultadoBaseDatos.tablas_faltantes.length > 0) {
+        console.error(`Tablas faltantes: ${resultadoBaseDatos.tablas_faltantes.join(', ')}`);
+    }
+
+    console.error('Ejecuta npm run db:validate y corrige la base de datos antes de abrir el POS.');
+    console.error('====================================');
+    process.exit(1);
+}
 
 const app = require('./app');
 const empresa = require('./config/empresa');
 
 const HTTPS_PORT = Number(process.env.HTTPS_PORT || 3443);
-const HOST = '0.0.0.0';
+const HOST = String(process.env.PRISMIA_BIND_HOST || '127.0.0.1').trim();
 
 function obtenerIPv4Locales() {
     const interfaces = os.networkInterfaces();
@@ -126,9 +140,13 @@ server.listen(HTTPS_PORT, HOST, () => {
     console.log(`PC local: https://localhost:${HTTPS_PORT}`);
     console.log(`POS móvil local: https://localhost:${HTTPS_PORT}/ventas/movil`);
 
-    ips.forEach((ip) => {
-        console.log(`Celular misma red: https://${ip}:${HTTPS_PORT}/ventas/movil`);
-    });
+    if (HOST === '0.0.0.0') {
+        ips.forEach((ip) => {
+            console.log(`Celular misma red: https://${ip}:${HTTPS_PORT}/ventas/movil`);
+        });
+    } else {
+        console.log('Acceso restringido a este equipo. Para habilitar red local, configura PRISMIA_BIND_HOST=0.0.0.0 de forma explícita.');
+    }
 
     console.log('');
     console.log(`Certificados HTTPS: ${certificados.rutas.carpetaCertificados}`);

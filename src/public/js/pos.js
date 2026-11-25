@@ -151,6 +151,8 @@
             subtotal: id('subtotalPOS'),
             etiquetaIva: id('etiquetaIvaPOS'),
             iva: id('ivaPOS'),
+            descuento: id('descuentoPOS'),
+            filaDescuento: id('filaDescuentoPOS'),
             total: id('totalPOS'),
             cobrar: id('btnCobrarVenta'),
             cobrarMonto: id('cobrarMontoPOS'),
@@ -358,6 +360,126 @@
         });
     }
 
+    /* Descuento por unidad de una línea, en pesos (con % rápido). Usa el mismo
+       diálogo del POS; Enter aplica y Esc cancela. */
+    function editarDescuento(id) {
+        const item = buscarItem(id);
+
+        if (!item || hayModalAbierto()) {
+            return;
+        }
+
+        const actual = descuentoDe(item);
+        const fondo = document.createElement('div');
+        fondo.className = 'ventas-confirm-backdrop';
+        fondo.innerHTML = `
+            <form class="ventas-confirm-card pos-descuento" role="dialog" aria-modal="true"
+                aria-labelledby="tituloDescuentoPOS" novalidate>
+                <h3 id="tituloDescuentoPOS">Descuento</h3>
+                <p class="pos-descuento-producto">${escapar(item.nombre)} · ${pesos(item.precio)} / ${escapar(item.unidad)}</p>
+                <label class="pos-descuento-campo">
+                    <span>Descuento por ${escapar(item.unidad)}</span>
+                    <span class="pos-descuento-entrada">
+                        <b>$</b>
+                        <input type="text" inputmode="numeric" autocomplete="off" spellcheck="false"
+                            data-descuento placeholder="0" value="${actual > 0 ? actual : ''}">
+                    </span>
+                </label>
+                <div class="pos-descuento-rapidos" role="group" aria-label="Porcentaje del precio">
+                    ${[5, 10, 15, 20].map(function (porcentaje) {
+                        return `<button type="button" data-porcentaje="${porcentaje}">${porcentaje} %</button>`;
+                    }).join('')}
+                </div>
+                <p class="pos-descuento-resultado" data-resultado aria-live="polite"></p>
+                <footer class="ventas-confirm-actions">
+                    ${actual > 0 ? '<button type="button" class="btn-secondary" data-quitar>Quitar</button>' : ''}
+                    <button type="button" class="btn-secondary" data-cancelar>Cancelar</button>
+                    <button type="submit" class="btn-primary" data-aplicar>Aplicar</button>
+                </footer>
+            </form>`;
+
+        const formulario = fondo.querySelector('form');
+        const entrada = fondo.querySelector('[data-descuento]');
+        const resultado = fondo.querySelector('[data-resultado]');
+        const aplicar = fondo.querySelector('[data-aplicar]');
+
+        function leer() {
+            return Math.round(Number(String(entrada.value || '').replace(/[^\d]/g, '')) || 0);
+        }
+
+        function actualizar() {
+            const valor = leer();
+
+            if (valor > item.precio) {
+                resultado.textContent = `No puede superar el precio (${pesos(item.precio)}).`;
+                resultado.classList.add('is-error');
+                aplicar.disabled = true;
+                return;
+            }
+
+            const linea = calcularLinea(Object.assign({}, item, { descuento: valor }));
+            resultado.classList.remove('is-error');
+            aplicar.disabled = false;
+            resultado.textContent = valor > 0
+                ? `Precio final ${pesos(item.precio - valor)} · Línea ${pesos(linea.total)} · Ahorro ${pesos(linea.descuento)}`
+                : 'Sin descuento.';
+        }
+
+        function cerrar() {
+            document.removeEventListener('keydown', alTeclear, true);
+            fondo.remove();
+            document.body.classList.remove('ventas-modal-open');
+            ui.buscar?.focus();
+        }
+
+        function guardar(valor) {
+            item.descuento = Math.min(Math.max(0, valor), item.precio);
+            estado.seleccion = item.id;
+            cerrar();
+            alCambiarCarrito();
+        }
+
+        function alTeclear(evento) {
+            if (evento.key === 'Escape') {
+                evento.preventDefault();
+                evento.stopPropagation();
+                cerrar();
+            }
+        }
+
+        entrada.addEventListener('input', actualizar);
+
+        formulario.addEventListener('submit', function (evento) {
+            evento.preventDefault();
+            const valor = leer();
+
+            if (valor <= item.precio) {
+                guardar(valor);
+            }
+        });
+
+        fondo.addEventListener('click', function (evento) {
+            const rapido = evento.target.closest('[data-porcentaje]');
+
+            if (evento.target === fondo || evento.target.closest('[data-cancelar]')) {
+                cerrar();
+            } else if (evento.target.closest('[data-quitar]')) {
+                guardar(0);
+            } else if (rapido) {
+                entrada.value = String(Math.round(item.precio * Number(rapido.dataset.porcentaje) / 100));
+                actualizar();
+                entrada.focus();
+            }
+        });
+
+        document.addEventListener('keydown', alTeclear, true);
+        document.body.appendChild(fondo);
+        document.body.classList.add('ventas-modal-open');
+        actualizar();
+        entrada.focus();
+        entrada.select();
+    }
+
     function hayModalAbierto() {
         return Boolean(
             (ui.modalClienteRapido && !ui.modalClienteRapido.hidden)
@@ -387,6 +509,7 @@
             precioIncluyeIva: Number(producto.precio_incluye_iva) === 1,
             puedeVender: producto.puede_vender === true || Number(producto.puede_vender) === 1,
             imagen: producto.imagen_url || '',
+            descuento: 0,
         };
     }
 
@@ -409,9 +532,16 @@
         return { ok: true };
     }
 
-    // Misma regla y misma aritmética exacta que el servidor (dinero-exacto.js).
+    // Descuento por unidad (en pesos): nunca negativo ni mayor que el precio.
+    function descuentoDe(item) {
+        return Math.min(Math.max(0, Math.round(Number(item.descuento) || 0)), item.precio);
+    }
+
+    // Misma regla y misma aritmética exacta que el servidor (dinero-exacto.js):
+    // el descuento se resta del precio unitario antes de multiplicar.
     function calcularLinea(item) {
-        const bruto = window.PrismiaDinero.multiplicarPorCantidad(item.precio, item.cantidad);
+        const descuento = descuentoDe(item);
+        const bruto = window.PrismiaDinero.multiplicarPorCantidad(item.precio - descuento, item.cantidad);
         const porcentaje = Math.round(Number(item.porcentajeIva) || 0);
         let subtotal = bruto;
         let iva = 0;
@@ -426,7 +556,12 @@
             }
         }
 
-        return { subtotal, iva, total: subtotal + iva };
+        return {
+            subtotal,
+            iva,
+            total: subtotal + iva,
+            descuento: window.PrismiaDinero.multiplicarPorCantidad(descuento, item.cantidad),
+        };
     }
 
     function calcularResumen() {
@@ -435,8 +570,9 @@
             resumen.subtotal += linea.subtotal;
             resumen.iva += linea.iva;
             resumen.total += linea.total;
+            resumen.descuento += linea.descuento;
             return resumen;
-        }, { subtotal: 0, iva: 0, total: 0 });
+        }, { subtotal: 0, iva: 0, total: 0, descuento: 0 });
     }
 
     function buscarItem(id) {
@@ -1128,6 +1264,11 @@
 
                 const id = Number(fila?.dataset.id);
 
+                if (tipo === 'descuento') {
+                    editarDescuento(id);
+                    return;
+                }
+
                 if (tipo === 'sumar') {
                     sumarCantidad(id, 1);
                 } else if (tipo === 'restar') {
@@ -1317,6 +1458,7 @@
 
     function filaLinea(item, numero) {
         const linea = calcularLinea(item);
+        const descuento = descuentoDe(item);
         const esMinimo = item.cantidad <= 1;
         const iconoQuitar = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>';
         const iva = item.manejaIva && item.porcentajeIva > 0 ? `<span>IVA ${item.porcentajeIva} %</span>` : '';
@@ -1361,7 +1503,14 @@
                         <button type="button" data-accion="sumar" aria-label="Sumar uno" tabindex="-1">+</button>
                     </div>
                 </td>
-                <td class="pos-linea-precio">× ${pesos(item.precio)}${masIva}</td>
+                <td class="pos-linea-precio">
+                    <button type="button" data-accion="descuento" tabindex="-1"
+                        class="pos-linea-precio-boton${descuento > 0 ? ' tiene-descuento' : ''}"
+                        title="Descuento por unidad (F6)" aria-label="Precio ${pesos(item.precio - descuento)}. Descuento para ${escapar(item.nombre)}">
+                        <span>× ${pesos(item.precio - descuento)}${masIva}</span>
+                        ${descuento > 0 ? `<small class="pos-linea-descuento">−${pesos(descuento)} c/u</small>` : ''}
+                    </button>
+                </td>
                 <td class="pos-linea-total">${pesos(linea.total)}</td>
             </tr>`;
     }
@@ -1467,6 +1616,11 @@
         ui.iva.textContent = pesos(resumen.iva);
         ui.etiquetaIva.textContent = tasas.length === 1 ? `IVA ${tasas[0]} %` : 'IVA';
         ui.total.textContent = pesos(resumen.total);
+
+        if (ui.descuento && ui.filaDescuento) {
+            ui.descuento.textContent = pesos(resumen.descuento);
+            ui.filaDescuento.hidden = resumen.descuento <= 0;
+        }
         ui.total.parentElement.classList.toggle('is-cero', resumen.total <= 0);
         ui.cobrarMonto.textContent = pesos(resumen.total);
         ui.cobrar.disabled = !puedeCobrar(resumen);
@@ -1561,7 +1715,7 @@
         guardarAlmacen(CLAVES.ventaEnCurso, JSON.stringify({
             cliente: estado.cliente,
             items: estado.carrito.map(function (item) {
-                return { id: item.id, nombre: item.nombre, cantidad: item.cantidad };
+                return { id: item.id, nombre: item.nombre, cantidad: item.cantidad, descuento: descuentoDe(item) };
             }),
         }), window.sessionStorage);
     }
@@ -1619,6 +1773,7 @@
 
             estado.carrito.push(Object.assign({}, producto, {
                 cantidad: normalizarCantidad(cantidad, producto.permiteDecimal),
+                descuento: Math.min(Math.max(0, Math.round(Number(respuesta.guardado.descuento) || 0)), producto.precio),
             }));
         });
 
@@ -1661,7 +1816,7 @@
             cliente: estado.cliente,
             total: calcularResumen().total,
             items: estado.carrito.map(function (item) {
-                return { id: item.id, nombre: item.nombre, cantidad: item.cantidad };
+                return { id: item.id, nombre: item.nombre, cantidad: item.cantidad, descuento: descuentoDe(item) };
             }),
         });
 
@@ -2919,7 +3074,7 @@
             // Sin cliente elegido, el servidor usa el consumidor final.
             id_cliente: estado.cliente.id || null,
             items: estado.carrito.map(function (item) {
-                return { id_producto: item.id, cantidad: item.cantidad };
+                return { id_producto: item.id, cantidad: item.cantidad, descuento_unitario: descuentoDe(item) };
             }),
             pagos: analisis.pagos.map(function (pago) {
                 return {
@@ -3098,6 +3253,14 @@
             if (tecla === 'F8') {
                 evento.preventDefault();
                 enfocarCantidadSeleccionada();
+                return;
+            }
+
+            if (tecla === 'F6') {
+                evento.preventDefault();
+                if (estado.seleccion) {
+                    editarDescuento(estado.seleccion);
+                }
                 return;
             }
 

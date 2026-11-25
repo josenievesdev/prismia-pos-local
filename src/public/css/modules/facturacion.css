@@ -2606,3 +2606,119 @@ html[data-pos-mode="tactil"] .pos-resultados-pie {
         display: none;
     }
 }
+
+/* ---------- Descuento por línea (F6 o clic en el precio) ---------- */
+.pos-linea-precio-boton {
+    display: inline-grid;
+    justify-items: end;
+    gap: 1px;
+    margin: -4px -6px;
+    padding: 4px 6px;
+    border: 1px dashed transparent;
+    border-radius: var(--pos-r-sm);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: right;
+    cursor: pointer;
+}
+
+.pos-linea-precio-boton:hover,
+.pos-linea-precio-boton:focus-visible {
+    border-color: var(--pos-linea);
+    background: var(--pos-superficie);
+}
+
+.pos-linea-descuento {
+    color: var(--color-success);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.pos-total-descuento span,
+.pos-total-descuento strong {
+    color: var(--color-success);
+}
+
+.pos-descuento-producto {
+    margin: 0 0 14px;
+    color: var(--pos-texto-2);
+    font-size: 13.5px;
+}
+
+.pos-descuento-campo {
+    display: grid;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.pos-descuento-entrada {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 48px;
+    padding: 0 14px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--pos-r-md);
+    background: var(--pos-superficie);
+}
+
+.pos-descuento-entrada:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px var(--color-primary-ring);
+}
+
+.pos-descuento-entrada b {
+    color: var(--pos-texto-2);
+    font-family: var(--pos-mono);
+}
+
+.pos-descuento-entrada input {
+    flex: 1 1 auto;
+    min-width: 0;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: var(--pos-texto);
+    font-family: var(--pos-mono);
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.pos-descuento-rapidos {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.pos-descuento-rapidos button {
+    flex: 1 1 0;
+    min-height: 34px;
+    border: 1px solid var(--pos-linea);
+    border-radius: var(--pos-r-sm);
+    background: var(--pos-superficie);
+    color: var(--pos-texto);
+    font: inherit;
+    font-family: var(--pos-mono);
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.pos-descuento-rapidos button:hover {
+    border-color: var(--color-border-strong);
+    background: var(--color-surface-hover);
+}
+
+.pos-descuento-resultado {
+    min-height: 20px;
+    margin: 12px 0 0;
+    color: var(--pos-texto-2);
+    font-family: var(--pos-mono);
+    font-size: 12.5px;
+}
+
+.pos-descuento-resultado.is-error {
+    color: var(--color-danger);
+    font-family: inherit;
+}
