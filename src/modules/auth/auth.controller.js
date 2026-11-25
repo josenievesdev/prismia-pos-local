@@ -1,4 +1,5 @@
 const authService = require('./auth.service');
+const configuracionService = require('../configuracion/configuracion.service');
 const { crearLimitador, describirEspera } = require('../../utils/limitador-intentos');
 const { iniciarSesionSegura } = require('../../utils/sesion');
 
@@ -7,11 +8,25 @@ const { iniciarSesionSegura } = require('../../utils/sesion');
 const limitadorCuenta = crearLimitador({ maxIntentos: 5 });
 const limitadorEquipo = crearLimitador({ maxIntentos: 20 });
 
+// Nombre del negocio para personalizar el login. Si la configuración no existe
+// o falla la lectura, el login se muestra igual (sin el nombre).
+function obtenerComercioLogin() {
+    try {
+        const configuracion = configuracionService.obtenerConfiguracionNegocio() || {};
+        const nombre = String(configuracion.nombre_comercial || configuracion.nombre_negocio || '').trim();
+
+        return { nombre };
+    } catch (error) {
+        return { nombre: '' };
+    }
+}
+
 function renderLogin(res, { estado = 200, error = null, correo = '' } = {}) {
     return res.status(estado).render('auth/login', {
         layout: false,
         titulo: 'Iniciar sesión',
         error,
+        comercio: obtenerComercioLogin(),
         valores: {
             correo,
         },

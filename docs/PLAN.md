@@ -169,6 +169,15 @@ Parte 2 — táctil y pantallas pequeñas:
 - [x] Acciones de fila (Ver, Imprimir, Ver detalle) como botón pequeño, no píldora.
 - [x] Quitadas notas de desarrollo ("API funcional…", "Regla operativa…").
 - [x] Cotizaciones: la tabla tenía una celda de más (columnas corridas).
+- [x] (2026-11-24, 2.ª ronda) Menú lateral en tinta (#1e2129), como el POS y el
+      login: activo con fondo translúcido y marca azul aclarada; títulos de grupo
+      sin mayúsculas; menú deslizable del celular igual.
+- [x] Papel del ticket en toda la app. Regla: la tarjeta que contiene una tabla
+      (listados, documentos, detalles) es papel crema con franja de tinta de 6 px,
+      y la tabla va directo sobre el papel. Filtros, indicadores y formularios
+      siguen en blanco. 35 tarjetas en 33 pantallas.
+- [x] Login, lado derecho: papel del ticket con el borde dentado, nombre del
+      negocio, fecha y hora en Mono, y "Entrar" en tinta.
 - [ ] Llevar las acciones de cada módulo a la barra superior, como el POS
       (hoy ocupan una fila propia). Requiere tocar ~25 vistas: hacerlo módulo a módulo.
 

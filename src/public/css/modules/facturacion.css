@@ -217,6 +217,9 @@ html.ruta-pos[data-pos-enfoque="1"]:not([data-menu-estado="movil"]) .app-layout 
 html.ruta-pos[data-pos-enfoque="1"]:not([data-menu-estado="movil"]) .app-sidebar {
     visibility: hidden;
     transition: visibility 0s linear 240ms;
+    /* Fuera de la transición entre páginas: si no, al llegar al POS se ve
+       un instante la imagen del menú (en tinta) aplastada en el borde. */
+    view-transition-name: none;
 }
 
 /* ---------- Marco de la pantalla ---------- */

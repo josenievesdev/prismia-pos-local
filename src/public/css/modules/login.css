@@ -211,18 +211,85 @@ body.acceso {
     font-weight: 600;
 }
 
-/* ---------- Panel del formulario ---------- */
+/* ---------- Panel del formulario: papel del ticket ----------
+   Cabecera (negocio y hora), formulario al centro y pie. El borde
+   izquierdo va dentado, como el ticket recién cortado del rollo. */
 .acceso-panel {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    position: relative;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    justify-items: center;
     gap: 20px;
-    padding: 40px 24px;
+    padding: 28px 40px 28px;
+    background: var(--color-paper);
+}
+
+.acceso-panel::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -8px;
+    width: 8px;
+    background:
+        linear-gradient(225deg, var(--color-paper) 50%, transparent 50%) 0 0 / 8px 12px repeat-y,
+        linear-gradient(315deg, var(--color-paper) 50%, transparent 50%) 0 0 / 8px 12px repeat-y;
+    pointer-events: none;
+}
+
+.acceso-panel-cabecera {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+}
+
+.acceso-comercio {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    padding: 6px 12px 6px 10px;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-text-soft);
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.acceso-comercio svg {
+    flex: 0 0 auto;
+    color: var(--color-muted);
+}
+
+.acceso-comercio-nombre {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.acceso-reloj {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: baseline;
+    gap: 10px;
+    color: var(--color-muted);
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.acceso-reloj strong {
+    color: var(--color-text);
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 600;
 }
 
 .acceso-form {
     display: grid;
+    align-self: center;
     gap: 16px;
     width: min(100%, 380px);
 }
@@ -336,11 +403,20 @@ body.acceso {
     font-weight: 600;
 }
 
+/* Entrar en tinta, como el panel de la marca */
 .acceso-entrar {
     width: 100%;
     min-height: 48px;
     margin-top: 6px;
+    border-color: var(--color-ink);
+    background: var(--color-ink);
+    box-shadow: 0 1px 2px rgba(20, 22, 27, 0.2);
     font-size: 15px;
+}
+
+.acceso-entrar:hover:not(:disabled) {
+    border-color: #000000;
+    background: #000000;
 }
 
 .acceso-entrar:disabled {
@@ -370,8 +446,23 @@ body.acceso {
     }
 
     .acceso-panel {
-        justify-content: flex-start;
-        padding: 56px 16px 32px;
+        padding: 16px 16px 28px;
+    }
+
+    .acceso-panel::before {
+        display: none;
+    }
+
+    .acceso-form {
+        align-self: start;
+        margin-top: 24px;
+    }
+}
+
+/* Celular: solo la hora (la fecha completa no cabe junto al negocio) */
+@media (max-width: 599.98px) {
+    .acceso-reloj #relojFecha {
+        display: none;
     }
 }
 

@@ -58,8 +58,46 @@
             </p>
         </section>
 
-        <!-- Formulario -->
+        <!-- Formulario: sobre el mismo papel del ticket -->
         <section class="acceso-panel">
+            <header class="acceso-panel-cabecera">
+                <% if (locals.comercio && comercio.nombre) { %>
+                    <span class="acceso-comercio">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M3.5 9.5 5 4.5h14l1.5 5" />
+                            <path d="M3.5 9.5a2.8 2.8 0 0 0 5.6 0 2.8 2.8 0 0 0 5.8 0 2.8 2.8 0 0 0 5.6 0" />
+                            <path d="M5 12v7.5h14V12M10 19.5v-4.5h4v4.5" />
+                        </svg>
+                        <span class="acceso-comercio-nombre"><%= comercio.nombre %></span>
+                    </span>
+                <% } else { %>
+                    <span></span>
+                <% } %>
+
+                <span class="acceso-reloj" aria-hidden="true">
+                    <span id="relojFecha"></span>
+                    <strong id="relojHora"></strong>
+                </span>
+                <script>
+                    // Se llena antes de pintar la página: nunca se ve vacío
+                    (function () {
+                        const fecha = new Intl.DateTimeFormat('es-CO', { weekday: 'long', day: 'numeric', month: 'long' });
+                        const hora = new Intl.DateTimeFormat('es-CO', { hour: '2-digit', minute: '2-digit', hour12: false });
+
+                        function pintar() {
+                            const ahora = new Date();
+                            const texto = fecha.format(ahora).replace(',', '');
+                            document.getElementById('relojFecha').textContent = texto.charAt(0).toUpperCase() + texto.slice(1);
+                            document.getElementById('relojHora').textContent = hora.format(ahora);
+                        }
+
+                        pintar();
+                        setInterval(pintar, 10000);
+                    })();
+                </script>
+            </header>
+
             <form class="acceso-form" method="POST" action="/auth/login" id="formAcceso" novalidate>
                 <div class="acceso-form-logo" aria-hidden="true">
                     <span class="acceso-logo"><span></span><span></span><span></span></span>
