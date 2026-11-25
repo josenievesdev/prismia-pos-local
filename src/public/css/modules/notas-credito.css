@@ -163,7 +163,7 @@
 .notas-credito-status.is-muted,
 .notas-credito-fiscal-badge {
     background: var(--color-primary-soft);
-    color: #3730a3;
+    color: var(--color-primary-dark);
 }
 
 .notas-credito-link-action {

@@ -1196,28 +1196,28 @@
     letter-spacing: -0.02em;
 }
 
+/* Efectivo esperado para el cierre: el número que manda, en tinta */
 .caja-cierre-total-esperado {
     padding: 16px;
-    border: 1px solid rgba(52, 86, 214, 0.18);
+    border: 1px solid var(--color-ink);
     border-radius: var(--radius-md);
-    background: var(--color-primary-soft);
+    background: var(--color-ink);
 }
 
 .caja-cierre-total-esperado span {
     display: block;
     margin-bottom: 5px;
-    color: var(--color-primary-dark);
-    font-size: 11px;
-    font-weight: 900;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.68);
+    font-size: 12.5px;
+    font-weight: 500;
 }
 
 .caja-cierre-total-esperado strong {
-    color: var(--color-primary-dark);
+    color: #ffffff;
+    font-family: var(--font-mono);
     font-size: 24px;
-    font-weight: 950;
-    letter-spacing: -0.03em;
+    font-weight: 700;
+    letter-spacing: -0.02em;
 }
 
 .caja-cierre-support-summary {

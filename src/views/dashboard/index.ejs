@@ -1,403 +1,337 @@
-<% const datos=dashboard || {}; const resumenHoy=datos.resumen_hoy || {}; const comparacion=datos.comparacion || {};
-    const turnoActual=datos.turno_actual || {}; const stock=datos.stock || {}; const
-    pagosHoy=Array.isArray(datos.pagos_por_medio_hoy) ? datos.pagos_por_medio_hoy : []; const
-    alertasStock=Array.isArray(datos.alertas_stock) ? datos.alertas_stock : []; const
-    ultimasVentas=Array.isArray(datos.ultimas_ventas) ? datos.ultimas_ventas : []; const
-    ultimasAnulaciones=Array.isArray(datos.ultimas_anulaciones) ? datos.ultimas_anulaciones : []; const
-    topProductos=Array.isArray(datos.top_productos) ? datos.top_productos : []; const
-    ventasPorHora=Array.isArray(datos.ventas_por_hora) ? datos.ventas_por_hora : []; const pagosVista=pagosHoy; const
-    topProductosVista=topProductos.slice(0, 4); const ultimasVentasVista=ultimasVentas.slice(0, 4); const
-    alertasStockVista=alertasStock.slice(0, 3); const ultimasAnulacionesVista=ultimasAnulaciones.slice(0, 2); const
-    ventasHoraVista=ventasPorHora.slice(-8); const moneda=(valor)=> new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    maximumFractionDigits: 0,
-    }).format(Number(valor || 0));
+<%
+    // Inicio: solo presenta los datos que ya calcula dashboard.service (no recalcula dinero).
+    const datos = dashboard || {};
+    const hoyResumen = datos.resumen_hoy || {};
+    const ayerResumen = datos.resumen_ayer || {};
+    const turno = datos.turno_actual || {};
+    const stock = datos.stock || {};
+    const lista = (valor) => (Array.isArray(valor) ? valor : []);
+    const pagosHoy = lista(datos.pagos_por_medio_hoy).filter((pago) => Number(pago.neto || 0) !== 0);
+    const alertasStock = lista(datos.alertas_stock).slice(0, 5);
+    const ultimasVentas = lista(datos.ultimas_ventas).slice(0, 6);
+    const anulaciones = lista(datos.ultimas_anulaciones).slice(0, 3);
+    const masVendidos = lista(datos.top_productos).slice(0, 5);
+    const ventasPorHora = lista(datos.ventas_por_hora);
 
-    const numero = (valor) => new Intl.NumberFormat('es-CO', {
-    maximumFractionDigits: 2,
-    }).format(Number(valor || 0));
+    // Negativos como en el resto del sistema: "− $ 11.200" (no "$ -11.200")
+    const pesos = (valor) => {
+        const numero = Math.round(Number(valor) || 0);
+        return (numero < 0 ? '− ' : '') + '$ ' + Math.abs(numero).toLocaleString('es-CO');
+    };
+    const cantidad = (valor) => (Number(valor) || 0).toLocaleString('es-CO', { maximumFractionDigits: 3 });
 
-    const fechaHora = (valor) => {
-    if (!valor) return 'Sin fecha';
-
-    const fecha = new Date(String(valor).replace(' ', 'T'));
-
-    if (Number.isNaN(fecha.getTime())) {
-    return valor;
-    }
-
-    return new Intl.DateTimeFormat('es-CO', {
-    day: '2-digit',
-    month: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    }).format(fecha);
+    // "2026-11-24 21:12:00" -> "21:12" (sin pasar por Date: la hora ya es local)
+    const horaDe = (texto) => {
+        const coincidencia = String(texto || '').match(/[ T](\d{2}):(\d{2})/);
+        return coincidencia ? coincidencia[1] + ':' + coincidencia[2] : '';
     };
 
-    const variacionClase = (valor) => {
-    const numeroValor = Number(valor || 0);
+    // "2026-05-29 15:48:41" -> "29/05 · 15:48"
+    const fechaCorta = (texto) => {
+        const c = String(texto || '').match(/^\d{4}-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);
+        return c ? `${c[2]}/${c[1]} · ${c[3]}:${c[4]}` : '';
+    };
 
-    if (numeroValor > 0) return 'is-up';
-    if (numeroValor < 0) return 'is-down' ; return 'is-flat' ; }; const variacionTexto=(valor)=> {
-        const numeroValor = Number(valor || 0);
+    // Variación contra ayer. subirEsBueno=false para lo que conviene que baje (anulado).
+    const variacion = (actual, anterior, subirEsBueno = true) => {
+        const hoyValor = Number(actual) || 0;
+        const ayerValor = Number(anterior) || 0;
 
-        if (numeroValor > 0) return '+' + numeroValor + '%';
-        return numeroValor + '%';
-        };
+        if (!hoyValor && !ayerValor) return null;
+        if (!ayerValor) return { texto: 'Ayer sin movimiento', tono: '' };
 
-        const tonoVariacion = (valor) => {
-        const numeroValor = Number(valor || 0);
-        if (numeroValor > 0) return 'exito';
-        if (numeroValor < 0) return 'peligro';
-        return '';
-        };
+        const porcentaje = ((hoyValor - ayerValor) / ayerValor) * 100;
+        const sube = porcentaje >= 0.05;
+        const baja = porcentaje <= -0.05;
+        const texto = (sube ? '▲ ' : baja ? '▼ ' : '')
+            + Math.abs(porcentaje).toLocaleString('es-CO', { maximumFractionDigits: 1 }) + ' % vs ayer';
+        const bueno = subirEsBueno ? sube : baja;
+        const malo = subirEsBueno ? baja : sube;
 
-        const estadoVentaBadge = (estado) => {
-        if (estado === 'pagada') return 'badge-success';
-        if (estado === 'anulada') return 'badge-danger';
+        return { texto, tono: bueno ? 'bien' : malo ? 'mal' : '' };
+    };
 
-        return 'badge-muted';
-        };
+    const ahora = new Date();
+    const fechaTexto = (() => {
+        const texto = new Intl.DateTimeFormat('es-CO', { weekday: 'long', day: 'numeric', month: 'long' })
+            .format(ahora).replace(',', '');
+        return texto.charAt(0).toUpperCase() + texto.slice(1);
+    })();
 
-        const alertaStockBadge = (tipo) => {
-        if (tipo === 'sin_stock') return 'badge-danger';
+    // Ventas por hora: horario completo (las horas sin ventas van en cero)
+    const porHora = new Map(ventasPorHora.map((item) => [parseInt(item.hora, 10), item]));
+    const horasConVentas = Array.from(porHora.keys()).filter((hora) => Number.isFinite(hora));
+    const horaActual = ahora.getHours();
+    const primeraHora = Math.max(0, Math.min(8, ...horasConVentas));
+    const ultimaHora = Math.min(23, Math.max(19, horaActual, ...horasConVentas));
+    const horas = [];
+    for (let hora = primeraHora; hora <= ultimaHora; hora += 1) {
+        const item = porHora.get(hora) || {};
+        horas.push({ hora, total: Number(item.total) || 0, ventas: Number(item.ventas) || 0 });
+    }
+    const totalPico = Math.max(0, ...horas.map((item) => item.total));
+    const horaPico = totalPico > 0 ? horas.find((item) => item.total === totalPico).hora : null;
+    const altoBarra = (total) => (totalPico > 0 && total > 0 ? Math.max(3, Math.round((total / totalPico) * 100)) : 0);
+    const dosDigitos = (n) => String(n).padStart(2, '0');
 
-        return 'badge-warning';
-        };
+    const totalMedios = pagosHoy.reduce((suma, pago) => suma + Math.max(0, Number(pago.neto) || 0), 0);
+    const participacion = (valor) => (totalMedios > 0 ? Math.max(0, Number(valor) || 0) / totalMedios * 100 : 0);
 
-        const alertaStockTexto = (tipo) => {
-        if (tipo === 'sin_stock') return 'Sin stock';
+    const variacionVentas = variacion(hoyResumen.total_neto, ayerResumen.total_neto);
+    const variacionTickets = variacion(hoyResumen.ventas_pagadas, ayerResumen.ventas_pagadas);
+    const variacionPromedio = variacion(hoyResumen.ticket_promedio, ayerResumen.ticket_promedio);
+    const variacionAnulado = variacion(hoyResumen.total_anulado, ayerResumen.total_anulado, false);
 
-        return 'Stock bajo';
-        };
+    const totalAlertasStock = (Number(stock.productos_sin_stock) || 0) + (Number(stock.productos_stock_bajo) || 0);
+    const hayAtencion = totalAlertasStock > 0 || anulaciones.length > 0;
+%>
 
-        const maximoPagos = Math.max.apply(null, pagosVista.map((item) => Number(item.neto || 0)).concat([0]));
-        const maximoProductos = Math.max.apply(null, topProductosVista.map((item) => Number(item.total_vendido ||
-        0)).concat([0]));
-        const maximoHora = Math.max.apply(null, ventasHoraVista.map((item) => Number(item.total || 0)).concat([0]));
+<div class="inicio">
+    <%# ---------- Hoy: cifra principal, ventas por hora y cifras de apoyo ---------- %>
+    <section class="inicio-tarjeta inicio-hoy" aria-labelledby="tituloHoy">
+        <header class="inicio-hoy-cabecera">
+            <div>
+                <h2 class="inicio-etiqueta" id="tituloHoy">Ventas netas · <%= fechaTexto %></h2>
+                <strong class="inicio-cifra"><%= pesos(hoyResumen.total_neto) %></strong>
+                <% if (variacionVentas) { %>
+                    <span class="inicio-variacion<%= variacionVentas.tono ? ' is-' + variacionVentas.tono : '' %>"><%= variacionVentas.texto %></span>
+                <% } else { %>
+                    <span class="inicio-variacion">Aún no hay ventas hoy</span>
+                <% } %>
+            </div>
 
-        const anchoPago = (valor) => {
-        if (!maximoPagos) return 0;
-        return Math.max(8, Math.round((Number(valor || 0) / maximoPagos) * 100));
-        };
+            <a href="/ventas" class="btn-primary inicio-ir-pos">
+                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9"
+                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <rect x="3" y="5" width="18" height="14" rx="2.5" />
+                    <path d="M3 10h18M7 15h4" />
+                </svg>
+                Ir al POS
+            </a>
+        </header>
 
-        const anchoProducto = (valor) => {
-        if (!maximoProductos) return 0;
-        return Math.max(8, Math.round((Number(valor || 0) / maximoProductos) * 100));
-        };
-
-        const altoHora = (valor) => {
-        if (!maximoHora) return 8;
-        return Math.max(10, Math.round((Number(valor || 0) / maximoHora) * 100));
-        };
-
-        const totalAlertas = Number(stock.productos_sin_stock || 0) + Number(stock.productos_stock_bajo || 0);
-        %>
-
-        <section class="dashboard-monitor">
-            <section class="ui-kpis">
-                <%- include('../partials/ui/kpi', { etiqueta: 'Ventas netas hoy', valor: moneda(resumenHoy.total_neto), detalle: variacionTexto(comparacion.total_neto_porcentaje) + ' vs ayer', tonoDetalle: tonoVariacion(comparacion.total_neto_porcentaje) }) %>
-                <%- include('../partials/ui/kpi', { etiqueta: 'Tickets hoy', valor: numero(resumenHoy.ventas_pagadas), detalle: variacionTexto(comparacion.ventas_pagadas_porcentaje) + ' vs ayer', tonoDetalle: tonoVariacion(comparacion.ventas_pagadas_porcentaje) }) %>
-                <%- include('../partials/ui/kpi', { etiqueta: 'Ticket promedio', valor: moneda(resumenHoy.ticket_promedio), detalle: variacionTexto(comparacion.ticket_promedio_porcentaje) + ' vs ayer', tonoDetalle: tonoVariacion(comparacion.ticket_promedio_porcentaje) }) %>
-                <%- include('../partials/ui/kpi', { etiqueta: 'Anulado hoy', valor: moneda(resumenHoy.total_anulado), detalle: numero(resumenHoy.ventas_anuladas) + ' documento(s)', tono: Number(resumenHoy.total_anulado || 0) > 0 ? 'peligro' : '' }) %>
-            </section>
-
-            <section class="dashboard-grid">
-                <article class="dash-panel panel-sales">
-                    <div class="dash-panel-head">
-                        <div>
-                            <h3>Ventas por hora</h3>
-                        </div>
-                        <strong>
-                            <%= numero(resumenHoy.productos_vendidos) %> productos
-                        </strong>
-                    </div>
-
-                    <% if (ventasHoraVista.length> 0) { %>
-                        <div class="hour-chart">
-                            <% ventasHoraVista.forEach((item)=> { %>
-                                <div class="hour-bar">
-                                    <div class="hour-bar-track">
-                                        <i style="height: <%= altoHora(item.total) %>%"></i>
-                                    </div>
-                                    <span>
-                                        <%= item.hora %>
+        <div class="inicio-grafica">
+            <% if (totalPico > 0) { %>
+                <ol class="inicio-horas" aria-label="Ventas por hora">
+                    <% horas.forEach(function (item) {
+                        const esAhora = item.hora === horaActual;
+                        const esPico = item.hora === horaPico;
+                        const etiqueta = `${dosDigitos(item.hora)}:00 · ${pesos(item.total)} · ${item.ventas} ${item.ventas === 1 ? 'venta' : 'ventas'}`; %>
+                        <li class="inicio-hora<%= esAhora ? ' is-ahora' : '' %><%= esPico ? ' is-pico' : '' %>"
+                            tabindex="0" aria-label="<%= etiqueta %>">
+                            <span class="inicio-hora-columna">
+                                <% if (item.total > 0) { %>
+                                    <span class="inicio-hora-barra" style="height: <%= altoBarra(item.total) %>%">
+                                        <% if (esPico) { %><span class="inicio-hora-valor"><%= pesos(item.total) %></span><% } %>
                                     </span>
-                                </div>
-                                <% }) %>
-                        </div>
-
-                        <div class="dash-mini-row">
-                            <div>
-                                <span>Bruto del día</span>
-                                <strong>
-                                    <%= moneda(resumenHoy.total_bruto) %>
-                                </strong>
-                            </div>
-                            <div>
-                                <span>Utilidad bruta del día</span>
-                                <strong>
-                                    <%= moneda(resumenHoy.utilidad_bruta) %>
-                                </strong>
-                            </div>
-                        </div>
-                        <% } else { %>
-                            <div class="dash-empty">
-                                <strong>Sin ventas por hora</strong>
-                                <span>Cuando registres ventas, aparecerá la tendencia diaria.</span>
-                            </div>
-                            <% } %>
-                </article>
-
-                <article class="dash-panel panel-cash">
-                    <div class="dash-panel-head">
-                        <div>
-                            <h3>Caja</h3>
-                        </div>
-
-                        <% if (turnoActual.abierto) { %>
-                            <span class="badge badge-success">Abierto</span>
-                            <% } else { %>
-                                <span class="badge badge-muted">Cerrado</span>
                                 <% } %>
-                    </div>
+                            </span>
+                            <span class="inicio-hora-eje"><%= item.hora %></span>
+                            <span class="inicio-hora-tip" aria-hidden="true">
+                                <strong><%= pesos(item.total) %></strong>
+                                <span><%= dosDigitos(item.hora) %>:00 – <%= dosDigitos(item.hora) %>:59 · <%= item.ventas %> <%= item.ventas === 1 ? 'venta' : 'ventas' %></span>
+                            </span>
+                        </li>
+                    <% }) %>
+                </ol>
+            <% } else { %>
+                <p class="inicio-vacio inicio-grafica-vacia">Las ventas del día aparecerán aquí, hora por hora.</p>
+            <% } %>
+        </div>
 
-                    <% if (turnoActual.abierto) { %>
-                        <div class="cash-main">
-                            <span>Efectivo esperado del turno</span>
-                            <strong>
-                                <%= moneda(turnoActual.efectivo_esperado) %>
-                            </strong>
-                            <small>
-                                Solo turno abierto · Base <%= moneda(turnoActual.monto_inicial) %> · <%=
-                                        turnoActual.usuario_apertura_nombre %>
-                            </small>
+        <dl class="inicio-apoyo">
+            <div>
+                <dt>Tickets</dt>
+                <dd><%= cantidad(hoyResumen.ventas_pagadas) %></dd>
+                <% if (variacionTickets) { %><small class="<%= variacionTickets.tono ? 'is-' + variacionTickets.tono : '' %>"><%= variacionTickets.texto %></small><% } %>
+            </div>
+            <div>
+                <dt>Ticket promedio</dt>
+                <dd><%= pesos(hoyResumen.ticket_promedio) %></dd>
+                <% if (variacionPromedio) { %><small class="<%= variacionPromedio.tono ? 'is-' + variacionPromedio.tono : '' %>"><%= variacionPromedio.texto %></small><% } %>
+            </div>
+            <div>
+                <dt>Utilidad bruta</dt>
+                <dd><%= pesos(hoyResumen.utilidad_bruta) %></dd>
+                <%# Margen = utilidad bruta / ventas netas (solo presentación; ambos vienen del servidor) %>
+                <% if (Number(hoyResumen.total_neto) > 0) { %>
+                    <small>Margen <%= (Number(hoyResumen.utilidad_bruta) / Number(hoyResumen.total_neto) * 100).toLocaleString('es-CO', { maximumFractionDigits: 1 }) %> %</small>
+                <% } %>
+            </div>
+            <div>
+                <dt>Anulado</dt>
+                <dd class="<%= Number(hoyResumen.total_anulado) > 0 ? 'is-mal' : '' %>"><%= pesos(hoyResumen.total_anulado) %></dd>
+                <small><%= cantidad(hoyResumen.ventas_anuladas) %> <%= Number(hoyResumen.ventas_anuladas) === 1 ? 'venta' : 'ventas' %></small>
+            </div>
+        </dl>
+    </section>
+
+    <%# ---------- Caja: tarjeta en tinta ---------- %>
+    <section class="inicio-tarjeta inicio-caja" aria-labelledby="tituloCaja">
+        <header class="inicio-caja-cabecera">
+            <h2 id="tituloCaja">Caja</h2>
+            <% if (turno.abierto) { %>
+                <span class="inicio-caja-estado is-abierta">Turno #<%= turno.id_turno_caja %> abierto</span>
+            <% } else { %>
+                <span class="inicio-caja-estado">Cerrada</span>
+            <% } %>
+        </header>
+
+        <% if (turno.abierto) { %>
+            <div class="inicio-caja-principal">
+                <span>Efectivo esperado en el cajón</span>
+                <strong><%= pesos(turno.efectivo_esperado) %></strong>
+                <%# fecha_apertura se guarda en UTC: se muestra en hora local, como en Caja %>
+                <small>Base <%= pesos(turno.monto_inicial) %> · desde <%= fechaCorta(locals.fechaLocal ? locals.fechaLocal(turno.fecha_apertura) : turno.fecha_apertura) %> · <%= turno.usuario_apertura_nombre %></small>
+            </div>
+
+            <dl class="inicio-caja-filas">
+                <div><dt>Ventas del turno</dt><dd><%= pesos(turno.ventas_turno) %></dd></div>
+                <div><dt>Ingresos manuales</dt><dd><%= pesos(turno.ingresos_manuales) %></dd></div>
+                <div><dt>Egresos manuales</dt><dd><%= Number(turno.egresos_manuales) > 0 ? '− ' : '' %><%= pesos(turno.egresos_manuales) %></dd></div>
+                <div><dt>Anulaciones</dt><dd><%= pesos(turno.anulaciones_turno) %></dd></div>
+            </dl>
+
+            <div class="inicio-caja-acciones">
+                <a href="/caja" class="inicio-caja-boton is-principal">Ver caja</a>
+                <a href="/caja/movimiento" class="inicio-caja-boton">Movimiento</a>
+            </div>
+        <% } else { %>
+            <div class="inicio-caja-principal">
+                <span>No hay un turno abierto</span>
+                <strong>Caja cerrada</strong>
+                <small>Abre la caja con la base del turno para empezar a vender.</small>
+            </div>
+
+            <div class="inicio-caja-acciones">
+                <a href="/caja/abrir" class="inicio-caja-boton is-principal">Abrir caja</a>
+                <a href="/caja" class="inicio-caja-boton">Turnos anteriores</a>
+            </div>
+        <% } %>
+    </section>
+
+    <%# ---------- Medios de pago ---------- %>
+    <section class="inicio-tarjeta inicio-medios" aria-labelledby="tituloMedios">
+        <header class="inicio-seccion-cabecera">
+            <h2 id="tituloMedios">Medios de pago</h2>
+            <% if (totalMedios > 0) { %><span class="inicio-mono"><%= pesos(totalMedios) %></span><% } %>
+        </header>
+
+        <% if (pagosHoy.length) { %>
+            <ul class="inicio-medios-lista">
+                <% pagosHoy.forEach(function (pago) {
+                    const parte = participacion(pago.neto); %>
+                    <li>
+                        <div class="inicio-medio-fila">
+                            <span class="inicio-medio-nombre"><%= pago.medio_pago_nombre %></span>
+                            <span class="inicio-mono"><%= pesos(pago.neto) %></span>
                         </div>
-
-                        <div class="cash-grid">
-                            <div>
-                                <span>Ventas turno</span>
-                                <strong>
-                                    <%= moneda(turnoActual.ventas_turno) %>
-                                </strong>
-                            </div>
-                            <div>
-                                <span>Anulaciones turno</span>
-                                <strong>
-                                    <%= moneda(turnoActual.anulaciones_turno) %>
-                                </strong>
-                            </div>
-                            <div>
-                                <span>Ingresos turno</span>
-                                <strong>
-                                    <%= moneda(turnoActual.ingresos_manuales) %>
-                                </strong>
-                            </div>
-                            <div>
-                                <span>Egresos turno</span>
-                                <strong>
-                                    <%= moneda(turnoActual.egresos_manuales) %>
-                                </strong>
-                            </div>
+                        <div class="inicio-medio-barra" role="presentation">
+                            <span style="width: <%= parte.toFixed(1) %>%"></span>
                         </div>
-                        <% } else { %>
-                            <div class="dash-empty">
-                                <strong>No hay turno abierto</strong>
-                                <span>El resumen diario se conserva. Abre caja para iniciar un nuevo turno.</span>
-                                <a href="/caja/abrir" class="btn-primary btn-sm">Abrir caja</a>
-                            </div>
-                            <% } %>
-                </article>
+                        <small><%= parte.toLocaleString('es-CO', { maximumFractionDigits: 0 }) %> % · <%= pago.operaciones %> <%= Number(pago.operaciones) === 1 ? 'pago' : 'pagos' %></small>
+                    </li>
+                <% }) %>
+            </ul>
+        <% } else { %>
+            <p class="inicio-vacio">Sin pagos todavía.</p>
+        <% } %>
+    </section>
 
-                <article class="dash-panel panel-payments">
-                    <div class="dash-panel-head">
-                        <div>
-                            <h3>Medios de pago</h3>
-                        </div>
-                        <strong>
-                            <%= pagosHoy.length %> medios
-                        </strong>
-                    </div>
+    <%# ---------- Más vendidos ---------- %>
+    <section class="inicio-tarjeta inicio-top" aria-labelledby="tituloTop">
+        <header class="inicio-seccion-cabecera">
+            <h2 id="tituloTop">Más vendidos</h2>
+            <span>hoy</span>
+        </header>
 
-                    <% if (pagosVista.length> 0) { %>
-                        <div class="payment-bars">
-                            <% pagosVista.forEach((pago, index)=> { %>
-                                <div class="payment-bar-item color-<%= (index % 5) + 1 %>">
-                                    <div class="payment-bar-top">
-                                        <strong>
-                                            <%= pago.medio_pago_nombre %>
-                                        </strong>
-                                        <span>
-                                            <%= moneda(pago.neto) %>
-                                        </span>
-                                    </div>
-
-                                    <div class="payment-bar-track">
-                                        <i style="width: <%= anchoPago(pago.neto) %>%"></i>
-                                    </div>
-
-                                    <small>
-                                        <%= numero(pago.operaciones) %> operaciones del día
-                                    </small>
-                                </div>
-                                <% }) %>
-                        </div>
-                        <% } else { %>
-                            <div class="dash-empty">
-                                <strong>Sin pagos hoy</strong>
-                                <span>Los pagos aparecerán agrupados por medio.</span>
-                            </div>
-                            <% } %>
-                </article>
-
-                <article class="dash-panel panel-products">
-                    <div class="dash-panel-head">
-                        <div>
-                            <h3>Más vendidos</h3>
-                        </div>
-                    </div>
-
-                    <% if (topProductosVista.length> 0) { %>
-                        <div class="product-ranking">
-                            <% topProductosVista.forEach((producto, index)=> { %>
-                                <div class="product-rank-item">
-                                    <b>
-                                        <%= index + 1 %>
-                                    </b>
-
-                                    <div>
-                                        <div class="product-rank-top">
-                                            <strong>
-                                                <%= producto.nombre_producto %>
-                                            </strong>
-                                            <span>
-                                                <%= moneda(producto.total_vendido) %>
-                                            </span>
-                                        </div>
-
-                                        <div class="product-rank-track">
-                                            <i style="width: <%= anchoProducto(producto.total_vendido) %>%"></i>
-                                        </div>
-
-                                        <small>
-                                            <%= numero(producto.cantidad_vendida) %>
-                                                <%= producto.unidad_abreviatura %> · <%= producto.codigo_interno %>
-                                        </small>
-                                    </div>
-                                </div>
-                                <% }) %>
-                        </div>
-                        <% } else { %>
-                            <div class="dash-empty">
-                                <strong>Sin productos vendidos</strong>
-                                <span>El ranking se llenará con ventas pagadas del día.</span>
-                            </div>
-                            <% } %>
-                </article>
-
-                <article class="dash-panel panel-activity">
-                    <div class="dash-panel-head">
-                        <div>
-                            <h3>Últimas ventas</h3>
-                        </div>
-                        <a href="/ventas/historial" class="btn-secondary btn-sm">Historial</a>
-                    </div>
-
-                    <% if (ultimasVentasVista.length> 0) { %>
-                        <div class="activity-list">
-                            <% ultimasVentasVista.forEach((venta)=> { %>
-                                <a href="/ventas/<%= venta.id_venta %>" class="activity-item">
-                                    <div>
-                                        <strong>
-                                            <%= venta.numero_venta %>
-                                        </strong>
-                                        <span>
-                                            <%= venta.cliente_nombre %>
-                                        </span>
-                                    </div>
-
-                                    <div>
-                                        <strong>
-                                            <%= moneda(venta.total) %>
-                                        </strong>
-                                        <small>
-                                            <%= fechaHora(venta.fecha_venta) %>
-                                        </small>
-                                    </div>
-                                </a>
-                                <% }) %>
-                        </div>
-                        <% } else { %>
-                            <div class="dash-empty">
-                                <strong>Sin ventas hoy</strong>
-                                <span>La actividad reciente del día aparecerá aquí.</span>
-                            </div>
-                            <% } %>
-                </article>
-
-                <article class="dash-panel panel-alerts">
-                    <div class="dash-panel-head">
-                        <div>
-                            <h3>Alertas</h3>
-                        </div>
-
-                        <span class="badge <%= totalAlertas > 0 ? 'badge-warning' : 'badge-success' %>">
-                            <%= numero(totalAlertas) %> stock
+        <% if (masVendidos.length) { %>
+            <ol class="inicio-top-lista">
+                <% masVendidos.forEach(function (producto, indice) { %>
+                    <li>
+                        <span class="inicio-top-puesto"><%= indice + 1 %></span>
+                        <span class="inicio-top-producto">
+                            <span class="inicio-top-nombre"><%= producto.nombre_producto %></span>
+                            <small><%= cantidad(producto.cantidad_vendida) %> <%= producto.unidad_abreviatura %> · <%= producto.codigo_interno %></small>
                         </span>
+                        <span class="inicio-mono"><%= pesos(producto.total_vendido) %></span>
+                    </li>
+                <% }) %>
+            </ol>
+        <% } else { %>
+            <p class="inicio-vacio">Sin productos vendidos todavía.</p>
+        <% } %>
+    </section>
+
+    <%# ---------- Últimas ventas: sobre el papel del ticket ---------- %>
+    <section class="inicio-tarjeta inicio-ultimas" aria-labelledby="tituloUltimas">
+        <header class="inicio-seccion-cabecera">
+            <h2 id="tituloUltimas">Últimas ventas</h2>
+            <a href="/ventas/historial" class="inicio-enlace">Historial</a>
+        </header>
+
+        <% if (ultimasVentas.length) { %>
+            <ul class="inicio-ultimas-lista">
+                <% ultimasVentas.forEach(function (venta) {
+                    const anulada = venta.estado === 'anulada'; %>
+                    <li>
+                        <a href="/ventas/<%= venta.id_venta %>" class="<%= anulada ? 'is-anulada' : '' %>">
+                            <span class="inicio-ultima-numero"><%= venta.numero_venta %></span>
+                            <span class="inicio-ultima-hora"><%= horaDe(venta.fecha_venta) %></span>
+                            <span class="inicio-ultima-cliente"><%= anulada ? 'Anulada · ' : '' %><%= venta.cliente_nombre %></span>
+                            <span class="inicio-ultima-total"><%= pesos(venta.total) %></span>
+                        </a>
+                    </li>
+                <% }) %>
+            </ul>
+        <% } else { %>
+            <p class="inicio-vacio">Sin ventas todavía. <a href="/ventas" class="inicio-enlace">Ir al POS</a></p>
+        <% } %>
+    </section>
+
+    <%# ---------- Atención: solo si hay algo que atender ---------- %>
+    <% if (hayAtencion) { %>
+        <section class="inicio-tarjeta inicio-atencion" aria-labelledby="tituloAtencion">
+            <header class="inicio-seccion-cabecera">
+                <h2 id="tituloAtencion">Atención</h2>
+            </header>
+
+            <div class="inicio-atencion-columnas">
+                <% if (totalAlertasStock > 0) { %>
+                    <div>
+                        <h3>
+                            Inventario
+                            <small><%= Number(stock.productos_sin_stock) || 0 %> sin stock · <%= Number(stock.productos_stock_bajo) || 0 %> con stock bajo</small>
+                        </h3>
+                        <ul class="inicio-atencion-lista">
+                            <% alertasStock.forEach(function (alerta) {
+                                const sinStock = alerta.tipo_alerta === 'sin_stock'; %>
+                                <li>
+                                    <span class="inicio-atencion-nombre"><%= alerta.nombre %></span>
+                                    <span class="inicio-mono">Quedan <%= cantidad(alerta.stock_actual) %> · mín. <%= cantidad(alerta.stock_minimo) %></span>
+                                    <span class="inicio-chip <%= sinStock ? 'is-mal' : 'is-aviso' %>"><%= sinStock ? 'Sin stock' : 'Stock bajo' %></span>
+                                </li>
+                            <% }) %>
+                        </ul>
+                        <a href="/inventario" class="inicio-enlace">Ver inventario</a>
                     </div>
+                <% } %>
 
-                    <div class="alerts-split">
-                        <div class="alerts-block">
-                            <strong>Inventario</strong>
-
-                            <% if (alertasStockVista.length> 0) { %>
-                                <% alertasStockVista.forEach((alerta)=> { %>
-                                    <div class="alert-line">
-                                        <div>
-                                            <span>
-                                                <%= alerta.nombre %>
-                                            </span>
-                                            <small>
-                                                <%= alerta.codigo_interno %>
-                                            </small>
-                                        </div>
-
-                                        <span class="badge <%= alertaStockBadge(alerta.tipo_alerta) %>">
-                                            <%= alertaStockTexto(alerta.tipo_alerta) %>
-                                        </span>
-                                    </div>
-                                    <% }) %>
-                                        <% } else { %>
-                                            <p>Sin alertas críticas de inventario.</p>
-                                            <% } %>
-                        </div>
-
-                        <div class="alerts-block">
-                            <strong>Anulaciones del día</strong>
-
-                            <% if (ultimasAnulacionesVista.length> 0) { %>
-                                <% ultimasAnulacionesVista.forEach((anulacion)=> { %>
-                                    <a href="/ventas/<%= anulacion.id_venta %>" class="alert-line danger">
-                                        <div>
-                                            <span>
-                                                <%= anulacion.numero_venta %>
-                                            </span>
-                                            <small>
-                                                <%= anulacion.usuario_anulacion %>
-                                            </small>
-                                        </div>
-
-                                        <b>
-                                            <%= moneda(anulacion.total) %>
-                                        </b>
-                                    </a>
-                                    <% }) %>
-                                        <% } else { %>
-                                            <p>Sin anulaciones hoy.</p>
-                                            <% } %>
-                        </div>
+                <% if (anulaciones.length) { %>
+                    <div>
+                        <h3>Anulaciones de hoy</h3>
+                        <ul class="inicio-atencion-lista">
+                            <% anulaciones.forEach(function (anulacion) { %>
+                                <li>
+                                    <a href="/ventas/<%= anulacion.id_venta %>" class="inicio-atencion-nombre inicio-mono"><%= anulacion.numero_venta %></a>
+                                    <span><%= anulacion.usuario_anulacion %> · <%= horaDe(anulacion.fecha_anulacion) %></span>
+                                    <span class="inicio-mono is-mal"><%= pesos(anulacion.total) %></span>
+                                </li>
+                            <% }) %>
+                        </ul>
                     </div>
-                </article>
-            </section>
+                <% } %>
+            </div>
         </section>
+    <% } %>
+</div>

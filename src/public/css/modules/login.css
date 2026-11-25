@@ -38,7 +38,7 @@ body.acceso {
     left: 1px;
     width: 23px;
     height: 23px;
-    background: var(--color-primary);
+    background: var(--color-marca-amarillo);
 }
 
 .acceso-logo span:nth-child(2) {
@@ -54,7 +54,19 @@ body.acceso {
     bottom: 2px;
     width: 13px;
     height: 13px;
-    background: #6f8cff;
+    background: var(--color-marca-azul);
+}
+
+/* Sobre fondo claro el logo va en un cuadro de tinta (como el ícono de una app):
+   el amarillo pastel no se distingue sobre el papel */
+.acceso-logo-azulejo {
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--color-ink);
 }
 
 /* ---------- Panel de marca ---------- */
@@ -75,10 +87,6 @@ body.acceso {
     display: flex;
     align-items: center;
     gap: 12px;
-}
-
-.acceso-marca .acceso-logo span:nth-child(1) {
-    background: #ffffff;
 }
 
 .acceso-marca-nombre {

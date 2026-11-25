@@ -31,6 +31,10 @@
     --color-accent: #0f9f96;
     --color-accent-soft: #e2f6f4;
 
+    /* Logo: pieza grande en amarillo pastel (el tono del papel del ticket) */
+    --color-marca-amarillo: #fce7a6;
+    --color-marca-azul: #7c93f5;
+
     --color-cobrar: #0d9668;
     --color-cobrar-dark: #0a7a54;
 
@@ -185,13 +189,13 @@ html[data-menu-estado="riel"] .app-layout {
     transition: opacity 120ms ease;
 }
 
-/* Menú en tinta: la pieza grande del logo va en blanco, como en el login */
+/* Menú en tinta: pieza grande del logo en amarillo pastel */
 .sidebar-logo span:nth-child(1) {
-    background: #ffffff;
+    background: var(--color-marca-amarillo);
 }
 
 .sidebar-logo span:nth-child(3) {
-    background: #7c93f5;
+    background: var(--color-marca-azul);
 }
 
 .sidebar-brand-copy {
@@ -763,16 +767,18 @@ html[data-menu-estado="movil"] .shell-toggle {
     transform: translateY(1px);
 }
 
+/* Acción principal en tinta, como "Entrar" del login (el verde queda solo
+   para Cobrar en el punto de venta: dinero que entra). */
 .btn-primary {
-    background: var(--color-primary);
-    border: 1px solid var(--color-primary);
+    background: var(--color-ink);
+    border: 1px solid var(--color-ink);
     color: #fff;
-    box-shadow: 0 1px 2px rgba(41, 68, 181, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    box-shadow: 0 1px 2px rgba(20, 22, 27, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .btn-primary:hover {
-    background: var(--color-primary-dark);
-    border-color: var(--color-primary-dark);
+    background: #000000;
+    border-color: #000000;
 }
 
 .btn-secondary {
@@ -1528,14 +1534,19 @@ html[data-menu-estado="movil"] .shell-toggle {
 }
 
 /* KPI principal de la pantalla (p. ej. efectivo esperado) */
+/* Indicador destacado (p. ej. "Efectivo esperado"): tarjeta en tinta */
 .ui-kpi--destacado {
-    border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
-    background: var(--color-primary-soft);
+    border-color: var(--color-ink);
+    background: var(--color-ink);
 }
 
 .ui-kpi--destacado .ui-kpi-etiqueta,
+.ui-kpi--destacado .ui-kpi-detalle {
+    color: rgba(255, 255, 255, 0.68);
+}
+
 .ui-kpi--destacado .ui-kpi-valor {
-    color: var(--color-primary-dark);
+    color: #ffffff;
 }
 
 .ui-nota--info {
@@ -1761,4 +1772,40 @@ html .app-content .ventas-header-sub {
 /* Números de documento (FV-000054, COT-000004…): nunca se parten en dos líneas */
 .ventas-history-invoice {
     white-space: nowrap;
+}
+
+/* Números de documento y montos en tinta y Mono, como en el ticket (no en azul) */
+.app-layout .app-content :is(.ventas-history-invoice, .notas-credito-total, .compras-cxp-money.is-pending) {
+    color: var(--color-text);
+    font-family: var(--font-mono);
+}
+
+.app-layout .app-content :is(.compras-product-result-action, .product-image-placeholder span) {
+    color: var(--color-muted);
+}
+
+/* "Buscar" en cotización, remisión y compra: secundario (la acción principal
+   del documento es guardarlo) */
+.app-layout .app-content .ventas-search-btn {
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-surface);
+    color: var(--color-text-soft);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.app-layout .app-content .ventas-search-btn:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-text);
+}
+
+.app-layout .app-content .ventas-client-new-btn {
+    border-color: var(--color-border-strong);
+    color: var(--color-text-soft);
+}
+
+.app-layout .app-content .ventas-client-new-btn:hover {
+    border-color: var(--color-border-strong);
+    background: var(--color-surface-hover);
+    color: var(--color-text);
 }

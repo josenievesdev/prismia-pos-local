@@ -31,6 +31,10 @@
     --color-accent: #0f9f96;
     --color-accent-soft: #e2f6f4;
 
+    /* Logo: pieza grande en amarillo pastel (el tono del papel del ticket) */
+    --color-marca-amarillo: #fce7a6;
+    --color-marca-azul: #7c93f5;
+
     --color-cobrar: #0d9668;
     --color-cobrar-dark: #0a7a54;
 
@@ -257,7 +261,7 @@ textarea {
     height: 54px;
     left: 2px;
     top: 10px;
-    background: rgba(255, 255, 255, 0.96);
+    background: var(--color-marca-amarillo);
 }
 
 .prism-mark span:nth-child(2) {
@@ -273,7 +277,7 @@ textarea {
     height: 30px;
     right: 8px;
     bottom: 5px;
-    background: rgba(52, 86, 214, 0.92);
+    background: var(--color-marca-azul);
 }
 
 .brand-kicker {

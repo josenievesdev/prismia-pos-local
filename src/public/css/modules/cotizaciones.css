@@ -219,8 +219,8 @@
 }
 
 .cotizaciones-status.is-converted {
-    background: #ede9fe;
-    color: #6d28d9;
+    background: var(--color-success-soft);
+    color: var(--color-success);
 }
 
 .cotizaciones-status.is-muted {

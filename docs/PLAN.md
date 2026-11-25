@@ -183,6 +183,24 @@ Parte 2 — táctil y pantallas pequeñas:
       minimercado (kilos) y boutique (tallas). En ventanas bajas se reduce con
       `zoom` en vez de ocultarse (antes desaparecía por debajo de 640 px de alto).
       Con "reducir movimiento" queda quieto; con la pestaña oculta no anima.
+- [x] (2026-11-24, 4.ª ronda) Botones: la acción principal (`btn-primary`) va en
+      tinta en toda la app; filtros y botones repetidos en cada fila ("Ticket",
+      "Pagar") pasan a secundarios (14 en 13 vistas). Regla: tinta = principal,
+      blanco = secundaria, rojo suave = destructiva, verde solo para Cobrar.
+      Barrido final: 0 botones azules en 35 pantallas.
+- [x] Destacados en tinta: "Efectivo esperado" (Caja y cierre), valorización de
+      inventario. Números de documento y montos en Mono negro (no azul). Estado
+      "Convertida" en verde (era morado); "Interna" sin índigo.
+- [x] Logo con amarillo pastel (`--color-marca-amarillo`): pieza grande amarilla
+      sobre tinta; sobre fondo claro el logo va en un cuadro de tinta.
+- [x] Inicio rediseñado (`dashboard/index.ejs` + `dashboard.css`, de 664 a ~600
+      líneas limpias): "Hoy" con la cifra en Mono, ventas por hora (columnas de
+      tinta, la hora en curso en verde, el pico con su valor, detalle al pasar el
+      mouse o con teclado), cifras de apoyo con margen del día; Caja en tinta;
+      medios de pago con barras de un color y su porcentaje; más vendidos; últimas
+      ventas sobre papel; "Atención" solo si hay stock bajo o anulaciones. Usa los
+      mismos datos del servidor (no recalcula dinero). Hora de apertura de caja en
+      hora local (venía en UTC).
 - [ ] Llevar las acciones de cada módulo a la barra superior, como el POS
       (hoy ocupan una fila propia). Requiere tocar ~25 vistas: hacerlo módulo a módulo.
 

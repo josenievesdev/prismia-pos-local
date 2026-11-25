@@ -593,8 +593,17 @@ body.modal-open {
 }
 
 .valuation-item.strong {
-    background: var(--color-info-soft);
-    border-color: color-mix(in srgb, var(--color-primary) 28%, #ffffff);
+    border-color: var(--color-ink);
+    background: var(--color-ink);
+}
+
+.valuation-item.strong span,
+.valuation-item.strong small {
+    color: rgba(255, 255, 255, 0.68);
+}
+
+.valuation-item.strong strong {
+    color: #ffffff;
 }
 
 @media (max-width: 980px) {
