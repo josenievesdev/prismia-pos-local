@@ -44,7 +44,7 @@ guía contable.
 | Dato | Valor |
 |---|---|
 | Nombre del sistema | **Prismia POS Local** |
-| Desarrollado por | Nieves Systems / TINAI |
+| Desarrollado por | TINAI |
 | Tipo de sistema | **POS local para Windows** (escritorio, sin servidores externos) |
 | Stack | **Node.js, Express, EJS, SQLite, Electron** |
 | Base de datos | **SQLite** vía **better-sqlite3** (un solo archivo local) |

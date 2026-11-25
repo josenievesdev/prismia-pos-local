@@ -1164,7 +1164,7 @@
                     </section>
 
                     <footer class="footer">
-                        Prismia POS Local · Arqueo generado desde el sistema · Nieves Systems
+                        <%= locals.empresa ? empresa.software.nombre : 'Prismia POS Local' %> · Arqueo generado desde el sistema · <%= locals.empresa ? empresa.software.desarrollador : 'TINAI' %>
                     </footer>
                 </main>
 </body>

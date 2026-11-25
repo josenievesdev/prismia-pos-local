@@ -43,7 +43,7 @@
     "inventario",
     "caja"
   ],
-  "author": "Nieves Systems",
+  "author": "TINAI",
   "license": "ISC",
   "dependencies": {
     "adm-zip": "^0.5.17",
@@ -70,7 +70,7 @@
   "build": {
     "appId": "com.nievessystems.prismia-pos-local",
     "productName": "Prismia POS Local",
-    "copyright": "Copyright © 2026 Nieves Systems",
+    "copyright": "Copyright © 2026 TINAI",
     "directories": {
       "output": "dist"
     },

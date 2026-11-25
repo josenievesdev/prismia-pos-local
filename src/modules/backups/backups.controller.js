@@ -13,7 +13,7 @@ const estilosBackups = ['/css/modules/backups.css'];
 
 function obtenerContactoSoporte() {
     return {
-        nombre: env.backups.supportContactName || 'Nieves Systems',
+        nombre: env.backups.supportContactName || 'TINAI',
         correo: env.backups.supportContactEmail || 'soporte@tudominio.com',
         telefono: env.backups.supportContactPhone || '',
     };

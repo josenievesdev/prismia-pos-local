@@ -15,7 +15,7 @@
 ## 1. Resumen del sistema
 
 **Prismia POS Local** es un sistema de punto de venta (POS) **local para Windows**,
-desarrollado por **Nieves Systems / TINAI**, pensado para pequeños y medianos negocios.
+desarrollado por **TINAI**, pensado para pequeños y medianos negocios.
 
 Permite operar **ventas, caja, inventario, compras, clientes, proveedores,
 documentos comerciales (cotizaciones, remisiones, notas crédito), reportes y backups**

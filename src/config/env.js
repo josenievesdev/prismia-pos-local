@@ -88,7 +88,7 @@ const env = {
             runtimeSecrets.obtenerSupportBackupKey,
             ''
         ),
-        supportContactName: process.env.SUPPORT_CONTACT_NAME || 'Nieves Systems',
+        supportContactName: process.env.SUPPORT_CONTACT_NAME || 'TINAI',
         supportContactEmail: process.env.SUPPORT_CONTACT_EMAIL || 'soporte@tudominio.com',
         supportContactPhone: process.env.SUPPORT_CONTACT_PHONE || '',
         scheduledIntervalDays: Number(process.env.BACKUP_SCHEDULED_INTERVAL_DAYS || 7),
