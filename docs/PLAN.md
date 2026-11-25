@@ -204,6 +204,19 @@ Parte 2 — táctil y pantallas pequeñas:
 - [ ] Llevar las acciones de cada módulo a la barra superior, como el POS
       (hoy ocupan una fila propia). Requiere tocar ~25 vistas: hacerlo módulo a módulo.
 
+## Unión con GitHub (2026-11-24)
+- [x] La rama de la auditoría se unió con 66 commits de GitHub (junio-agosto:
+      licencia local, descuentos por línea, login reforzado, manuales).
+- [x] Descuentos por línea llevados al POS nuevo (clic en el precio o F6), al
+      ticket (precio neto + "Descuentos aplicados") y a Reportes.
+- [x] Migración versionada 006 = migraciones manuales 038-040 (licencia_local);
+      ensure-db ya no bloquea bases existentes sin esa tabla.
+- [x] Stock: se respeta "Permite vender sin stock" de cada producto (GitHub lo
+      ignoraba y bloqueaba siempre); mensaje claro de GitHub para el resto.
+- [x] "Nieves Systems" -> TINAI (se conserva el appId del instalador).
+- [x] README con capturas del diseño nuevo tomadas del demo (npm run demo:reset).
+- [ ] Propinas (bares y restaurantes): definir reglas y construir.
+
 ## Fase 5 — Calidad de código
 - [ ] Unificar cotizaciones y remisiones (~80 % duplicado).
 - [ ] Actualizar `xlsx` a 0.20.3 (requiere que el usuario lo instale).

@@ -112,6 +112,17 @@ function formatoFecha(offsetDias = 0, hora = '10:00:00') {
     return `${yyyy}-${mm}-${dd} ${hora}`;
 }
 
+// Turnos de caja: la app guarda apertura y cierre en UTC (datetime('now')) y los
+// muestra en hora local. El demo debe guardarlos igual o aparecen corridos.
+function formatoFechaUtc(offsetDias = 0, hora = '10:00:00') {
+    const [horas, minutos, segundos] = hora.split(':').map(Number);
+    const fecha = new Date();
+    fecha.setDate(fecha.getDate() + offsetDias);
+    fecha.setHours(horas, minutos, segundos || 0, 0);
+
+    return fecha.toISOString().slice(0, 19).replace('T', ' ');
+}
+
 function dinero(valor) {
     return Math.round(Number(valor || 0));
 }
@@ -415,8 +426,8 @@ function crearCajaVentasDemo(db, idUsuario) {
     const turnoCerrado = crearTurno.run(
         idUsuario,
         idUsuario,
-        formatoFecha(-1, '08:20:00'),
-        formatoFecha(-1, '18:10:00'),
+        formatoFechaUtc(-1, '08:20:00'),
+        formatoFechaUtc(-1, '18:10:00'),
         100000,
         100000,
         100000,
@@ -429,7 +440,7 @@ function crearCajaVentasDemo(db, idUsuario) {
     const turnoAbierto = crearTurno.run(
         idUsuario,
         null,
-        formatoFecha(0, '08:35:00'),
+        formatoFechaUtc(0, '08:35:00'),
         null,
         120000,
         120000,

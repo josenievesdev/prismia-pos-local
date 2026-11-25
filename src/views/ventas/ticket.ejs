@@ -111,7 +111,7 @@
                 <div class="recibo-item">
                     <div class="recibo-item-nombre"><%= texto(item.nombre_producto, 'Producto') %></div>
                     <div class="recibo-item-cuenta">
-                        <span><%= cantidad(item.cantidad) %> <%= unidad %> × <%= pesos(item.precio_unitario) %></span>
+                        <span><%= cantidad(item.cantidad) %> <%= unidad %> × <%= pesos((Number(item.precio_unitario) || 0) - descuento) %></span>
                         <strong><%= pesos(item.total_linea) %></strong>
                     </div>
                     <div class="recibo-item-meta">

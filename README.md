@@ -19,15 +19,36 @@ Prismia POS Local es una aplicación para Windows orientada a la gestión diaria
 ## Vista del producto
 
 <p align="center">
-  <img src="docs/images/dashboard.png" width="48%" alt="Dashboard de Prismia POS">
-  <img src="docs/images/pos.png" width="48%" alt="Punto de venta de Prismia POS">
+  <img src="docs/images/pos.png" width="96%" alt="Punto de venta de Prismia: ticket en papel térmico, cantidades por metro, descuento por línea y cobro">
 </p>
 
 <p align="center">
-  <img src="docs/images/inventario.png" width="48%" alt="Módulo de inventario de Prismia POS">
-  <img src="docs/images/caja.png" width="48%" alt="Módulo de caja de Prismia POS">
+  <img src="docs/images/dashboard.png" width="48%" alt="Inicio: ventas de hoy por hora, caja en tinta, medios de pago y últimas ventas">
+  <img src="docs/images/login.png" width="48%" alt="Inicio de sesión con impresora de tickets animada">
 </p>
 
+<p align="center">
+  <img src="docs/images/caja.png" width="48%" alt="Caja: efectivo esperado y movimientos por medio de pago">
+  <img src="docs/images/inventario.png" width="48%" alt="Inventario sobre el papel del ticket">
+</p>
+
+<p align="center">
+  <img src="docs/images/ticket.png" width="32%" alt="Ticket de venta térmico: cada producto como una cuenta, IVA por tarifa y descuentos">
+</p>
+
+<sub>Capturas con la base de demostración (<code>npm run demo:reset</code>): ningún dato real.</sub>
+
+---
+
+## Diseño
+
+La interfaz nace del punto de venta y se extiende a todo el sistema:
+
+- **Tinta y papel.** Menú, caja y acciones principales en tinta (`#1e2129`); los datos (listados, documentos, detalles) sobre el papel crema del ticket con su franja negra; filtros e indicadores en blanco.
+- **Cifras que se leen de un vistazo.** IBM Plex Sans para el texto e IBM Plex Mono para dinero y códigos, incluidas en la app (funciona sin internet).
+- **Un solo botón fuerte por pantalla.** Tinta para la acción principal, blanco para las secundarias y verde solo para Cobrar.
+- **Rápido con teclado o táctil.** Lector de código de barras, atajos (F2 buscar, F4 cliente, F6 descuento, F8 cantidad, F9 cobrar, Alt+1…9 medios y frecuentes) y modo táctil con fotos.
+- **Se adapta al negocio.** Perfiles general, comidas y boutique: cambian el color de acento y el formato de las fotos.
 
 ---
 
@@ -35,10 +56,13 @@ Prismia POS Local es una aplicación para Windows orientada a la gestión diaria
 
 ### Operación comercial
 
-- Registrar ventas desde un POS pensado para escritorio y uso táctil.
-- Buscar productos y trabajar con carrito de venta.
-- Manejar distintos métodos de pago y pagos mixtos.
-- Generar tickets de venta.
+- Registrar ventas desde un POS pensado para escritorio y uso táctil, con el ticket en pantalla como papel térmico.
+- Vender por unidad, metro, kilo o cualquier medida con decimales ("2,5 m × $ 2.200").
+- Buscar por palabras sueltas y sin tildes ("cable 12 blanco"); el lector de código de barras agrega el producto exacto.
+- Aplicar descuentos por línea (en pesos o con % rápido) que quedan en el ticket y en los reportes.
+- Manejar distintos métodos de pago y pagos mixtos, con cambio y referencia.
+- Dejar ventas en espera y retomarlas; la venta en curso no se pierde al cambiar de módulo.
+- Generar tickets térmicos con IVA por tarifa, descuentos y pagos.
 - Consultar historial de ventas.
 - Crear cotizaciones, remisiones y notas crédito.
 
@@ -80,6 +104,16 @@ Prismia POS Local es una aplicación para Windows orientada a la gestión diaria
 
 ---
 
+## Exactitud y seguridad
+
+- **Dinero exacto.** Todas las cuentas (líneas, IVA incluido o aparte, descuentos, cambio, pagos mixtos, efectivo esperado) usan aritmética entera en pesos y cantidades en milésimas, la misma en el servidor y en el navegador: sin errores de punto flotante.
+- **Caja que cuadra.** Los totales del turno se derivan de los movimientos; pruebas automáticas verifican que cada venta cuadre (total = líneas = pagos) y que la numeración sea consecutiva.
+- **Migraciones versionadas.** La base se actualiza sola al arrancar, con un respaldo automático previo.
+- **Protecciones.** Límite de intentos de inicio de sesión, verificación de origen en formularios (CSRF), sesión regenerada al entrar y servidor que solo escucha en el propio equipo.
+- **Pruebas.** `npm test` corre las pruebas de dinero, caja, búsqueda y seguridad sobre bases temporales.
+
+---
+
 ## Licenciamiento V1
 
 Prismia incorpora un sistema de licenciamiento local pensado para una primera etapa comercial y piloto.
@@ -111,7 +145,7 @@ La documentación técnica completa se encuentra en:
 | Área | Tecnologías |
 | --- | --- |
 | Backend | Node.js, Express |
-| Frontend | EJS, JavaScript, CSS |
+| Frontend | EJS, JavaScript, CSS · IBM Plex Sans y Mono (SIL OFL 1.1, incluidas) |
 | Base de datos | SQLite, better-sqlite3 |
 | Desktop | Electron |
 | Empaquetado | electron-builder, NSIS |
