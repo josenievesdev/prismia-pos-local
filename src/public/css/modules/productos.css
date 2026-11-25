@@ -8,149 +8,6 @@
 }
 
 /* ==============================
-   Formulario de productos
-============================== */
-
-.product-form {
-    display: grid;
-    gap: 14px;
-    padding: 0;
-    background: transparent;
-    border: none;
-    box-shadow: none;
-}
-
-.product-section {
-    display: grid;
-    gap: 12px;
-    padding: 16px 18px;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-soft);
-}
-
-.section-title-row {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
-    padding-bottom: 2px;
-}
-
-.section-title-row h3 {
-    margin: 0;
-    font-size: 15px;
-    font-weight: 700;
-    line-height: 1.2;
-    letter-spacing: -0.01em;
-    color: var(--color-text);
-}
-
-.section-title-row p {
-    margin: 3px 0 0;
-    max-width: 720px;
-    color: var(--color-muted);
-    font-size: 12px;
-    line-height: 1.45;
-}
-
-/* Campos */
-
-.product-form .form-group label {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--color-text-soft);
-}
-
-.product-form .form-group input,
-.product-form .form-group select,
-.product-form .form-group textarea {
-    border-radius: var(--radius-sm);
-}
-
-.product-form textarea {
-    min-height: 72px;
-}
-
-/* Cajas de ayuda internas */
-
-.module-hint {
-    display: grid;
-    align-content: center;
-    gap: 4px;
-    min-height: auto;
-    padding: 10px 12px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    background: var(--color-surface-soft);
-}
-
-.module-hint strong {
-    font-size: 13px;
-    color: var(--color-text);
-}
-
-.module-hint span {
-    color: var(--color-muted);
-    font-size: 11px;
-    line-height: 1.45;
-}
-
-/* Checkboxes */
-
-.product-checkbox-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
-}
-
-.product-form .check-option {
-    min-height: auto;
-    align-items: flex-start;
-    padding: 10px 12px;
-    border-radius: var(--radius-sm);
-    background: var(--color-surface-soft);
-}
-
-.product-form .check-option input {
-    margin-top: 2px;
-    flex: 0 0 auto;
-}
-
-.product-form .check-option strong {
-    font-size: 13px;
-    color: var(--color-text);
-}
-
-.product-form .check-option small {
-    margin-top: 3px;
-    font-size: 11px;
-    line-height: 1.4;
-}
-
-/* Vista de ganancia en edición */
-
-.product-profit-preview {
-    justify-content: flex-start;
-    gap: 8px;
-    font-size: 13px;
-    border-radius: var(--radius-sm);
-}
-
-/* Acciones del formulario */
-
-.product-actions {
-    display: flex;
-    justify-content: flex-start;
-    gap: 8px;
-    padding: 14px 18px;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-soft);
-}
-
-/* ==============================
    Tabla de productos
 ============================== */
 
@@ -232,14 +89,6 @@
 }
 
 @media (max-width: 980px) {
-    .product-form .form-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .product-checkbox-grid {
-        grid-template-columns: 1fr;
-    }
-
     .products-filters .filter-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -248,15 +97,6 @@
 @media (max-width: 720px) {
     .productos-page .module-header-actions {
         align-items: flex-start;
-        flex-direction: column;
-    }
-
-    .product-section,
-    .product-actions {
-        padding: 14px;
-    }
-
-    .section-title-row {
         flex-direction: column;
     }
 }
@@ -273,13 +113,6 @@
 }
 
 /* ===== Productos · imagen y POS táctil ===== */
-
-.product-touch-grid {
-    display: grid;
-    grid-template-columns: 220px minmax(0, 1fr);
-    gap: 16px;
-    align-items: stretch;
-}
 
 .product-image-preview {
     min-height: 220px;
@@ -329,75 +162,486 @@
     font-weight: 600;
 }
 
-.product-touch-fields {
-    min-width: 0;
+/* =========================================================
+   Creador de productos: pasos, calculadora de precio y vista previa
+   ========================================================= */
+.producto-creador {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 16px;
+    align-items: start;
+}
+
+.producto-creador-pasos {
     display: grid;
     gap: 14px;
-    align-content: start;
+    min-width: 0;
 }
 
-.product-touch-fields input[type="file"] {
-    width: 100%;
-    min-height: 38px;
-    padding: 7px 10px;
+.producto-paso {
+    display: grid;
+    gap: 16px;
+    padding: 18px 20px;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    background: #fff;
-    color: var(--color-text);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-soft);
+}
+
+.producto-paso-cabecera {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.producto-paso-numero {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--color-ink);
+    color: #ffffff;
+    font-family: var(--font-mono);
     font-size: 13px;
+    font-weight: 700;
 }
 
-.product-remove-image-option {
-    border-color: rgba(201, 48, 44, 0.22);
-    background: rgba(254, 242, 242, 0.72);
+.producto-paso-cabecera h3 {
+    margin: 0;
+    color: var(--color-text);
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
 }
 
-.product-remove-image-option strong {
-    color: var(--color-danger);
+.producto-paso-cabecera h3 small {
+    margin-left: 6px;
+    color: var(--color-faint);
+    font-size: 12px;
+    font-weight: 600;
 }
 
-.product-remove-image-option small {
-    color: var(--color-danger);
+.producto-paso-cabecera p {
+    margin: 3px 0 0;
+    color: var(--color-muted);
+    font-size: 13px;
+    line-height: 1.45;
 }
 
-@media (max-width: 820px) {
-    .product-touch-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .product-image-preview,
-    .product-image-preview img,
-    .product-image-placeholder {
-        min-height: 180px;
-    }
+.producto-campos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 16px;
 }
 
-.module-hint a {
+.producto-campos[hidden] {
+    display: none;
+}
+
+.producto-campo-ancho {
+    grid-column: 1 / -1;
+}
+
+.producto-creador .form-group {
+    display: grid;
+    gap: 6px;
+    align-content: start;
+    margin: 0;
+}
+
+.producto-creador .form-group label {
+    color: var(--color-text-soft);
+    font-size: 12.5px;
+    font-weight: 600;
+}
+
+/* Ayuda en texto simple (sin cajas grises) */
+.producto-ayuda {
+    display: block;
+    color: var(--color-muted);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.producto-enlace {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--color-text);
+    font: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.producto-opcional summary {
+    width: max-content;
+    color: var(--color-text-soft);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.producto-opcional textarea {
+    width: 100%;
+    margin-top: 8px;
+}
+
+/* Campos de dinero: $ y % dentro del campo, números en mono */
+.producto-dinero {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 42px;
+    padding: 0 12px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+}
+
+.producto-dinero:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-ring);
+}
+
+.producto-dinero span {
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: 14px;
+}
+
+.producto-creador .producto-dinero input {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    outline: none;
+    background: transparent;
+    box-shadow: none;
+    color: var(--color-text);
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 600;
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.producto-dinero input::-webkit-outer-spin-button,
+.producto-dinero input::-webkit-inner-spin-button {
+    margin: 0;
+    -webkit-appearance: none;
+}
+
+.producto-dinero-principal {
+    border-color: var(--color-ink);
+}
+
+.producto-creador .producto-dinero-principal input {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.producto-sin-iva,
+.producto-aviso-iva {
+    display: grid;
+    align-content: center;
+    gap: 3px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 12.5px;
+    line-height: 1.45;
+}
+
+.producto-sin-iva {
+    border: 1px dashed var(--color-border-strong);
+    color: var(--color-muted);
+}
+
+.producto-sin-iva strong {
+    color: var(--color-text);
+    font-size: 14px;
+}
+
+.producto-aviso-iva {
+    border-left: 3px solid #d99a00;
+    background: var(--color-warning-soft);
+    color: var(--color-warning);
+}
+
+.producto-sin-iva a,
+.producto-aviso-iva a {
     color: inherit;
     font-weight: 700;
     text-decoration: underline;
 }
 
-/* IVA: cómo se separa del precio de venta (en vivo) */
-.producto-iva-desglose {
+/* Costo + ganancia + IVA = precio de venta */
+.producto-desglose {
     display: grid;
-    align-content: center;
-    gap: 4px;
-    padding: 12px 14px;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+    overflow: hidden;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    background: var(--color-surface-soft);
+    border-radius: var(--radius-md);
+    background: var(--color-paper);
 }
 
-.producto-iva-desglose span {
+.producto-desglose > div {
+    display: grid;
+    gap: 3px;
+    padding: 10px 14px;
+    border-right: 1px solid var(--color-border);
+}
+
+.producto-desglose > div:last-child {
+    border-right: 0;
+}
+
+.producto-desglose span {
     color: var(--color-muted);
-    font-size: 12px;
+    font-size: 11.5px;
     font-weight: 600;
 }
 
-.producto-iva-desglose strong {
+.producto-desglose strong {
     color: var(--color-text);
     font-family: var(--font-mono);
     font-size: 14px;
     font-weight: 700;
+}
+
+.producto-desglose-total {
+    background: var(--color-ink);
+}
+
+.producto-desglose .producto-desglose-total span {
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.producto-desglose .producto-desglose-total strong {
+    color: #ffffff;
+    font-size: 16px;
+}
+
+.producto-alerta {
+    margin: 0;
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    background: var(--color-danger-soft);
+    color: var(--color-danger);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.producto-alerta[hidden] {
+    display: none;
+}
+
+.producto-creador .producto-opcion {
+    align-items: flex-start;
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-soft);
+}
+
+.producto-creador .producto-opcion strong {
+    color: var(--color-text);
+    font-size: 13.5px;
+}
+
+.producto-creador .producto-opcion small {
+    margin-top: 3px;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+/* Foto y POS táctil */
+.producto-foto {
+    display: grid;
+    grid-template-columns: 180px minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+}
+
+.producto-foto .product-image-preview,
+.producto-foto .product-image-preview img,
+.producto-foto .product-image-placeholder {
+    min-height: 180px;
+}
+
+.producto-foto-campos {
+    display: grid;
+    gap: 12px;
+    min-width: 0;
+}
+
+.producto-foto-campos input[type="file"] {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    font-size: 13px;
+}
+
+/* Vista previa: así se ve en el POS y en el ticket */
+.producto-creador-resumen {
+    position: sticky;
+    top: 76px;
+}
+
+.producto-resumen-tarjeta {
+    display: grid;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-card);
+}
+
+.producto-resumen-titulo {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.producto-vista-pos {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-paper);
+}
+
+.producto-vista-foto {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    overflow: hidden;
+    width: 48px;
+    height: 48px;
+    border: 1px solid color-mix(in srgb, var(--color-primary) 22%, #ffffff);
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--color-primary) 9%, #ffffff);
+    color: var(--color-primary);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.producto-vista-foto img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.producto-vista-texto {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.producto-vista-texto strong {
+    overflow: hidden;
+    color: var(--color-text);
+    font-size: 14px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.producto-vista-texto > span {
+    color: var(--color-muted);
+    font-size: 12px;
+}
+
+.producto-vista-texto b {
+    color: var(--color-text);
+    font-family: var(--font-mono);
+    font-size: 15px;
+}
+
+.producto-vista-ticket {
+    display: grid;
+    gap: 5px;
+    padding: 12px 14px;
+    border: 1px dashed var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--color-paper);
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+}
+
+.producto-vista-ticket > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.producto-vista-ticket-total {
+    margin-top: 2px;
+    padding-top: 6px;
+    border-top: 2px solid var(--color-ink);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.producto-vista-ticket p {
+    margin: 4px 0 0;
+    color: var(--color-muted);
+    font-family: var(--font-main);
+    font-size: 11.5px;
+    line-height: 1.4;
+}
+
+.producto-resumen-acciones {
+    display: grid;
+    gap: 8px;
+}
+
+.producto-resumen-acciones .btn-primary,
+.producto-resumen-acciones .btn-secondary {
+    justify-content: center;
+    width: 100%;
+}
+
+@media (max-width: 1100px) {
+    .producto-creador {
+        grid-template-columns: 1fr;
+    }
+
+    .producto-creador-resumen {
+        position: static;
+    }
+}
+
+@media (max-width: 640px) {
+    .producto-paso {
+        padding: 16px;
+    }
+
+    .producto-campos,
+    .producto-foto {
+        grid-template-columns: 1fr;
+    }
+
+    .producto-desglose {
+        grid-auto-flow: row;
+    }
+
+    .producto-desglose > div {
+        border-right: 0;
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .producto-desglose > div:last-child {
+        border-bottom: 0;
+    }
 }

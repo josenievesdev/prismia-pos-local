@@ -269,10 +269,21 @@ Arreglo (como Siigo: el precio no cambia, el IVA se separa en el ticket):
       formulario); el POS avisa con la etiqueta ámbar y, si la bloquea, dice cómo activarla.
 - [x] Pruebas: tests/iva-precio-final.test.js (4).
 
-Pendiente (decisión del usuario):
-- [ ] Si el negocio NO es responsable de IVA, ¿bloquear el IVA en productos y ventas?
-      Hoy solo se avisa. En la base de pruebas el negocio figura como no responsable y
-      7 productos cobran IVA.
+IVA del negocio y creador de productos (2026-11-25, rama `productos-iva-negocio`):
+- [x] Configuración pregunta "¿Tu negocio es responsable de IVA?" (Sí / No, con la pista
+      del RUT: 48 responsable, 49 no responsable). Es obligatorio elegir.
+- [x] No responsable: ninguna venta, cotización ni remisión lleva IVA; el precio no cambia;
+      el ticket dice "No responsable de IVA". Las tarifas de los productos quedan guardadas
+      (si el negocio pasa a ser responsable, vuelven a aplicar). Compras no cambia.
+- [x] Migración 009 (`iva_definido`): un "no" guardado por defecto no cuenta como decisión.
+      Mientras no se defina, todo sigue como antes y "Atención" del Inicio lo pide.
+- [x] Creador de productos rehecho en 4 pasos (Qué vendes, Precio, Inventario, Foto) con
+      vista previa en vivo (cómo se ve en el POS y en el ticket). Precio como en Siigo:
+      costo + ganancia + IVA = precio de venta, en los dos sentidos (escribir la ganancia
+      calcula el precio; escribir el precio calcula la ganancia) y aviso si se vende a pérdida.
+- [x] Pruebas: tests/iva-negocio.test.js (6).
+
+Pendiente:
 - [ ] Restaurantes y bares: en general no cobran IVA sino impuesto al consumo (INC 8 %).
       Confirmar con un contador antes de usar el perfil "Comidas y bares" con impuestos.
 - [ ] Factura electrónica / POS electrónico DIAN: el ticket es un comprobante interno; para

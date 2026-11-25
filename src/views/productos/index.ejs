@@ -189,7 +189,7 @@
                                                                 %>
                                                         </span>
 
-                                                        <% if (Number(producto.maneja_iva)===1) { %>
+                                                        <% if (locals.ivaNegocio?.cobraIva !== false && Number(producto.maneja_iva)===1) { %>
                                                             <span class="table-subtext">
                                                                 <%# El precio de venta siempre incluye el IVA %>
                                                                 IVA <%= Number(producto.porcentaje_iva || 0).toLocaleString('es-CO', { maximumFractionDigits: 2 }) %> % incluido

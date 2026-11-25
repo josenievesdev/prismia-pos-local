@@ -2,6 +2,7 @@ const ventasRepository = require('./ventas.repository');
 const fechas = require('../../utils/fechas');
 const dinero = require('../../utils/dinero');
 const meserosRepository = require('../meseros/meseros.repository');
+const ivaNegocio = require('../configuracion/iva-negocio');
 const { limpiarTexto, normalizarId, crearError } = require('../../utils/comunes');
 
 function normalizarNumero(valor, defecto = 0) {
@@ -184,8 +185,10 @@ function prepararProductoParaVenta(producto) {
         || normalizarEntero(producto.venta_fraccionada_habilitada) === 1
         || normalizarEntero(producto.unidad_permite_decimales) === 1;
 
-    const manejaIva = normalizarEntero(producto.maneja_iva);
-    const porcentajeIva = normalizarEntero(producto.porcentaje_iva);
+    // Si el negocio no es responsable de IVA, ningún producto lo cobra (la tarifa queda guardada)
+    const cobraIva = ivaNegocio.negocioCobraIva();
+    const manejaIva = cobraIva ? normalizarEntero(producto.maneja_iva) : 0;
+    const porcentajeIva = cobraIva ? normalizarEntero(producto.porcentaje_iva) : 0;
     const precioIncluyeIva = normalizarEntero(producto.precio_incluye_iva);
 
     const precioVenta = normalizarEntero(producto.precio_venta);
@@ -1320,6 +1323,8 @@ function prepararConfiguracionTicket(configuracion) {
             ['mensaje_ticket', 'mensaje_factura', 'mensaje_recibo'],
             'Gracias por su compra.'
         ),
+        // El negocio dijo que no es responsable de IVA: el ticket lo indica y no muestra IVA
+        no_responsable_iva: Number(configuracion?.iva_definido || 0) === 1 && Number(configuracion?.maneja_iva || 0) === 0,
         software: 'Prismia POS Local',
     };
 }

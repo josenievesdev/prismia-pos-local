@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const productosService = require('./productos.service');
-const configuracionRepository = require('../configuracion/configuracion.repository');
+const ivaNegocio = require('../configuracion/iva-negocio');
 const runtimePaths = require('../../config/runtime-paths');
 
 const carpetaUploadsProductos = runtimePaths.obtenerCarpetaUploadsProductos();
@@ -10,11 +10,6 @@ const carpetaUploadsProductos = runtimePaths.obtenerCarpetaUploadsProductos();
 const prefijoPublicoImagenesProducto = '/uploads/productos/';
 
 const estilosProductos = ['/css/modules/productos.css'];
-
-// El formulario recuerda si el negocio no es responsable de IVA (Configuración)
-function negocioResponsableIva() {
-    return Number(configuracionRepository.obtenerConfiguracion()?.maneja_iva || 0) === 1;
-}
 
 function prepararProductoParaFormulario(producto) {
     return {
@@ -134,7 +129,7 @@ function listarProductos(req, res) {
         mensajeExito: req.query.exito || null,
         error: req.query.error || null,
         estilosModulo: estilosProductos,
-        negocioResponsableIva: negocioResponsableIva(),
+        ivaNegocio: ivaNegocio.estadoIvaNegocio(),
     });
 }
 function mostrarFormularioCrear(req, res) {
@@ -161,8 +156,8 @@ function mostrarFormularioCrear(req, res) {
             controla_inventario: 1,
             permite_venta_sin_stock: 0,
             // Si el negocio es responsable de IVA, lo normal es la tarifa general (19 %)
-            maneja_iva: negocioResponsableIva() ? 1 : 0,
-            porcentaje_iva_visual: negocioResponsableIva() ? 19 : 0,
+            maneja_iva: ivaNegocio.estadoIvaNegocio().responsable ? 1 : 0,
+            porcentaje_iva_visual: ivaNegocio.estadoIvaNegocio().responsable ? 19 : 0,
             precio_incluye_iva: 1,
             imagen_url: '',
             mostrar_en_pos_tactil: 0,
@@ -170,7 +165,7 @@ function mostrarFormularioCrear(req, res) {
         },
         error: null,
         estilosModulo: estilosProductos,
-        negocioResponsableIva: negocioResponsableIva(),
+        ivaNegocio: ivaNegocio.estadoIvaNegocio(),
     });
 }
 
@@ -204,7 +199,7 @@ function crearProducto(req, res) {
             }),
             error: resultado.mensaje,
             estilosModulo: estilosProductos,
-            negocioResponsableIva: negocioResponsableIva(),
+            ivaNegocio: ivaNegocio.estadoIvaNegocio(),
         });
     }
 
@@ -233,7 +228,7 @@ function mostrarFormularioEditar(req, res) {
         producto: prepararProductoParaFormulario(producto),
         error: null,
         estilosModulo: estilosProductos,
-        negocioResponsableIva: negocioResponsableIva(),
+        ivaNegocio: ivaNegocio.estadoIvaNegocio(),
     });
 }
 
@@ -282,7 +277,7 @@ function actualizarProducto(req, res) {
             }),
             error: resultado.mensaje,
             estilosModulo: estilosProductos,
-            negocioResponsableIva: negocioResponsableIva(),
+            ivaNegocio: ivaNegocio.estadoIvaNegocio(),
         });
     }
 

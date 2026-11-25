@@ -1858,3 +1858,72 @@ html .app-content .ventas-header-sub {
     color: var(--color-muted);
     font-size: 12.5px;
 }
+
+/* =========================================================
+   Configuración: ¿el negocio es responsable de IVA?
+   ========================================================= */
+.config-iva {
+    display: grid;
+    gap: 12px;
+    margin: 4px 0 18px;
+    padding: 16px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-soft);
+}
+
+.config-iva legend {
+    padding: 0 6px;
+    color: var(--color-text);
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.config-iva-pendiente {
+    margin: 0;
+    padding: 8px 12px;
+    border-left: 3px solid #d99a00;
+    border-radius: var(--radius-sm);
+    background: #fff6db;
+    color: #7a5200;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.config-iva-opciones {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 10px;
+}
+
+.config-iva-opcion {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    cursor: pointer;
+}
+
+.config-iva-opcion:has(input:checked) {
+    border-color: var(--color-text);
+    box-shadow: inset 0 0 0 1px var(--color-text);
+}
+
+.config-iva-opcion input {
+    margin-top: 3px;
+    accent-color: var(--color-text);
+}
+
+.config-iva-opcion span {
+    display: grid;
+    gap: 4px;
+}
+
+.config-iva-opcion small {
+    color: var(--color-muted);
+    font-size: 12.5px;
+    line-height: 1.45;
+}

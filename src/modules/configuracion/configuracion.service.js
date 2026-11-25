@@ -47,6 +47,13 @@ function validarDatosConfiguracion(datos) {
         errores.push('La moneda es obligatoria.');
     }
 
+    // El negocio debe decir si es responsable de IVA: de eso depende si sus ventas llevan IVA
+    const ivaElegido = Array.isArray(datos.maneja_iva) ? datos.maneja_iva[datos.maneja_iva.length - 1] : datos.maneja_iva;
+
+    if (!['0', '1'].includes(String(ivaElegido ?? ''))) {
+        errores.push('Elige si tu negocio es responsable de IVA.');
+    }
+
     const impuesto = convertirEntero(datos.impuesto_por_defecto, 0);
 
     if (impuesto < 0) {
@@ -68,6 +75,7 @@ function prepararDatosConfiguracion(datos) {
         moneda: limpiarTexto(datos.moneda) || 'COP',
         impuesto_por_defecto: convertirEntero(datos.impuesto_por_defecto, 0),
         maneja_iva: leerCasilla(datos.maneja_iva),
+        iva_definido: 1,
         mensaje_recibo:
             limpiarTexto(datos.mensaje_recibo) || 'Gracias por su compra.',
     };

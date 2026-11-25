@@ -83,7 +83,8 @@
     const variacionAnulado = variacion(hoyResumen.total_anulado, ayerResumen.total_anulado, false);
 
     const totalAlertasStock = (Number(stock.productos_sin_stock) || 0) + (Number(stock.productos_stock_bajo) || 0);
-    const hayAtencion = totalAlertasStock > 0 || anulaciones.length > 0;
+    const ivaPorDefinir = Boolean(locals.ivaPorDefinir);
+    const hayAtencion = totalAlertasStock > 0 || anulaciones.length > 0 || ivaPorDefinir;
 %>
 
 <div class="inicio">
@@ -297,6 +298,17 @@
             </header>
 
             <div class="inicio-atencion-columnas">
+                <% if (ivaPorDefinir) { %>
+                    <div>
+                        <h3>Impuestos</h3>
+                        <p class="inicio-atencion-texto">
+                            Falta definir si tu negocio es responsable de IVA. Mientras tanto, cada producto cobra
+                            el IVA que tenga.
+                        </p>
+                        <a href="/configuracion#ivaNegocio" class="inicio-enlace">Definirlo en Configuración</a>
+                    </div>
+                <% } %>
+
                 <% if (totalAlertasStock > 0) { %>
                     <div>
                         <h3>

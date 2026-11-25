@@ -2,6 +2,7 @@ const remisionesRepository = require('./remisiones.repository');
 const ventasRepository = require('../ventas/ventas.repository');
 const fechas = require('../../utils/fechas');
 const dinero = require('../../utils/dinero');
+const ivaNegocio = require('../configuracion/iva-negocio');
 const { limpiarTexto, normalizarId, crearError } = require('../../utils/comunes');
 
 function normalizarNumero(valor, defecto = 0) {
@@ -161,6 +162,9 @@ function prepararProductoParaRemision(producto) {
         return null;
     }
 
+    // Si el negocio no es responsable de IVA, ningún producto lo cobra (la tarifa queda guardada)
+    const cobraIva = ivaNegocio.negocioCobraIva();
+
     const stockActual = normalizarNumero(producto.stock_actual);
     const stockReservado = normalizarNumero(producto.stock_reservado);
     const stockDisponible = stockActual - stockReservado;
@@ -198,8 +202,8 @@ function prepararProductoParaRemision(producto) {
         unidad_abreviatura: limpiarTexto(producto.unidad_abreviatura) || 'und',
         unidad_permite_decimales: normalizarEntero(producto.unidad_permite_decimales),
 
-        maneja_iva: normalizarEntero(producto.maneja_iva),
-        porcentaje_iva: normalizarEntero(producto.porcentaje_iva),
+        maneja_iva: cobraIva ? normalizarEntero(producto.maneja_iva) : 0,
+        porcentaje_iva: cobraIva ? normalizarEntero(producto.porcentaje_iva) : 0,
         precio_incluye_iva: normalizarEntero(producto.precio_incluye_iva),
     };
 }

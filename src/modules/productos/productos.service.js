@@ -1,4 +1,5 @@
 const productosRepository = require('./productos.repository');
+const ivaNegocio = require('../configuracion/iva-negocio');
 const { limpiarTexto } = require('../../utils/comunes');
 
 function convertirEntero(valor, valorPorDefecto = 0) {
@@ -63,8 +64,9 @@ function formatearCantidad(cantidad, abreviatura, permiteDecimales) {
     return `${texto} ${abreviatura || ''}`.trim();
 }
 
-function calcularIndicadoresProducto(producto) {
-    const porcentajeIva = Number(producto.porcentaje_iva || 0);
+function calcularIndicadoresProducto(producto, cobraIva = ivaNegocio.negocioCobraIva()) {
+    // Si el negocio no cobra IVA, todo el precio es venta (la ganancia no descuenta IVA)
+    const porcentajeIva = cobraIva ? Number(producto.porcentaje_iva || 0) : 0;
     const tasaIva = porcentajeIva / 100;
 
     let precioVentaNeto = Number(producto.precio_venta || 0);
@@ -170,12 +172,13 @@ function listarProductos(filtros = {}) {
     const paginaActual = Math.min(filtrosLimpios.pagina, totalPaginas);
     const offset = (paginaActual - 1) * filtrosLimpios.limite;
 
+    const cobraIva = ivaNegocio.negocioCobraIva();
     const productos = productosRepository
         .listarProductos({
             ...filtrosLimpios,
             offset,
         })
-        .map((producto) => calcularIndicadoresProducto(producto));
+        .map((producto) => calcularIndicadoresProducto(producto, cobraIva));
 
     return {
         productos,
@@ -292,15 +295,18 @@ function validarProducto(datos, productoActual = null, opciones = {}) {
 
     // El IVA se elige de una lista: sin IVA, 5 % o 19 % (tarifas de Colombia).
     // Un producto antiguo con otra tarifa la conserva mientras no se cambie.
-    const porcentajeIva = convertirPorcentaje(datos.porcentaje_iva_visual);
-    const porcentajesPermitidos = new Set(PORCENTAJES_IVA);
+    // Si el negocio no es responsable de IVA, el formulario no lo pide.
+    if (opciones.cobraIva !== false) {
+        const porcentajeIva = convertirPorcentaje(datos.porcentaje_iva_visual);
+        const porcentajesPermitidos = new Set(PORCENTAJES_IVA);
 
-    if (productoActual) {
-        porcentajesPermitidos.add(Math.round(Number(productoActual.porcentaje_iva) || 0));
-    }
+        if (productoActual) {
+            porcentajesPermitidos.add(Math.round(Number(productoActual.porcentaje_iva) || 0));
+        }
 
-    if (!porcentajesPermitidos.has(porcentajeIva)) {
-        errores.push('Elige el IVA del producto: sin IVA, 5 % o 19 %.');
+        if (!porcentajesPermitidos.has(porcentajeIva)) {
+            errores.push('Elige el IVA del producto: sin IVA, 5 % o 19 %.');
+        }
     }
 
     const codigoInternoExistente =
@@ -334,7 +340,7 @@ function validarProducto(datos, productoActual = null, opciones = {}) {
     return errores;
 }
 
-function prepararDatosProducto(datos, { incluirStockInicial = false } = {}) {
+function prepararDatosProducto(datos, { incluirStockInicial = false, cobraIva = true, productoActual = null } = {}) {
     const idUnidadMedida = convertirId(datos.id_unidad_medida);
     const unidad = productosRepository.buscarUnidadPorId(idUnidadMedida);
 
@@ -342,7 +348,11 @@ function prepararDatosProducto(datos, { incluirStockInicial = false } = {}) {
     const permiteVentaSinStock = convertirCheckbox(datos.permite_venta_sin_stock);
     // El precio de venta es el precio final que paga el cliente, con el IVA incluido
     // (Ley 1480 de 2011, art. 26). El IVA solo se separa en el ticket: nunca se suma encima.
-    const porcentajeIva = Math.round(convertirPorcentaje(datos.porcentaje_iva_visual));
+    // Si el negocio no es responsable de IVA, el formulario no lo pide: se conserva la tarifa
+    // guardada (vuelve a aplicar si el negocio pasa a ser responsable) y un producto nuevo va sin IVA.
+    const porcentajeIva = cobraIva
+        ? Math.round(convertirPorcentaje(datos.porcentaje_iva_visual))
+        : Math.round(Number(productoActual?.porcentaje_iva) || 0);
     const manejaIva = porcentajeIva > 0 ? 1 : 0;
     const precioIncluyeIva = 1;
 
@@ -391,8 +401,10 @@ function crearProducto({ datosFormulario, usuario, ip, userAgent }) {
             limpiarTexto(datosFormulario.codigo_interno) || generarCodigoProducto(),
     };
 
+    const cobraIva = ivaNegocio.negocioCobraIva();
     const errores = validarProducto(datosConCodigo, null, {
         validarStockInicial: true,
+        cobraIva,
     });
 
     if (errores.length > 0) {
@@ -405,6 +417,7 @@ function crearProducto({ datosFormulario, usuario, ip, userAgent }) {
 
     const producto = prepararDatosProducto(datosConCodigo, {
         incluirStockInicial: true,
+        cobraIva,
     });
 
     productosRepository.crearProductoConMovimiento({
@@ -436,8 +449,10 @@ function actualizarProducto({
         };
     }
 
+    const cobraIva = ivaNegocio.negocioCobraIva();
     const errores = validarProducto(datosFormulario, productoActual, {
         validarStockInicial: false,
+        cobraIva,
     });
 
     if (errores.length > 0) {
@@ -449,6 +464,8 @@ function actualizarProducto({
 
     const producto = prepararDatosProducto(datosFormulario, {
         incluirStockInicial: false,
+        cobraIva,
+        productoActual,
     });
 
     producto.costo_promedio = Number(productoActual.costo_promedio || 0);

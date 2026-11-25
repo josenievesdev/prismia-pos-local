@@ -15,6 +15,7 @@ function obtenerConfiguracion() {
         moneda,
         impuesto_por_defecto,
         maneja_iva,
+        iva_definido,
         mensaje_recibo,
         logo_url,
         estado,
@@ -43,6 +44,7 @@ function actualizarConfiguracion(idConfiguracion, datos) {
         moneda = @moneda,
         impuesto_por_defecto = @impuesto_por_defecto,
         maneja_iva = @maneja_iva,
+        iva_definido = @iva_definido,
         mensaje_recibo = @mensaje_recibo,
         actualizado_en = CURRENT_TIMESTAMP
       WHERE id_configuracion = @id_configuracion

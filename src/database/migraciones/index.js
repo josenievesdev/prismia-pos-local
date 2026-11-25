@@ -13,4 +13,5 @@ module.exports = [
     require('./006_licencia_local'),
     require('./007_propinas_meseros'),
     require('./008_iva_precio_final'),
+    require('./009_iva_definido_negocio'),
 ];

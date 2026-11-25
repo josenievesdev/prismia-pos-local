@@ -129,19 +129,51 @@
                                         </div>
                                     </div>
 
-                                    <div class="form-group">
-                                        <input type="hidden" name="maneja_iva" value="0">
-                                        <label for="maneja_iva" style="display:flex;gap:8px;align-items:center;cursor:pointer">
-                                            <input type="checkbox" id="maneja_iva" name="maneja_iva" value="1"
-                                                <%= Number(configuracion.maneja_iva) === 1 ? 'checked' : '' %>>
-                                            El negocio es responsable de IVA
-                                        </label>
+                                    <%
+                                        // Mientras no se defina, nada viene marcado: el negocio debe elegir
+                                        const ivaDefinido = Number(configuracion.iva_definido) === 1;
+                                        const esResponsableIva = Number(configuracion.maneja_iva) === 1;
+                                    %>
+                                    <fieldset class="config-iva" id="ivaNegocio">
+                                        <legend>¿Tu negocio es responsable de IVA?</legend>
+
+                                        <% if (!ivaDefinido) { %>
+                                            <p class="config-iva-pendiente">
+                                                Falta definirlo. Mientras tanto, cada producto cobra el IVA que tenga.
+                                            </p>
+                                        <% } %>
+
+                                        <div class="config-iva-opciones">
+                                            <label class="config-iva-opcion">
+                                                <input type="radio" name="maneja_iva" value="1" required
+                                                    <%= ivaDefinido && esResponsableIva ? 'checked' : '' %>>
+                                                <span>
+                                                    <strong>Sí, soy responsable de IVA</strong>
+                                                    <small>
+                                                        Cobro IVA en mis ventas: cada producto dice si lleva 19 %, 5 % o no lleva.
+                                                        El IVA que pago en compras se descuenta y no suma al costo.
+                                                    </small>
+                                                </span>
+                                            </label>
+
+                                            <label class="config-iva-opcion">
+                                                <input type="radio" name="maneja_iva" value="0" required
+                                                    <%= ivaDefinido && !esResponsableIva ? 'checked' : '' %>>
+                                                <span>
+                                                    <strong>No soy responsable de IVA</strong>
+                                                    <small>
+                                                        Mis ventas no llevan IVA y el ticket lo indica.
+                                                        El IVA que pago en compras hace parte del costo.
+                                                    </small>
+                                                </span>
+                                            </label>
+                                        </div>
+
                                         <small class="text-muted">
-                                            Si está activo, el IVA pagado en compras se trata como descontable
-                                            y no se suma al costo del inventario. Si no, el IVA hace parte del costo.
-                                            Si tu negocio no es responsable de IVA, no lo cobra: deja los productos "Sin IVA".
+                                            Está en tu RUT (responsabilidades): 48 es responsable de IVA y 49 es no responsable.
+                                            Si tienes dudas, pregúntale a tu contador.
                                         </small>
-                                    </div>
+                                    </fieldset>
 
                                     <div class="form-group">
                                         <label for="mensaje_recibo">Mensaje del recibo</label>

@@ -825,3 +825,10 @@ a.inicio-atencion-nombre:hover {
         transition: none;
     }
 }
+
+.inicio-atencion-texto {
+    margin: 0 0 8px;
+    color: var(--color-muted);
+    font-size: 13px;
+    line-height: 1.5;
+}

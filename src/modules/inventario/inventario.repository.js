@@ -887,6 +887,14 @@ function obtenerResumenOperativoInventario() {
 
           CASE
             WHEN COALESCE(p.maneja_iva, 0) = 1
+             AND COALESCE((
+               -- Si el negocio dijo que no es responsable de IVA, sus precios no llevan IVA
+               SELECT CASE WHEN c.iva_definido = 1 AND c.maneja_iva = 0 THEN 0 ELSE 1 END
+               FROM configuracion_negocio c
+               WHERE c.estado = 'activo'
+               ORDER BY c.id_configuracion
+               LIMIT 1
+             ), 1) = 1
             THEN COALESCE(p.porcentaje_iva, 0) / 100.0
             ELSE 0
           END AS tasa_iva_decimal

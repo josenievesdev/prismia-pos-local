@@ -85,6 +85,7 @@
         <header class="recibo-comercio">
             <h1><%= nombreComercio %></h1>
             <% if (documentoComercio) { %><p><%= documentoComercio %></p><% } %>
+            <% if (comercio.no_responsable_iva && !(Number(venta.impuesto_total) > 0)) { %><p>No responsable de IVA</p><% } %>
             <% if (ubicacion) { %><p><%= ubicacion %></p><% } %>
             <% if (contacto) { %><p><%= contacto %></p><% } %>
         </header>
@@ -133,7 +134,7 @@
                         <span><%= pesos(entrada[1].iva) %></span>
                     </div>
                 <% }) %>
-            <% } else { %>
+            <% } else if (!comercio.no_responsable_iva) { %>
                 <div class="recibo-fila"><span>IVA</span><span><%= pesos(venta.impuesto_total) %></span></div>
             <% } %>
             <div class="recibo-total"><span>Total</span><strong><%= pesos(venta.total) %></strong></div>
