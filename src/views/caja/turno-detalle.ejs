@@ -140,6 +140,15 @@
                                         </strong>
                                     </div>
 
+                                    <% if (Number(turno.total_propinas_efectivo || 0) !== 0) { %>
+                                        <div>
+                                            <span>Propinas en efectivo</span>
+                                            <strong>
+                                                <%= formatearPesos(turno.total_propinas_efectivo) %>
+                                            </strong>
+                                        </div>
+                                    <% } %>
+
                                     <div>
                                         <span>Ingresos manuales</span>
                                         <strong>
@@ -305,6 +314,8 @@
                                 </table>
                             </div>
                         </article>
+
+                        <%- include('partials/propinas', { turno: turno, propinasPorMesero: arqueo.propinasPorMesero }) %>
 
                         <article class="module-card caja-arqueo-section">
                             <div class="table-summary">

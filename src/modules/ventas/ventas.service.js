@@ -1,6 +1,7 @@
 const ventasRepository = require('./ventas.repository');
 const fechas = require('../../utils/fechas');
 const dinero = require('../../utils/dinero');
+const meserosRepository = require('../meseros/meseros.repository');
 const { limpiarTexto, normalizarId, crearError } = require('../../utils/comunes');
 
 function normalizarNumero(valor, defecto = 0) {
@@ -317,6 +318,10 @@ function obtenerEstadoPOS({ busqueda = '' } = {}) {
         productos,
         productosTactiles,
         ventasRecientes,
+        meseros: meserosRepository
+            .listarMeseros({ soloActivos: true })
+            .map((mesero) => ({ id_mesero: mesero.id_mesero, nombre: mesero.nombre })),
+        propinaPorcentajeSugerido: meserosRepository.obtenerPorcentajePropinaSugerido(),
         carrito: obtenerCarritoInicial(),
         busqueda: limpiarTexto(busqueda),
         puedeVender: Boolean(turnoAbierto),
@@ -841,6 +846,99 @@ function prepararPagosRegistroVenta(pagosPayload, totalVenta) {
     };
 }
 
+/**
+ * Propina voluntaria (perfil comidas y bares). No es venta: no lleva IVA ni
+ * suma al total. Si hay propina, debe quedar a nombre del mesero que atendió.
+ */
+function prepararPropinaVenta(payload = {}, resumen) {
+    const valor = payload.propina;
+    const propina = valor === undefined || valor === null || valor === '' ? 0 : Number(valor);
+
+    if (!Number.isFinite(propina) || propina < 0 || !Number.isInteger(propina)) {
+        return { ok: false, mensaje: 'La propina debe ser un valor en pesos, sin decimales.' };
+    }
+
+    if (propina > resumen.total) {
+        return { ok: false, mensaje: 'La propina no puede ser mayor que el total de la venta.' };
+    }
+
+    const idMesero = normalizarId(payload.id_mesero);
+    let mesero = null;
+
+    if (idMesero) {
+        mesero = meserosRepository.obtenerMeseroPorId(idMesero);
+
+        if (!mesero || mesero.estado !== 'activo') {
+            return { ok: false, mensaje: 'El mesero elegido no existe o está inactivo.' };
+        }
+    }
+
+    if (propina > 0 && !mesero) {
+        return { ok: false, mensaje: 'La propina debe quedar a nombre del mesero que atendió: elige el mesero.' };
+    }
+
+    return { ok: true, propina, mesero };
+}
+
+/**
+ * Separa la propina de lo aplicado en cada pago, en proporción a cada pago y
+ * con enteros exactos (resto mayor). Ningún pago queda con parte de venta en
+ * cero. Al final: SUM(monto_pago) = total de la venta y
+ * SUM(monto_propina) = propina.
+ */
+function repartirPropinaEntrePagos(pagos, propina) {
+    pagos.forEach((pago) => {
+        pago.monto_propina = 0;
+    });
+
+    if (propina <= 0) {
+        return { ok: true };
+    }
+
+    const totalAplicado = pagos.reduce((total, pago) => total + pago.monto_pago, 0);
+    const granTotal = BigInt(totalAplicado);
+    const granPropina = BigInt(propina);
+    let asignado = 0;
+
+    const partes = pagos.map((pago, indice) => {
+        const producto = BigInt(pago.monto_pago) * granPropina;
+        const parte = Number(producto / granTotal);
+        asignado += parte;
+        return { indice, parte, resto: producto % granTotal };
+    });
+
+    let pendiente = propina - asignado;
+    const candidatos = [...partes].sort((a, b) => (b.resto > a.resto ? 1 : b.resto < a.resto ? -1 : a.indice - b.indice));
+
+    for (const candidato of candidatos) {
+        if (pendiente <= 0) {
+            break;
+        }
+
+        if (pagos[candidato.indice].monto_pago - candidato.parte - 1 >= 1) {
+            candidato.parte += 1;
+            pendiente -= 1;
+        }
+    }
+
+    if (pendiente !== 0) {
+        return { ok: false, mensaje: 'No se pudo repartir la propina entre los pagos. Revisa los valores.' };
+    }
+
+    for (const { indice, parte } of partes) {
+        const pago = pagos[indice];
+
+        if (pago.monto_pago - parte <= 0) {
+            return { ok: false, mensaje: 'No se pudo repartir la propina entre los pagos. Revisa los valores.' };
+        }
+
+        pago.monto_propina = parte;
+        pago.monto_pago -= parte;
+    }
+
+    return { ok: true };
+}
+
 function registrarVentaPOS({ idUsuario, payload = {} } = {}) {
     const idUsuarioNormalizado = normalizarId(idUsuario);
 
@@ -880,10 +978,25 @@ function registrarVentaPOS({ idUsuario, payload = {} } = {}) {
         return crearErrorVenta('El total de la venta debe ser mayor a cero.');
     }
 
-    const resultadoPagos = prepararPagosRegistroVenta(pagosPayload, resumen.total);
+    const resultadoPropina = prepararPropinaVenta(payload, resumen);
+
+    if (!resultadoPropina.ok) {
+        return crearErrorVenta(resultadoPropina.mensaje);
+    }
+
+    const { propina, mesero } = resultadoPropina;
+
+    // Se cobra total + propina; luego se separa la propina de cada pago
+    const resultadoPagos = prepararPagosRegistroVenta(pagosPayload, resumen.total + propina);
 
     if (!resultadoPagos.ok) {
         return crearErrorVenta(resultadoPagos.mensaje);
+    }
+
+    const reparto = repartirPropinaEntrePagos(resultadoPagos.pagos, propina);
+
+    if (!reparto.ok) {
+        return crearErrorVenta(reparto.mensaje);
     }
 
     try {
@@ -901,8 +1014,10 @@ function registrarVentaPOS({ idUsuario, payload = {} } = {}) {
             resumen,
             pago: resultadoPagos.pago_principal,
             pagos: resultadoPagos.pagos,
-            total_pagado: resultadoPagos.total_pagado,
+            total_pagado: resumen.total,
             total_recibido: resultadoPagos.total_recibido,
+            propina,
+            id_mesero: mesero ? mesero.id_mesero : null,
             cambio_entregado: resultadoPagos.cambio_entregado,
             saldo_pendiente: resultadoPagos.saldo_pendiente,
             tipo_venta: resultadoPagos.es_mixto ? 'mixta' : 'contado',
@@ -918,11 +1033,14 @@ function registrarVentaPOS({ idUsuario, payload = {} } = {}) {
                     nombre: pago.medio_pago_nombre,
                     tipo: pago.medio_pago_tipo,
                     monto_pago: pago.monto_pago,
+                    monto_propina: pago.monto_propina,
                     monto_recibido: pago.monto_recibido,
                     cambio_entregado: pago.cambio_entregado,
                     referencia: pago.referencia,
                 })),
                 resumen,
+                propina,
+                mesero: mesero ? { id_mesero: mesero.id_mesero, nombre: mesero.nombre } : null,
             },
         });
 
@@ -935,7 +1053,10 @@ function registrarVentaPOS({ idUsuario, payload = {} } = {}) {
                 subtotal: resumen.subtotal,
                 impuesto_total: resumen.impuesto_total,
                 total: resumen.total,
-                total_pagado: resultadoPagos.total_pagado,
+                total_pagado: resumen.total,
+                propina,
+                total_con_propina: resumen.total + propina,
+                mesero_nombre: mesero ? mesero.nombre : null,
                 monto_recibido: resultadoPagos.total_recibido,
                 cambio_entregado: resultadoPagos.cambio_entregado,
                 tipo_venta: resultadoPagos.es_mixto ? 'mixta' : 'contado',
@@ -1228,6 +1349,8 @@ function prepararVentaTicket(venta) {
         cambio_entregado: normalizarEntero(venta.cambio_entregado),
         total_costo: normalizarEntero(venta.total_costo),
         utilidad_bruta: normalizarEntero(venta.utilidad_bruta),
+        propina: normalizarEntero(venta.propina),
+        mesero_nombre: limpiarTexto(venta.mesero_nombre) || '',
 
         cliente_nombre: clienteNombre,
         cliente_documento: clienteDocumento,
@@ -1259,6 +1382,7 @@ function prepararPagosTicket(pagos) {
     return pagos.map((pago) => ({
         ...pago,
         monto: normalizarEntero(pago.monto),
+        monto_propina: normalizarEntero(pago.monto_propina),
         monto_recibido: normalizarEntero(pago.monto_recibido),
         cambio_entregado: normalizarEntero(pago.cambio_entregado),
         metodo_pago: pago.metodo_pago || 'efectivo',

@@ -1269,3 +1269,34 @@
         flex-direction: column;
     }
 }
+
+/* =========================================================
+   Propinas por mesero (perfil comidas y bares)
+   ========================================================= */
+.caja-propinas-card {
+    display: grid;
+    gap: 16px;
+}
+
+.caja-propinas-tabla tfoot td {
+    border-top: 2px solid var(--color-text);
+    font-weight: 800;
+}
+
+.caja-propinas-nota {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 13px;
+}
+
+.caja-propinas-nota strong {
+    color: var(--color-text);
+}
+
+@media (min-width: 1081px) {
+
+    .caja-propinas-card .caja-cierre-support-summary,
+    .caja-cierre-formula.con-propinas {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}

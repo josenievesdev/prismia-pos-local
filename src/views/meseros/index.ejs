@@ -1,0 +1,85 @@
+<%
+    const listaMeseros = Array.isArray(meseros) ? meseros : [];
+    const activos = listaMeseros.filter((mesero) => mesero.estado === 'activo').length;
+%>
+<section class="ui-pagina">
+    <%- include('../partials/ui/encabezado', {
+        meta: activos + (activos === 1 ? ' mesero activo' : ' meseros activos') + ' · se usan en el POS con el perfil Comidas y bares',
+        acciones: [{ texto: 'Ir al POS', href: '/ventas', tipo: 'secundario' }],
+    }) %>
+
+    <% if (mensajeExito) { %>
+        <div class="alert alert-success"><%= mensajeExito %></div>
+    <% } %>
+
+    <% if (error) { %>
+        <div class="alert alert-error"><%= error %></div>
+    <% } %>
+
+    <div class="ui-grilla meseros-grilla">
+        <article class="ui-tarjeta">
+            <h2 class="meseros-titulo">Agregar mesero</h2>
+            <form method="POST" action="/meseros" class="meseros-form">
+                <label class="ui-campo">
+                    <span>Nombre</span>
+                    <input type="text" name="nombre" maxlength="60" required autocomplete="off" placeholder="Ej.: Laura">
+                </label>
+                <button type="submit" class="btn-primary">Agregar</button>
+            </form>
+        </article>
+
+        <article class="ui-tarjeta">
+            <h2 class="meseros-titulo">Propina sugerida</h2>
+            <form method="POST" action="/meseros/porcentaje" class="meseros-form">
+                <label class="ui-campo">
+                    <span>Porcentaje</span>
+                    <span class="meseros-porcentaje">
+                        <input type="number" name="porcentaje" min="0" max="100" step="1" required value="<%= porcentajeSugerido %>">
+                        <b>%</b>
+                    </span>
+                </label>
+                <button type="submit" class="btn-secondary">Guardar</button>
+            </form>
+            <p class="meseros-nota">Se calcula sobre el valor antes de impuestos y es voluntaria: el cliente decide si la paga y cuánto.</p>
+        </article>
+    </div>
+
+    <article class="ui-tarjeta">
+        <% if (!listaMeseros.length) { %>
+            <%- include('../partials/ui/vacio', { titulo: 'Aún no hay meseros', mensaje: 'Agrega a quienes atienden las mesas: cada propina queda a nombre de quien atendió.' }) %>
+        <% } else { %>
+            <div class="ui-tabla-contenedor">
+                <table class="ui-tabla">
+                    <thead>
+                        <tr>
+                            <th>Mesero</th>
+                            <th>Estado</th>
+                            <th class="num">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% listaMeseros.forEach(function (mesero) { %>
+                            <tr class="<%= mesero.estado !== 'activo' ? 'ui-fila-inactiva' : '' %>">
+                                <td><strong><%= mesero.nombre %></strong></td>
+                                <td><%- include('../partials/ui/estado', { texto: mesero.estado === 'activo' ? 'Activo' : 'Inactivo', tono: mesero.estado === 'activo' ? 'exito' : '', punto: true }) %></td>
+                                <td>
+                                    <div class="ui-acciones-fila">
+                                        <% if (mesero.estado === 'activo') { %>
+                                            <form method="POST" action="/meseros/<%= mesero.id_mesero %>/desactivar">
+                                                <button type="submit" class="btn-danger-soft">Desactivar</button>
+                                            </form>
+                                        <% } else { %>
+                                            <form method="POST" action="/meseros/<%= mesero.id_mesero %>/activar">
+                                                <button type="submit" class="btn-secondary">Activar</button>
+                                            </form>
+                                        <% } %>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        <% } %>
+    </article>
+</section>

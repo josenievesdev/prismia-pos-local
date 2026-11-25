@@ -104,7 +104,7 @@
                             </div>
                         </div>
 
-                        <div class="caja-cierre-formula">
+                        <div class="caja-cierre-formula <%= Number(turnoAbierto.total_propinas_efectivo || 0) !== 0 ? 'con-propinas' : '' %>">
                             <div>
                                 <span>Base inicial</span>
                                 <strong>
@@ -118,6 +118,15 @@
                                     <%= formatearPesos(turnoAbierto.total_efectivo) %>
                                 </strong>
                             </div>
+
+                            <% if (Number(turnoAbierto.total_propinas_efectivo || 0) !== 0) { %>
+                                <div>
+                                    <span>Propinas en efectivo</span>
+                                    <strong>
+                                        <%= formatearPesos(turnoAbierto.total_propinas_efectivo) %>
+                                    </strong>
+                                </div>
+                            <% } %>
 
                             <div>
                                 <span>Ingresos manuales</span>
@@ -274,6 +283,8 @@
                             </div>
                             <% } %>
                 </article>
+
+                <%- include('partials/propinas', { turno: turnoAbierto, propinasPorMesero: locals.propinasPorMesero }) %>
 
                 <section class="caja-active-grid">
                     <form class="module-card form-panel caja-cierre-form" method="POST" action="/caja/cerrar"

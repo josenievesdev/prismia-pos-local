@@ -99,8 +99,8 @@ function obtenerResumenMovimientosTurno(idTurnoCaja) {
             COALESCE(SUM(CASE
                 WHEN COALESCE(mp.afecta_efectivo_caja, CASE WHEN m.metodo_pago = 'efectivo' THEN 1 ELSE 0 END) = 1
                 THEN CASE
-                    WHEN m.tipo_movimiento IN ('venta', 'ingreso_manual') THEN m.monto
-                    WHEN m.tipo_movimiento IN ('anulacion', 'devolucion', 'egreso_manual') THEN -m.monto
+                    WHEN m.tipo_movimiento IN ('venta', 'ingreso_manual', 'propina') THEN m.monto
+                    WHEN m.tipo_movimiento IN ('anulacion', 'devolucion', 'egreso_manual', 'anulacion_propina') THEN -m.monto
                     ELSE 0
                 END
                 ELSE 0
@@ -120,20 +120,20 @@ function obtenerPagosPorMedioTurno(idTurnoCaja) {
             COUNT(*) AS operaciones,
 
             COALESCE(SUM(CASE
-                WHEN m.tipo_movimiento IN ('venta', 'ingreso_manual')
+                WHEN m.tipo_movimiento IN ('venta', 'ingreso_manual', 'propina')
                 THEN m.monto
                 ELSE 0
             END), 0) AS ingresos,
 
             COALESCE(SUM(CASE
-                WHEN m.tipo_movimiento IN ('anulacion', 'devolucion', 'egreso_manual')
+                WHEN m.tipo_movimiento IN ('anulacion', 'devolucion', 'egreso_manual', 'anulacion_propina')
                 THEN m.monto
                 ELSE 0
             END), 0) AS salidas,
 
             COALESCE(SUM(CASE
-                WHEN m.tipo_movimiento IN ('venta', 'ingreso_manual') THEN m.monto
-                WHEN m.tipo_movimiento IN ('anulacion', 'devolucion', 'egreso_manual') THEN -m.monto
+                WHEN m.tipo_movimiento IN ('venta', 'ingreso_manual', 'propina') THEN m.monto
+                WHEN m.tipo_movimiento IN ('anulacion', 'devolucion', 'egreso_manual', 'anulacion_propina') THEN -m.monto
                 ELSE 0
             END), 0) AS neto
         FROM movimientos_caja m

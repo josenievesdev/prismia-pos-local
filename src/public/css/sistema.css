@@ -1809,3 +1809,52 @@ html .app-content .ventas-header-sub {
     background: var(--color-surface-hover);
     color: var(--color-text);
 }
+
+/* ---------- Meseros y propinas (perfil comidas y bares) ---------- */
+.meseros-grilla {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.meseros-grilla > .ui-tarjeta {
+    padding: 18px 20px;
+}
+
+.meseros-titulo {
+    margin: 0 0 12px;
+    color: var(--color-text);
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.meseros-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+.meseros-form .ui-campo {
+    flex: 1 1 180px;
+}
+
+.meseros-porcentaje {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.meseros-porcentaje input {
+    max-width: 110px;
+    font-family: var(--font-mono);
+}
+
+.meseros-porcentaje b {
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+}
+
+.meseros-nota {
+    margin: 10px 0 0;
+    color: var(--color-muted);
+    font-size: 12.5px;
+}

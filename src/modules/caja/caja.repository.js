@@ -207,22 +207,22 @@ function listarResumenMovimientosPorMedio(idTurnoCaja) {
 
                 COALESCE(SUM(
                     CASE
-                        WHEN m.tipo_movimiento IN ('ingreso_manual', 'venta') THEN m.monto
+                        WHEN m.tipo_movimiento IN ('ingreso_manual', 'venta', 'propina') THEN m.monto
                         ELSE 0
                     END
                 ), 0) AS total_ingresos,
 
                 COALESCE(SUM(
                     CASE
-                        WHEN m.tipo_movimiento IN ('egreso_manual', 'devolucion', 'anulacion') THEN m.monto
+                        WHEN m.tipo_movimiento IN ('egreso_manual', 'devolucion', 'anulacion', 'anulacion_propina') THEN m.monto
                         ELSE 0
                     END
                 ), 0) AS total_egresos,
 
                 COALESCE(SUM(
                     CASE
-                        WHEN m.tipo_movimiento IN ('ingreso_manual', 'venta') THEN m.monto
-                        WHEN m.tipo_movimiento IN ('egreso_manual', 'devolucion', 'anulacion') THEN -m.monto
+                        WHEN m.tipo_movimiento IN ('ingreso_manual', 'venta', 'propina') THEN m.monto
+                        WHEN m.tipo_movimiento IN ('egreso_manual', 'devolucion', 'anulacion', 'anulacion_propina') THEN -m.monto
                         ELSE 0
                     END
                 ), 0) AS saldo_neto
@@ -771,7 +771,32 @@ function crearGastoDesdeCaja({
     return transaccion.immediate();
 }
 
+/**
+ * Propinas del turno por mesero (perfil comidas y bares). Solo ventas pagadas:
+ * la propina de una venta anulada se revirtió y no es de nadie.
+ */
+function listarPropinasPorMeseroTurno(idTurnoCaja) {
+    return db
+        .prepare(`
+            SELECT
+                ms.id_mesero,
+                ms.nombre,
+                COUNT(v.id_venta) AS ventas_atendidas,
+                COALESCE(SUM(v.total), 0) AS total_vendido,
+                COALESCE(SUM(v.propina), 0) AS total_propinas
+            FROM ventas v
+            INNER JOIN meseros ms
+                ON ms.id_mesero = v.id_mesero
+            WHERE v.id_turno_caja = ?
+              AND v.estado = 'pagada'
+            GROUP BY ms.id_mesero, ms.nombre
+            ORDER BY total_propinas DESC, ms.nombre COLLATE NOCASE ASC
+        `)
+        .all(idTurnoCaja);
+}
+
 module.exports = {
+    listarPropinasPorMeseroTurno,
     obtenerTurnoAbierto,
     obtenerTurnoPorId,
     crearTurnoCaja,

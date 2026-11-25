@@ -215,7 +215,37 @@ Parte 2 — táctil y pantallas pequeñas:
       ignoraba y bloqueaba siempre); mensaje claro de GitHub para el resto.
 - [x] "Nieves Systems" -> TINAI (se conserva el appId del instalador).
 - [x] README con capturas del diseño nuevo tomadas del demo (npm run demo:reset).
-- [ ] Propinas (bares y restaurantes): definir reglas y construir.
+- [x] Propinas (bares y restaurantes): ver la sección siguiente.
+
+## Propinas por mesero (2026-11-25, rama `propinas-meseros`)
+Reglas acordadas con el usuario:
+- Solo en el perfil "Comidas y bares" del POS. En General y Boutique no aparece nada.
+- Voluntaria. Se sugiere un % configurable (10 % por defecto), calculado sobre el
+  valor antes de impuestos y redondeado hacia abajo. El cajero la acepta, la cambia o la deja en 0.
+- No es venta: no lleva IVA, no suma a ventas ni a reportes de ventas.
+- Cada propina queda a nombre del mesero que atendió; nunca se reparte entre todos.
+  Sin mesero no se puede registrar una propina (el POS y el servidor lo bloquean).
+- Ticket: "Mesero", "Propina voluntaria" y "Total pagado".
+- Cierre, detalle y arqueo impreso: sección aparte "Propinas por mesero", con el
+  total, la parte en efectivo y otros medios, y una tabla por mesero (ventas atendidas,
+  vendido, propinas). Las propinas en efectivo están en el cajón: entran al efectivo esperado.
+
+Hecho:
+- [x] Migración 007: tabla `meseros`; `ventas.id_mesero` y `ventas.propina`;
+      `pagos_venta.monto_propina`; `turnos_caja.total_propinas(_efectivo)`;
+      `% sugerido` en configuración; movimientos `propina` y `anulacion_propina`.
+- [x] Dinero: la propina se reparte entre los pagos de forma proporcional y
+      exacta, sin perder pesos. Anular la venta también revierte la propina. Caja,
+      dashboard y arqueo cuentan la propina con la misma fuente (movimientos).
+- [x] Pantalla "Meseros y propinas" (/meseros, solo administrador): agregar,
+      activar o desactivar meseros y fijar el %. Hay acceso desde Configuración.
+- [x] POS: chip "Mesero" (F3) junto al cliente; bloque "Propina voluntaria"
+      (Sin propina / % sugerido / Otro valor) y fila "A cobrar". "Recibido" sigue
+      la propina. Las ventas en espera y la venta en curso recuerdan el mesero.
+- [x] Aviso de venta sin stock más limpio: etiqueta ámbar "Solo hay N · quedará −M"
+      (se sigue vendiendo si el producto lo permite).
+- [x] Pruebas: tests/propinas.test.js (9) + prueba de humo con venta con propina.
+- [ ] Reporte de propinas por mesero entre fechas (hoy se ve por turno de caja).
 
 ## Fase 5 — Calidad de código
 - [ ] Unificar cotizaciones y remisiones (~80 % duplicado).

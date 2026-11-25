@@ -817,7 +817,9 @@ function registrarVentaPOS(datos) {
                     utilidad_bruta,
                     origen,
                     tipo_venta,
-                    requiere_factura
+                    requiere_factura,
+                    id_mesero,
+                    propina
                 ) VALUES (
                     @id_cliente,
                     @id_usuario,
@@ -837,7 +839,9 @@ function registrarVentaPOS(datos) {
                     @utilidad_bruta,
                     'pos',
                     @tipo_venta,
-                    @requiere_factura
+                    @requiere_factura,
+                    @id_mesero,
+                    @propina
                 )
             `)
             .run({
@@ -858,6 +862,8 @@ function registrarVentaPOS(datos) {
                 utilidad_bruta: datos.resumen.utilidad_bruta,
                 tipo_venta: tipoVenta,
                 requiere_factura: datos.requiere_factura ? 1 : 0,
+                id_mesero: datos.id_mesero || null,
+                propina: Number(datos.propina || 0),
             });
 
         const idVenta = Number(ventaInsertada.lastInsertRowid);
@@ -1004,6 +1010,7 @@ function registrarVentaPOS(datos) {
                 id_usuario,
                 monto_recibido,
                 cambio_entregado,
+                monto_propina,
                 estado
             ) VALUES (
                 @id_venta,
@@ -1016,6 +1023,7 @@ function registrarVentaPOS(datos) {
                 @id_usuario,
                 @monto_recibido,
                 @cambio_entregado,
+                @monto_propina,
                 'registrado'
             )
         `);
@@ -1048,6 +1056,34 @@ function registrarVentaPOS(datos) {
             )
         `);
 
+        const insertarMovimientoPropina = db.prepare(`
+            INSERT INTO movimientos_caja (
+                id_turno_caja,
+                id_usuario,
+                tipo_movimiento,
+                metodo_pago,
+                monto,
+                descripcion,
+                referencia_tipo,
+                referencia_id,
+                id_medio_pago,
+                referencia_pago,
+                entidad_pago
+            ) VALUES (
+                @id_turno_caja,
+                @id_usuario,
+                'propina',
+                @metodo_pago,
+                @monto,
+                @descripcion,
+                'venta',
+                @referencia_id,
+                @id_medio_pago,
+                @referencia_pago,
+                @entidad_pago
+            )
+        `);
+
         for (const pago of pagosValidos) {
             insertarPagoVenta.run({
                 id_venta: idVenta,
@@ -1060,6 +1096,7 @@ function registrarVentaPOS(datos) {
                 id_usuario: datos.id_usuario,
                 monto_recibido: pago.monto_recibido,
                 cambio_entregado: pago.cambio_entregado || 0,
+                monto_propina: Number(pago.monto_propina || 0),
             });
 
             insertarMovimientoCaja.run({
@@ -1075,6 +1112,20 @@ function registrarVentaPOS(datos) {
                 referencia_pago: pago.referencia || null,
                 entidad_pago: pago.entidad || null,
             });
+
+            if (Number(pago.monto_propina || 0) > 0) {
+                insertarMovimientoPropina.run({
+                    id_turno_caja: datos.turno.id_turno_caja,
+                    id_usuario: datos.id_usuario,
+                    metodo_pago: pago.metodo_pago,
+                    monto: Number(pago.monto_propina),
+                    descripcion: `Propina venta ${numeroVenta}`,
+                    referencia_id: idVenta,
+                    id_medio_pago: pago.id_medio_pago,
+                    referencia_pago: pago.referencia || null,
+                    entidad_pago: pago.entidad || null,
+                });
+            }
         }
 
         cajaTotales.sincronizarTotalesTurno(db, datos.turno.id_turno_caja);
@@ -1180,6 +1231,10 @@ function obtenerVentaTicketPorId(idVenta) {
 
                 u.nombre AS cajero_nombre,
 
+                v.propina,
+                v.id_mesero,
+                ms.nombre AS mesero_nombre,
+
                 t.fecha_apertura AS turno_fecha_apertura,
                 t.estado AS turno_estado
             FROM ventas v
@@ -1187,6 +1242,8 @@ function obtenerVentaTicketPorId(idVenta) {
                 ON c.id_cliente = v.id_cliente
             LEFT JOIN usuarios u
                 ON u.id_usuario = v.id_usuario
+            LEFT JOIN meseros ms
+                ON ms.id_mesero = v.id_mesero
             LEFT JOIN turnos_caja t
                 ON t.id_turno_caja = v.id_turno_caja
             WHERE v.id_venta = ?
@@ -1241,6 +1298,7 @@ function listarPagosVentaTicket(idVenta) {
                 pv.id_usuario,
                 pv.monto_recibido,
                 pv.cambio_entregado,
+                pv.monto_propina,
                 pv.estado,
 
                 mp.codigo AS medio_pago_codigo,
@@ -1521,6 +1579,34 @@ function anularVentaCompleta(datos) {
             )
         `);
 
+        const insertarMovimientoPropinaAnulacion = db.prepare(`
+            INSERT INTO movimientos_caja (
+                id_turno_caja,
+                id_usuario,
+                tipo_movimiento,
+                metodo_pago,
+                monto,
+                descripcion,
+                referencia_tipo,
+                referencia_id,
+                id_medio_pago,
+                referencia_pago,
+                entidad_pago
+            ) VALUES (
+                @id_turno_caja,
+                @id_usuario,
+                'anulacion_propina',
+                @metodo_pago,
+                @monto,
+                @descripcion,
+                'anulacion_venta',
+                @referencia_id,
+                @id_medio_pago,
+                @referencia_pago,
+                @entidad_pago
+            )
+        `);
+
         const ventaActualizada = db
             .prepare(`
                 UPDATE ventas
@@ -1584,6 +1670,22 @@ function anularVentaCompleta(datos) {
                 referencia_pago: pago.referencia || null,
                 entidad_pago: pago.medio_pago_nombre || pago.entidad || null,
             });
+
+            const montoPropina = Number(pago.monto_propina || 0);
+
+            if (montoPropina > 0) {
+                insertarMovimientoPropinaAnulacion.run({
+                    id_turno_caja: venta.id_turno_caja,
+                    id_usuario: datos.id_usuario,
+                    metodo_pago: pago.medio_pago_tipo || pago.metodo_pago || 'otro',
+                    monto: montoPropina,
+                    descripcion: `Anulación de propina ${venta.numero_venta}`,
+                    referencia_id: idAnulacionVenta,
+                    id_medio_pago: pago.id_medio_pago || null,
+                    referencia_pago: pago.referencia || null,
+                    entidad_pago: pago.medio_pago_nombre || pago.entidad || null,
+                });
+            }
         });
 
         const actualizarProducto = db.prepare(`

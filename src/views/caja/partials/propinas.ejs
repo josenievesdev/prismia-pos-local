@@ -1,0 +1,90 @@
+<%#
+  Propinas del turno (perfil comidas y bares). Parámetros: turno, propinasPorMesero.
+  Solo aparece si hubo propinas o ventas con mesero. Las propinas no son ventas:
+  se entregan a cada mesero; las de efectivo están en el cajón.
+%>
+<%
+    const turnoPropinas = locals.turno || {};
+    const listaPropinas = Array.isArray(locals.propinasPorMesero) ? propinasPorMesero : [];
+    const totalPropinas = Number(turnoPropinas.total_propinas || 0);
+    const propinasEfectivo = Number(turnoPropinas.total_propinas_efectivo || 0);
+    const pesosPropina = (valor) => {
+        const numero = Math.round(Number(valor) || 0);
+        return (numero < 0 ? '− ' : '') + '$ ' + Math.abs(numero).toLocaleString('es-CO');
+    };
+    const sumaPropinasMeseros = listaPropinas.reduce((suma, fila) => suma + Number(fila.total_propinas || 0), 0);
+    const sumaVendidoMeseros = listaPropinas.reduce((suma, fila) => suma + Number(fila.total_vendido || 0), 0);
+    const sumaVentasMeseros = listaPropinas.reduce((suma, fila) => suma + Number(fila.ventas_atendidas || 0), 0);
+%>
+<% if (totalPropinas !== 0 || listaPropinas.length) { %>
+    <article class="module-card caja-propinas-card" aria-labelledby="tituloPropinasTurno">
+        <div class="caja-section-head">
+            <div>
+                <span class="caja-section-eyebrow">Comidas y bares</span>
+                <h3 id="tituloPropinasTurno">Propinas por mesero</h3>
+                <p>No son ventas: cada mesero recibe la propina de las mesas que atendió.</p>
+            </div>
+
+            <span class="caja-section-count">
+                <strong><%= listaPropinas.length %></strong>
+                <%= listaPropinas.length === 1 ? 'mesero' : 'meseros' %>
+            </span>
+        </div>
+
+        <div class="caja-cierre-support-summary">
+            <div>
+                <span>Total propinas</span>
+                <strong><%= pesosPropina(totalPropinas) %></strong>
+            </div>
+
+            <div>
+                <span>En efectivo (en el cajón)</span>
+                <strong><%= pesosPropina(propinasEfectivo) %></strong>
+            </div>
+
+            <div>
+                <span>Otros medios</span>
+                <strong><%= pesosPropina(totalPropinas - propinasEfectivo) %></strong>
+            </div>
+        </div>
+
+        <% if (listaPropinas.length) { %>
+            <div class="table-wrapper">
+                <table class="data-table caja-table caja-propinas-tabla">
+                    <thead>
+                        <tr>
+                            <th>Mesero</th>
+                            <th class="text-center">Ventas atendidas</th>
+                            <th class="text-right">Vendido</th>
+                            <th class="text-right">Propinas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% listaPropinas.forEach(function (fila) { %>
+                            <tr>
+                                <td><strong><%= fila.nombre %></strong></td>
+                                <td class="text-center"><%= fila.ventas_atendidas %></td>
+                                <td class="text-right"><%= pesosPropina(fila.total_vendido) %></td>
+                                <td class="text-right"><strong><%= pesosPropina(fila.total_propinas) %></strong></td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td>Total</td>
+                            <td class="text-center"><%= sumaVentasMeseros %></td>
+                            <td class="text-right"><%= pesosPropina(sumaVendidoMeseros) %></td>
+                            <td class="text-right"><%= pesosPropina(sumaPropinasMeseros) %></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        <% } %>
+
+        <% if (propinasEfectivo !== 0) { %>
+            <p class="caja-propinas-nota">
+                El efectivo esperado incluye <strong><%= pesosPropina(propinasEfectivo) %></strong> de propinas en efectivo.
+            </p>
+        <% } %>
+    </article>
+<% } %>

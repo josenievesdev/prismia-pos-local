@@ -602,6 +602,15 @@
                                 </strong>
                             </div>
 
+                            <% if (Number(turno.total_propinas_efectivo || 0) !== 0) { %>
+                                <div class="info-card">
+                                    <span>Propinas en efectivo</span>
+                                    <strong>
+                                        <%= formatearPesos(turno.total_propinas_efectivo) %>
+                                    </strong>
+                                </div>
+                            <% } %>
+
                             <div class="info-card">
                                 <span>Ingresos manuales</span>
                                 <strong>
@@ -645,6 +654,42 @@
                             </div>
                         </div>
                     </section>
+
+                    <% const propinasImpresion = Array.isArray(arqueo && arqueo.propinasPorMesero) ? arqueo.propinasPorMesero : []; %>
+                    <% if (Number(turno.total_propinas || 0) !== 0 || propinasImpresion.length) { %>
+                        <section class="section">
+                            <h2>2.1 Propinas por mesero</h2>
+                            <p>No son ventas: se entregan a cada mesero. Total <%= formatearPesos(turno.total_propinas) %> · en efectivo <%= formatearPesos(turno.total_propinas_efectivo) %>.</p>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Mesero</th>
+                                        <th class="text-right">Ventas</th>
+                                        <th class="text-right">Vendido</th>
+                                        <th class="text-right">Propinas</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% propinasImpresion.forEach(function (fila) { %>
+                                        <tr>
+                                            <td><strong><%= fila.nombre %></strong></td>
+                                            <td class="text-right"><%= fila.ventas_atendidas %></td>
+                                            <td class="text-right"><%= formatearPesos(fila.total_vendido) %></td>
+                                            <td class="text-right"><strong><%= formatearPesos(fila.total_propinas) %></strong></td>
+                                        </tr>
+                                    <% }) %>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td><strong>Total</strong></td>
+                                        <td class="text-right"><strong><%= propinasImpresion.reduce((suma, fila) => suma + Number(fila.ventas_atendidas || 0), 0) %></strong></td>
+                                        <td class="text-right"><strong><%= formatearPesos(propinasImpresion.reduce((suma, fila) => suma + Number(fila.total_vendido || 0), 0)) %></strong></td>
+                                        <td class="text-right"><strong><%= formatearPesos(propinasImpresion.reduce((suma, fila) => suma + Number(fila.total_propinas || 0), 0)) %></strong></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </section>
+                    <% } %>
 
                     <section class="section">
                         <h2>3. Resumen operativo por medios</h2>

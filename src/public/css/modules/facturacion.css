@@ -785,17 +785,6 @@ html.ruta-pos[data-pos-enfoque="1"]:not([data-menu-estado="movil"]) .app-sidebar
     text-overflow: ellipsis;
 }
 
-.pos-aviso-stock {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 1px 6px;
-    border-radius: 4px;
-    background: var(--pos-aviso-suave);
-    color: var(--pos-aviso-texto);
-    font-weight: 600;
-}
-
 /* Cantidad: − valor unidad + */
 .pos-cantidad {
     display: grid;
@@ -1909,6 +1898,12 @@ html[data-pos-mode="tactil"] .pos-teclado {
     line-height: 1.05;
 }
 
+.pos-exito-propina {
+    font-family: var(--pos-mono);
+    font-size: 13px;
+    font-weight: 600;
+}
+
 .pos-exito-acciones {
     display: flex;
     gap: 8px;
@@ -2721,4 +2716,243 @@ html[data-pos-mode="tactil"] .pos-resultados-pie {
 .pos-descuento-resultado.is-error {
     color: var(--color-danger);
     font-family: inherit;
+}
+
+/* =========================================================
+   Mesero y propina (solo perfil "Comidas y bares")
+   ========================================================= */
+html:not([data-pos-business="comidas"]) .pos-mesero-zona,
+html:not([data-pos-business="comidas"]) .pos-atajo-comidas {
+    display: none;
+}
+
+.pos-mesero-zona {
+    position: relative;
+    flex: 0 0 auto;
+}
+
+.pos-mesero .pos-cliente-texto small {
+    color: var(--pos-texto-2);
+    font-family: inherit;
+    font-size: 11px;
+}
+
+/* Sin mesero elegido: se nota, sin gritar */
+.pos-mesero.sin-elegir {
+    border-style: dashed;
+    border-color: var(--pos-acento-borde);
+}
+
+.pos-mesero.sin-elegir strong {
+    color: var(--pos-acento);
+}
+
+.pos-mesero-panel {
+    width: min(300px, 90vw);
+}
+
+.pos-mesero-lista {
+    display: grid;
+    gap: 4px;
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.pos-mesero-opcion {
+    display: flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 12px;
+    border: 1px solid transparent;
+    border-radius: var(--pos-r-md);
+    background: transparent;
+    color: var(--pos-texto);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+}
+
+.pos-mesero-opcion:hover,
+.pos-mesero-opcion:focus-visible {
+    border-color: var(--pos-linea);
+    background: var(--color-surface-hover);
+    outline: none;
+}
+
+.pos-mesero-opcion.is-elegido {
+    border-color: var(--pos-acento-borde);
+    background: var(--pos-acento-suave);
+    color: var(--pos-acento);
+    font-weight: 600;
+}
+
+.pos-mesero-vacio {
+    margin: 4px 6px;
+    color: var(--pos-texto-2);
+    font-size: 13px;
+}
+
+.pos-mesero-panel footer {
+    padding-top: 8px;
+    border-top: 1px solid var(--pos-linea);
+}
+
+.pos-mesero-administrar {
+    color: var(--pos-texto-2);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.pos-mesero-administrar:hover {
+    color: var(--pos-texto);
+    text-decoration: underline;
+}
+
+/* Bloque de propina en el cobro */
+.pos-propina {
+    display: grid;
+    gap: 8px;
+    padding: 12px;
+    border: 1px solid var(--pos-linea);
+    border-radius: var(--pos-r-lg);
+    background: var(--pos-papel);
+}
+
+.pos-propina-cabecera {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 13.5px;
+    font-weight: 600;
+}
+
+.pos-propina-cabecera small {
+    color: var(--pos-texto-2);
+    font-size: 12.5px;
+    font-weight: 500;
+}
+
+.pos-propina-cabecera small.is-falta {
+    color: var(--color-danger);
+    font-weight: 600;
+}
+
+.pos-propina-opciones {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.pos-propina-opciones button {
+    display: grid;
+    place-content: center;
+    gap: 1px;
+    min-height: 48px;
+    padding: 4px 8px;
+    line-height: 1.15;
+    border: 1px solid var(--pos-linea);
+    border-radius: var(--pos-r-md);
+    background: var(--pos-superficie);
+    color: var(--pos-texto);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.pos-propina-opciones button[data-propina="sugerida"] span {
+    font-family: var(--pos-mono);
+    font-size: 14px;
+}
+
+.pos-propina-opciones button small {
+    font-family: var(--pos-mono);
+    font-size: 11.5px;
+    font-weight: 600;
+    opacity: 0.72;
+}
+
+.pos-propina-opciones button[aria-checked="true"] {
+    border-color: var(--pos-tinta);
+    background: var(--pos-tinta);
+    color: #ffffff;
+}
+
+.pos-propina-otra {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 44px;
+    padding: 0 12px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--pos-r-md);
+    background: var(--pos-superficie);
+}
+
+.pos-propina-otra.is-invalido {
+    border-color: var(--color-danger);
+}
+
+.pos-propina-otra:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px var(--color-primary-ring);
+}
+
+.pos-propina-otra span {
+    color: var(--pos-texto-2);
+    font-family: var(--pos-mono);
+}
+
+.pos-propina-otra input {
+    flex: 1 1 auto;
+    min-width: 0;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: var(--pos-texto);
+    font-family: var(--pos-mono);
+    font-size: 18px;
+    font-weight: 700;
+}
+
+/* "A cobrar" = total + propina */
+.pos-pago-cobrar {
+    padding-top: 8px;
+    border-top: 2px solid var(--pos-tinta);
+}
+
+/* =========================================================
+   Aviso de venta sin stock: etiqueta discreta (se vende igual)
+   ========================================================= */
+.pos-aviso-stock {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 1px 8px 1px 6px;
+    border: 1px solid color-mix(in srgb, #b07400 22%, transparent);
+    border-radius: 999px;
+    background: var(--pos-aviso-suave);
+    color: var(--pos-aviso-texto);
+    font-family: var(--pos-mono);
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* El código del producto no se tapa: el aviso baja de línea si no cabe */
+.pos-linea-meta:has(.pos-aviso-stock) {
+    flex-wrap: wrap;
+    row-gap: 4px;
+}
+
+.pos-aviso-stock::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #d99a00;
 }

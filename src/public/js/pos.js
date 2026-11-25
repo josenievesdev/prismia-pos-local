@@ -52,6 +52,8 @@
             puedeVender: Boolean(datos.puedeVender),
             numeroFactura: datos.numeroFactura || 'FV-BORRADOR',
             cliente: clienteConsumidorFinal(),
+            mesero: null,
+            propina: { modo: 'ninguna', valor: 0 },
             carrito: [],
             seleccion: null,
             destello: null,
@@ -82,6 +84,7 @@
         iniciarBuscador();
         iniciarTicket();
         iniciarCliente();
+        iniciarMesero();
         iniciarClienteRapido();
         iniciarFrecuentes();
         iniciarConfiguracionFrecuentes();
@@ -118,6 +121,16 @@
             clienteNombre: id('clienteNombrePOS'),
             clienteDocumento: id('clienteDocumentoPOS'),
             panelCliente: id('panelClientePOS'),
+            botonMesero: id('btnMeseroPOS'),
+            panelMesero: id('panelMeseroPOS'),
+            meseroNombre: id('meseroNombrePOS'),
+            listaMeseros: id('listaMeserosPOS'),
+            propina: id('propinaPOS'),
+            propinaOtra: id('propinaOtraPOS'),
+            propinaOtraZona: id('propinaOtraZonaPOS'),
+            propinaMesero: id('propinaMeseroPOS'),
+            aCobrarFila: id('aCobrarFilaPOS'),
+            aCobrar: id('aCobrarPOS'),
             buscarCliente: id('buscarCliente'),
             resultadosClientes: id('resultadosClientes'),
             clienteFinal: id('btnClienteFinalPOS'),
@@ -139,6 +152,7 @@
             exitoNumero: id('exitoNumeroPOS'),
             exitoTotal: id('exitoTotalPOS'),
             exitoCambio: id('exitoCambioPOS'),
+            exitoPropina: id('exitoPropinaPOS'),
             exitoImprimir: id('exitoImprimirPOS'),
             exitoOcultar: id('exitoOcultarPOS'),
 
@@ -607,6 +621,13 @@
                 const perfil = ['general', 'comidas', 'boutique'].includes(ui.perfil.value) ? ui.perfil.value : 'general';
                 raiz.dataset.posBusiness = perfil;
                 guardarAlmacen(CLAVES.perfil, perfil);
+
+                // Mesero y propina solo existen en "Comidas y bares": fuera de ese perfil no se envían
+                if (perfil !== 'comidas') {
+                    cerrarPanelMesero();
+                }
+
+                alCambiarPropina();
             });
         }
 
@@ -1466,7 +1487,9 @@
         let avisoStock = '';
 
         if (item.controlaInventario && item.cantidad > item.stock + 0.000001) {
-            avisoStock = `<span class="pos-aviso-stock">⚠ Stock ${cantidadTexto(item.stock)} · quedará en ${cantidadTexto(Math.round((item.stock - item.cantidad) * 1000) / 1000)}</span>`;
+            const quedara = Math.round((item.stock - item.cantidad) * 1000) / 1000;
+            const disponible = item.stock > 0 ? `Solo hay ${cantidadTexto(item.stock)}` : 'Sin stock';
+            avisoStock = `<span class="pos-aviso-stock" title="Se vende igual; el inventario queda en ${cantidadTexto(quedara)} ${escapar(item.unidad)}">${disponible} · quedará ${cantidadTexto(quedara).replace('-', '−')}</span>`;
         }
 
         const clases = ['pos-linea'];
@@ -1693,6 +1716,9 @@
         estado.errorCobro = null;
         estado.seleccion = null;
         estado.cliente = clienteConsumidorFinal();
+        estado.mesero = null;
+        estado.propina = { modo: 'ninguna', valor: 0 };
+        dibujarMesero();
         fijarMultiplicador(null);
         guardarAlmacen(CLAVES.ventaEnCurso, null, window.sessionStorage);
 
@@ -1714,6 +1740,7 @@
 
         guardarAlmacen(CLAVES.ventaEnCurso, JSON.stringify({
             cliente: estado.cliente,
+            mesero: estado.mesero,
             items: estado.carrito.map(function (item) {
                 return { id: item.id, nombre: item.nombre, cantidad: item.cantidad, descuento: descuentoDe(item) };
             }),
@@ -1739,6 +1766,10 @@
 
         const omitidos = await cargarItemsGuardados(guardada.items);
         estado.cliente = guardada.cliente && guardada.cliente.nombre ? guardada.cliente : clienteConsumidorFinal();
+        estado.mesero = guardada.mesero && meserosActivos().some(function (mesero) {
+            return mesero.id_mesero === guardada.mesero.id;
+        }) ? guardada.mesero : null;
+        dibujarMesero();
         alCambiarCarrito();
 
         if (omitidos.length) {
@@ -1814,6 +1845,7 @@
             id: Date.now(),
             creado: new Date().toISOString(),
             cliente: estado.cliente,
+            mesero: estado.mesero,
             total: calcularResumen().total,
             items: estado.carrito.map(function (item) {
                 return { id: item.id, nombre: item.nombre, cantidad: item.cantidad, descuento: descuentoDe(item) };
@@ -1849,12 +1881,13 @@
         ui.panelPendientes.innerHTML = lista.map(function (pendiente) {
             const hora = new Date(pendiente.creado).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
             const lineas = pendiente.items.length;
+            const mesero = pendiente.mesero && pendiente.mesero.nombre ? ` · ${escapar(pendiente.mesero.nombre)}` : '';
 
             return `
                 <div class="pos-pendiente">
                     <div>
                         <strong>${escapar(pendiente.cliente?.nombre || 'Consumidor final')}</strong>
-                        <small>${escapar(hora)} · ${lineas} ${lineas === 1 ? 'línea' : 'líneas'}</small>
+                        <small>${escapar(hora)} · ${lineas} ${lineas === 1 ? 'línea' : 'líneas'}${mesero}</small>
                     </div>
                     <span class="pos-pendiente-monto">${pesos(pendiente.total)}</span>
                     <span class="pos-pendiente-acciones">
@@ -1902,6 +1935,11 @@
 
         const omitidos = await cargarItemsGuardados(pendiente.items || []);
         estado.cliente = pendiente.cliente && pendiente.cliente.nombre ? pendiente.cliente : clienteConsumidorFinal();
+        // El mesero de la mesa vuelve con ella (si sigue activo)
+        estado.mesero = pendiente.mesero && meserosActivos().some(function (mesero) {
+            return mesero.id_mesero === pendiente.mesero.id;
+        }) ? pendiente.mesero : null;
+        dibujarMesero();
         alCambiarCarrito();
 
         if (omitidos.length) {
@@ -1934,6 +1972,262 @@
     /* ---------------------------------------------------------------
        Cliente
        --------------------------------------------------------------- */
+    /* ---------------------------------------------------------------
+       Mesero y propina (solo perfil "Comidas y bares")
+       Cada propina queda a nombre del mesero que atendió. La propina es
+       voluntaria, no es venta y se sugiere sobre el valor antes de impuestos.
+       --------------------------------------------------------------- */
+    function modoComidas() {
+        return document.documentElement.dataset.posBusiness === 'comidas';
+    }
+
+    function meserosActivos() {
+        return Array.isArray(datos.meseros) ? datos.meseros : [];
+    }
+
+    function porcentajePropina() {
+        const valor = Number(datos.propinaPorcentaje);
+        return Number.isFinite(valor) && valor >= 0 ? valor : 10;
+    }
+
+    // Antes de impuestos y sin pasarse del porcentaje (por eso floor)
+    function propinaSugerida() {
+        return Math.floor(calcularResumen().subtotal * porcentajePropina() / 100);
+    }
+
+    function propinaActual() {
+        if (!modoComidas() || !estado.carrito.length) {
+            return 0;
+        }
+
+        if (estado.propina.modo === 'sugerida') {
+            return propinaSugerida();
+        }
+
+        if (estado.propina.modo === 'otra') {
+            return Math.max(0, Math.round(Number(estado.propina.valor) || 0));
+        }
+
+        return 0;
+    }
+
+    function totalACobrar() {
+        return calcularResumen().total + propinaActual();
+    }
+
+    function dibujarMesero() {
+        if (ui.meseroNombre) {
+            ui.meseroNombre.textContent = estado.mesero ? estado.mesero.nombre : 'Elegir';
+        }
+
+        ui.botonMesero?.classList.toggle('sin-elegir', !estado.mesero);
+
+        if (!ui.listaMeseros) {
+            return;
+        }
+
+        const lista = meserosActivos();
+
+        if (!lista.length) {
+            ui.listaMeseros.innerHTML = '<p class="pos-mesero-vacio">No hay meseros activos.'
+                + (datos.esAdministrador ? ' <a href="/meseros">Agregar meseros</a>' : '')
+                + '</p>';
+            return;
+        }
+
+        ui.listaMeseros.innerHTML = lista.map(function (mesero) {
+            const elegido = Boolean(estado.mesero && estado.mesero.id === mesero.id_mesero);
+            return '<button type="button" role="option" class="pos-mesero-opcion' + (elegido ? ' is-elegido' : '') + '"'
+                + ' aria-selected="' + elegido + '" data-id-mesero="' + Number(mesero.id_mesero) + '">'
+                + escapar(mesero.nombre) + '</button>';
+        }).join('');
+    }
+
+    function abrirPanelMesero() {
+        if (!estado.puedeVender || !ui.panelMesero || !modoComidas()) {
+            return;
+        }
+
+        ocultarResultados();
+        cerrarPanelCliente();
+        cerrarPanelPendientes();
+        dibujarMesero();
+        ui.panelMesero.hidden = false;
+        ui.botonMesero?.setAttribute('aria-expanded', 'true');
+        (ui.listaMeseros?.querySelector('.is-elegido') || ui.listaMeseros?.querySelector('[data-id-mesero]'))?.focus();
+    }
+
+    function cerrarPanelMesero() {
+        if (!ui.panelMesero || ui.panelMesero.hidden) {
+            return;
+        }
+
+        ui.panelMesero.hidden = true;
+        ui.botonMesero?.setAttribute('aria-expanded', 'false');
+    }
+
+    function elegirMesero(id) {
+        const mesero = meserosActivos().find(function (item) {
+            return item.id_mesero === id;
+        });
+
+        estado.mesero = mesero ? { id: mesero.id_mesero, nombre: mesero.nombre } : null;
+        cerrarPanelMesero();
+        dibujarMesero();
+        dibujarPago();
+        guardarVentaEnCurso();
+
+        if (estado.vista === 'pago') {
+            ui.monto?.focus();
+        } else {
+            ui.buscar?.focus();
+        }
+    }
+
+    // Si el cajero no ha tocado el monto, "Recibido" sigue al nuevo total a cobrar
+    function alCambiarPropina() {
+        estado.errorCobro = null;
+
+        if (estado.borrador && !estado.borrador.tocado) {
+            estado.borrador.monto = faltaParaBorrador();
+        }
+
+        dibujarPago();
+    }
+
+    function dibujarPropina() {
+        if (!ui.propina) {
+            return;
+        }
+
+        const activa = modoComidas();
+        ui.propina.hidden = !activa;
+
+        if (ui.aCobrarFila) {
+            ui.aCobrarFila.hidden = !activa || propinaActual() <= 0;
+        }
+
+        if (!activa) {
+            return;
+        }
+
+        const sugerida = propinaSugerida();
+
+        ui.propina.querySelectorAll('[data-propina]').forEach(function (boton) {
+            boton.setAttribute('aria-checked', String(boton.dataset.propina === estado.propina.modo));
+
+            if (boton.dataset.propina === 'sugerida') {
+                const porcentaje = boton.querySelector('span');
+                const valor = boton.querySelector('small');
+
+                if (porcentaje) {
+                    porcentaje.textContent = porcentajePropina() + ' %';
+                }
+
+                if (valor) {
+                    valor.textContent = pesos(sugerida);
+                }
+            }
+        });
+
+        if (ui.propinaOtraZona) {
+            ui.propinaOtraZona.hidden = estado.propina.modo !== 'otra';
+            ui.propinaOtraZona.classList.toggle('is-invalido', propinaActual() > calcularResumen().total);
+        }
+
+        if (ui.propinaOtra && document.activeElement !== ui.propinaOtra) {
+            ui.propinaOtra.value = estado.propina.valor ? Number(estado.propina.valor).toLocaleString('es-CO') : '';
+        }
+
+        if (ui.propinaMesero) {
+            const falta = !estado.mesero && propinaActual() > 0;
+            ui.propinaMesero.textContent = estado.mesero ? 'Para ' + estado.mesero.nombre : 'Elige el mesero (F3)';
+            ui.propinaMesero.classList.toggle('is-falta', falta);
+        }
+
+        if (ui.aCobrar) {
+            ui.aCobrar.textContent = pesos(totalACobrar());
+        }
+    }
+
+    function iniciarMesero() {
+        if (ui.botonMesero && ui.panelMesero) {
+            ui.botonMesero.addEventListener('click', function () {
+                if (ui.panelMesero.hidden) {
+                    abrirPanelMesero();
+                } else {
+                    cerrarPanelMesero();
+                }
+            });
+
+            ui.listaMeseros?.addEventListener('click', function (evento) {
+                const opcion = evento.target.closest('[data-id-mesero]');
+
+                if (opcion) {
+                    elegirMesero(Number(opcion.dataset.idMesero));
+                }
+            });
+
+            ui.listaMeseros?.addEventListener('keydown', function (evento) {
+                if (evento.key !== 'ArrowDown' && evento.key !== 'ArrowUp') {
+                    return;
+                }
+
+                evento.preventDefault();
+                const opciones = Array.from(ui.listaMeseros.querySelectorAll('[data-id-mesero]'));
+                const actual = opciones.indexOf(document.activeElement);
+                const siguiente = evento.key === 'ArrowDown'
+                    ? Math.min(actual + 1, opciones.length - 1)
+                    : Math.max(actual - 1, 0);
+                opciones[siguiente]?.focus();
+            });
+        }
+
+        ui.propina?.addEventListener('click', function (evento) {
+            const opcion = evento.target.closest('[data-propina]');
+
+            if (!opcion) {
+                return;
+            }
+
+            estado.propina.modo = opcion.dataset.propina;
+            alCambiarPropina();
+
+            if (estado.propina.modo === 'otra' && ui.propinaOtra) {
+                ui.propinaOtra.focus();
+                ui.propinaOtra.select();
+            }
+
+            if (propinaActual() > 0 && !estado.mesero) {
+                abrirPanelMesero();
+            }
+        });
+
+        ui.propinaOtra?.addEventListener('input', function () {
+            const digitos = String(ui.propinaOtra.value).replace(/\D/g, '').slice(0, 12);
+            estado.propina.valor = digitos ? Number(digitos) : 0;
+            ui.propinaOtra.value = estado.propina.valor ? formatoPesos.format(estado.propina.valor) : '';
+            alCambiarPropina();
+        });
+
+        // Enter: si falta el mesero, se elige; si no, sigue con el pago
+        ui.propinaOtra?.addEventListener('keydown', function (evento) {
+            if (evento.key !== 'Enter') {
+                return;
+            }
+
+            evento.preventDefault();
+
+            if (propinaActual() > 0 && !estado.mesero) {
+                abrirPanelMesero();
+            } else {
+                ui.monto?.focus();
+            }
+        });
+
+        dibujarMesero();
+    }
+
     function clienteConsumidorFinal() {
         const consumidor = datos.consumidorFinal || {};
 
@@ -2677,7 +2971,7 @@
     }
 
     function faltaParaBorrador() {
-        const total = calcularResumen().total;
+        const total = totalACobrar();
         const comprometido = estado.pagos.reduce(function (suma, pago) {
             return suma + pago.monto;
         }, 0);
@@ -2924,7 +3218,7 @@
     // Mismas reglas que el servidor: total cubierto, cambio solo desde
     // efectivo y nunca mayor que el efectivo recibido, referencias exigidas.
     function analizarPago() {
-        const total = calcularResumen().total;
+        const total = totalACobrar();
         const pagos = pagosParaRegistrar();
         let recibido = 0;
         let efectivo = 0;
@@ -2958,6 +3252,14 @@
             }
         }
 
+        if (!problema && falta === 0 && propinaActual() > calcularResumen().total) {
+            problema = 'La propina no puede ser mayor que el total de la venta.';
+        }
+
+        if (!problema && falta === 0 && propinaActual() > 0 && !estado.mesero) {
+            problema = 'Elige el mesero que atendió (F3): la propina queda a su nombre.';
+        }
+
         return {
             total,
             pagos,
@@ -2979,6 +3281,7 @@
         const medio = borrador ? medioPorId(borrador.idMedio) : null;
 
         ui.pagoTotal.textContent = pesos(resumen.total);
+        dibujarPropina();
 
         ui.medios.querySelectorAll('[data-id-medio]').forEach(function (boton) {
             boton.setAttribute('aria-checked', String(Boolean(borrador) && Number(boton.dataset.idMedio) === borrador.idMedio));
@@ -3073,6 +3376,9 @@
         const payload = {
             // Sin cliente elegido, el servidor usa el consumidor final.
             id_cliente: estado.cliente.id || null,
+            // Propina y mesero solo en el perfil "Comidas y bares"
+            propina: propinaActual(),
+            id_mesero: modoComidas() && estado.mesero ? estado.mesero.id : null,
             items: estado.carrito.map(function (item) {
                 return { id_producto: item.id, cantidad: item.cantidad, descuento_unitario: descuentoDe(item) };
             }),
@@ -3131,6 +3437,8 @@
             numero: venta.numero_venta || 'Venta',
             total: Number(venta.total !== undefined ? venta.total : analisis.total),
             cambio: Number(venta.cambio_entregado !== undefined ? venta.cambio_entregado : analisis.cambio),
+            propina: Number(venta.propina || 0),
+            mesero: venta.mesero_nombre || '',
         };
 
         // El stock local de los frecuentes baja con lo vendido.
@@ -3198,6 +3506,13 @@
         ui.exitoNumero.textContent = `${venta.numero} registrada`;
         ui.exitoTotal.textContent = pesos(venta.total);
         ui.exitoCambio.textContent = pesos(venta.cambio);
+
+        if (ui.exitoPropina) {
+            ui.exitoPropina.hidden = !(venta.propina > 0);
+            ui.exitoPropina.textContent = venta.propina > 0
+                ? 'Propina ' + pesos(venta.propina) + (venta.mesero ? ' para ' + venta.mesero : '')
+                : '';
+        }
         ui.exitoImprimir.href = venta.id ? `/ventas/${encodeURIComponent(venta.id)}/ticket` : '#';
         ui.exito.hidden = false;
     }
@@ -3236,6 +3551,17 @@
                 cerrarPanelCliente();
                 ui.buscar?.focus();
                 ui.buscar?.select();
+                return;
+            }
+
+            if (tecla === 'F3' && modoComidas()) {
+                evento.preventDefault();
+                if (ui.panelMesero?.hidden) {
+                    abrirPanelMesero();
+                } else {
+                    cerrarPanelMesero();
+                    ui.buscar?.focus();
+                }
                 return;
             }
 
@@ -3343,6 +3669,12 @@
             return;
         }
 
+        if (ui.panelMesero && !ui.panelMesero.hidden) {
+            cerrarPanelMesero();
+            ui.buscar?.focus();
+            return;
+        }
+
         if (ui.panelCliente && !ui.panelCliente.hidden) {
             cerrarPanelCliente();
             ui.buscar?.focus();
@@ -3407,6 +3739,10 @@
 
             if (!evento.target.closest('.pos-cliente-zona')) {
                 cerrarPanelCliente();
+            }
+
+            if (!evento.target.closest('.pos-mesero-zona')) {
+                cerrarPanelMesero();
             }
 
             if (!evento.target.closest('.pos-pendientes-zona')) {

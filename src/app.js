@@ -33,6 +33,7 @@ const catalogosRoutes = require('./modules/catalogos/catalogos.routes');
 const backupsRoutes = require('./modules/backups/backups.routes');
 const usuariosRoutes = require('./modules/usuarios/usuarios.routes');
 const proveedoresRoutes = require('./modules/proveedores/proveedores.routes');
+const meserosRoutes = require('./modules/meseros/meseros.routes');
 const comprasRoutes = require('./modules/compras/compras.routes');
 const licenciaRoutes = require('./modules/licencia-local/licenciaLocal.routes');
 
@@ -344,6 +345,7 @@ app.use('/catalogos', catalogosRoutes);
 app.use('/backups', backupsRoutes);
 app.use('/usuarios', usuariosRoutes);
 app.use('/proveedores', proveedoresRoutes);
+app.use('/meseros', meserosRoutes);
 app.use('/compras', comprasRoutes);
 
 /**

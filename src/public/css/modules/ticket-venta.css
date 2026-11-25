@@ -401,3 +401,12 @@ body {
     color: var(--recibo-suave);
     font-size: 11.5px;
 }
+
+/* Propina voluntaria: aparte del total (no es venta) */
+.recibo-propina {
+    margin-top: 4px;
+}
+
+.recibo-total-pagado {
+    font-weight: 700;
+}

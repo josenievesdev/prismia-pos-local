@@ -100,6 +100,9 @@
             <div><dt>Cliente</dt><dd><%= texto(venta.cliente_nombre, 'Consumidor final') %></dd></div>
             <div><dt>Documento</dt><dd class="recibo-mono"><%= documentoCliente %></dd></div>
             <div><dt>Atendió</dt><dd><%= texto(venta.cajero_nombre, 'Usuario') %> · Turno #<%= texto(venta.id_turno_caja, '-') %></dd></div>
+            <% if (texto(venta.mesero_nombre)) { %>
+                <div><dt>Mesero</dt><dd><%= texto(venta.mesero_nombre) %></dd></div>
+            <% } %>
         </dl>
 
         <section class="recibo-items" aria-label="Productos">
@@ -138,6 +141,11 @@
                 <%# Informativo: el subtotal y el total ya vienen con el descuento aplicado %>
                 <div class="recibo-fila recibo-ahorro"><span>Descuentos aplicados</span><span><%= pesos(venta.descuento_total) %></span></div>
             <% } %>
+            <% if (Number(venta.propina) > 0) { %>
+                <%# La propina es voluntaria y no es venta: va aparte del total %>
+                <div class="recibo-fila recibo-propina"><span>Propina voluntaria</span><span><%= pesos(venta.propina) %></span></div>
+                <div class="recibo-fila recibo-total-pagado"><span>Total pagado</span><span><%= pesos(Number(venta.total) + Number(venta.propina)) %></span></div>
+            <% } %>
         </section>
 
         <section class="recibo-pagos" aria-label="Pago">
@@ -147,12 +155,12 @@
                 const recibido = Number(pago.monto_recibido) || 0;
                 const cambio = Number(pago.cambio_entregado) || 0;
                 const detallePago = esEfectivo
-                    ? (cambio > 0 || recibido > Number(pago.monto) ? `Recibido ${pesos(recibido)}` : '')
+                    ? (cambio > 0 || recibido > Number(pago.monto) + Number(pago.monto_propina || 0) ? `Recibido ${pesos(recibido)}` : '')
                     : (texto(pago.referencia) ? `Ref. ${texto(pago.referencia)}` : ''); %>
                 <div class="recibo-pago">
                     <div class="recibo-fila">
                         <span><%= texto(pago.medio_pago_nombre, texto(pago.metodo_pago, 'Pago')) %></span>
-                        <span><%= pesos(pago.monto) %></span>
+                        <span><%= pesos(Number(pago.monto) + Number(pago.monto_propina || 0)) %></span>
                     </div>
                     <% if (detallePago) { %><div class="recibo-pago-detalle"><%= detallePago %></div><% } %>
                 </div>

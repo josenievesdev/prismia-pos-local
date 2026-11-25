@@ -11,4 +11,5 @@ module.exports = [
     require('./004_indices_rendimiento'),
     require('./005_cargar_divipola'),
     require('./006_licencia_local'),
+    require('./007_propinas_meseros'),
 ];

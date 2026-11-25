@@ -11,7 +11,9 @@
  *   de la caja, o si su tipo/método es "efectivo".
  * - "anulacion" y "devolucion" reversan ventas.
  * - Ingresos y egresos manuales solo cuentan en efectivo.
- * - monto_esperado = base inicial + ventas efectivo netas + ingresos - egresos.
+ * - "propina" suma y "anulacion_propina" resta propinas (NO son ventas).
+ * - monto_esperado = base inicial + ventas efectivo netas + propinas en efectivo
+ *   + ingresos - egresos (las propinas en efectivo están en el cajón).
  */
 
 const SQL_TOTALES_TURNO = `
@@ -43,7 +45,9 @@ const SQL_TOTALES_TURNO = `
         COALESCE(SUM(CASE WHEN es_efectivo = 0 AND tipo_medio = 'tarjeta' THEN signo_venta * monto ELSE 0 END), 0) AS total_tarjeta,
         COALESCE(SUM(CASE WHEN es_efectivo = 0 AND COALESCE(tipo_medio, '') NOT IN ('transferencia', 'tarjeta') THEN signo_venta * monto ELSE 0 END), 0) AS total_otros,
         COALESCE(SUM(CASE WHEN es_efectivo = 1 AND tipo_movimiento = 'ingreso_manual' THEN monto ELSE 0 END), 0) AS total_ingresos_manuales,
-        COALESCE(SUM(CASE WHEN es_efectivo = 1 AND tipo_movimiento = 'egreso_manual' THEN monto ELSE 0 END), 0) AS total_egresos_manuales
+        COALESCE(SUM(CASE WHEN es_efectivo = 1 AND tipo_movimiento = 'egreso_manual' THEN monto ELSE 0 END), 0) AS total_egresos_manuales,
+        COALESCE(SUM(CASE WHEN tipo_movimiento = 'propina' THEN monto WHEN tipo_movimiento = 'anulacion_propina' THEN -monto ELSE 0 END), 0) AS total_propinas,
+        COALESCE(SUM(CASE WHEN es_efectivo = 1 AND tipo_movimiento = 'propina' THEN monto WHEN es_efectivo = 1 AND tipo_movimiento = 'anulacion_propina' THEN -monto ELSE 0 END), 0) AS total_propinas_efectivo
     FROM movimientos
 `;
 
@@ -66,11 +70,14 @@ function calcularTotalesTurno(db, idTurnoCaja) {
         total_otros: Number(fila.total_otros || 0),
         total_ingresos_manuales: Number(fila.total_ingresos_manuales || 0),
         total_egresos_manuales: Number(fila.total_egresos_manuales || 0),
+        total_propinas: Number(fila.total_propinas || 0),
+        total_propinas_efectivo: Number(fila.total_propinas_efectivo || 0),
     };
 
     totales.monto_esperado =
         Number(turno.monto_inicial || 0)
         + totales.total_efectivo
+        + totales.total_propinas_efectivo
         + totales.total_ingresos_manuales
         - totales.total_egresos_manuales;
 
@@ -94,6 +101,8 @@ function sincronizarTotalesTurno(db, idTurnoCaja) {
             total_otros = @total_otros,
             total_ingresos_manuales = @total_ingresos_manuales,
             total_egresos_manuales = @total_egresos_manuales,
+            total_propinas = @total_propinas,
+            total_propinas_efectivo = @total_propinas_efectivo,
             monto_esperado = @monto_esperado,
             actualizado_en = CURRENT_TIMESTAMP
         WHERE id_turno_caja = @id_turno_caja

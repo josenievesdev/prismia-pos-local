@@ -54,9 +54,10 @@ function prepararTurno(turno) {
     const totalEfectivo = Number(turno.total_efectivo || 0);
     const totalIngresosManuales = Number(turno.total_ingresos_manuales || 0);
     const totalEgresosManuales = Number(turno.total_egresos_manuales || 0);
+    const totalPropinasEfectivo = Number(turno.total_propinas_efectivo || 0);
 
     const montoEsperadoCalculado =
-        montoInicial + totalEfectivo + totalIngresosManuales - totalEgresosManuales;
+        montoInicial + totalEfectivo + totalPropinasEfectivo + totalIngresosManuales - totalEgresosManuales;
 
     return {
         ...turno,
@@ -68,6 +69,8 @@ function prepararTurno(turno) {
         total_otros: Number(turno.total_otros || 0),
         total_ingresos_manuales: totalIngresosManuales,
         total_egresos_manuales: totalEgresosManuales,
+        total_propinas: Number(turno.total_propinas || 0),
+        total_propinas_efectivo: totalPropinasEfectivo,
         monto_esperado: Number(turno.monto_esperado || montoEsperadoCalculado),
         monto_esperado_calculado: montoEsperadoCalculado,
         monto_contado:
@@ -100,13 +103,29 @@ function recalcularTurnoEfectivoDesdeMovimientos(turno, movimientos = []) {
     let reversosVentaEfectivo = 0;
     let ingresosManualesEfectivo = 0;
     let egresosManualesEfectivo = 0;
+    // Propinas: no son ventas. Las de efectivo están en el cajón.
+    let propinasTotales = 0;
+    let propinasEfectivo = 0;
 
     movimientos.forEach((movimiento) => {
-        if (!esMovimientoEfectivo(movimiento)) {
+        const monto = Number(movimiento.monto || 0);
+        const signoPropina = movimiento.tipo_movimiento === 'propina'
+            ? 1
+            : movimiento.tipo_movimiento === 'anulacion_propina' ? -1 : 0;
+
+        if (signoPropina !== 0) {
+            propinasTotales += signoPropina * monto;
+
+            if (esMovimientoEfectivo(movimiento)) {
+                propinasEfectivo += signoPropina * monto;
+            }
+
             return;
         }
 
-        const monto = Number(movimiento.monto || 0);
+        if (!esMovimientoEfectivo(movimiento)) {
+            return;
+        }
 
         if (movimiento.tipo_movimiento === 'venta') {
             ventasEfectivo += monto;
@@ -134,6 +153,7 @@ function recalcularTurnoEfectivoDesdeMovimientos(turno, movimientos = []) {
     const montoEsperadoCalculado =
         montoInicial
         + totalEfectivoNeto
+        + propinasEfectivo
         + ingresosManualesEfectivo
         - egresosManualesEfectivo;
 
@@ -147,6 +167,8 @@ function recalcularTurnoEfectivoDesdeMovimientos(turno, movimientos = []) {
         total_efectivo: totalEfectivoNeto,
         total_ingresos_manuales: ingresosManualesEfectivo,
         total_egresos_manuales: egresosManualesEfectivo,
+        total_propinas: propinasTotales,
+        total_propinas_efectivo: propinasEfectivo,
         monto_esperado: montoEsperadoCalculado,
         monto_esperado_calculado: montoEsperadoCalculado,
         diferencia: montoContado === null
@@ -323,6 +345,8 @@ function traducirTipoMovimiento(tipoMovimiento) {
         devolucion: 'Devolución',
         anulacion: 'Anulación',
         ajuste: 'Ajuste',
+        propina: 'Propina',
+        anulacion_propina: 'Anulación de propina',
     };
 
     return traducciones[tipoMovimiento] || 'Movimiento';
@@ -535,6 +559,20 @@ function agregarHojaExcel(workbook, nombreHoja, filas, anchos = []) {
     XLSX.utils.book_append_sheet(workbook, hoja, nombreHoja);
 }
 
+function obtenerPropinasPorMesero(idTurnoCaja) {
+    if (!idTurnoCaja) {
+        return [];
+    }
+
+    return cajaRepository.listarPropinasPorMeseroTurno(idTurnoCaja).map((fila) => ({
+        id_mesero: Number(fila.id_mesero),
+        nombre: limpiarTexto(fila.nombre) || 'Mesero',
+        ventas_atendidas: Number(fila.ventas_atendidas || 0),
+        total_vendido: Number(fila.total_vendido || 0),
+        total_propinas: Number(fila.total_propinas || 0),
+    }));
+}
+
 function obtenerDetalleArqueoTurno(idTurnoCaja) {
     const idTurno = normalizarIdEntero(idTurnoCaja);
 
@@ -592,6 +630,7 @@ function obtenerDetalleArqueoTurno(idTurnoCaja) {
             totalesGastos,
             facturas,
             totalesFacturas,
+            propinasPorMesero: obtenerPropinasPorMesero(idTurno),
             facturasPendientesDeIntegracion: false,
             mensajeFacturas: null,
         },
@@ -950,6 +989,7 @@ function obtenerDatosFormularioCierre() {
         resumenMediosPago,
         resumenMediosPagoAgrupado,
         totalesResumenMediosPago,
+        propinasPorMesero: obtenerPropinasPorMesero(turnoAbierto ? turnoAbierto.id_turno_caja : null),
         valores: obtenerValoresCierrePorDefecto(turnoAbierto),
     };
 }
