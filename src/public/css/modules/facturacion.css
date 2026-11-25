@@ -1158,7 +1158,10 @@ html.ruta-pos[data-pos-enfoque="1"]:not([data-menu-estado="movil"]) .app-sidebar
 }
 
 .pos-frecuentes-lista {
+    display: grid;
     flex: 1 1 auto;
+    align-content: start;
+    gap: 2px;
     min-height: 0;
     margin: 0;
     padding: 0;
@@ -1166,63 +1169,139 @@ html.ruta-pos[data-pos-enfoque="1"]:not([data-menu-estado="movil"]) .app-sidebar
     list-style: none;
 }
 
+/* Modo clásico: fila compacta (foto · nombre en 2 líneas · precio y atajo) */
 .pos-frecuente {
+    position: relative;
     display: grid;
-    grid-template-columns: 28px minmax(0, 1fr) auto auto;
+    grid-template-columns: 40px minmax(0, 1fr) auto;
     align-items: center;
-    gap: 10px;
+    gap: 1px 10px;
     width: 100%;
-    min-height: 40px;
-    padding: 4px 2px;
-    border: 0;
-    border-bottom: 1px solid var(--pos-linea);
+    min-height: 52px;
+    padding: 6px 8px;
+    border: 1px solid transparent;
+    border-radius: var(--pos-r-md);
     background: transparent;
     color: var(--pos-texto);
     font: inherit;
     text-align: left;
     cursor: pointer;
+    transition: background var(--pos-movimiento), border-color var(--pos-movimiento), transform var(--pos-movimiento);
+}
+
+.pos-frecuente > span:empty {
+    display: none;
+}
+
+.pos-frecuente:hover:not(:disabled) {
+    border-color: var(--pos-linea);
+    background: var(--pos-superficie);
+}
+
+.pos-frecuente:active:not(:disabled) {
+    transform: scale(0.985);
+}
+
+.pos-frecuente:focus-visible {
+    outline: 2px solid var(--pos-acento);
+    outline-offset: 1px;
+}
+
+.pos-frecuente:disabled {
+    cursor: not-allowed;
+}
+
+.pos-frecuente:disabled .pos-frecuente-foto,
+.pos-frecuente:disabled .pos-frecuente-nombre,
+.pos-frecuente:disabled .pos-frecuente-precio {
+    opacity: 0.5;
+}
+
+.pos-frecuente-foto {
+    display: grid;
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    place-items: center;
+    overflow: hidden;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--pos-linea);
+    border-radius: var(--pos-r-sm);
+    background: #ffffff;
+    color: var(--pos-texto-3);
+    font-size: 16px;
+}
+
+.pos-frecuente-foto img {
+    width: 100%;
+    height: 100%;
+    padding: 2px;
+    object-fit: contain;
+}
+
+/* Sin foto: iniciales en el color del perfil, no un cuadro gris */
+.pos-frecuente-foto:has(.pos-frecuente-iniciales) {
+    border-color: var(--pos-acento-borde);
+    background: var(--pos-acento-suave);
+}
+
+.pos-frecuente-iniciales {
+    color: var(--pos-acento);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.pos-frecuente-nombre {
+    display: -webkit-box;
+    grid-column: 2;
+    grid-row: 1;
+    overflow: hidden;
+    font-size: 13.5px;
+    font-weight: 500;
+    line-height: 1.3;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
 }
 
 .pos-frecuente:hover:not(:disabled) .pos-frecuente-nombre {
     color: var(--pos-acento);
 }
 
-.pos-frecuente:disabled {
-    cursor: not-allowed;
-    opacity: 0.55;
-}
-
-.pos-frecuente-foto {
-    display: grid;
-    place-items: center;
-    overflow: hidden;
-    width: 28px;
-    height: 28px;
-    border-radius: var(--pos-r-sm);
-    background: #e5e8ee;
-    color: var(--pos-texto-2);
-    font-size: 10.5px;
-    font-weight: 700;
-}
-
-.pos-frecuente-foto img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.pos-frecuente-nombre {
-    overflow: hidden;
-    font-size: 13.5px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
 .pos-frecuente-precio {
-    color: var(--pos-texto-2);
+    grid-column: 3;
+    grid-row: 1;
+    color: var(--pos-texto);
     font-family: var(--pos-mono);
     font-size: 13px;
+    font-weight: 600;
+    text-align: right;
     white-space: nowrap;
+}
+
+.pos-frecuente-precio small {
+    color: var(--pos-texto-3);
+    font-size: 11px;
+    font-weight: 400;
+}
+
+.pos-frecuente > kbd {
+    grid-column: 3;
+    grid-row: 2;
+    justify-self: end;
+}
+
+.pos-frecuente-agotado {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: start;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: var(--pos-peligro-suave);
+    color: var(--pos-peligro);
+    font-size: 11px;
+    font-weight: 600;
 }
 
 .pos-frecuente-vacio {
@@ -1232,12 +1311,16 @@ html.ruta-pos[data-pos-enfoque="1"]:not([data-menu-estado="movil"]) .app-sidebar
 
 .pos-frecuente-editar {
     display: flex;
-    gap: 2px;
+    grid-column: 2 / -1;
+    grid-row: 2;
+    justify-self: end;
+    gap: 4px;
+    margin-top: 4px;
 }
 
 .pos-frecuente-editar button {
-    width: 26px;
-    height: 26px;
+    width: 28px;
+    height: 28px;
     border: 1px solid var(--pos-linea);
     border-radius: var(--pos-r-sm);
     background: var(--pos-superficie);
@@ -1245,6 +1328,16 @@ html.ruta-pos[data-pos-enfoque="1"]:not([data-menu-estado="movil"]) .app-sidebar
     font: inherit;
     font-size: 12px;
     cursor: pointer;
+}
+
+.pos-frecuente-editar button:hover:not(:disabled) {
+    border-color: var(--pos-acento-borde);
+    color: var(--pos-acento);
+}
+
+.pos-frecuente-editar button:disabled {
+    cursor: default;
+    opacity: 0.4;
 }
 
 .pos-frecuentes-ayuda {
@@ -1966,47 +2059,100 @@ html[data-pos-mode="tactil"] .pos-cantidad button {
     font-size: 22px;
 }
 
+/* Táctil: tarjeta con foto. El perfil decide el formato de la foto:
+   general (ferretería, minimercado) apaisada, comidas 4:3, boutique vertical. */
 html[data-pos-mode="tactil"] .pos-frecuentes-lista {
-    display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-content: start;
     gap: 10px;
 }
 
 html[data-pos-mode="tactil"] .pos-frecuente {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto auto auto;
-    gap: 2px;
+    --foto-formato: 3 / 2;
+
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 0 8px;
     overflow: hidden;
     min-height: 0;
     padding: 0 0 10px;
     border: 1px solid var(--pos-linea);
     border-radius: var(--pos-r-lg);
     background: var(--pos-superficie);
+    box-shadow: 0 1px 2px rgba(20, 22, 27, 0.04);
+}
+
+html[data-pos-business="comidas"][data-pos-mode="tactil"] .pos-frecuente {
+    --foto-formato: 4 / 3;
+}
+
+html[data-pos-business="boutique"][data-pos-mode="tactil"] .pos-frecuente {
+    --foto-formato: 4 / 5;
+}
+
+html[data-pos-mode="tactil"] .pos-frecuente:hover:not(:disabled) {
+    border-color: var(--pos-acento-borde);
+    background: var(--pos-superficie);
+    box-shadow: 0 6px 18px -8px rgba(20, 22, 27, 0.22);
+}
+
+html[data-pos-mode="tactil"] .pos-frecuente:active:not(:disabled) {
+    transform: scale(0.97);
 }
 
 html[data-pos-mode="tactil"] .pos-frecuente-foto {
+    grid-column: 1 / -1;
+    grid-row: 1;
     width: 100%;
     height: auto;
-    aspect-ratio: 4 / 3;
+    aspect-ratio: var(--foto-formato);
+    border: 0;
+    border-bottom: 1px solid var(--pos-linea);
     border-radius: 0;
-    font-size: 18px;
 }
 
-html[data-pos-mode="tactil"] .pos-frecuente-nombre,
-html[data-pos-mode="tactil"] .pos-frecuente-precio {
-    padding: 0 10px;
+html[data-pos-mode="tactil"] .pos-frecuente-foto img {
+    padding: 8px;
+}
+
+html[data-pos-mode="tactil"] .pos-frecuente-foto:has(.pos-frecuente-iniciales) {
+    border-color: var(--pos-acento-borde);
+}
+
+html[data-pos-mode="tactil"] .pos-frecuente-iniciales {
+    font-size: 24px;
 }
 
 html[data-pos-mode="tactil"] .pos-frecuente-nombre {
-    margin-top: 6px;
-    font-size: 14px;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    min-height: calc(2 * 1.3em);
+    margin-top: 8px;
+    padding: 0 10px;
+    font-size: 13.5px;
 }
 
 html[data-pos-mode="tactil"] .pos-frecuente-precio {
-    color: var(--pos-texto);
-    font-size: 14.5px;
+    grid-column: 1;
+    grid-row: 3;
+    margin-top: 4px;
+    padding-left: 10px;
+    font-size: 15px;
     font-weight: 700;
+    text-align: left;
+}
+
+html[data-pos-mode="tactil"] .pos-frecuente-agotado {
+    grid-column: 2;
+    grid-row: 3;
+    align-self: center;
+    margin: 4px 10px 0 0;
+}
+
+html[data-pos-mode="tactil"] .pos-frecuente-editar {
+    grid-column: 1 / -1;
+    grid-row: 4;
+    justify-self: start;
+    padding: 0 10px;
 }
 
 html[data-pos-mode="tactil"] .pos-medio {

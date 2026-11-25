@@ -1643,3 +1643,37 @@ html .app-content .ventas-header-sub {
     flex: 0 0 auto;
     flex-wrap: nowrap;
 }
+
+/* Acciones de fila de los listados (Ver, Imprimir, Ver detalle): el mismo
+   botón pequeño en todos los módulos, como los del punto de venta (no píldoras).
+   El prefijo .app-layout .app-content les da prioridad sobre el CSS de cada módulo. */
+.app-layout .app-content :is(.cotizaciones-link-action, .remisiones-link-action, .notas-credito-link-action) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
+    padding: 0 12px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    color: var(--color-text-soft);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.app-layout .app-content :is(.cotizaciones-link-action, .remisiones-link-action, .notas-credito-link-action):hover {
+    border-color: var(--color-border-strong);
+    background: var(--color-surface-hover);
+    color: var(--color-text);
+    text-decoration: none;
+}
+
+.app-layout .app-content .ventas-client-new-btn {
+    min-height: 28px;
+    padding: 0 10px;
+    border-radius: var(--radius-sm);
+    font-size: 12.5px;
+    font-weight: 600;
+}

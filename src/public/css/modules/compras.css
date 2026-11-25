@@ -37,7 +37,7 @@
 }
 
 .compras-status-chip {
-    background: rgba(36, 79, 143, 0.08);
+    background: rgba(52, 86, 214, 0.08);
     color: var(--color-primary-dark);
 }
 
@@ -61,7 +61,7 @@
 }
 
 .compras-support-box input::placeholder {
-    color: #94a3b8;
+    color: var(--color-faint);
     font-weight: 600;
 }
 
@@ -106,7 +106,7 @@
 .compras-selected-box {
     margin-top: 8px;
     padding: 9px 10px;
-    border: 1px solid rgba(36, 79, 143, 0.14);
+    border: 1px solid rgba(52, 86, 214, 0.14);
     border-radius: 10px;
     background: #ffffff;
 }
@@ -153,7 +153,7 @@
 .compras-product-result-item {
     width: 100%;
     border: 0;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+    border-bottom: 1px solid rgba(139, 146, 161, 0.16);
     background: #ffffff;
     cursor: pointer;
     text-align: left;
@@ -167,7 +167,7 @@
 
 .compras-provider-result-item:hover,
 .compras-product-result-item:hover:not(:disabled) {
-    background: rgba(36, 79, 143, 0.06);
+    background: rgba(52, 86, 214, 0.06);
 }
 
 .compras-provider-result-item strong,
@@ -284,7 +284,7 @@
 
 .compras-line-input:focus {
     border-color: var(--v);
-    box-shadow: 0 0 0 3px rgba(36, 79, 143, .1);
+    box-shadow: 0 0 0 3px rgba(52, 86, 214, .1);
 }
 
 .compras-line-muted {
@@ -325,7 +325,7 @@
     display: grid;
     gap: 3px;
     padding: 10px;
-    border: 1px solid rgba(36, 79, 143, 0.12);
+    border: 1px solid rgba(52, 86, 214, 0.12);
     border-radius: 10px;
     background: #ffffff;
 }
@@ -345,8 +345,8 @@
 .compras-form-alert {
     padding: 10px 12px;
     border-radius: 12px;
-    background: #fef2f2;
-    color: #991b1b;
+    background: var(--color-danger-soft);
+    color: var(--color-danger);
     font-size: 12px;
     font-weight: 650;
     line-height: 1.45;
@@ -399,7 +399,7 @@
 }
 
 .compras-link-button.is-danger {
-    color: #b91c1c;
+    color: var(--color-danger);
 }
 
 .compras-line-pair,
@@ -506,7 +506,7 @@
 .compras-payment-summary .is-total {
     padding: 12px;
     border-radius: var(--radius-sm);
-    background: rgba(36, 79, 143, 0.08);
+    background: rgba(52, 86, 214, 0.08);
 }
 
 .compras-detail-note p {
@@ -531,7 +531,7 @@
 }
 
 .compras-detail-table tbody tr:hover {
-    background: rgba(36, 79, 143, 0.035);
+    background: rgba(52, 86, 214, 0.035);
 }
 
 .compras-detail-table th:nth-child(1),
@@ -622,7 +622,7 @@
 }
 
 .compras-payable-card.is-danger strong {
-    color: #be123c;
+    color: var(--color-danger);
 }
 
 .compras-payable-card.is-warning {
@@ -631,7 +631,7 @@
 }
 
 .compras-payable-card.is-warning strong {
-    color: #92400e;
+    color: var(--color-warning);
 }
 
 /* ===== Cuentas por pagar ===== */
@@ -675,7 +675,7 @@
 }
 
 .compras-cxp-table tbody tr:hover {
-    background: rgba(36, 79, 143, 0.035);
+    background: rgba(52, 86, 214, 0.035);
 }
 
 .compras-cxp-table th:nth-child(1),
@@ -895,15 +895,15 @@
 }
 
 .compras-feedback.is-success {
-    color: #166534;
-    border-color: #bbf7d0;
-    background: #f0fdf4;
+    color: var(--color-success);
+    border-color: color-mix(in srgb, var(--color-success) 25%, #ffffff);
+    background: var(--color-success-soft);
 }
 
 .compras-feedback.is-error {
-    color: #991b1b;
-    border-color: #fecaca;
-    background: #fef2f2;
+    color: var(--color-danger);
+    border-color: color-mix(in srgb, var(--color-danger) 25%, #ffffff);
+    background: var(--color-danger-soft);
 }
 
 /* ===== Acciones cuentas por pagar ===== */
@@ -1027,7 +1027,7 @@ body.modal-open {
     display: grid;
     place-items: center;
     padding: 18px;
-    background: rgba(15, 23, 42, 0.52);
+    background: rgba(20, 22, 27, 0.52);
     backdrop-filter: blur(3px);
 }
 
@@ -1040,7 +1040,7 @@ body.modal-open {
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background: var(--color-surface);
-    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.28);
+    box-shadow: 0 24px 70px rgba(20, 22, 27, 0.28);
     overflow: hidden;
 }
 
@@ -1160,7 +1160,7 @@ body.modal-open {
 /* ===== Historial de pagos anulados ===== */
 
 .compras-payment-history-table tr.is-cancelled-row {
-    background: rgba(239, 68, 68, 0.035);
+    background: rgba(201, 48, 44, 0.035);
 }
 
 .compras-payment-history-table tr.is-cancelled-row td {
@@ -1168,7 +1168,7 @@ body.modal-open {
 }
 
 .compras-payment-cancel-reason {
-    color: #991b1b;
+    color: var(--color-danger);
 }
 
 .compras-payment-cancelled-money {
@@ -1242,11 +1242,11 @@ body.modal-open {
 }
 
 .compras-pagos-proveedores-table tbody tr:hover {
-    background: rgba(36, 79, 143, 0.035);
+    background: rgba(52, 86, 214, 0.035);
 }
 
 .compras-pagos-proveedores-table tr.is-cancelled-row {
-    background: rgba(239, 68, 68, 0.035);
+    background: rgba(201, 48, 44, 0.035);
 }
 
 .compras-pagos-proveedores-table tr.is-cancelled-row td {

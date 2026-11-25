@@ -287,7 +287,7 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.96)),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 249, 251, 0.96)),
         var(--color-surface-soft);
 }
 
@@ -348,16 +348,16 @@
 }
 
 .product-remove-image-option {
-    border-color: rgba(220, 38, 38, 0.22);
+    border-color: rgba(201, 48, 44, 0.22);
     background: rgba(254, 242, 242, 0.72);
 }
 
 .product-remove-image-option strong {
-    color: #991b1b;
+    color: var(--color-danger);
 }
 
 .product-remove-image-option small {
-    color: #7f1d1d;
+    color: var(--color-danger);
 }
 
 @media (max-width: 820px) {

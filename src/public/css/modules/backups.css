@@ -61,7 +61,7 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
     background: var(--color-surface-soft);
-    color: #475569;
+    color: var(--color-text-soft);
     font-size: 13px;
     line-height: 1.45;
 }
@@ -99,14 +99,14 @@
     max-width: 100%;
     padding: 2px 5px;
     border-radius: var(--radius-xs);
-    background: rgba(15, 23, 42, 0.06);
-    color: #334155;
+    background: rgba(20, 22, 27, 0.06);
+    color: var(--color-text-soft);
     font-size: 12px;
     word-break: break-all;
 }
 
 .backups-muted {
-    color: #94a3b8 !important;
+    color: var(--color-faint) !important;
 }
 
 .backups-table-wrapper {
@@ -139,22 +139,22 @@
 
 /* ===== Restauración de backups ===== */
 .backups-restore-card {
-    border-color: rgba(220, 38, 38, 0.15);
+    border-color: rgba(201, 48, 44, 0.15);
     background: linear-gradient(135deg, rgba(254, 226, 226, 0.6), #fff 45%);
 }
 
 .backups-danger-note {
     padding: 10px 12px;
-    border: 1px solid rgba(220, 38, 38, 0.18);
+    border: 1px solid rgba(201, 48, 44, 0.18);
     border-radius: var(--radius-sm);
-    background: #fef2f2;
-    color: #7f1d1d;
+    background: var(--color-danger-soft);
+    color: var(--color-danger);
     font-size: 13px;
     line-height: 1.5;
 }
 
 .backups-danger-note strong {
-    color: #991b1b;
+    color: var(--color-danger);
 }
 
 .backups-restore-form {
@@ -165,24 +165,24 @@
 .backup-file-input {
     width: 100%;
     padding: 9px 12px;
-    border: 1px dashed rgba(148, 163, 184, 0.7);
+    border: 1px dashed rgba(139, 146, 161, 0.7);
     border-radius: var(--radius-sm);
     background: var(--color-surface-soft);
-    color: #334155;
+    color: var(--color-text-soft);
     font-size: 13px;
 }
 
 .restore-confirm-option {
-    border-color: rgba(220, 38, 38, 0.2);
-    background: #fef2f2;
+    border-color: rgba(201, 48, 44, 0.2);
+    background: var(--color-danger-soft);
 }
 
 .restore-confirm-option strong {
-    color: #991b1b;
+    color: var(--color-danger);
 }
 
 .restore-confirm-option small {
-    color: #7f1d1d;
+    color: var(--color-danger);
 }
 
 /* ===== Backups públicos y soporte ===== */
@@ -191,9 +191,9 @@
     align-items: center;
     gap: 12px;
     padding: 14px;
-    border: 1px solid rgba(34, 197, 94, 0.2);
+    border: 1px solid rgba(13, 150, 104, 0.2);
     border-radius: var(--radius-lg);
-    background: #f0fdf4;
+    background: var(--color-success-soft);
 }
 
 .backups-protection-icon {
@@ -212,7 +212,7 @@
 
 .backups-protection-state strong {
     display: block;
-    color: #14532d;
+    color: var(--color-success);
     font-size: 15px;
     font-weight: 700;
 }
@@ -220,7 +220,7 @@
 .backups-protection-state small {
     display: block;
     margin-top: 2px;
-    color: #166534;
+    color: var(--color-success);
     font-size: 12px;
 }
 

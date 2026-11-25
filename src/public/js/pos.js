@@ -2252,8 +2252,10 @@
 
             const foto = producto.imagen
                 ? `<img src="${escapar(producto.imagen)}" alt="" loading="lazy">`
-                : escapar(iniciales(producto.nombre));
-            const precio = pesos(producto.precio) + (producto.unidad !== 'und' ? ` / ${escapar(producto.unidad)}` : '');
+                : `<span class="pos-frecuente-iniciales">${escapar(iniciales(producto.nombre))}</span>`;
+            const precio = pesos(producto.precio)
+                + (producto.unidad !== 'und' ? ` <small>/ ${escapar(producto.unidad)}</small>` : '');
+            const vendible = producto.puedeVender && estado.puedeVender;
 
             if (editando) {
                 return `
@@ -2275,11 +2277,12 @@
             return `
                 <li>
                     <button type="button" class="pos-frecuente" data-posicion="${posicion}"
-                        ${producto.puedeVender && estado.puedeVender ? '' : 'disabled'}
+                        ${vendible ? '' : 'disabled'}
                         title="${escapar(producto.nombre)} (Alt + ${posicion})">
                         <span class="pos-frecuente-foto">${foto}</span>
                         <span class="pos-frecuente-nombre">${escapar(producto.nombre)}</span>
                         <span class="pos-frecuente-precio">${precio}</span>
+                        ${producto.puedeVender ? '' : '<span class="pos-frecuente-agotado">Sin stock</span>'}
                         <kbd>Alt ${posicion}</kbd>
                     </button>
                 </li>`;

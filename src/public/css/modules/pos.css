@@ -150,7 +150,7 @@
     height: 18px;
     border-radius: 50%;
     background: #fff;
-    box-shadow: 0 1px 3px rgba(16, 24, 40, 0.25);
+    box-shadow: 0 1px 3px rgba(20, 22, 27, 0.25);
     transition: transform var(--transicion);
 }
 
@@ -1422,7 +1422,7 @@
         bottom: 0;
         z-index: 5;
         border-radius: 0 0 var(--pos-radio) var(--pos-radio);
-        box-shadow: 0 -8px 24px -16px rgba(16, 24, 40, 0.3);
+        box-shadow: 0 -8px 24px -16px rgba(20, 22, 27, 0.3);
     }
 }
 
@@ -1448,7 +1448,7 @@
         bottom: 0;
         z-index: 5;
         border-radius: 0 0 var(--pos-radio) var(--pos-radio);
-        box-shadow: 0 -8px 24px -16px rgba(16, 24, 40, 0.3);
+        box-shadow: 0 -8px 24px -16px rgba(20, 22, 27, 0.3);
     }
 }
 

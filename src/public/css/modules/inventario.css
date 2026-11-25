@@ -215,7 +215,7 @@
 .count-input:focus,
 .count-note:focus {
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(36, 79, 143, 0.10);
+    box-shadow: 0 0 0 3px rgba(52, 86, 214, 0.10);
 }
 
 /* ==============================
@@ -244,13 +244,13 @@
 }
 
 .apply-count-card.applied {
-    background: #f0fdf4;
-    border-color: #bbf7d0;
+    background: var(--color-success-soft);
+    border-color: color-mix(in srgb, var(--color-success) 25%, #ffffff);
 }
 
 .apply-count-card.blocked {
-    background: #fffbeb;
-    border-color: #fde68a;
+    background: var(--color-warning-soft);
+    border-color: color-mix(in srgb, #b07400 30%, #ffffff);
 }
 
 @media (max-width: 720px) {
@@ -269,18 +269,18 @@
 ============================== */
 
 .inventory-report-summary .count-summary-card.positive {
-    background: #f0fdf4;
-    border-color: #bbf7d0;
+    background: var(--color-success-soft);
+    border-color: color-mix(in srgb, var(--color-success) 25%, #ffffff);
 }
 
 .inventory-report-summary .count-summary-card.negative {
-    background: #fef2f2;
-    border-color: #fecaca;
+    background: var(--color-danger-soft);
+    border-color: color-mix(in srgb, var(--color-danger) 25%, #ffffff);
 }
 
 .inventory-report-summary .count-summary-card.warning {
-    background: #fffbeb;
-    border-color: #fde68a;
+    background: var(--color-warning-soft);
+    border-color: color-mix(in srgb, #b07400 30%, #ffffff);
 }
 
 .report-note-card {
@@ -386,7 +386,7 @@
 .custom-modal-backdrop {
     position: absolute;
     inset: 0;
-    background: rgba(15, 23, 42, 0.55);
+    background: rgba(20, 22, 27, 0.55);
     backdrop-filter: blur(2px);
 }
 
@@ -413,7 +413,7 @@
 .custom-modal-header h3 {
     margin: 0;
     font-size: 1.1rem;
-    color: #0f172a;
+    color: var(--color-text);
 }
 
 .modal-close-btn {
@@ -422,13 +422,13 @@
     font-size: 1.6rem;
     line-height: 1;
     cursor: pointer;
-    color: #475569;
+    color: var(--color-text-soft);
 }
 
 .custom-modal-body {
     display: grid;
     gap: 0.5rem;
-    color: #475569;
+    color: var(--color-text-soft);
     font-size: 14px;
     margin-bottom: 1.25rem;
 }
@@ -594,7 +594,7 @@ body.modal-open {
 
 .valuation-item.strong {
     background: var(--color-info-soft);
-    border-color: #bfdbfe;
+    border-color: color-mix(in srgb, var(--color-primary) 28%, #ffffff);
 }
 
 @media (max-width: 980px) {

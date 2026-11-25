@@ -4,85 +4,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= titulo %> | <%= empresa.software.nombre %></title>
 
-    <title>
-        <%= titulo %> | <%= empresa.software.nombre %>
-    </title>
-
+    <link rel="preload" href="/fonts/ibm-plex-sans-400.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/fonts/ibm-plex-sans-600.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/fonts/ibm-plex-mono-600.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/css/fuentes.css">
     <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/sistema.css">
+    <link rel="stylesheet" href="/css/modules/login.css">
 </head>
 
-<body>
-    <main class="auth-screen">
-        <section class="auth-brand-panel">
-            <div class="brand-system">
-                <div class="prism-mark" aria-hidden="true">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-
-                <div>
-                    <p class="brand-kicker">Sistema POS local</p>
-
-                    <h1>
-                        <%= empresa.software.nombre %>
-                    </h1>
-
-                    <p class="brand-description">
-                        Ventas, caja, inventario y reportes para negocios que quieren operar con orden desde el primer
-                        día.
-                    </p>
-                </div>
-            </div>
-
-            <div class="auth-brand-footer">
-                <span>Versión <%= empresa.software.version %></span>
-                <span>
-                    <%= empresa.software.desarrollador %>
+<body class="acceso">
+    <main class="acceso-pantalla">
+        <!-- Marca: mismo lenguaje del punto de venta (ticket térmico, cifras en Mono) -->
+        <section class="acceso-marca" aria-label="<%= empresa.software.nombre %>">
+            <div class="acceso-marca-logo">
+                <span class="acceso-logo" aria-hidden="true"><span></span><span></span><span></span></span>
+                <span class="acceso-marca-nombre">
+                    <strong><%= empresa.software.nombreCorto %></strong>
+                    <small><%= empresa.producto.tipo %></small>
                 </span>
             </div>
+
+            <div class="acceso-marca-centro">
+            <h1 class="acceso-lema">Factura en segundos.<br>Cuadra la caja sin sorpresas.</h1>
+
+            <div class="acceso-ticket" aria-hidden="true">
+                <div class="acceso-ticket-cabecera">
+                    <strong>FV-000128</strong>
+                    <span>24/11/2026 · 10:42</span>
+                </div>
+                <div class="acceso-ticket-linea">
+                    <span class="acceso-ticket-nombre">Cable #12 THHN rojo</span>
+                    <span class="acceso-ticket-cuenta"><span>25 m × $ 3.900</span><b>$ 97.500</b></span>
+                </div>
+                <div class="acceso-ticket-linea">
+                    <span class="acceso-ticket-nombre">Tornillo drywall 6 × 1"</span>
+                    <span class="acceso-ticket-cuenta"><span>100 und × $ 45</span><b>$ 4.500</b></span>
+                </div>
+                <div class="acceso-ticket-linea">
+                    <span class="acceso-ticket-nombre">Café molido 500 g</span>
+                    <span class="acceso-ticket-cuenta"><span>2 und × $ 18.900</span><b>$ 37.800</b></span>
+                </div>
+                <div class="acceso-ticket-total"><span>Total</span><b>$ 139.800</b></div>
+                <div class="acceso-ticket-pago"><span>Efectivo</span><span>$ 150.000</span></div>
+                <div class="acceso-ticket-cambio"><span>Cambio</span><b>$ 10.200</b></div>
+            </div>
+            </div>
+
+            <p class="acceso-marca-pie">
+                Versión <%= empresa.software.version %> · <%= empresa.software.desarrollador %>
+            </p>
         </section>
 
-        <section class="auth-form-panel">
-            <div class="auth-card">
-                <div class="auth-card-header">
-                    <p class="eyebrow">Acceso al sistema</p>
-                    <h2>Iniciar sesión</h2>
-                    <p>Ingresa con tu usuario autorizado.</p>
+        <!-- Formulario -->
+        <section class="acceso-panel">
+            <form class="acceso-form" method="POST" action="/auth/login" id="formAcceso" novalidate>
+                <div class="acceso-form-logo" aria-hidden="true">
+                    <span class="acceso-logo"><span></span><span></span><span></span></span>
+                    <strong><%= empresa.software.nombre %></strong>
                 </div>
 
+                <h2>Iniciar sesión</h2>
+
                 <% if (error) { %>
-                    <div class="alert alert-error">
-                        <%= error %>
+                    <div class="alert alert-error" role="alert"><%= error %></div>
+                <% } %>
+
+                <div class="acceso-campo">
+                    <label for="correo">Correo</label>
+                    <input type="email" id="correo" name="correo" placeholder="correo@tunegocio.com"
+                        autocomplete="username" inputmode="email" spellcheck="false"
+                        value="<%= valores?.correo || '' %>" required <%= valores?.correo ? '' : 'autofocus' %>>
+                </div>
+
+                <div class="acceso-campo">
+                    <label for="contrasena">Contraseña</label>
+                    <div class="acceso-clave">
+                        <input type="password" id="contrasena" name="contrasena"
+                            autocomplete="current-password" required <%= valores?.correo ? 'autofocus' : '' %>>
+                        <button type="button" class="acceso-ver-clave" id="btnVerClave"
+                            aria-label="Mostrar contraseña" aria-pressed="false">
+                            <svg class="icono-ver" viewBox="0 0 24 24" width="18" height="18" fill="none"
+                                stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+                                aria-hidden="true">
+                                <path d="M2.5 12s3.5-6.5 9.5-6.5 9.5 6.5 9.5 6.5-3.5 6.5-9.5 6.5S2.5 12 2.5 12Z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                            <svg class="icono-ocultar" viewBox="0 0 24 24" width="18" height="18" fill="none"
+                                stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+                                aria-hidden="true">
+                                <path d="M3 3l18 18" />
+                                <path d="M10.6 5.6A9.8 9.8 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-2.7 3.4M6.3 6.9C3.9 8.6 2.5 12 2.5 12s3.5 6.5 9.5 6.5c1.6 0 3-.4 4.2-1" />
+                                <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
+                            </svg>
+                        </button>
                     </div>
-                    <% } %>
+                    <p class="acceso-mayusculas" id="avisoMayusculas" hidden>Mayúsculas activadas</p>
+                </div>
 
-                        <form class="form-card" method="POST" action="/auth/login">
-                            <div class="form-group">
-                                <label for="correo">Correo</label>
-                                <input type="email" id="correo" name="correo" placeholder="admin@prismia.local"
-                                    autocomplete="email" value="<%= valores?.correo || '' %>" required>
-                            </div>
+                <button type="submit" class="btn-primary acceso-entrar" id="btnEntrar">Entrar</button>
+            </form>
 
-                            <div class="form-group">
-                                <label for="contrasena">Contraseña</label>
-                                <input type="password" id="contrasena" name="contrasena" placeholder="••••••••"
-                                    autocomplete="current-password" required>
-                            </div>
-
-                            <button type="submit" class="btn-primary full-width">
-                                Entrar al POS
-                            </button>
-                        </form>
-
-                        <p class="auth-note">
-                            Plataforma local en desarrollo · Entorno controlado
-                        </p>
-            </div>
+            <p class="acceso-pie"><%= empresa.software.nombre %> · <%= empresa.software.desarrollador %></p>
         </section>
     </main>
+
+    <script>
+        (function () {
+            const form = document.getElementById('formAcceso');
+            const clave = document.getElementById('contrasena');
+            const ver = document.getElementById('btnVerClave');
+            const mayusculas = document.getElementById('avisoMayusculas');
+            const entrar = document.getElementById('btnEntrar');
+
+            ver.addEventListener('click', function () {
+                const mostrar = clave.type === 'password';
+                clave.type = mostrar ? 'text' : 'password';
+                ver.setAttribute('aria-pressed', String(mostrar));
+                ver.setAttribute('aria-label', mostrar ? 'Ocultar contraseña' : 'Mostrar contraseña');
+                clave.focus();
+            });
+
+            function revisarMayusculas(evento) {
+                if (typeof evento.getModifierState === 'function') {
+                    mayusculas.hidden = !evento.getModifierState('CapsLock');
+                }
+            }
+
+            clave.addEventListener('keydown', revisarMayusculas);
+            clave.addEventListener('keyup', revisarMayusculas);
+            clave.addEventListener('blur', function () { mayusculas.hidden = true; });
+
+            // Un solo envío: evita dos intentos (y dos fallos contados) por doble clic
+            form.addEventListener('submit', function (evento) {
+                if (!form.checkValidity()) {
+                    evento.preventDefault();
+                    const primero = form.querySelector(':invalid');
+                    if (primero) primero.focus();
+                    form.classList.add('is-revisado');
+                    return;
+                }
+
+                if (entrar.disabled) {
+                    evento.preventDefault();
+                    return;
+                }
+
+                entrar.disabled = true;
+                entrar.textContent = 'Entrando…';
+            });
+
+            // Al volver con "Atrás" el botón no debe quedar bloqueado
+            window.addEventListener('pageshow', function () {
+                entrar.disabled = false;
+                entrar.textContent = 'Entrar';
+            });
+        })();
+    </script>
 </body>
 
 </html>

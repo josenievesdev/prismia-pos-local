@@ -123,7 +123,7 @@
     display: block;
     width: 100%;
     border-radius: inherit;
-    background: linear-gradient(180deg, #14b8a6, #244f8f);
+    background: linear-gradient(180deg, var(--color-accent), var(--color-primary));
 }
 
 .hour-bar span {
@@ -185,10 +185,10 @@
     align-content: center;
     gap: 4px;
     padding: 12px 14px;
-    border: 1px solid rgba(36, 79, 143, 0.12);
+    border: 1px solid rgba(52, 86, 214, 0.12);
     border-radius: var(--radius-md);
     background:
-        linear-gradient(135deg, rgba(36, 79, 143, 0.11), rgba(20, 184, 166, 0.12)),
+        linear-gradient(135deg, rgba(52, 86, 214, 0.11), rgba(20, 184, 166, 0.12)),
         var(--color-surface-soft);
 }
 
@@ -255,7 +255,7 @@
 .activity-list::-webkit-scrollbar-thumb,
 .alerts-split::-webkit-scrollbar-thumb {
     border-radius: 999px;
-    background: #cbd5e1;
+    background: var(--color-border-strong);
 }
 
 .payment-bars::-webkit-scrollbar-track,
@@ -314,7 +314,7 @@
     height: 7px;
     overflow: hidden;
     border-radius: 999px;
-    background: #e5e7eb;
+    background: var(--color-border);
 }
 
 .payment-bar-track i,
@@ -326,15 +326,15 @@
 }
 
 .color-1 {
-    --bar-color: #2563eb;
+    --bar-color: var(--color-primary);
 }
 
 .color-2 {
-    --bar-color: #14b8a6;
+    --bar-color: var(--color-accent);
 }
 
 .color-3 {
-    --bar-color: #f59e0b;
+    --bar-color: var(--color-warning);
 }
 
 .color-4 {
@@ -342,7 +342,7 @@
 }
 
 .color-5 {
-    --bar-color: #ef4444;
+    --bar-color: var(--color-danger);
 }
 
 .product-ranking {
@@ -621,4 +621,44 @@
 .cash-grid small,
 .cash-grid span {
     line-height: 1.1;
+}
+/* =========================================================
+   Lenguaje del punto de venta (va al final: prevalece sobre lo anterior)
+   Fondos planos, cifras en IBM Plex Mono y etiquetas sin mayúsculas.
+   ========================================================= */
+.cash-main {
+    border-color: color-mix(in srgb, var(--color-primary) 22%, #ffffff);
+    background: var(--color-primary-soft);
+}
+
+.cash-main span,
+.cash-grid span,
+.dash-mini-row span {
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.cash-main strong {
+    color: var(--color-primary-dark);
+    font-family: var(--font-mono);
+    letter-spacing: -0.02em;
+}
+
+.cash-main small {
+    font-size: 11px;
+}
+
+.cash-grid strong,
+.dash-mini-row strong,
+.payment-bar-top span,
+.product-rank-top span,
+.activity-item > div:last-child strong {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+}
+
+.hour-bar-track i {
+    background: var(--color-primary);
 }

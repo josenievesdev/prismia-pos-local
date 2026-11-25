@@ -463,7 +463,7 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background: var(--color-surface);
-    box-shadow: 0 -10px 28px -18px rgba(16, 24, 40, 0.35);
+    box-shadow: 0 -10px 28px -18px rgba(20, 22, 27, 0.35);
 }
 
 .doc-pie-totales {

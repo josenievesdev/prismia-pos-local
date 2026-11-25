@@ -154,7 +154,23 @@ Parte 2 — táctil y pantallas pequeñas:
 - [ ] Arqueo de caja, nota crédito y compra impresas: ya tienen la letra nueva, falta
       su diseño.
 - [ ] Usar `ui-aviso` también en los demás módulos (hoy muestran el aviso fijo).
-- [ ] Módulos sin migrar con colores propios (Inicio, KPIs de Compras).
+- [x] (2026-11-24) Colores propios de los módulos: 616 colores de la paleta vieja
+      (grises pizarra, azul #244f8f, verdes/rojos/amarillos sueltos) pasados a los
+      tokens del POS en `main.css` y en el CSS de 14 módulos. `main.css` usa la misma
+      paleta (para login e instalación, que no cargan `sistema.css`).
+- [x] Login nuevo (`auth/login.ejs` + `modules/login.css`): panel de tinta con un
+      ticket térmico de ejemplo, ver/ocultar contraseña, aviso de mayúsculas, un solo
+      envío. Instalación inicial con el mismo panel oscuro.
+- [x] Inicio: "Efectivo esperado" sin degradado y cifras en Mono.
+- [x] Frecuentes del POS: nombre en 2 líneas (no se corta lo que distingue a un
+      producto), foto sin recortar, iniciales en el color del perfil, "Sin stock".
+      En táctil la foto depende del perfil: apaisada (general), 4:3 (comidas),
+      vertical (boutique).
+- [x] Acciones de fila (Ver, Imprimir, Ver detalle) como botón pequeño, no píldora.
+- [x] Quitadas notas de desarrollo ("API funcional…", "Regla operativa…").
+- [x] Cotizaciones: la tabla tenía una celda de más (columnas corridas).
+- [ ] Llevar las acciones de cada módulo a la barra superior, como el POS
+      (hoy ocupan una fila propia). Requiere tocar ~25 vistas: hacerlo módulo a módulo.
 
 ## Fase 5 — Calidad de código
 - [ ] Unificar cotizaciones y remisiones (~80 % duplicado).
