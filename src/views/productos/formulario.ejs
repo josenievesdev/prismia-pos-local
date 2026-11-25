@@ -227,7 +227,7 @@
                             <input type="number" id="precio_venta" name="precio_venta" min="0" step="1"
                                 value="<%= producto.precio_venta || 0 %>" required>
                             <small class="field-help">
-                                Precio al cliente por unidad de medida.
+                                Lo que paga el cliente por unidad, con el IVA incluido. Es el precio del POS y del ticket.
                             </small>
                         </div>
                     </div>
@@ -276,7 +276,7 @@
                             >
                             <span>
                                 <strong>Permitir venta sin stock</strong>
-                                <small>Úsalo solo si el negocio lo permite.</small>
+                                <small>Si se acaba, el POS lo deja vender y avisa. El inventario queda en negativo.</small>
                             </span>
                         </label>
                     </div>
@@ -314,62 +314,54 @@
                     </div>
                 </div>
 
+                <%
+                    // El precio de venta ya trae el IVA: aquí solo se elige la tarifa.
+                    const ivaElegido = Math.round(Number(typeof producto.porcentaje_iva_visual !== 'undefined'
+                        ? producto.porcentaje_iva_visual
+                        : (producto.porcentaje_iva || 0)) || 0);
+                    const ivaFueraDeLista = ![0, 5, 19].includes(ivaElegido);
+                %>
                 <div class="form-section product-section">
                     <div class="section-title-row">
                         <div>
-                            <h3>IVA de venta</h3>
+                            <h3>IVA</h3>
                             <p>
-                                Define si este producto cobra IVA al venderse y cómo debe calcularse.
-                                Esto no afecta el IVA registrado en compras al proveedor.
+                                El IVA ya va dentro del precio de venta. Prismia lo separa en el ticket y el precio no cambia.
                             </p>
                         </div>
                     </div>
 
-                    <div class="checkbox-grid product-checkbox-grid">
-                        <label class="check-option">
-                            <input type="checkbox" name="maneja_iva" value="1" <%=Number(producto.maneja_iva)===1
-                                ? 'checked' : '' %>
-                            >
-                            <span>
-                                <strong>Este producto cobra IVA al venderse</strong>
-                                <small>Márcalo solo si el producto debe generar IVA en la venta.</small>
-                            </span>
-                        </label>
-
-                        <label class="check-option">
-                            <input type="checkbox" name="precio_incluye_iva" value="1"
-                                <%=Number(producto.precio_incluye_iva)===1 ? 'checked' : '' %>
-                            >
-                            <span>
-                                <strong>El precio ya incluye el IVA</strong>
-                                <small>
-                                    Márcalo si el precio guardado ya es el precio final para el cliente.
-                                    Prismia separará internamente la base y el IVA.
-                                </small>
-                            </span>
-                        </label>
-                    </div>
-
                     <div class="form-grid">
                         <div class="form-group">
-                            <label for="porcentaje_iva_visual">IVA de venta (%)</label>
-                            <input type="number" id="porcentaje_iva_visual" name="porcentaje_iva_visual" min="0"
-                                step="0.01"
-                                value="<%= typeof producto.porcentaje_iva_visual !== 'undefined' ? producto.porcentaje_iva_visual : (producto.porcentaje_iva || 0) %>">
+                            <label for="porcentaje_iva_visual">IVA del producto</label>
+                            <select id="porcentaje_iva_visual" name="porcentaje_iva_visual">
+                                <option value="0" <%= ivaElegido === 0 ? 'selected' : '' %>>Sin IVA (excluido o exento)</option>
+                                <option value="5" <%= ivaElegido === 5 ? 'selected' : '' %>>IVA 5 %</option>
+                                <option value="19" <%= ivaElegido === 19 ? 'selected' : '' %>>IVA 19 %</option>
+                                <% if (ivaFueraDeLista) { %>
+                                    <option value="<%= ivaElegido %>" selected>IVA <%= ivaElegido %> % (el que tiene hoy)</option>
+                                <% } %>
+                            </select>
                             <small class="field-help">
-                                Escribe el porcentaje normal. Ejemplo: 19 para IVA del 19%.
-                                Si este producto no cobra IVA, deja 0.
+                                La tarifa general es 19 %. Si dudas de un producto, consúltalo con tu contador.
                             </small>
                         </div>
 
-                        <div class="module-hint">
-                            <strong>Importante</strong>
-                            <span>
-                                Este IVA solo se usa en ventas. El IVA de compras se registra aparte para calcular
-                                el costo real del producto.
-                            </span>
+                        <div class="producto-iva-desglose" id="desgloseIvaProducto" aria-live="polite">
+                            <span>Así sale en el ticket</span>
+                            <strong data-desglose-iva>—</strong>
                         </div>
                     </div>
+
+                    <% if (!locals.negocioResponsableIva) { %>
+                        <div class="module-hint">
+                            <strong>Tu negocio está marcado como no responsable de IVA</strong>
+                            <span>
+                                Si de verdad no eres responsable de IVA, deja tus productos "Sin IVA". Si sí lo eres,
+                                márcalo en <a href="/configuracion">Configuración</a>.
+                            </span>
+                        </div>
+                    <% } %>
                 </div>
 
                 <div class="form-actions product-actions">
@@ -383,3 +375,6 @@
                 </div>
             </form>
 </section>
+
+<script src="/js/dinero-exacto.js"></script>
+<script src="/js/productos-formulario.js"></script>

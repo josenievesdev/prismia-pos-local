@@ -371,3 +371,33 @@
         min-height: 180px;
     }
 }
+
+.module-hint a {
+    color: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+}
+
+/* IVA: cómo se separa del precio de venta (en vivo) */
+.producto-iva-desglose {
+    display: grid;
+    align-content: center;
+    gap: 4px;
+    padding: 12px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-soft);
+}
+
+.producto-iva-desglose span {
+    color: var(--color-muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.producto-iva-desglose strong {
+    color: var(--color-text);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 700;
+}

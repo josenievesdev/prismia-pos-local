@@ -39,6 +39,9 @@ function tieneDecimales(numero) {
     return Math.abs(numero % 1) > 0;
 }
 
+/** Tarifas de IVA que se ofrecen al crear un producto (Colombia). */
+const PORCENTAJES_IVA = [0, 5, 19];
+
 function convertirPorcentaje(valor) {
     const numero = Number(String(valor || '').replace(',', '.'));
 
@@ -287,13 +290,17 @@ function validarProducto(datos, productoActual = null, opciones = {}) {
         }
     }
 
-    const manejaIva = convertirCheckbox(datos.maneja_iva);
-    const porcentajeIva = convertirPorcentaje(
-        datos.porcentaje_iva_visual
-    );
+    // El IVA se elige de una lista: sin IVA, 5 % o 19 % (tarifas de Colombia).
+    // Un producto antiguo con otra tarifa la conserva mientras no se cambie.
+    const porcentajeIva = convertirPorcentaje(datos.porcentaje_iva_visual);
+    const porcentajesPermitidos = new Set(PORCENTAJES_IVA);
 
-    if (manejaIva === 1 && porcentajeIva <= 0) {
-        errores.push('Si el producto maneja IVA, el porcentaje debe ser mayor a cero.');
+    if (productoActual) {
+        porcentajesPermitidos.add(Math.round(Number(productoActual.porcentaje_iva) || 0));
+    }
+
+    if (!porcentajesPermitidos.has(porcentajeIva)) {
+        errores.push('Elige el IVA del producto: sin IVA, 5 % o 19 %.');
     }
 
     const codigoInternoExistente =
@@ -333,10 +340,11 @@ function prepararDatosProducto(datos, { incluirStockInicial = false } = {}) {
 
     const controlaInventario = convertirCheckbox(datos.controla_inventario);
     const permiteVentaSinStock = convertirCheckbox(datos.permite_venta_sin_stock);
-    const manejaIva = convertirCheckbox(datos.maneja_iva);
-    const precioIncluyeIva = manejaIva
-        ? convertirCheckbox(datos.precio_incluye_iva)
-        : 0;
+    // El precio de venta es el precio final que paga el cliente, con el IVA incluido
+    // (Ley 1480 de 2011, art. 26). El IVA solo se separa en el ticket: nunca se suma encima.
+    const porcentajeIva = Math.round(convertirPorcentaje(datos.porcentaje_iva_visual));
+    const manejaIva = porcentajeIva > 0 ? 1 : 0;
+    const precioIncluyeIva = 1;
 
     const precioCosto = convertirEntero(datos.precio_costo, 0);
 
@@ -360,9 +368,7 @@ function prepararDatosProducto(datos, { incluirStockInicial = false } = {}) {
             : 1,
         permite_cantidad_decimal: Number(unidad?.permite_decimales || 0),
         maneja_iva: manejaIva,
-        porcentaje_iva: manejaIva
-            ? convertirPorcentaje(datos.porcentaje_iva_visual)
-            : 0,
+        porcentaje_iva: porcentajeIva,
         precio_incluye_iva: precioIncluyeIva,
         imagen_url: limpiarTexto(datos.imagen_url),
         mostrar_en_pos_tactil: convertirCheckbox(datos.mostrar_en_pos_tactil),

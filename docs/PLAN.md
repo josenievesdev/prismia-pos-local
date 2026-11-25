@@ -246,6 +246,37 @@ Hecho:
       (se sigue vendiendo si el producto lo permite).
 - [x] Pruebas: tests/propinas.test.js (9) + prueba de humo con venta con propina.
 - [ ] Reporte de propinas por mesero entre fechas (hoy se ve por turno de caja).
+      El usuario lo quiere ("sería bueno"): para pagar a cada mesero por semana o quincena.
+
+## IVA: el precio de venta es el precio final (2026-11-25, rama `iva-revision`)
+Problema encontrado en la revisión:
+- El producto podía guardarse como "precio + IVA" y el POS le sumaba el 19 % encima.
+  El cliente pagaba más que el precio publicado (Ley 1480 de 2011, art. 26: el precio
+  al consumidor se informa con todos los impuestos incluidos).
+- El precio sugerido de Compras (costo + IVA + ganancia, igual que en Siigo) ya trae
+  el IVA: en un producto "precio + IVA" el IVA se cobraba dos veces.
+- El formulario tenía 3 controles para una sola idea (2 casillas y un % libre).
+
+Arreglo (como Siigo: el precio no cambia, el IVA se separa en el ticket):
+- [x] Migración 008: los productos "precio + IVA" pasan a precio final sumándoles su IVA
+      con la misma aritmética del POS. Por unidad se cobra igual (misma base, mismo IVA)
+      y cada cambio queda en auditoría.
+- [x] Formulario: un solo selector "IVA del producto" (Sin IVA / 5 % / 19 %) con el desglose
+      en vivo ("Base $ X + IVA $ Y = $ precio"). Un producto antiguo con otra tarifa la conserva.
+- [x] Producto nuevo: 19 % si el negocio es responsable de IVA, "Sin IVA" si no.
+- [x] Aviso en el formulario si el negocio está marcado como no responsable de IVA.
+- [x] Venta sin stock: la decide cada producto ("Permitir venta sin stock", explicada en el
+      formulario); el POS avisa con la etiqueta ámbar y, si la bloquea, dice cómo activarla.
+- [x] Pruebas: tests/iva-precio-final.test.js (4).
+
+Pendiente (decisión del usuario):
+- [ ] Si el negocio NO es responsable de IVA, ¿bloquear el IVA en productos y ventas?
+      Hoy solo se avisa. En la base de pruebas el negocio figura como no responsable y
+      7 productos cobran IVA.
+- [ ] Restaurantes y bares: en general no cobran IVA sino impuesto al consumo (INC 8 %).
+      Confirmar con un contador antes de usar el perfil "Comidas y bares" con impuestos.
+- [ ] Factura electrónica / POS electrónico DIAN: el ticket es un comprobante interno; para
+      que valga ante la DIAN hace falta un proveedor tecnológico (proyecto aparte).
 
 ## Fase 5 — Calidad de código
 - [ ] Unificar cotizaciones y remisiones (~80 % duplicado).

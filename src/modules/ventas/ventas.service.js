@@ -204,7 +204,7 @@ function prepararProductoParaVenta(producto) {
 
     const mensajeNoDisponible = puedeVender
         ? null
-        : 'Sin stock disponible. Registra una compra o ajuste de inventario antes de vender.';
+        : 'Sin stock. Registra una compra o un ajuste de inventario, o activa "Permitir venta sin stock" en el producto.';
 
     return {
         ...producto,

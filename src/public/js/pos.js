@@ -539,7 +539,7 @@
         if (item.controlaInventario && !item.permiteSinStock && cantidad > item.stock + 0.000001) {
             return {
                 ok: false,
-                mensaje: `Solo hay ${cantidadTexto(Math.max(item.stock, 0))} ${item.unidad} de "${item.nombre}".`,
+                mensaje: `Solo hay ${cantidadTexto(Math.max(item.stock, 0))} ${item.unidad} de "${item.nombre}". Para venderlo igual, activa "Permitir venta sin stock" en el producto.`,
             };
         }
 
