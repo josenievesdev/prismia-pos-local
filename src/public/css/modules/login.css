@@ -119,24 +119,88 @@ body.acceso {
     font-size: 12.5px;
 }
 
-/* ---------- Ticket de ejemplo ---------- */
-.acceso-ticket {
+/* ---------- Impresora térmica de ejemplo ----------
+   El ticket sale de la ranura de abajo hacia arriba (como una impresora
+   real: el encabezado sale primero), queda unos segundos, se arranca y
+   sale el siguiente. Solo se animan transform y opacity. */
+.acceso-demo {
+    display: grid;
+    justify-items: start;
+    gap: 18px;
+}
+
+.acceso-impresora {
+    width: min(100%, 340px);
+    margin-left: 14px;
+}
+
+/* Zona del papel: recorta solo por abajo (la ranura). Por arriba y a los
+   lados el ticket puede salir al arrancarlo. */
+.acceso-impresora-salida {
     position: relative;
+    /* Alto del ticket más largo (333 px): ninguno se sube sobre el lema */
+    height: 336px;
+    clip-path: inset(-400px -400px 0 -400px);
+}
+
+.acceso-ticket {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
     display: grid;
     gap: 9px;
-    width: min(100%, 340px);
-    margin-left: 6px;
     padding: 16px 18px 20px;
-    border-top: 5px solid #0d9668;
+    border-top: 5px solid var(--ticket-color, #0d9668);
     background: var(--color-paper);
     color: var(--color-text);
     font-family: var(--font-mono);
     font-size: 12px;
-    box-shadow: 0 24px 48px -16px rgba(0, 0, 0, 0.55);
-    transform: rotate(-2deg);
-    transform-origin: left top;
+    box-shadow: 0 -12px 32px -16px rgba(0, 0, 0, 0.5);
+    visibility: hidden;
 }
 
+.acceso-ticket.is-activo {
+    visibility: visible;
+}
+
+.acceso-ticket.is-imprimiendo {
+    animation: acceso-imprimir 1.9s cubic-bezier(0.33, 0.1, 0.4, 1) both;
+}
+
+.acceso-ticket.is-arrancado {
+    animation: acceso-arrancar 0.65s cubic-bezier(0.55, 0, 0.75, 0.2) both;
+}
+
+@keyframes acceso-imprimir {
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+/* Tirón hacia arriba y sale girando: el borde dentado se ve al soltarse */
+@keyframes acceso-arrancar {
+    0% {
+        opacity: 1;
+        transform: translate(0, 0) rotate(0deg);
+    }
+
+    25% {
+        opacity: 1;
+        transform: translate(0, -10px) rotate(-1.5deg);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(70px, -90px) rotate(9deg);
+    }
+}
+
+/* Borde dentado de abajo (queda dentro de la ranura hasta que se arranca) */
 .acceso-ticket::after {
     content: "";
     position: absolute;
@@ -153,7 +217,7 @@ body.acceso {
 .acceso-ticket-cuenta,
 .acceso-ticket-total,
 .acceso-ticket-pago,
-.acceso-ticket-cambio {
+.acceso-ticket-cierre {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
@@ -203,12 +267,120 @@ body.acceso {
     color: var(--color-muted);
 }
 
-.acceso-ticket-cambio {
+.acceso-ticket-cierre--cambio {
     padding: 6px 8px;
     border-radius: 6px;
     background: var(--color-success-soft);
     color: var(--color-success);
     font-weight: 600;
+}
+
+.acceso-ticket-cierre--referencia {
+    color: var(--color-muted);
+}
+
+.acceso-ticket-cierre--referencia b {
+    font-weight: 500;
+}
+
+/* Cuerpo de la impresora, con la ranura arriba */
+.acceso-impresora-cuerpo {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 36px;
+    margin: 0 -14px;
+    padding: 6px 18px 0;
+    border-radius: 8px 8px 14px 14px;
+    background: linear-gradient(180deg, #31353f 0%, #262a33 100%);
+    box-shadow: 0 22px 40px -14px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+.acceso-impresora-cuerpo::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 10px;
+    left: 10px;
+    height: 5px;
+    border-radius: 0 0 4px 4px;
+    background: #0b0c10;
+}
+
+.acceso-impresora-marca {
+    color: rgba(255, 255, 255, 0.28);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+}
+
+.acceso-impresora-luz {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #12b886;
+    box-shadow: 0 0 0 3px rgba(18, 184, 134, 0.14), 0 0 10px rgba(18, 184, 134, 0.75);
+}
+
+.acceso-impresora.is-imprimiendo .acceso-impresora-luz {
+    animation: acceso-luz 0.5s step-end infinite;
+}
+
+@keyframes acceso-luz {
+    50% {
+        opacity: 0.3;
+    }
+}
+
+/* Negocios de ejemplo: marca cuál ticket se está imprimiendo */
+.acceso-rubros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.acceso-rubro {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 11px 5px 9px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 999px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12.5px;
+    font-weight: 500;
+    transition: color 300ms ease, border-color 300ms ease, background-color 300ms ease;
+}
+
+.acceso-rubro::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--ticket-color);
+    opacity: 0.45;
+    transition: opacity 300ms ease;
+}
+
+.acceso-rubro small {
+    color: inherit;
+    font-size: 11.5px;
+    font-weight: 400;
+    opacity: 0.7;
+}
+
+.acceso-rubro.is-activo {
+    border-color: rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.06);
+    color: #ffffff;
+}
+
+.acceso-rubro.is-activo::before {
+    opacity: 1;
 }
 
 /* ---------- Panel del formulario: papel del ticket ----------
@@ -466,15 +638,53 @@ body.acceso {
     }
 }
 
-/* Ventanas bajas: el ticket de ejemplo sobra */
-@media (max-height: 640px) {
-    .acceso-ticket {
-        display: none;
+/* Ventanas bajas: la impresora se reduce, nunca desaparece (es lo que le da vida al login) */
+@media (max-height: 760px) {
+    .acceso-marca-centro {
+        gap: 28px;
+    }
+
+    .acceso-demo {
+        zoom: 0.88;
+    }
+}
+
+@media (max-height: 660px) {
+    .acceso-lema {
+        font-size: 26px;
+    }
+
+    .acceso-demo {
+        zoom: 0.76;
+    }
+}
+
+@media (max-height: 560px) {
+    .acceso-marca {
+        gap: 18px;
+        padding-top: 28px;
+        padding-bottom: 22px;
+    }
+
+    .acceso-marca-centro {
+        gap: 20px;
+    }
+
+    .acceso-demo {
+        zoom: 0.64;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .acceso-campo input {
+    .acceso-campo input,
+    .acceso-rubro,
+    .acceso-rubro::before {
         transition: none;
+    }
+
+    .acceso-ticket.is-imprimiendo,
+    .acceso-ticket.is-arrancado,
+    .acceso-impresora.is-imprimiendo .acceso-impresora-luz {
+        animation: none;
     }
 }

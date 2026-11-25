@@ -1,3 +1,45 @@
+<%
+    // Tickets de ejemplo del panel de marca (decorativos). Las cuentas cuadran:
+    // 25 × 3.900 = 97.500 · 0,450 kg × 22.000 = 9.900 · 89.900 + 129.900 + 45.000 = 264.800
+    const hoy = new Date();
+    const fechaHoy = String(hoy.getDate()).padStart(2, '0') + '/'
+        + String(hoy.getMonth() + 1).padStart(2, '0') + '/' + hoy.getFullYear();
+    const ticketsEjemplo = [
+        {
+            rubro: 'Ferretería', medida: 'metros', color: '#3456d6', numero: 'FV-000128', hora: '10:42',
+            lineas: [
+                ['Cable #12 THHN rojo', '25 m × $ 3.900', '$ 97.500'],
+                ['Tornillo drywall 6 × 1"', '100 und × $ 45', '$ 4.500'],
+                ['Rodillo de felpa 9"', '1 und × $ 12.900', '$ 12.900'],
+            ],
+            total: '$ 114.900',
+            pago: ['Efectivo', '$ 120.000'],
+            cierre: { tipo: 'cambio', etiqueta: 'Cambio', valor: '$ 5.100' },
+        },
+        {
+            rubro: 'Minimercado', medida: 'kilos', color: '#0d9668', numero: 'FV-000129', hora: '10:47',
+            lineas: [
+                ['Queso campesino', '0,450 kg × $ 22.000', '$ 9.900'],
+                ['Leche entera 1,1 L', '3 und × $ 4.300', '$ 12.900'],
+                ['Arroz blanco 500 g', '2 und × $ 2.900', '$ 5.800'],
+            ],
+            total: '$ 28.600',
+            pago: ['Nequi', '$ 28.600'],
+            cierre: { tipo: 'referencia', etiqueta: 'Ref.', valor: '48213' },
+        },
+        {
+            rubro: 'Boutique', medida: 'tallas', color: '#a43c8f', numero: 'FV-000130', hora: '10:55',
+            lineas: [
+                ['Blusa de lino · talla M', '1 und × $ 89.900', '$ 89.900'],
+                ['Jean slim · talla 32', '1 und × $ 129.900', '$ 129.900'],
+                ['Cinturón de cuero', '1 und × $ 45.000', '$ 45.000'],
+            ],
+            total: '$ 264.800',
+            pago: ['Tarjeta crédito', '$ 264.800'],
+            cierre: null,
+        },
+    ];
+%>
 <!DOCTYPE html>
 <html lang="es">
 
@@ -28,29 +70,117 @@
             </div>
 
             <div class="acceso-marca-centro">
-            <h1 class="acceso-lema">Factura en segundos.<br>Cuadra la caja sin sorpresas.</h1>
+                <h1 class="acceso-lema">Factura en segundos.<br>Cuadra la caja sin sorpresas.</h1>
 
-            <div class="acceso-ticket" aria-hidden="true">
-                <div class="acceso-ticket-cabecera">
-                    <strong>FV-000128</strong>
-                    <span>24/11/2026 · 10:42</span>
+                <%# Impresora térmica de ejemplo (decorativa): el ticket sale imprimiéndose,
+                    se arranca y sale el siguiente. Ferretería, minimercado y boutique. %>
+                <div class="acceso-demo" aria-hidden="true">
+                    <div class="acceso-impresora" id="impresoraAcceso">
+                        <div class="acceso-impresora-salida">
+                            <% ticketsEjemplo.forEach(function (ticket, indice) { %>
+                                <div class="acceso-ticket<%= indice === 0 ? ' is-activo' : '' %>" style="--ticket-color: <%= ticket.color %>">
+                                    <div class="acceso-ticket-cabecera">
+                                        <strong><%= ticket.numero %></strong>
+                                        <span><%= fechaHoy %> · <%= ticket.hora %></span>
+                                    </div>
+                                    <% ticket.lineas.forEach(function (linea) { %>
+                                        <div class="acceso-ticket-linea">
+                                            <span class="acceso-ticket-nombre"><%= linea[0] %></span>
+                                            <span class="acceso-ticket-cuenta"><span><%= linea[1] %></span><b><%= linea[2] %></b></span>
+                                        </div>
+                                    <% }) %>
+                                    <div class="acceso-ticket-total"><span>Total</span><b><%= ticket.total %></b></div>
+                                    <div class="acceso-ticket-pago"><span><%= ticket.pago[0] %></span><span><%= ticket.pago[1] %></span></div>
+                                    <% if (ticket.cierre) { %>
+                                        <div class="acceso-ticket-cierre acceso-ticket-cierre--<%= ticket.cierre.tipo %>"><span><%= ticket.cierre.etiqueta %></span><b><%= ticket.cierre.valor %></b></div>
+                                    <% } %>
+                                </div>
+                            <% }) %>
+                        </div>
+                        <div class="acceso-impresora-cuerpo">
+                            <span class="acceso-impresora-marca">Prismia</span>
+                            <span class="acceso-impresora-luz"></span>
+                        </div>
+                    </div>
+
+                    <ul class="acceso-rubros">
+                        <% ticketsEjemplo.forEach(function (ticket, indice) { %>
+                            <li class="acceso-rubro<%= indice === 0 ? ' is-activo' : '' %>" style="--ticket-color: <%= ticket.color %>">
+                                <%= ticket.rubro %> <small><%= ticket.medida %></small>
+                            </li>
+                        <% }) %>
+                    </ul>
                 </div>
-                <div class="acceso-ticket-linea">
-                    <span class="acceso-ticket-nombre">Cable #12 THHN rojo</span>
-                    <span class="acceso-ticket-cuenta"><span>25 m × $ 3.900</span><b>$ 97.500</b></span>
-                </div>
-                <div class="acceso-ticket-linea">
-                    <span class="acceso-ticket-nombre">Tornillo drywall 6 × 1"</span>
-                    <span class="acceso-ticket-cuenta"><span>100 und × $ 45</span><b>$ 4.500</b></span>
-                </div>
-                <div class="acceso-ticket-linea">
-                    <span class="acceso-ticket-nombre">Café molido 500 g</span>
-                    <span class="acceso-ticket-cuenta"><span>2 und × $ 18.900</span><b>$ 37.800</b></span>
-                </div>
-                <div class="acceso-ticket-total"><span>Total</span><b>$ 139.800</b></div>
-                <div class="acceso-ticket-pago"><span>Efectivo</span><span>$ 150.000</span></div>
-                <div class="acceso-ticket-cambio"><span>Cambio</span><b>$ 10.200</b></div>
-            </div>
+
+                <script>
+                    // Corre al leer la página (antes de pintarla): el primer ticket ya
+                    // sale imprimiéndose, sin parpadeo. Con "reducir movimiento" queda quieto.
+                    (function () {
+                        const impresora = document.getElementById('impresoraAcceso');
+                        const tickets = impresora ? Array.from(impresora.querySelectorAll('.acceso-ticket')) : [];
+                        const rubros = Array.from(document.querySelectorAll('.acceso-rubro'));
+                        const reducido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+                        if (reducido || tickets.length < 2) {
+                            return;
+                        }
+
+                        const VISIBLE_MS = 5200;
+                        let actual = 0;
+                        let temporizador = null;
+
+                        function programar(ms) {
+                            clearTimeout(temporizador);
+                            temporizador = setTimeout(arrancar, ms);
+                        }
+
+                        function imprimir(indice) {
+                            const ticket = tickets[indice];
+
+                            ticket.classList.remove('is-arrancado');
+                            ticket.classList.add('is-activo', 'is-imprimiendo');
+                            impresora.classList.add('is-imprimiendo');
+                            rubros.forEach(function (rubro, i) {
+                                rubro.classList.toggle('is-activo', i === indice);
+                            });
+
+                            // Respaldo por si el navegador no avisa el fin de la animación
+                            programar(VISIBLE_MS + 2500);
+
+                            ticket.addEventListener('animationend', function fin(evento) {
+                                if (evento.animationName !== 'acceso-imprimir') {
+                                    return;
+                                }
+
+                                ticket.removeEventListener('animationend', fin);
+                                ticket.classList.remove('is-imprimiendo');
+                                impresora.classList.remove('is-imprimiendo');
+                                programar(VISIBLE_MS);
+                            });
+                        }
+
+                        function arrancar() {
+                            // Pestaña oculta: no gastar nada, revisar en un momento
+                            if (document.hidden) {
+                                programar(1000);
+                                return;
+                            }
+
+                            const ticket = tickets[actual];
+                            ticket.classList.remove('is-imprimiendo');
+                            impresora.classList.remove('is-imprimiendo');
+                            ticket.classList.add('is-arrancado');
+
+                            setTimeout(function () {
+                                ticket.classList.remove('is-activo', 'is-arrancado');
+                                actual = (actual + 1) % tickets.length;
+                                imprimir(actual);
+                            }, 650);
+                        }
+
+                        imprimir(0);
+                    })();
+                </script>
             </div>
 
             <p class="acceso-marca-pie">

@@ -178,6 +178,11 @@ Parte 2 — táctil y pantallas pequeñas:
       siguen en blanco. 35 tarjetas en 33 pantallas.
 - [x] Login, lado derecho: papel del ticket con el borde dentado, nombre del
       negocio, fecha y hora en Mono, y "Entrar" en tinta.
+- [x] Login con impresora térmica animada: el ticket sale de la ranura (de abajo
+      hacia arriba), se arranca y sale el siguiente: ferretería (metros),
+      minimercado (kilos) y boutique (tallas). En ventanas bajas se reduce con
+      `zoom` en vez de ocultarse (antes desaparecía por debajo de 640 px de alto).
+      Con "reducir movimiento" queda quieto; con la pestaña oculta no anima.
 - [ ] Llevar las acciones de cada módulo a la barra superior, como el POS
       (hoy ocupan una fila propia). Requiere tocar ~25 vistas: hacerlo módulo a módulo.
 
