@@ -1,4 +1,5 @@
 const comprasRepository = require('./compras.repository');
+const comprasCalculo = require('../../utils/compras-calculo');
 const fechas = require('../../utils/fechas');
 const { limpiarTexto } = require('../../utils/comunes');
 
@@ -62,16 +63,6 @@ function normalizarNumero(valor, defecto = 0) {
     }
 
     return Math.max(0, numero);
-}
-
-function normalizarPorcentaje(valor, defecto = 0) {
-    const numero = normalizarNumero(valor, defecto);
-
-    if (numero > 100) {
-        return 100;
-    }
-
-    return numero;
 }
 
 function normalizarPorcentajeIva(valor, defecto = 0) {
@@ -370,50 +361,31 @@ function prepararProveedorParaCompra(proveedor) {
  *   responsable, el IVA pagado sí es costo.
  */
 function calcularLineaCompra(linea = {}, { esResponsableIva = false } = {}) {
-    const cantidad = normalizarNumero(linea.cantidad, 0);
-    const costoUnitario = normalizarEntero(linea.costo_unitario, 0);
-    const descuentoPorcentaje = normalizarPorcentaje(linea.descuento_porcentaje, 0);
-    const porcentajeIva = normalizarPorcentajeIva(linea.porcentaje_iva, 0);
-    const gananciaPorcentaje = normalizarNumero(linea.ganancia_sobre_costo_porcentaje, 0);
-
-    const descuentoUnitario = costoUnitario * (descuentoPorcentaje / 100);
-    const costoUnitarioNeto = Math.max(0, costoUnitario - descuentoUnitario);
-    const ivaUnitario = costoUnitarioNeto * (porcentajeIva / 100);
-    const costoUnitarioFinal = costoUnitarioNeto + ivaUnitario;
-
-    const subtotalLinea = costoUnitarioNeto * cantidad;
-    const descuentoLinea = descuentoUnitario * cantidad;
-    const ivaLinea = ivaUnitario * cantidad;
-    const totalLinea = costoUnitarioFinal * cantidad;
-
-    const precioVentaSugerido = costoUnitarioFinal * (1 + gananciaPorcentaje / 100);
+    // Aritmética exacta compartida con el formulario: subtotal + IVA = total, al peso
+    const calculo = comprasCalculo.calcularLinea(linea);
 
     return {
         id_producto: Number(linea.id_producto || 0),
-        cantidad,
-        costo_unitario: costoUnitario,
-        descuento_porcentaje: descuentoPorcentaje,
-        porcentaje_iva: porcentajeIva,
-        ganancia_sobre_costo_porcentaje: gananciaPorcentaje,
+        cantidad: calculo.cantidad,
+        costo_unitario: calculo.costoUnitario,
+        descuento_porcentaje: calculo.descuentoPorcentaje,
+        porcentaje_iva: calculo.porcentajeIva,
+        ganancia_sobre_costo_porcentaje: calculo.gananciaPorcentaje,
 
-        descuento_linea: normalizarEntero(descuentoLinea),
-        costo_unitario_neto: normalizarEntero(costoUnitarioNeto),
-        iva_unitario: normalizarEntero(ivaUnitario),
-        costo_unitario_final: normalizarEntero(costoUnitarioFinal),
-        costo_unitario_inventario: normalizarEntero(
-            esResponsableIva ? costoUnitarioNeto : costoUnitarioFinal
-        ),
+        descuento_linea: calculo.descuentoLinea,
+        costo_unitario_neto: calculo.costoUnitarioNeto,
+        iva_unitario: calculo.ivaUnitario,
+        costo_unitario_final: calculo.costoUnitarioFinal,
+        costo_unitario_inventario: esResponsableIva ? calculo.costoUnitarioNeto : calculo.costoUnitarioFinal,
 
-        subtotal_linea: normalizarEntero(subtotalLinea),
-        iva_linea: normalizarEntero(ivaLinea),
-        total_linea: normalizarEntero(totalLinea),
+        subtotal_linea: calculo.subtotalLinea,
+        iva_linea: calculo.ivaLinea,
+        total_linea: calculo.totalLinea,
 
         precio_venta_anterior: normalizarEntero(linea.precio_venta_anterior || linea.precio_venta_actual || 0),
-        precio_venta_sugerido: normalizarEntero(precioVentaSugerido),
+        precio_venta_sugerido: calculo.precioVentaSugerido,
         actualizar_precio_venta: Number(linea.actualizar_precio_venta || 0) === 1 ? 1 : 0,
-        precio_venta_nuevo: normalizarEntero(
-            linea.precio_venta_nuevo || precioVentaSugerido
-        ),
+        precio_venta_nuevo: normalizarEntero(linea.precio_venta_nuevo || calculo.precioVentaSugerido),
     };
 }
 

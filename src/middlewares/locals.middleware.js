@@ -1,5 +1,6 @@
 const empresa = require('../config/empresa');
 const fechas = require('../utils/fechas');
+const { rutaPadre } = require('../utils/navegacion');
 const licenciaLocalService = require('../modules/licencia-local/licenciaLocal.service');
 
 function formatearPesos(valor) {
@@ -58,6 +59,8 @@ function localsMiddleware(req, res, next) {
 
     res.locals.usuario = usuario;
     res.locals.rutaActual = req.originalUrl;
+    // Botón "volver" de la barra superior (solo en pantallas internas)
+    res.locals.navegacion = rutaPadre(req.originalUrl);
     res.locals.licenciaLocal = obtenerLicenciaLocalSegura();
 
     res.locals.rolesUsuario = rolesUsuario;

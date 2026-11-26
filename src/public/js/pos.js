@@ -3171,11 +3171,7 @@
         estado.errorCobro = null;
         dibujarPago();
 
-        if (medio.requiereReferencia) {
-            ui.referencia?.focus();
-        } else {
-            enfocarMonto();
-        }
+        enfocarMonto();
     }
 
     function aplicarBillete(valor) {
@@ -3257,21 +3253,12 @@
         const falta = Math.max(total - recibido, 0);
         const cambio = Math.max(recibido - total, 0);
         let problema = null;
-        let sinReferencia = null;
 
         if (falta === 0 && pagos.length) {
             if (cambio > 0 && efectivo <= 0) {
                 problema = 'El cambio solo puede salir de un pago en efectivo. Ajusta el monto.';
             } else if (cambio > efectivo) {
                 problema = 'El cambio no puede ser mayor que el efectivo recibido.';
-            } else {
-                sinReferencia = pagos.find(function (pago) {
-                    return medioPorId(pago.idMedio)?.requiereReferencia && !pago.referencia;
-                }) || null;
-
-                if (sinReferencia) {
-                    problema = `Escribe la referencia del pago con ${medioPorId(sinReferencia.idMedio).nombre}.`;
-                }
             }
         }
 
@@ -3289,7 +3276,6 @@
             falta,
             cambio,
             problema,
-            sinReferencia,
             listo: estado.carrito.length > 0 && total > 0 && pagos.length > 0 && falta === 0 && !problema,
         };
     }
@@ -3318,7 +3304,7 @@
             ui.montoEtiqueta.textContent = medio.afectaEfectivo ? 'Recibido' : medio.nombre;
             ui.referencia.hidden = !conReferencia;
             ui.referencia.value = borrador.referencia || '';
-            ui.referencia.placeholder = medio.requiereReferencia ? 'Referencia' : 'Ref. opcional';
+            ui.referencia.placeholder = 'Referencia (opcional)';
             sincronizarMonto();
         }
 
@@ -3365,11 +3351,6 @@
             ui.estadoPagoMonto.textContent = pesos(analisis.cambio);
         }
 
-        ui.referencia?.classList.toggle(
-            'is-invalido',
-            Boolean(analisis.sinReferencia && estado.borrador && analisis.sinReferencia.idMedio === estado.borrador.idMedio)
-        );
-
         ui.registrar.disabled = !analisis.listo || estado.enviando;
         ui.textoRegistrar.textContent = estado.enviando
             ? 'Registrando…'
@@ -3388,10 +3369,6 @@
                 aviso(`Faltan ${pesos(analisis.falta)} por cobrar.`, 'error');
             } else if (analisis.problema) {
                 aviso(analisis.problema, 'error');
-
-                if (analisis.sinReferencia) {
-                    ui.referencia?.focus();
-                }
             }
             return;
         }

@@ -469,39 +469,12 @@
         renderizarLineas();
     }
 
+    // El mismo cálculo exacto que usa el servidor (compras-calculo.js): lo que se ve es lo que se guarda
     function calcularLinea(linea) {
-        const cantidad = limpiarNumero(linea.cantidad, 1);
-        const costoUnitario = redondearDinero(linea.costo_unitario);
-        const descuentoPorcentaje = Math.min(limpiarNumero(linea.descuento_porcentaje), 100);
-        const porcentajeIva = normalizarPorcentajeIva(linea.porcentaje_iva);
-        const gananciaPorcentaje = limpiarNumero(linea.ganancia_sobre_costo_porcentaje);
-
-        const descuentoUnitario = costoUnitario * (descuentoPorcentaje / 100);
-        const costoUnitarioNeto = Math.max(0, costoUnitario - descuentoUnitario);
-        const ivaUnitario = costoUnitarioNeto * (porcentajeIva / 100);
-        const costoUnitarioFinal = costoUnitarioNeto + ivaUnitario;
-
-        const subtotalLinea = costoUnitarioNeto * cantidad;
-        const descuentoLinea = descuentoUnitario * cantidad;
-        const ivaLinea = ivaUnitario * cantidad;
-        const totalLinea = costoUnitarioFinal * cantidad;
-        const precioVentaSugerido = costoUnitarioFinal * (1 + gananciaPorcentaje / 100);
-
-        return {
-            cantidad,
-            costoUnitario,
-            descuentoPorcentaje,
-            porcentajeIva,
-            gananciaPorcentaje,
-            descuentoLinea: redondearDinero(descuentoLinea),
-            costoUnitarioNeto: redondearDinero(costoUnitarioNeto),
-            ivaUnitario: redondearDinero(ivaUnitario),
-            costoUnitarioFinal: redondearDinero(costoUnitarioFinal),
-            subtotalLinea: redondearDinero(subtotalLinea),
-            ivaLinea: redondearDinero(ivaLinea),
-            totalLinea: redondearDinero(totalLinea),
-            precioVentaSugerido: redondearDinero(precioVentaSugerido),
-        };
+        return window.PrismiaCompras.calcularLinea({
+            ...linea,
+            cantidad: limpiarNumero(linea.cantidad, 1),
+        });
     }
 
     function capturarFocoActual() {

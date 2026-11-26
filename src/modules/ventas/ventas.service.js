@@ -718,16 +718,10 @@ function prepararPagosRegistroVenta(pagosPayload, totalVenta) {
             };
         }
 
+        // La referencia (comprobante de transferencia o voucher) se guarda si la escriben,
+        // pero no es obligatoria: en la vida real se toma foto del comprobante y se sigue.
         const referencia = limpiarTexto(pagoPayload.referencia || '');
-        const requiereReferencia = normalizarEntero(medioPago.requiere_referencia) === 1;
         const afectaEfectivo = normalizarEntero(medioPago.afecta_efectivo_caja) === 1;
-
-        if (requiereReferencia && !referencia) {
-            return {
-                ok: false,
-                mensaje: `El medio de pago "${medioPago.nombre}" requiere referencia.`,
-            };
-        }
 
         totalRecibido += montoRecibido;
 

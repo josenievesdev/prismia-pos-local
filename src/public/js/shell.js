@@ -99,7 +99,56 @@
         }
     });
 
+    // ---------- Volver: botón de la barra superior, Alt + ← y botón "atrás" del mouse ----------
+    // Si se llegó desde esa misma lista, se regresa con sus filtros y su scroll; si no,
+    // se va a la pantalla principal del módulo (nunca a un formulario ya enviado).
+    function volver() {
+        const enlace = document.querySelector('[data-volver]');
+
+        if (!enlace) {
+            if (window.history.length > 1) {
+                window.history.back();
+            }
+            return;
+        }
+
+        const destino = new URL(enlace.getAttribute('href'), window.location.href);
+        let anterior = null;
+
+        try {
+            anterior = document.referrer ? new URL(document.referrer) : null;
+        } catch (error) {
+            anterior = null;
+        }
+
+        if (anterior && anterior.origin === window.location.origin
+            && anterior.pathname === destino.pathname && window.history.length > 1) {
+            window.history.back();
+        } else {
+            window.location.href = destino.href;
+        }
+    }
+
+    window.prismiaVolver = volver;
+
+    document.addEventListener('click', function (evento) {
+        const enlace = evento.target.closest('[data-volver]');
+
+        if (!enlace || evento.button !== 0 || evento.ctrlKey || evento.metaKey || evento.shiftKey) {
+            return;
+        }
+
+        evento.preventDefault();
+        volver();
+    });
+
     document.addEventListener('keydown', function (evento) {
+        if (evento.altKey && evento.key === 'ArrowLeft' && !evento.ctrlKey && !evento.shiftKey && !evento.metaKey) {
+            evento.preventDefault();
+            volver();
+            return;
+        }
+
         if (evento.key === 'Escape' && raiz.classList.contains('menu-abierto')) {
             abrirPanelMovil(false);
             return;

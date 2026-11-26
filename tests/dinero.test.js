@@ -113,14 +113,15 @@ test('pago mixto tarjeta + efectivo: el cambio sale solo del efectivo', () => {
     assert.equal(despues.monto_esperado - antes.monto_esperado, 5500);
 });
 
-test('no se permite cambio sin efectivo ni medios con referencia vacía', () => {
+test('no se permite cambio sin efectivo; la referencia de una transferencia es opcional', () => {
     const sobrepago = vender([{ id_producto: productos.bombillo, cantidad: 1 }], [{ id_medio_pago: NEQUI, monto_recibido: 5000, referencia: 'X1' }]);
     assert.equal(sobrepago.ok, false);
     assert.match(sobrepago.mensaje, /cambio/i);
 
+    // Decisión del usuario (2026-11-25): la referencia se pide pero no bloquea el cobro
+    // (en la vida real se toma foto del comprobante).
     const sinReferencia = vender([{ id_producto: productos.bombillo, cantidad: 1 }], [{ id_medio_pago: NEQUI, monto_recibido: 2800 }]);
-    assert.equal(sinReferencia.ok, false);
-    assert.match(sinReferencia.mensaje, /referencia/i);
+    assert.equal(sinReferencia.ok, true, sinReferencia.mensaje);
 
     const insuficiente = vender([{ id_producto: productos.bombillo, cantidad: 2 }], [{ id_medio_pago: EFECTIVO, monto_recibido: 5000 }]);
     assert.equal(insuficiente.ok, false);

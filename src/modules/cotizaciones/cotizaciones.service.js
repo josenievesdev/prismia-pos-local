@@ -822,16 +822,12 @@ function prepararPagoConversionVenta(pago, medioPago, totalVenta) {
             : pago.monto_recibido
     );
 
+    // La referencia se guarda si la escriben, pero no bloquea el pago
     const referencia = limpiarTexto(pago.referencia);
-    const requiereReferencia = normalizarEntero(medioPago.requiere_referencia) === 1;
     const afectaEfectivo = normalizarEntero(medioPago.afecta_efectivo_caja) === 1;
 
     if (montoRecibido < totalVenta) {
         return crearError('El valor recibido no cubre el total de la cotización.');
-    }
-
-    if (requiereReferencia && !referencia) {
-        return crearError(`El medio de pago "${medioPago.nombre}" requiere referencia.`);
     }
 
     if (!afectaEfectivo && montoRecibido > totalVenta) {

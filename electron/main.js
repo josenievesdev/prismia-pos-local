@@ -98,6 +98,15 @@ async function crearVentanaPrincipal() {
         ventanaPrincipal = null;
     });
 
+    // Botón "atrás" del mouse: regresa como en un navegador (la app no tiene barra de navegación)
+    ventanaPrincipal.on('app-command', (evento, comando) => {
+        if (comando === 'browser-backward' && ventanaPrincipal) {
+            ventanaPrincipal.webContents
+                .executeJavaScript('window.prismiaVolver ? window.prismiaVolver() : history.back()')
+                .catch(() => {});
+        }
+    });
+
     ventanaPrincipal.webContents.setWindowOpenHandler(({ url }) => {
         if (url.startsWith(URL_LOCAL)) {
             return {

@@ -901,13 +901,6 @@
                 };
             }
 
-            if (pago.requiere_referencia && !pago.referencia_valor) {
-                return {
-                    ok: false,
-                    mensaje: 'El medio de pago "' + pago.nombre + '" requiere referencia.',
-                };
-            }
-
             totalRecibido += pago.monto_recibido;
 
             if (pago.afecta_efectivo) {

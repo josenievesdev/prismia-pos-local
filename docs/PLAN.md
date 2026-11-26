@@ -299,6 +299,19 @@ Pendiente:
 - [ ] Factura electrónica / POS electrónico DIAN: el ticket es un comprobante interno; para
       que valga ante la DIAN hace falta un proveedor tecnológico (proyecto aparte).
 
+## Navegación, compras exactas y cobro ágil (2026-11-25, rama `navegacion-compras-cotizacion`)
+- [x] Botón "volver" en la barra superior de toda pantalla interna (formularios, detalles,
+      informes). Si se llegó desde la lista, regresa a ella con sus filtros; si no, va a la
+      pantalla principal del módulo. Alt + ← y el botón "atrás" del mouse hacen lo mismo,
+      también en la app de escritorio (que no tiene barra del navegador).
+- [x] Compras con aritmética exacta: un solo cálculo (`public/js/compras-calculo.js`) para el
+      servidor y el formulario; pesos enteros y subtotal + IVA = total en cada línea.
+- [x] Cobro por transferencia o tarjeta: la referencia se pide pero ya no bloquea (en la vida
+      real se toma foto del comprobante). Aplica al POS, POS móvil, cotización convertida en
+      venta y pagos de remisiones. Los pagos a proveedores siguen pidiéndola.
+- [x] Retenciones estudiadas y guardadas para después: ver `docs/RETENCIONES.md`.
+- [ ] Cotizaciones y remisiones con el mismo diseño del POS (pedido del usuario).
+
 ## Fase 5 — Calidad de código
 - [ ] Unificar cotizaciones y remisiones (~80 % duplicado).
 - [ ] Actualizar `xlsx` a 0.20.3 (requiere que el usuario lo instale).
