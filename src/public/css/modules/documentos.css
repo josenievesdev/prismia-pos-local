@@ -516,3 +516,282 @@
         min-width: 0;
     }
 }
+
+/* =========================================================
+   Cotización y remisión con la forma del POS
+   Izquierda: buscar producto + cliente y el "papel" del documento
+   (como el ticket del POS). Derecha: resumen con el total grande,
+   los datos del documento y el botón principal.
+   ========================================================= */
+.ventas-pos-shell.doc-pos {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(320px, 28vw, 400px);
+    gap: 16px;
+    align-items: start;
+}
+
+.doc-pos-principal {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    min-width: 0;
+}
+
+.doc-pos-lateral {
+    position: sticky;
+    top: 76px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    min-width: 0;
+}
+
+/* Como en el POS: primero buscar el producto, al lado el cliente */
+@media (min-width: 1024px) {
+    .doc-pos .doc-busquedas {
+        grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    }
+}
+
+.doc-pos .doc-buscador {
+    order: -1;
+}
+
+/* ---------- Papel del documento (igual al ticket del POS) ---------- */
+.doc-papel {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    min-height: 320px;
+    margin-bottom: 8px;
+    border-top: 6px solid var(--color-ink);
+    border-right: 1px solid var(--color-border);
+    border-left: 1px solid var(--color-border);
+    background: var(--color-paper);
+}
+
+/* Borde rasgado abajo */
+.doc-papel::after {
+    content: "";
+    position: absolute;
+    right: -1px;
+    bottom: -8px;
+    left: -1px;
+    height: 8px;
+    background:
+        linear-gradient(135deg, var(--color-paper) 50%, transparent 50%) 0 0 / 12px 8px repeat-x,
+        linear-gradient(225deg, var(--color-paper) 50%, transparent 50%) 0 0 / 12px 8px repeat-x;
+    pointer-events: none;
+}
+
+.doc-papel-cabecera {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 16px;
+    padding: 14px 18px;
+    border-bottom: 1px dashed var(--color-border-strong);
+}
+
+.doc-papel-titulo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 14px;
+    min-width: 0;
+}
+
+.doc-papel .doc-numero {
+    font-size: 17px;
+}
+
+.doc-papel-conteo {
+    color: var(--color-muted);
+    font-size: 12.5px;
+}
+
+.doc-papel-conteo b {
+    color: var(--color-text);
+    font-family: var(--font-mono);
+}
+
+.doc-papel .ui-tabla-contenedor {
+    flex: 1 1 auto;
+    overflow-x: auto;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.doc-papel .doc-tabla {
+    background: transparent;
+}
+
+.doc-papel .doc-tabla thead th {
+    border-bottom: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-muted);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.doc-papel .doc-tabla :is(th, td) {
+    padding-right: 10px;
+    padding-left: 10px;
+}
+
+.doc-papel .doc-tabla :is(.cotizaciones-table-qty, .remisiones-table-qty) {
+    width: 84px;
+}
+
+.doc-papel .doc-tabla td {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
+    background: transparent;
+}
+
+.doc-papel .doc-tabla td.text-right,
+.doc-papel .doc-tabla td.num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+}
+
+.doc-papel .doc-tabla .ventas-cart-product strong {
+    font-size: 14px;
+}
+
+.doc-papel .doc-tabla .ventas-cart-product span {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+}
+
+.doc-papel .doc-tabla .ventas-cart-empty-row > td {
+    padding: 64px 16px;
+    border-bottom: 0;
+}
+
+/* ---------- Resumen (como el del POS) ---------- */
+.doc-resumen {
+    display: grid;
+    gap: 6px;
+    padding: 16px 18px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-soft);
+}
+
+.doc-resumen .ventas-total-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--color-muted);
+    font-size: 13.5px;
+}
+
+.doc-resumen .ventas-total-row strong {
+    color: var(--color-text);
+    font-family: var(--font-mono);
+    font-weight: 600;
+}
+
+.doc-resumen-total {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 6px;
+    padding-top: 10px;
+    border-top: 2px solid var(--color-text);
+}
+
+.doc-resumen-total span {
+    color: var(--color-text);
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.doc-resumen-total strong {
+    overflow: hidden;
+    color: var(--color-text);
+    font-family: var(--font-mono);
+    font-size: clamp(30px, 2.6vw, 44px);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* Costo y utilidad: solo para el negocio, discretos */
+.doc-resumen-interno {
+    display: grid;
+    gap: 4px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--color-border-strong);
+}
+
+.doc-resumen-interno .ventas-total-row {
+    font-size: 12px;
+}
+
+/* ---------- Datos del documento en la columna derecha ---------- */
+.doc-pos .doc-datos .doc-campos {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.doc-pos .doc-datos .doc-campo-doble {
+    grid-column: auto;
+}
+
+.doc-pos .doc-datos textarea {
+    min-height: 64px;
+}
+
+/* ---------- Botón principal y acciones ---------- */
+.doc-pos .doc-guardar {
+    justify-content: center;
+    width: 100%;
+    min-height: 56px;
+    border-radius: var(--radius-lg);
+    font-size: 17px;
+}
+
+.doc-pos-acciones {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+}
+
+.doc-pos-acciones :is(a, button) {
+    min-height: 34px;
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+    color: var(--color-muted);
+    font-size: 13px;
+}
+
+.doc-pos-acciones :is(a, button):hover {
+    border-color: var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text);
+}
+
+@media (max-width: 1100px) {
+    .ventas-pos-shell.doc-pos {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .doc-pos-lateral {
+        position: static;
+    }
+}

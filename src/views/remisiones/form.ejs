@@ -5,168 +5,117 @@
     const fechaVista = String(fechaHoy || '').split('-').reverse().join('/');
 %>
 <section class="module-page ventas-page doc-pagina">
-    <form id="formNuevaRemision" class="ventas-pos-shell doc-editor" data-url="/remisiones" novalidate>
-        <header class="ui-encabezado">
-            <div class="ui-encabezado-texto">
-                <strong class="doc-numero" id="remisionNumeroSugerido" title="Número sugerido: se confirma al guardar"><%= numeroRemision %></strong>
-                <span class="ui-meta"><%= fechaVista %></span>
-                <%- include('../partials/ui/estado', { texto: 'No descuenta inventario', tono: 'info', punto: true }) %>
-            </div>
+    <form id="formNuevaRemision" class="ventas-pos-shell doc-editor doc-pos" data-url="/remisiones" novalidate>
+        <div class="doc-pos-principal">
+            <% if (error) { %>
+                <div class="alert alert-error"><%= error %></div>
+            <% } %>
+            <div class="alert alert-error" id="alertaRemision" hidden></div>
 
-            <div class="ui-acciones">
-                <a href="/remisiones" class="btn-secondary">Listado</a>
-                <button type="button" class="btn-secondary" id="btnLimpiarRemision">Limpiar</button>
-            </div>
-        </header>
+            <div class="doc-busquedas">
+                <section class="pos-cliente doc-tercero">
+                    <div class="ventas-client-clean-head">
+                        <span>Cliente</span>
 
-        <% if (error) { %>
-            <div class="alert alert-error"><%= error %></div>
-        <% } %>
-        <div class="alert alert-error" id="alertaRemision" hidden></div>
-
-        <div class="doc-busquedas">
-            <section class="pos-cliente doc-tercero">
-                <div class="ventas-client-clean-head">
-                    <span>Cliente</span>
-
-                    <div class="ventas-client-clean-actions">
-                        <strong id="resumenClienteRemision" hidden>Sin seleccionar</strong>
-                        <button type="button" class="ventas-client-new-btn" id="btnAbrirClienteRapidoRemision">+ Nuevo</button>
-                    </div>
-                </div>
-
-                <div class="ventas-client-search-wrap">
-                    <input type="search" id="buscarClienteRemision"
-                        placeholder="Nombre, documento o teléfono…" autocomplete="off">
-
-                    <div class="ventas-client-results" id="resultadosClientesRemision" hidden>
-                        <div class="ventas-client-result-empty">Escribe para buscar un cliente.</div>
-                    </div>
-                </div>
-
-                <div class="doc-seleccion" id="clienteSeleccionadoBoxRemision" hidden>
-                    <div class="doc-seleccion-texto">
-                        <strong id="clienteSeleccionadoNombreRemision"></strong>
-                        <span id="clienteSeleccionadoDetalleRemision"></span>
-                    </div>
-
-                    <div class="doc-seleccion-acciones">
-                        <button type="button" class="btn-secondary btn-small" id="btnQuitarClienteRemision">Cambiar</button>
-                    </div>
-                </div>
-            </section>
-
-            <section class="ventas-search-section doc-buscador">
-                <div class="ventas-client-clean-head">
-                    <span>Agregar producto</span>
-                </div>
-
-                <div class="ventas-search-form">
-                    <div class="ventas-search-input-wrap">
-                        <span class="ventas-search-icon">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2.5" aria-hidden="true">
-                                <circle cx="11" cy="11" r="8" />
-                                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                            </svg>
-                        </span>
-
-                        <input type="search" id="buscarProductoRemision"
-                            placeholder="Nombre, código de barras o SKU…" autocomplete="off" autofocus>
-
-                        <div class="ventas-results-panel" id="resultadosProductosRemision" hidden>
-                            <div class="ventas-empty-results">
-                                <strong>Escribe para buscar</strong>
-                                <span>Los productos aparecerán aquí.</span>
-                            </div>
+                        <div class="ventas-client-clean-actions">
+                            <strong id="resumenClienteRemision" hidden>Sin seleccionar</strong>
+                            <button type="button" class="ventas-client-new-btn" id="btnAbrirClienteRapidoRemision">+ Nuevo</button>
                         </div>
                     </div>
 
-                    <button type="button" class="ventas-search-btn" id="btnBuscarProductoRemision">Buscar</button>
+                    <div class="ventas-client-search-wrap">
+                        <input type="search" id="buscarClienteRemision"
+                            placeholder="Nombre, documento o teléfono…" autocomplete="off">
+
+                        <div class="ventas-client-results" id="resultadosClientesRemision" hidden>
+                            <div class="ventas-client-result-empty">Escribe para buscar un cliente.</div>
+                        </div>
+                    </div>
+
+                    <div class="doc-seleccion" id="clienteSeleccionadoBoxRemision" hidden>
+                        <div class="doc-seleccion-texto">
+                            <strong id="clienteSeleccionadoNombreRemision"></strong>
+                            <span id="clienteSeleccionadoDetalleRemision"></span>
+                        </div>
+
+                        <div class="doc-seleccion-acciones">
+                            <button type="button" class="btn-secondary btn-small" id="btnQuitarClienteRemision">Cambiar</button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="ventas-search-section doc-buscador">
+                    <div class="ventas-client-clean-head">
+                        <span>Agregar producto</span>
+                    </div>
+
+                    <div class="ventas-search-form">
+                        <div class="ventas-search-input-wrap">
+                            <span class="ventas-search-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5" aria-hidden="true">
+                                    <circle cx="11" cy="11" r="8" />
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                                </svg>
+                            </span>
+
+                            <input type="search" id="buscarProductoRemision"
+                                placeholder="Nombre, código de barras o SKU…" autocomplete="off" autofocus>
+
+                            <div class="ventas-results-panel" id="resultadosProductosRemision" hidden>
+                                <div class="ventas-empty-results">
+                                    <strong>Escribe para buscar</strong>
+                                    <span>Los productos aparecerán aquí.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="button" class="ventas-search-btn" id="btnBuscarProductoRemision">Buscar</button>
+                    </div>
+                </section>
+            </div>
+
+            <section class="doc-papel" aria-label="Productos del documento">
+                <header class="doc-papel-cabecera">
+                    <div class="doc-papel-titulo">
+                        <strong class="doc-numero" id="remisionNumeroSugerido" title="Número sugerido: se confirma al guardar"><%= numeroRemision %></strong>
+                        <span class="ui-meta"><%= fechaVista %></span>
+                        <%- include('../partials/ui/estado', { texto: 'No descuenta inventario', tono: 'info', punto: true }) %>
+                    </div>
+                    <span class="doc-papel-conteo">Líneas: <b id="totalItemsRemision">0</b></span>
+                </header>
+
+                <div class="ui-tabla-contenedor">
+                    <table class="ui-tabla doc-tabla">
+                        <thead>
+                            <tr>
+                                <th class="centro ventas-col-item">#</th>
+                                <th>Producto</th>
+                                <th class="centro">Cantidad</th>
+                                <th class="num">Precio</th>
+                                <th class="num">IVA</th>
+                                <th class="num">Total</th>
+                                <th class="centro" aria-label="Quitar"></th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="itemsRemision">
+                            <tr class="ventas-cart-empty-row">
+                                <td colspan="7">
+                                    <div class="ventas-cart-empty">
+                                        <strong>Remisión vacía</strong>
+                                        <span>Busca un producto y agrégalo a la remisión.</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </section>
         </div>
 
-        <section class="ui-tarjeta doc-lineas">
-            <header class="ui-tarjeta-encabezado">
-                <div>
-                    <h3>Productos</h3>
-                </div>
-                <span class="ui-estado">Líneas:&nbsp;<b id="totalItemsRemision">0</b></span>
-            </header>
-
-            <div class="ui-tabla-contenedor">
-                <table class="ui-tabla doc-tabla">
-                    <thead>
-                        <tr>
-                            <th class="centro ventas-col-item">#</th>
-                            <th>Producto</th>
-                            <th class="centro">Cantidad</th>
-                            <th class="num">Precio</th>
-                            <th class="num">IVA</th>
-                            <th class="num">Total</th>
-                            <th class="centro" aria-label="Quitar"></th>
-                        </tr>
-                    </thead>
-
-                    <tbody id="itemsRemision">
-                        <tr class="ventas-cart-empty-row">
-                            <td colspan="7">
-                                <div class="ventas-cart-empty">
-                                    <strong>Remisión vacía</strong>
-                                    <span>Busca un producto y agrégalo a la remisión.</span>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <section class="ui-tarjeta doc-datos">
-            <header class="ui-tarjeta-encabezado">
-                <div>
-                    <h3>Entrega</h3>
-                </div>
-            </header>
-
-            <div class="ui-tarjeta-cuerpo doc-campos">
-                <label class="ui-campo">
-                    <span>Fecha estimada</span>
-                    <input type="date" id="fechaEntregaEstimadaRemision" value="<%= fechaHoy %>">
-                </label>
-
-                <label class="ui-campo">
-                    <span>Teléfono</span>
-                    <input type="text" id="telefonoEntregaRemision" autocomplete="off" placeholder="Teléfono o celular">
-                </label>
-
-                <label class="ui-campo">
-                    <span>Recibe</span>
-                    <input type="text" id="contactoEntregaRemision" autocomplete="off" placeholder="Persona que recibe">
-                </label>
-
-                <label class="ui-campo doc-campo-doble">
-                    <span>Dirección</span>
-                    <input type="text" id="direccionEntregaRemision" autocomplete="off"
-                        placeholder="Dirección del cliente o punto de entrega">
-                </label>
-
-                <label class="ui-campo doc-campo-doble">
-                    <span>Condiciones de entrega</span>
-                    <textarea id="condicionesEntregaRemision" rows="2"
-                        placeholder="Ej: Entrega sujeta a disponibilidad o transporte.">Documento de remisión sin afectación de inventario.</textarea>
-                </label>
-
-                <label class="ui-campo doc-campo-doble">
-                    <span>Observaciones</span>
-                    <textarea id="observacionesRemision" rows="2" placeholder="Notas internas o aclaraciones…"></textarea>
-                </label>
-            </div>
-        </section>
-
-        <footer class="doc-pie">
-            <div class="doc-pie-totales">
+        <aside class="doc-pos-lateral" aria-label="Resumen">
+            <section class="doc-resumen">
                 <div class="ventas-total-row">
                     <span>Subtotal</span>
                     <strong id="resumenSubtotalRemision">$ 0</strong>
@@ -179,24 +128,74 @@
                     <span>IVA</span>
                     <strong id="resumenIvaRemision">$ 0</strong>
                 </div>
-                <div class="ventas-total-row">
-                    <span>Costo</span>
-                    <strong id="resumenCostoRemision">$ 0</strong>
-                </div>
-                <div class="ventas-total-row">
-                    <span>Utilidad</span>
-                    <strong id="resumenUtilidadRemision">$ 0</strong>
-                </div>
-            </div>
 
-            <div class="doc-pie-total">
-                <span>Total</span>
-                <strong id="resumenTotalRemision">$ 0</strong>
-            </div>
+                <div class="doc-resumen-total">
+                    <span>Total</span>
+                    <strong id="resumenTotalRemision">$ 0</strong>
+                </div>
+
+                <div class="doc-resumen-interno" aria-label="Solo para el negocio">
+                    <div class="ventas-total-row">
+                        <span>Costo</span>
+                        <strong id="resumenCostoRemision">$ 0</strong>
+                    </div>
+                    <div class="ventas-total-row">
+                        <span>Utilidad</span>
+                        <strong id="resumenUtilidadRemision">$ 0</strong>
+                    </div>
+                </div>
+            </section>
 
             <span id="resumenClienteInfoRemision" hidden></span>
             <button type="submit" class="btn-primary doc-guardar" id="btnGuardarRemision">Crear remisión</button>
-        </footer>
+
+            <div class="doc-pos-acciones">
+                <a href="/remisiones" class="btn-secondary">Listado</a>
+                <button type="button" class="btn-secondary" id="btnLimpiarRemision">Limpiar</button>
+            </div>
+
+            <section class="ui-tarjeta doc-datos">
+                <header class="ui-tarjeta-encabezado">
+                    <div>
+                        <h3>Entrega</h3>
+                    </div>
+                </header>
+
+                <div class="ui-tarjeta-cuerpo doc-campos">
+                    <label class="ui-campo">
+                        <span>Fecha estimada</span>
+                        <input type="date" id="fechaEntregaEstimadaRemision" value="<%= fechaHoy %>">
+                    </label>
+
+                    <label class="ui-campo">
+                        <span>Teléfono</span>
+                        <input type="text" id="telefonoEntregaRemision" autocomplete="off" placeholder="Teléfono o celular">
+                    </label>
+
+                    <label class="ui-campo">
+                        <span>Recibe</span>
+                        <input type="text" id="contactoEntregaRemision" autocomplete="off" placeholder="Persona que recibe">
+                    </label>
+
+                    <label class="ui-campo doc-campo-doble">
+                        <span>Dirección</span>
+                        <input type="text" id="direccionEntregaRemision" autocomplete="off"
+                            placeholder="Dirección del cliente o punto de entrega">
+                    </label>
+
+                    <label class="ui-campo doc-campo-doble">
+                        <span>Condiciones de entrega</span>
+                        <textarea id="condicionesEntregaRemision" rows="2"
+                            placeholder="Ej: Entrega sujeta a disponibilidad o transporte.">Documento de remisión sin afectación de inventario.</textarea>
+                    </label>
+
+                    <label class="ui-campo doc-campo-doble">
+                        <span>Observaciones</span>
+                        <textarea id="observacionesRemision" rows="2" placeholder="Notas internas o aclaraciones…"></textarea>
+                    </label>
+                </div>
+            </section>
+        </aside>
     </form>
 
         <div class="ventas-modal-backdrop" id="modalClienteRapidoRemision" hidden>

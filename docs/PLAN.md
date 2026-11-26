@@ -310,7 +310,10 @@ Pendiente:
       real se toma foto del comprobante). Aplica al POS, POS móvil, cotización convertida en
       venta y pagos de remisiones. Los pagos a proveedores siguen pidiéndola.
 - [x] Retenciones estudiadas y guardadas para después: ver `docs/RETENCIONES.md`.
-- [ ] Cotizaciones y remisiones con el mismo diseño del POS (pedido del usuario).
+- [x] Cotizaciones y remisiones con la forma del POS: buscar producto y cliente arriba, el
+      "papel" del documento a la izquierda (como el ticket) y a la derecha el resumen con el
+      total grande y el botón principal; condiciones o datos de entrega debajo.
+- [ ] Compras con la misma forma (su formulario tiene más campos; queda para después).
 
 ## Fase 5 — Calidad de código
 - [ ] Unificar cotizaciones y remisiones (~80 % duplicado).
