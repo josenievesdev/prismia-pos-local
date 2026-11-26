@@ -1412,6 +1412,29 @@ function registrarCompraConInventario({ compra, lineas, usuario, ip, userAgent }
 
         const idCompra = Number(resultadoCompra.lastInsertRowid);
 
+        // De contado: el pago queda registrado con su medio (aparece en "Pagos a proveedores").
+        // Sale de tesorería, no del cajón del POS.
+        if (compra.condicion_pago === 'contado' && compra.id_medio_pago && Number(compra.total) > 0) {
+            db.prepare(`
+                INSERT INTO pagos_compras_proveedores (
+                    id_compra, id_proveedor, id_usuario, id_medio_pago, id_turno_caja, id_movimiento_caja,
+                    fecha_pago, monto_pagado, referencia_pago, entidad_pago, observaciones, origen_pago, estado
+                ) VALUES (
+                    @id_compra, @id_proveedor, @id_usuario, @id_medio_pago, NULL, NULL,
+                    @fecha_pago, @monto_pagado, @referencia_pago, NULL, @observaciones, 'tesoreria', 'registrado'
+                )
+            `).run({
+                id_compra: idCompra,
+                id_proveedor: compra.id_proveedor,
+                id_usuario: usuario?.id_usuario || 1,
+                id_medio_pago: compra.id_medio_pago,
+                fecha_pago: compra.fecha_compra,
+                monto_pagado: compra.total,
+                referencia_pago: compra.referencia_pago || null,
+                observaciones: `Pago de contado de la compra ${numeroCompra}`,
+            });
+        }
+
         const obtenerProducto = db.prepare(`
             SELECT
                 p.id_producto,
@@ -1573,12 +1596,15 @@ function registrarCompraConInventario({ compra, lineas, usuario, ip, userAgent }
                 throw new Error(`No se encontró el producto de la línea ${linea.id_producto}.`);
             }
 
-            const stockAnterior = normalizarNumero(producto.stock_actual);
+            // El stock puede estar en negativo (venta sin stock): se lee tal cual.
+            // Antes se volvía 0 y la compra "borraba" las unidades ya vendidas.
+            const stockAnterior = Number.isFinite(Number(producto.stock_actual)) ? Number(producto.stock_actual) : 0;
             const controlaInventario = Number(producto.controla_inventario || 0) === 1;
             const cantidad = normalizarNumero(linea.cantidad);
 
+            // Hasta 3 decimales (metros, kilos) sin residuos de coma flotante
             const stockNuevo = controlaInventario
-                ? stockAnterior + cantidad
+                ? Math.round((stockAnterior + cantidad) * 1000) / 1000
                 : stockAnterior;
 
             const ultimoCostoAnterior = normalizarEntero(producto.ultimo_costo);
@@ -1607,7 +1633,7 @@ function registrarCompraConInventario({ compra, lineas, usuario, ip, userAgent }
             const precioVentaAnterior = normalizarEntero(producto.precio_venta);
             const debeActualizarPrecio = Number(linea.actualizar_precio_venta || 0) === 1;
             const precioVentaNuevo = debeActualizarPrecio
-                ? normalizarEntero(linea.precio_venta_nuevo || linea.precio_venta_sugerido)
+                ? normalizarEntero(linea.precio_venta_nuevo)
                 : precioVentaAnterior;
 
             insertarDetalle.run({

@@ -36,6 +36,10 @@
         observaciones: $('observacionesCompra'),
 
         condicionPago: $('condicionPagoCompra'),
+        medioPago: $('medioPagoCompra'),
+        campoMedioPago: $('campoMedioPagoCompra'),
+        referenciaPago: $('referenciaPagoCompra'),
+        campoReferenciaPago: $('campoReferenciaPagoCompra'),
         fechaVencimiento: $('fechaVencimientoCompra'),
         campoFechaVencimiento: $('campoFechaVencimientoCompra'),
         resumenVencimiento: $('resumenVencimientoCompra'),
@@ -47,6 +51,10 @@
     if (!ui.form || !ui.lineasBody) {
         return;
     }
+
+    // Reglas de IVA del negocio (las mismas del servidor) para mostrar la ganancia de cada línea
+    const esResponsableIva = ui.form.dataset.responsableIva === '1';
+    const cobraIva = ui.form.dataset.cobraIva !== '0';
 
     const estado = {
         proveedor: null,
@@ -160,6 +168,14 @@
 
         if (ui.campoFechaVencimiento) {
             ui.campoFechaVencimiento.hidden = !esCredito;
+        }
+
+        if (ui.campoMedioPago) {
+            ui.campoMedioPago.hidden = esCredito;
+        }
+
+        if (ui.campoReferenciaPago) {
+            ui.campoReferenciaPago.hidden = esCredito;
         }
 
         if (!esCredito) {
@@ -455,8 +471,8 @@
             descuento_porcentaje: 0,
             porcentaje_iva: normalizarPorcentajeIva(producto.iva_compra_sugerido || 0),
             precio_venta_actual: Number(producto.precio_venta || 0),
-            ganancia_sobre_costo_porcentaje: 0,
-            actualizar_precio_venta: false,
+            iva_venta: Number(producto.maneja_iva_venta || 0) === 1 ? Number(producto.porcentaje_iva_venta_visual || 0) : 0,
+            precio_venta_nuevo: '',
         });
 
         limpiarAlerta();
@@ -519,6 +535,62 @@
         }
     }
 
+    const formatoPorcentaje = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 1 });
+    const TARIFAS_IVA = [0, 5, 19];
+
+    function opcionesIva(valor) {
+        const actual = Math.round(limpiarNumero(valor));
+        const tarifas = TARIFAS_IVA.includes(actual) ? TARIFAS_IVA : [...TARIFAS_IVA, actual];
+
+        return tarifas.map((tarifa) => `<option value="${tarifa}" ${tarifa === actual ? 'selected' : ''}>${tarifa === 0 ? 'Sin IVA' : tarifa + ' %'}</option>`).join('');
+    }
+
+    // Lo que se gana por unidad al precio de venta (el nuevo si lo escriben), con el costo de esta compra.
+    // Mismo criterio del servidor: si el negocio es responsable de IVA el costo va sin IVA; el precio
+    // de venta lleva el IVA incluido si el negocio cobra IVA.
+    function gananciaLinea(linea, calculo) {
+        const precioNuevo = Math.round(limpiarNumero(linea.precio_venta_nuevo));
+        const precio = precioNuevo > 0 ? precioNuevo : Math.round(limpiarNumero(linea.precio_venta_actual));
+
+        if (!precio) {
+            return null;
+        }
+
+        const ivaVenta = cobraIva ? Math.round(limpiarNumero(linea.iva_venta)) : 0;
+        const base = ivaVenta > 0 ? window.PrismiaDinero.separarIvaIncluido(precio, ivaVenta).base : precio;
+        const costo = esResponsableIva ? calculo.costoUnitarioNeto : calculo.costoUnitarioFinal;
+        const ganancia = base - costo;
+
+        return {
+            precio,
+            esNuevo: precioNuevo > 0,
+            ganancia,
+            margen: base > 0 ? ganancia / base * 100 : 0,
+        };
+    }
+
+    function textoGanancia(linea, calculo) {
+        const resultado = gananciaLinea(linea, calculo);
+
+        if (!resultado) {
+            return { texto: 'Producto sin precio de venta', pierde: false };
+        }
+
+        const precio = `${resultado.esNuevo ? 'Nuevo precio' : 'Precio de venta'} ${formatearMoneda(resultado.precio)}`;
+
+        if (resultado.ganancia < 0) {
+            return {
+                texto: `${precio} · con este costo pierdes ${formatearMoneda(-resultado.ganancia)} por unidad`,
+                pierde: true,
+            };
+        }
+
+        return {
+            texto: `${precio} · ganas ${formatearMoneda(resultado.ganancia)} por unidad (${formatoPorcentaje.format(resultado.margen)} %)`,
+            pierde: false,
+        };
+    }
+
     function renderizarLineas(foco = null) {
         ui.contadorLineas.textContent = String(estado.lineas.length);
 
@@ -529,7 +601,7 @@
         if (!estado.lineas.length) {
             ui.lineasBody.innerHTML = `
     <tr class="ventas-cart-empty-row">
-        <td colspan="7">
+        <td colspan="6">
             <div class="ventas-cart-empty">
                 <strong>Compra vacía</strong>
                 <span>Busca un producto y agrégalo a la compra.</span>
@@ -545,91 +617,60 @@
         ui.lineasBody.innerHTML = estado.lineas
             .map((linea, indice) => {
                 const calculo = calcularLinea(linea);
+                const ganancia = textoGanancia(linea, calculo);
+                const pasoCantidad = Number(linea.unidad_permite_decimales || 0) === 1 ? '0.001' : '1';
 
                 return `
-    <tr data-linea-index="${indice}">
+    <tr class="compra-linea" data-linea-index="${indice}">
+        <td class="centro compra-numero">${indice + 1}</td>
         <td>
-            <div class="ventas-cart-product compras-cart-product">
-                <strong>${indice + 1}. ${escaparHtml(linea.nombre)}</strong>
-                <small>
-                    ${escaparHtml(linea.codigo_interno || 'Sin código')}
-                    · ${escaparHtml(linea.unidad_abreviatura)}
-                    · Venta actual: ${formatearMoneda(linea.precio_venta_actual)}
-                </small>
-            </div>
-
-            <input type="hidden" name="lineas[${indice}][id_producto]" value="${linea.id_producto}">
-            <input type="hidden" name="lineas[${indice}][costo_unitario_neto]" value="${calculo.costoUnitarioNeto}">
-            <input type="hidden" name="lineas[${indice}][iva_unitario]" value="${calculo.ivaUnitario}">
-            <input type="hidden" name="lineas[${indice}][costo_unitario_final]" value="${calculo.costoUnitarioFinal}">
-            <input type="hidden" name="lineas[${indice}][subtotal_linea]" value="${calculo.subtotalLinea}">
-            <input type="hidden" name="lineas[${indice}][iva_linea]" value="${calculo.ivaLinea}">
-            <input type="hidden" name="lineas[${indice}][total_linea]" value="${calculo.totalLinea}">
-            <input type="hidden" name="lineas[${indice}][precio_venta_sugerido]" value="${calculo.precioVentaSugerido}">
-        </td>
-
-        <td class="text-center">
-            <input class="compras-line-input is-small text-center" type="number" min="0.001" step="0.001"
-                data-index="${indice}" data-field="cantidad"
-                name="lineas[${indice}][cantidad]" value="${linea.cantidad}">
-        </td>
-
-        <td class="text-right">
-            <input class="compras-line-input text-right" type="number" min="0" step="1"
-                data-index="${indice}" data-field="costo_unitario"
-                name="lineas[${indice}][costo_unitario]" value="${linea.costo_unitario}">
-        </td>
-
-        <td class="text-center">
-            <div class="compras-line-pair">
-                <label>
-                    <span>Desc.</span>
-                    <input class="compras-line-input is-mini text-right" type="number" min="0" max="100" step="0.01"
-                        data-index="${indice}" data-field="descuento_porcentaje"
-                        name="lineas[${indice}][descuento_porcentaje]" value="${linea.descuento_porcentaje}">
-                </label>
-
-                <label>
-                    <span>IVA</span>
-                    <input class="compras-line-input is-mini text-right" type="number" min="0" max="100" step="0.01"
-                        data-index="${indice}" data-field="porcentaje_iva"
-                        name="lineas[${indice}][porcentaje_iva]" value="${linea.porcentaje_iva}">
-                </label>
+            <div class="ventas-cart-product">
+                <strong>${escaparHtml(linea.nombre)}</strong>
+                <span>${escaparHtml(linea.codigo_interno || 'Sin código')} · ${escaparHtml(linea.unidad_abreviatura)}</span>
             </div>
         </td>
-
-        <td class="text-right">
-<strong data-calculo="costo_final">${formatearMoneda(calculo.costoUnitarioFinal)}</strong>
-<small class="compras-line-muted" data-calculo="total_linea">
-    Total: ${formatearMoneda(calculo.totalLinea)}
-</small>
+        <td class="centro">
+            <input class="compra-campo compra-campo--cantidad" type="number" min="0.001" step="${pasoCantidad}" inputmode="decimal"
+                data-index="${indice}" data-field="cantidad" value="${escaparHtml(linea.cantidad)}" aria-label="Cantidad">
         </td>
-
-        <td class="text-right">
-<strong data-calculo="precio_sugerido">${formatearMoneda(calculo.precioVentaSugerido)}</strong>
-
-            <div class="compras-price-tools">
-                <label>
-                    <span>Gan.</span>
-                    <input class="compras-line-input is-mini text-right" type="number" min="0" step="0.01"
-                        data-index="${indice}" data-field="ganancia_sobre_costo_porcentaje"
-                        name="lineas[${indice}][ganancia_sobre_costo_porcentaje]"
-                        value="${linea.ganancia_sobre_costo_porcentaje}">
-                </label>
-
-                <label class="compras-check-inline">
-                    <input type="checkbox"
-                        data-index="${indice}" data-field="actualizar_precio_venta"
-                        name="lineas[${indice}][actualizar_precio_venta]"
-                        ${linea.actualizar_precio_venta ? 'checked' : ''}>
-                    <span>Actualizar</span>
-                </label>
+        <td class="num">
+            <input class="compra-campo compra-campo--dinero" type="number" min="0" step="1" inputmode="numeric"
+                data-index="${indice}" data-field="costo_unitario" value="${escaparHtml(linea.costo_unitario)}" aria-label="Costo unitario">
+        </td>
+        <td class="num"><strong data-calculo="total_linea">${formatearMoneda(calculo.totalLinea)}</strong></td>
+        <td class="centro">
+            <button type="button" class="ventas-cart-remove" data-remove-index="${indice}" aria-label="Quitar producto">✕</button>
+        </td>
+    </tr>
+    <tr class="compra-linea-detalle" data-linea-precio="${indice}">
+        <td></td>
+        <td colspan="5">
+            <div class="compra-detalle">
+                <div class="compra-detalle-grupo">
+                    <label class="compra-detalle-campo">
+                        <span>Desc.</span>
+                        <input class="compra-campo compra-campo--corto" type="number" min="0" max="100" step="0.01" inputmode="decimal"
+                            data-index="${indice}" data-field="descuento_porcentaje" value="${escaparHtml(linea.descuento_porcentaje)}" placeholder="0" aria-label="Descuento en porcentaje">
+                        <span>%</span>
+                    </label>
+                    <label class="compra-detalle-campo">
+                        <span>IVA</span>
+                        <select class="compra-campo compra-campo--iva" data-index="${indice}" data-field="porcentaje_iva" aria-label="IVA de la compra">
+                            ${opcionesIva(linea.porcentaje_iva)}
+                        </select>
+                    </label>
+                    <span class="compra-detalle-dato">Costo final c/u <b data-calculo="costo_final">${formatearMoneda(calculo.costoUnitarioFinal)}</b></span>
+                </div>
+                <div class="compra-detalle-grupo">
+                    <span class="compra-precio-ganancia ${ganancia.pierde ? 'is-pierde' : ''}" data-calculo="ganancia">${escaparHtml(ganancia.texto)}</span>
+                    <label class="compra-detalle-campo">
+                        <span>Cambiar precio</span>
+                        <input class="compra-campo compra-campo--dinero" type="number" min="0" step="1" inputmode="numeric"
+                            data-index="${indice}" data-field="precio_venta_nuevo" value="${escaparHtml(linea.precio_venta_nuevo || '')}"
+                            placeholder="${escaparHtml(linea.precio_venta_actual || '')}" aria-label="Nuevo precio de venta (opcional)">
+                    </label>
+                </div>
             </div>
-        </td>
-
-        <td class="text-center">
-            <button type="button" class="ventas-cart-remove" data-remove-index="${indice}"
-                aria-label="Quitar producto">✕</button>
         </td>
     </tr>
 `;
@@ -647,45 +688,27 @@
             return;
         }
 
-        const fila = ui.lineasBody.querySelector(`[data-linea-index="${indice}"]`);
-
-        if (!fila) {
-            return;
-        }
-
         const calculo = calcularLinea(linea);
+        const fila = ui.lineasBody.querySelector(`[data-linea-index="${indice}"]`);
+        const filaPrecio = ui.lineasBody.querySelector(`[data-linea-precio="${indice}"]`);
 
-        const costoFinal = fila.querySelector('[data-calculo="costo_final"]');
-        const totalLinea = fila.querySelector('[data-calculo="total_linea"]');
-        const precioSugerido = fila.querySelector('[data-calculo="precio_sugerido"]');
-
-        const hiddenCostoNeto = fila.querySelector(`[name="lineas[${indice}][costo_unitario_neto]"]`);
-        const hiddenIvaUnitario = fila.querySelector(`[name="lineas[${indice}][iva_unitario]"]`);
-        const hiddenCostoFinal = fila.querySelector(`[name="lineas[${indice}][costo_unitario_final]"]`);
-        const hiddenSubtotal = fila.querySelector(`[name="lineas[${indice}][subtotal_linea]"]`);
-        const hiddenIvaLinea = fila.querySelector(`[name="lineas[${indice}][iva_linea]"]`);
-        const hiddenTotalLinea = fila.querySelector(`[name="lineas[${indice}][total_linea]"]`);
-        const hiddenPrecioSugerido = fila.querySelector(`[name="lineas[${indice}][precio_venta_sugerido]"]`);
+        const costoFinal = filaPrecio?.querySelector('[data-calculo="costo_final"]');
+        const totalLinea = fila?.querySelector('[data-calculo="total_linea"]');
+        const ganancia = filaPrecio?.querySelector('[data-calculo="ganancia"]');
 
         if (costoFinal) {
             costoFinal.textContent = formatearMoneda(calculo.costoUnitarioFinal);
         }
 
         if (totalLinea) {
-            totalLinea.textContent = `Total: ${formatearMoneda(calculo.totalLinea)}`;
+            totalLinea.textContent = formatearMoneda(calculo.totalLinea);
         }
 
-        if (precioSugerido) {
-            precioSugerido.textContent = formatearMoneda(calculo.precioVentaSugerido);
+        if (ganancia) {
+            const resultado = textoGanancia(linea, calculo);
+            ganancia.textContent = resultado.texto;
+            ganancia.classList.toggle('is-pierde', resultado.pierde);
         }
-
-        if (hiddenCostoNeto) hiddenCostoNeto.value = calculo.costoUnitarioNeto;
-        if (hiddenIvaUnitario) hiddenIvaUnitario.value = calculo.ivaUnitario;
-        if (hiddenCostoFinal) hiddenCostoFinal.value = calculo.costoUnitarioFinal;
-        if (hiddenSubtotal) hiddenSubtotal.value = calculo.subtotalLinea;
-        if (hiddenIvaLinea) hiddenIvaLinea.value = calculo.ivaLinea;
-        if (hiddenTotalLinea) hiddenTotalLinea.value = calculo.totalLinea;
-        if (hiddenPrecioSugerido) hiddenPrecioSugerido.value = calculo.precioVentaSugerido;
     }
 
     function renderizarTotales() {
@@ -723,12 +746,6 @@
             return;
         }
 
-        if (campo === 'actualizar_precio_venta') {
-            estado.lineas[indice][campo] = input.checked;
-            renderizarLineas();
-            return;
-        }
-
         estado.lineas[indice][campo] = input.value;
 
         actualizarCalculosLinea(indice);
@@ -744,8 +761,12 @@
             condicion_pago: ui.condicionPago?.value || 'contado',
             fecha_vencimiento: ui.fechaVencimiento?.value || '',
             observaciones: ui.observaciones?.value || '',
+            id_medio_pago: (ui.condicionPago?.value || 'contado') === 'contado' ? (ui.medioPago?.value || '') : '',
+            referencia_pago: (ui.condicionPago?.value || 'contado') === 'contado' ? (ui.referenciaPago?.value || '') : '',
             lineas: estado.lineas.map((linea) => {
                 const calculo = calcularLinea(linea);
+                const precioNuevo = Math.round(limpiarNumero(linea.precio_venta_nuevo));
+                const cambiaPrecio = precioNuevo > 0 && precioNuevo !== Math.round(limpiarNumero(linea.precio_venta_actual));
 
                 return {
                     id_producto: linea.id_producto,
@@ -753,7 +774,6 @@
                     costo_unitario: linea.costo_unitario,
                     descuento_porcentaje: linea.descuento_porcentaje,
                     porcentaje_iva: linea.porcentaje_iva,
-                    ganancia_sobre_costo_porcentaje: linea.ganancia_sobre_costo_porcentaje,
 
                     descuento_linea: calculo.descuentoLinea,
                     costo_unitario_neto: calculo.costoUnitarioNeto,
@@ -765,8 +785,8 @@
 
                     precio_venta_anterior: linea.precio_venta_actual,
                     precio_venta_sugerido: calculo.precioVentaSugerido,
-                    actualizar_precio_venta: linea.actualizar_precio_venta ? 1 : 0,
-                    precio_venta_nuevo: calculo.precioVentaSugerido,
+                    actualizar_precio_venta: cambiaPrecio ? 1 : 0,
+                    precio_venta_nuevo: cambiaPrecio ? precioNuevo : 0,
                 };
             }),
         };
@@ -835,6 +855,18 @@
 
         if (ui.fechaVencimiento) {
             ui.fechaVencimiento.value = ui.fechaCompra?.value || '';
+        }
+
+        if (ui.referenciaPago) {
+            ui.referenciaPago.value = '';
+        }
+
+        // El medio vuelve al de por defecto (el que vino marcado al abrir la pantalla)
+        if (ui.medioPago) {
+            const porDefecto = ui.medioPago.querySelector('option[selected]') || ui.medioPago.options[0];
+            if (porDefecto) {
+                ui.medioPago.value = porDefecto.value;
+            }
         }
 
         ocultarResultados(ui.resultadosProductos);

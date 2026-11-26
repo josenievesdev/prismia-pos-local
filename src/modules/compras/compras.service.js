@@ -1,5 +1,6 @@
 const comprasRepository = require('./compras.repository');
 const comprasCalculo = require('../../utils/compras-calculo');
+const ivaNegocio = require('../configuracion/iva-negocio');
 const fechas = require('../../utils/fechas');
 const { limpiarTexto } = require('../../utils/comunes');
 
@@ -198,16 +199,6 @@ function obtenerEtiquetaEstadoPago(estadoPago) {
     }[estadoPago] || 'Pendiente';
 }
 
-function obtenerFechaActualISO() {
-    const fecha = new Date();
-
-    const anio = fecha.getFullYear();
-    const mes = String(fecha.getMonth() + 1).padStart(2, '0');
-    const dia = String(fecha.getDate()).padStart(2, '0');
-
-    return `${anio}-${mes}-${dia}`;
-}
-
 function calcularDiasEntreFechasISO(fechaInicio, fechaFin) {
     if (!esFechaISOValida(fechaInicio) || !esFechaISOValida(fechaFin)) {
         return 0;
@@ -385,7 +376,8 @@ function calcularLineaCompra(linea = {}, { esResponsableIva = false } = {}) {
         precio_venta_anterior: normalizarEntero(linea.precio_venta_anterior || linea.precio_venta_actual || 0),
         precio_venta_sugerido: calculo.precioVentaSugerido,
         actualizar_precio_venta: Number(linea.actualizar_precio_venta || 0) === 1 ? 1 : 0,
-        precio_venta_nuevo: normalizarEntero(linea.precio_venta_nuevo || calculo.precioVentaSugerido),
+        // Solo un precio escrito a propósito: nunca el "sugerido" (con 0 % de ganancia sería el costo)
+        precio_venta_nuevo: normalizarEntero(linea.precio_venta_nuevo),
     };
 }
 
@@ -416,6 +408,10 @@ function validarYCalcularCompra(datos = {}) {
 
     if (!fechaCompra) {
         errores.push('Selecciona la fecha de compra.');
+    } else if (!esFechaISOValida(fechaCompra)) {
+        errores.push('La fecha de compra no es válida.');
+    } else if (compararFechasISO(fechaCompra, obtenerFechaActualISO()) > 0) {
+        errores.push('La fecha de compra no puede ser futura.');
     }
 
     if (!TIPOS_SOPORTE_COMPRA.some((tipo) => tipo.valor === tipoSoporte)) {
@@ -457,7 +453,7 @@ function validarYCalcularCompra(datos = {}) {
         }
 
         if (calculada.actualizar_precio_venta === 1 && calculada.precio_venta_nuevo <= 0) {
-            errores.push(`La línea ${numeroLinea} debe tener un precio de venta nuevo válido.`);
+            errores.push(`Escribe el nuevo precio de venta de la línea ${numeroLinea}, o deja el precio como está.`);
         }
 
         lineasCalculadas.push(calculada);
@@ -491,6 +487,17 @@ function validarYCalcularCompra(datos = {}) {
 
     if (!CONDICIONES_PAGO_PERMITIDAS.includes(datosPago.condicion_pago)) {
         errores.push('Selecciona una condición de pago válida.');
+    }
+
+    // De contado: se guarda con qué se pagó (queda en "Pagos a proveedores")
+    let medioPagoContado = null;
+
+    if (datosPago.condicion_pago === 'contado') {
+        medioPagoContado = comprasRepository.obtenerMedioPagoPorId(normalizarEntero(datos.id_medio_pago, 0));
+
+        if (!medioPagoContado || Number(medioPagoContado.activo || 0) !== 1) {
+            errores.push('Indica con qué se pagó la compra de contado.');
+        }
     }
 
     if (datosPago.condicion_pago === 'credito') {
@@ -544,6 +551,8 @@ function validarYCalcularCompra(datos = {}) {
             fecha_pago: datosPago.fecha_pago,
             total_pagado: datosPago.total_pagado,
             saldo_pendiente: datosPago.saldo_pendiente,
+            id_medio_pago: medioPagoContado ? medioPagoContado.id_medio_pago : null,
+            referencia_pago: limpiarTexto(datos.referencia_pago),
         },
         lineas: lineasCalculadas,
     };
@@ -570,7 +579,8 @@ function prepararProductoParaCompra(producto) {
         costo_promedio: normalizarEntero(producto.costo_promedio),
         ultimo_costo: normalizarEntero(producto.ultimo_costo),
         costo_referencia_compra: costoReferencia,
-        stock_actual: normalizarNumero(producto.stock_actual),
+        // Puede ser negativo (venta sin stock): se muestra tal cual
+        stock_actual: Number.isFinite(Number(producto.stock_actual)) ? Number(producto.stock_actual) : 0,
         controla_inventario: Number(producto.controla_inventario || 0),
         maneja_iva_venta: Number(producto.maneja_iva || 0),
         porcentaje_iva_venta_visual: porcentajeIvaVentaVisual,
@@ -796,6 +806,10 @@ function obtenerDatosFormularioNuevaCompra() {
         fecha_compra: obtenerFechaActualISO(),
         numero_compra_sugerido: siguienteNumero.numero_compra,
         tipos_soporte: TIPOS_SOPORTE_COMPRA,
+        medios_pago: comprasRepository.listarMediosPagoActivos().map(prepararMedioPagoVista),
+        // Para mostrar la ganancia de cada línea con las mismas reglas de IVA del servidor
+        es_responsable_iva: Number(comprasRepository.obtenerConfiguracionNegocio()?.maneja_iva || 0) === 1,
+        cobra_iva: ivaNegocio.negocioCobraIva(),
         condiciones_pago: [
             { valor: 'contado', etiqueta: 'Contado' },
             { valor: 'credito', etiqueta: 'Crédito' },

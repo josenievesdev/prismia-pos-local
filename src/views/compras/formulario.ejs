@@ -1,179 +1,126 @@
+<%
+    // Medio por defecto para la compra de contado: efectivo, si existe
+    const mediosCompra = Array.isArray(locals.mediosPago) ? mediosPago : [];
+    const medioPorDefecto = mediosCompra.find((medio) => medio.codigo === 'efectivo') || mediosCompra[0] || null;
+%>
 <section class="module-page ventas-page doc-pagina">
     <script type="application/json" id="proveedoresCompraJson">
         <%- JSON.stringify(proveedores || []).replace(/</g, '\\u003c') %>
     </script>
 
-    <form id="formNuevaCompra" class="ventas-pos-shell doc-editor" data-url="/compras" novalidate>
-        <header class="ui-encabezado">
-            <div class="ui-encabezado-texto">
-                <strong class="doc-numero" title="Número sugerido: se confirma al guardar"><%= numeroCompraSugerido || 'CP-BORRADOR' %></strong>
-                <%- include('../partials/ui/estado', { texto: 'Suma al inventario al guardar', tono: 'exito', punto: true }) %>
-            </div>
+    <form id="formNuevaCompra" class="ventas-pos-shell doc-editor doc-pos compra-pos" data-url="/compras" novalidate
+        data-responsable-iva="<%= locals.esResponsableIva ? '1' : '0' %>" data-cobra-iva="<%= locals.cobraIva === false ? '0' : '1' %>">
+        <div class="doc-pos-principal">
+            <% if (error) { %>
+                <div class="alert alert-error"><%= error %></div>
+            <% } %>
+            <div class="alert alert-error" id="alertaCompra" hidden></div>
 
-            <div class="ui-acciones">
-                <a href="/compras" class="btn-secondary">Listado</a>
-                <button type="button" class="btn-secondary" id="btnLimpiarCompra">Limpiar</button>
-            </div>
-        </header>
+            <div class="doc-busquedas">
+                <section class="pos-cliente doc-tercero">
+                    <div class="ventas-client-clean-head">
+                        <span>Proveedor</span>
 
-        <% if (error) { %>
-            <div class="alert alert-error"><%= error %></div>
-        <% } %>
-        <div class="alert alert-error" id="alertaCompra" hidden></div>
-
-        <div class="doc-busquedas">
-            <section class="pos-cliente doc-tercero">
-                <div class="ventas-client-clean-head">
-                    <span>Proveedor</span>
-
-                    <div class="ventas-client-clean-actions">
-                        <strong id="resumenProveedorCompra" hidden>Sin seleccionar</strong>
-                    </div>
-                </div>
-
-                <div class="ventas-client-search-wrap">
-                    <input type="search" id="buscarProveedorCompra"
-                        placeholder="Nombre, documento o razón social…" autocomplete="off">
-                    <input type="hidden" id="idProveedorCompra" name="id_proveedor">
-
-                    <div class="ventas-client-results" id="resultadosProveedoresCompra" hidden>
-                        <div class="ventas-client-result-empty">Escribe para buscar un proveedor.</div>
-                    </div>
-                </div>
-
-                <div class="doc-seleccion" id="proveedorSeleccionadoBox" hidden>
-                    <div class="doc-seleccion-texto">
-                        <strong id="proveedorSeleccionadoNombre"></strong>
-                        <span id="proveedorSeleccionadoDetalle"></span>
-                    </div>
-
-                    <div class="doc-seleccion-acciones">
-                        <button type="button" class="btn-secondary btn-small" id="btnCambiarProveedorCompra">Cambiar</button>
-                        <button type="button" class="btn-secondary btn-small" id="btnQuitarProveedorCompra">Quitar</button>
-                    </div>
-                </div>
-            </section>
-
-            <section class="ventas-search-section doc-buscador">
-                <div class="ventas-client-clean-head">
-                    <span>Agregar producto</span>
-                </div>
-
-                <div class="ventas-search-form">
-                    <div class="ventas-search-input-wrap">
-                        <span class="ventas-search-icon">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2.5" aria-hidden="true">
-                                <circle cx="11" cy="11" r="8" />
-                                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                            </svg>
-                        </span>
-
-                        <input type="search" id="busquedaProductoCompra"
-                            placeholder="Nombre, código de barras o SKU…" autocomplete="off" autofocus>
-
-                        <div class="ventas-results-panel" id="resultadosProductosCompra" hidden>
-                            <div class="ventas-empty-results">
-                                <strong>Escribe para buscar</strong>
-                                <span>Los productos aparecerán aquí.</span>
-                            </div>
+                        <div class="ventas-client-clean-actions">
+                            <strong id="resumenProveedorCompra" hidden>Sin seleccionar</strong>
                         </div>
                     </div>
 
-                    <button type="button" class="ventas-search-btn" id="btnBuscarProductoCompra">Buscar</button>
+                    <div class="ventas-client-search-wrap">
+                        <input type="search" id="buscarProveedorCompra"
+                            placeholder="Nombre, documento o razón social…" autocomplete="off">
+                        <input type="hidden" id="idProveedorCompra" name="id_proveedor">
+
+                        <div class="ventas-client-results" id="resultadosProveedoresCompra" hidden>
+                            <div class="ventas-client-result-empty">Escribe para buscar un proveedor.</div>
+                        </div>
+                    </div>
+
+                    <div class="doc-seleccion" id="proveedorSeleccionadoBox" hidden>
+                        <div class="doc-seleccion-texto">
+                            <strong id="proveedorSeleccionadoNombre"></strong>
+                            <span id="proveedorSeleccionadoDetalle"></span>
+                        </div>
+
+                        <div class="doc-seleccion-acciones">
+                            <button type="button" class="btn-secondary btn-small" id="btnCambiarProveedorCompra">Cambiar</button>
+                            <button type="button" class="btn-secondary btn-small" id="btnQuitarProveedorCompra">Quitar</button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="ventas-search-section doc-buscador">
+                    <div class="ventas-client-clean-head">
+                        <span>Agregar producto</span>
+                    </div>
+
+                    <div class="ventas-search-form">
+                        <div class="ventas-search-input-wrap">
+                            <span class="ventas-search-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5" aria-hidden="true">
+                                    <circle cx="11" cy="11" r="8" />
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                                </svg>
+                            </span>
+
+                            <input type="search" id="busquedaProductoCompra"
+                                placeholder="Nombre, código de barras o SKU…" autocomplete="off" autofocus>
+
+                            <div class="ventas-results-panel" id="resultadosProductosCompra" hidden>
+                                <div class="ventas-empty-results">
+                                    <strong>Escribe para buscar</strong>
+                                    <span>Los productos aparecerán aquí.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="button" class="ventas-search-btn" id="btnBuscarProductoCompra">Buscar</button>
+                    </div>
+                </section>
+            </div>
+
+            <section class="doc-papel" aria-label="Productos de la compra">
+                <header class="doc-papel-cabecera">
+                    <div class="doc-papel-titulo">
+                        <strong class="doc-numero" title="Número sugerido: se confirma al guardar"><%= numeroCompraSugerido || 'CP-BORRADOR' %></strong>
+                        <%- include('../partials/ui/estado', { texto: 'Suma al inventario al guardar', tono: 'exito', punto: true }) %>
+                    </div>
+                    <span class="doc-papel-conteo">Líneas: <b id="contadorLineasCompra">0</b></span>
+                </header>
+
+                <div class="ui-tabla-contenedor">
+                    <table class="ui-tabla doc-tabla doc-tabla--compra">
+                        <thead>
+                            <tr>
+                                <th class="centro">#</th>
+                                <th>Producto</th>
+                                <th class="centro">Cantidad</th>
+                                <th class="num">Costo unit.</th>
+                                <th class="num">Total</th>
+                                <th class="centro" aria-label="Quitar"></th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="lineasCompraBody">
+                            <tr class="ventas-cart-empty-row">
+                                <td colspan="6">
+                                    <div class="ventas-cart-empty">
+                                        <strong>Compra vacía</strong>
+                                        <span>Busca un producto y agrégalo a la compra.</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
+
+                <p class="doc-nota">El IVA de la compra define el costo; no cambia el IVA con el que vendes el producto.</p>
             </section>
         </div>
 
-        <section class="ui-tarjeta doc-lineas">
-            <header class="ui-tarjeta-encabezado">
-                <div>
-                    <h3>Productos</h3>
-                </div>
-                <span class="ui-estado">Líneas:&nbsp;<b id="contadorLineasCompra">0</b></span>
-            </header>
-
-            <div class="ui-tabla-contenedor">
-                <table class="ui-tabla doc-tabla doc-tabla--compra">
-                    <thead>
-                        <tr>
-                            <th>Producto</th>
-                            <th class="centro">Cant.</th>
-                            <th class="num">Costo base</th>
-                            <th class="num">Desc. / IVA</th>
-                            <th class="num">Costo final</th>
-                            <th class="num">Precio sugerido</th>
-                            <th class="centro" aria-label="Quitar"></th>
-                        </tr>
-                    </thead>
-
-                    <tbody id="lineasCompraBody">
-                        <tr class="ventas-cart-empty-row">
-                            <td colspan="7">
-                                <div class="ventas-cart-empty">
-                                    <strong>Compra vacía</strong>
-                                    <span>Busca un producto y agrégalo a la compra.</span>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <p class="doc-nota">El IVA de la compra solo define el costo final; no cambia el IVA de venta del producto.</p>
-        </section>
-
-        <section class="ui-tarjeta doc-datos">
-            <header class="ui-tarjeta-encabezado">
-                <div>
-                    <h3>Soporte y pago</h3>
-                </div>
-            </header>
-
-            <div class="ui-tarjeta-cuerpo doc-campos">
-                <label class="ui-campo">
-                    <span>Fecha de la compra</span>
-                    <input type="date" id="fechaCompra" name="fecha_compra" value="<%= fechaCompra %>" required>
-                </label>
-
-                <label class="ui-campo">
-                    <span>Tipo de soporte</span>
-                    <select id="tipoSoporteCompra" name="tipo_soporte">
-                        <% tiposSoporte.forEach(function (tipo) { %>
-                            <option value="<%= tipo.valor %>"><%= tipo.etiqueta %></option>
-                        <% }) %>
-                    </select>
-                </label>
-
-                <label class="ui-campo">
-                    <span>Número del soporte</span>
-                    <input type="text" id="numeroSoporteCompra" name="numero_soporte" placeholder="Ej: FE-1025">
-                </label>
-
-                <label class="ui-campo">
-                    <span>Condición de pago</span>
-                    <select id="condicionPagoCompra" name="condicion_pago">
-                        <% (condicionesPago || [{ valor: 'contado', etiqueta: 'Contado' }, { valor: 'credito', etiqueta: 'Crédito' }]).forEach(function (condicion) { %>
-                            <option value="<%= condicion.valor %>"><%= condicion.etiqueta %></option>
-                        <% }) %>
-                    </select>
-                </label>
-
-                <label class="ui-campo" id="campoFechaVencimientoCompra" hidden>
-                    <span>Vencimiento</span>
-                    <input type="date" id="fechaVencimientoCompra" name="fecha_vencimiento" value="<%= fechaCompra %>">
-                    <small class="ui-ayuda" id="resumenVencimientoCompra">En contado queda pagada con vencimiento del mismo día.</small>
-                </label>
-
-                <label class="ui-campo doc-campo-doble">
-                    <span>Observaciones</span>
-                    <input type="text" id="observacionesCompra" name="observaciones" placeholder="Notas internas de la compra">
-                </label>
-            </div>
-        </section>
-
-        <footer class="doc-pie">
-            <div class="doc-pie-totales">
+        <aside class="doc-pos-lateral" aria-label="Resumen">
+            <section class="doc-resumen">
                 <div class="ventas-total-row">
                     <span>Subtotal neto</span>
                     <strong id="subtotalCompra">$ 0</strong>
@@ -190,16 +137,85 @@
                     <span>Total compra</span>
                     <strong id="totalCompra">$ 0</strong>
                 </div>
-            </div>
 
-            <div class="doc-pie-total">
-                <span>Total</span>
-                <strong id="totalCompraPrincipal">$ 0</strong>
-            </div>
+                <div class="doc-resumen-total">
+                    <span>Total</span>
+                    <strong id="totalCompraPrincipal">$ 0</strong>
+                </div>
+            </section>
 
             <span id="resumenProveedorInfoCompra" hidden></span>
             <button type="submit" class="btn-primary doc-guardar" id="btnGuardarCompra" disabled>Guardar compra</button>
-        </footer>
+
+            <div class="doc-pos-acciones">
+                <a href="/compras" class="btn-secondary">Listado</a>
+                <button type="button" class="btn-secondary" id="btnLimpiarCompra">Limpiar</button>
+            </div>
+
+            <section class="ui-tarjeta doc-datos">
+                <header class="ui-tarjeta-encabezado">
+                    <div>
+                        <h3>Soporte y pago</h3>
+                    </div>
+                </header>
+
+                <div class="ui-tarjeta-cuerpo doc-campos">
+                    <label class="ui-campo">
+                        <span>Fecha de la compra</span>
+                        <input type="date" id="fechaCompra" name="fecha_compra" value="<%= fechaCompra %>" max="<%= fechaCompra %>" required>
+                    </label>
+
+                    <label class="ui-campo">
+                        <span>Tipo de soporte</span>
+                        <select id="tipoSoporteCompra" name="tipo_soporte">
+                            <% tiposSoporte.forEach(function (tipo) { %>
+                                <option value="<%= tipo.valor %>"><%= tipo.etiqueta %></option>
+                            <% }) %>
+                        </select>
+                    </label>
+
+                    <label class="ui-campo">
+                        <span>Número del soporte</span>
+                        <input type="text" id="numeroSoporteCompra" name="numero_soporte" placeholder="Ej: FE-1025">
+                    </label>
+
+                    <label class="ui-campo">
+                        <span>Condición de pago</span>
+                        <select id="condicionPagoCompra" name="condicion_pago">
+                            <% (condicionesPago || [{ valor: 'contado', etiqueta: 'Contado' }, { valor: 'credito', etiqueta: 'Crédito' }]).forEach(function (condicion) { %>
+                                <option value="<%= condicion.valor %>"><%= condicion.etiqueta %></option>
+                            <% }) %>
+                        </select>
+                    </label>
+
+                    <%# De contado: con qué se pagó (queda en "Pagos a proveedores"; sale de tesorería, no del cajón) %>
+                    <label class="ui-campo" id="campoMedioPagoCompra">
+                        <span>Pagado con</span>
+                        <select id="medioPagoCompra" name="id_medio_pago">
+                            <% mediosCompra.forEach(function (medio) { %>
+                                <option value="<%= medio.id_medio_pago %>" <%= medioPorDefecto && medio.id_medio_pago === medioPorDefecto.id_medio_pago ? 'selected' : '' %>><%= medio.nombre %></option>
+                            <% }) %>
+                        </select>
+                    </label>
+
+                    <label class="ui-campo" id="campoReferenciaPagoCompra">
+                        <span>Referencia del pago (opcional)</span>
+                        <input type="text" id="referenciaPagoCompra" name="referencia_pago" autocomplete="off" placeholder="Comprobante o transferencia">
+                    </label>
+
+                    <label class="ui-campo" id="campoFechaVencimientoCompra" hidden>
+                        <span>Vencimiento</span>
+                        <input type="date" id="fechaVencimientoCompra" name="fecha_vencimiento" value="<%= fechaCompra %>">
+                        <small class="ui-ayuda" id="resumenVencimientoCompra">En contado queda pagada con vencimiento del mismo día.</small>
+                    </label>
+
+                    <label class="ui-campo doc-campo-doble">
+                        <span>Observaciones</span>
+                        <input type="text" id="observacionesCompra" name="observaciones" placeholder="Notas internas de la compra">
+                    </label>
+                </div>
+            </section>
+        </aside>
     </form>
 
     <script src="/js/dinero-exacto.js"></script>

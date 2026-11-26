@@ -313,7 +313,25 @@ Pendiente:
 - [x] Cotizaciones y remisiones con la forma del POS: buscar producto y cliente arriba, el
       "papel" del documento a la izquierda (como el ticket) y a la derecha el resumen con el
       total grande y el botón principal; condiciones o datos de entrega debajo.
-- [ ] Compras con la misma forma (su formulario tiene más campos; queda para después).
+- [x] Compras con la forma del POS (ver la sección siguiente).
+
+## Compras: revisión de lógica y diseño (2026-11-25, rama `compras-revision`)
+Errores encontrados y corregidos (con pruebas en tests/compras-logica.test.js):
+- [x] **Stock negativo leído como 0**: si un producto vendido sin stock estaba en -5 y se compraban 10,
+      quedaba en 10 en vez de 5 (inventario inflado). Era solo en Compras. La base real no estaba afectada
+      (6 compras revisadas).
+- [x] **"Actualizar precio" con 0 % de ganancia ponía el precio de venta igual al costo.** Ahora el precio
+      solo cambia con un precio escrito a propósito.
+- [x] Stock con decimales sin residuos (1,1 + 2,2 = 3,3 exacto).
+- [x] Fecha de compra válida y no futura.
+- [x] Compra de contado: se guarda con qué se pagó y aparece en "Pagos a proveedores".
+Diseño:
+- [x] Forma del POS: buscar producto y proveedor arriba, el papel con las líneas, a la derecha el total, el
+      botón y "Soporte y pago". Cada línea: fila principal (cantidad, costo, total) y debajo descuento, IVA,
+      costo final, la ganancia al precio de venta (aviso si se pierde) y "Cambiar precio" opcional.
+Pendiente (decisión del usuario):
+- [ ] Pagar proveedores con efectivo del cajón (hoy todo sale de "tesorería" y la caja no se entera).
+- [ ] Anular una compra (hoy no existe: un error solo se corrige con ajustes de inventario).
 
 ## Fase 5 — Calidad de código
 - [ ] Unificar cotizaciones y remisiones (~80 % duplicado).

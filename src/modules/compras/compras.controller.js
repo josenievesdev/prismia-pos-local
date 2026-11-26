@@ -64,6 +64,9 @@ function mostrarFormularioNuevaCompra(req, res) {
         tiposSoporte: datosFormulario.tipos_soporte,
         condicionesPago: datosFormulario.condiciones_pago,
         proveedores: datosFormulario.proveedores,
+        mediosPago: datosFormulario.medios_pago,
+        esResponsableIva: datosFormulario.es_responsable_iva,
+        cobraIva: datosFormulario.cobra_iva,
         error: null,
         estilosModulo: estilosDocumento,
     });
