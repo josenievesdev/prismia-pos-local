@@ -283,6 +283,16 @@ IVA del negocio y creador de productos (2026-11-25, rama `productos-iva-negocio`
       calcula el precio; escribir el precio calcula la ganancia) y aviso si se vende a pérdida.
 - [x] Pruebas: tests/iva-negocio.test.js (6).
 
+Ajustes pedidos por el usuario (2026-11-25, rama `pos-tactil-precio`):
+- [x] Precio universal: se quitó la calculadora "costo + % de ganancia" (era el método de
+      su trabajo, no de todos los negocios; Siigo solo pide el precio y el IVA). Ahora se
+      pone el precio final y el IVA si corresponde; la pantalla solo informa cuánto es IVA,
+      la ganancia por unidad (margen y sobre el costo) y si se vende a pérdida.
+- [x] Tablet y celular: el POS ya no pone el cursor solo en el buscador ni en el monto
+      (el teclado en pantalla tapaba todo). En computador sigue igual, y lo que se escribe
+      con teclado físico o lector de códigos sigue entrando al buscador. En pantallas
+      táctiles el teclado numérico del cobro siempre está a la vista. Igual en /ventas/movil.
+
 Pendiente:
 - [ ] Restaurantes y bares: en general no cobran IVA sino impuesto al consumo (INC 8 %).
       Confirmar con un contador antes de usar el perfil "Comidas y bares" con impuestos.

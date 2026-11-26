@@ -1,6 +1,17 @@
 (function () {
     'use strict';
 
+    // Tablet o celular: no se pone el cursor solo en un campo (el teclado en pantalla tapa todo)
+    function esPantallaTactil() {
+        return Boolean(window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches);
+    }
+
+    function enfocarSiHayTeclado(campo) {
+        if (campo && !esPantallaTactil()) {
+            campo.focus();
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', iniciarPOSMovil);
 
     const estado = {
@@ -242,7 +253,7 @@
         ocultarClientesMovil(ui);
 
         if (ui.inputCodigo) {
-            ui.inputCodigo.focus();
+            enfocarSiHayTeclado(ui.inputCodigo);
         }
     }
 
@@ -295,7 +306,7 @@
         });
 
         setTimeout(function () {
-            ui.inputCodigo.focus();
+            enfocarSiHayTeclado(ui.inputCodigo);
         }, 250);
     }
 
@@ -782,7 +793,7 @@
         const campos = obtenerCamposPagoMovilFila(fila);
 
         if (campos.monto) {
-            campos.monto.focus();
+            enfocarSiHayTeclado(campos.monto);
         }
 
         actualizarReferenciaPagoMovilFila(fila);
@@ -1014,7 +1025,7 @@
             mostrarMensaje(ui, 'success', data.mensaje || 'Venta registrada correctamente.', ticket);
 
             if (ui.inputCodigo) {
-                ui.inputCodigo.focus();
+                enfocarSiHayTeclado(ui.inputCodigo);
             }
         } catch (error) {
             mostrarMensaje(ui, 'error', error.message || 'Error registrando venta.');

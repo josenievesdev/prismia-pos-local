@@ -426,6 +426,18 @@
     font-size: 16px;
 }
 
+/* Ganancia: solo información (cada negocio calcula su precio a su manera) */
+.producto-ganancia {
+    margin: 0;
+    color: var(--color-text-soft);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.producto-ganancia[hidden] {
+    display: none;
+}
+
 .producto-alerta {
     margin: 0;
     padding: 8px 12px;

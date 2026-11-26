@@ -93,12 +93,13 @@
         iniciarAcciones();
         iniciarTeclado();
         iniciarClicFuera();
+        document.documentElement.classList.toggle('pos-pantalla-tactil', esPantallaTactil());
 
         dibujarTodo();
         recuperarVentaEnCurso();
 
         if (estado.puedeVender && ui.buscar) {
-            ui.buscar.focus();
+            enfocarBuscador();
         }
     }
 
@@ -283,6 +284,28 @@
         return ((partes[0] || 'P').charAt(0) + (partes[1] || '').charAt(0)).toUpperCase();
     }
 
+    /* ---------------------------------------------------------------
+       Pantallas táctiles (tablet, celular): el POS no pone el cursor solo
+       en un campo de texto, porque el teclado en pantalla taparía todo.
+       Con teclado físico o lector de códigos todo sigue igual: lo que se
+       escribe fuera de un campo va al buscador (ver iniciarTeclado).
+       --------------------------------------------------------------- */
+    function esPantallaTactil() {
+        return Boolean(window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches);
+    }
+
+    function enfocarBuscador() {
+        if (ui.buscar && !esPantallaTactil()) {
+            ui.buscar.focus();
+        }
+    }
+
+    function enfocarMonto() {
+        if (ui.monto && !esPantallaTactil()) {
+            ui.monto.focus();
+        }
+    }
+
     function esCampoEditable(elemento) {
         if (!elemento) {
             return false;
@@ -443,7 +466,7 @@
             document.removeEventListener('keydown', alTeclear, true);
             fondo.remove();
             document.body.classList.remove('ventas-modal-open');
-            ui.buscar?.focus();
+            enfocarBuscador();
         }
 
         function guardar(valor) {
@@ -611,7 +634,7 @@
         ui.botonesModo.forEach(function (boton) {
             boton.addEventListener('click', function () {
                 aplicarModo(boton.dataset.posModo, true);
-                ui.buscar?.focus();
+                enfocarBuscador();
             });
         });
 
@@ -635,7 +658,7 @@
             ui.enfoque.setAttribute('aria-pressed', String(raiz.dataset.posEnfoque === '1'));
             ui.enfoque.addEventListener('click', function () {
                 alternarEnfoque();
-                ui.buscar?.focus();
+                enfocarBuscador();
             });
         }
     }
@@ -703,7 +726,7 @@
 
         ui.multiplicador?.addEventListener('click', function () {
             fijarMultiplicador(null);
-            ui.buscar.focus();
+            enfocarBuscador();
         });
 
         // Los resultados no roban el foco del buscador (el lector sigue escribiendo ahí).
@@ -1042,7 +1065,7 @@
         alCambiarCarrito();
 
         if (!irACantidad) {
-            ui.buscar?.focus();
+            enfocarBuscador();
         }
 
         return true;
@@ -1097,7 +1120,7 @@
         if (cantidad === 0) {
             quitarLinea(id);
             if (volverAlBuscador) {
-                ui.buscar?.focus();
+                enfocarBuscador();
             }
             return;
         }
@@ -1105,7 +1128,7 @@
         if (Math.abs(cantidad - item.cantidad) < 0.0005) {
             input.value = cantidadTexto(item.cantidad);
             if (volverAlBuscador) {
-                ui.buscar?.focus();
+                enfocarBuscador();
             }
             return;
         }
@@ -1125,7 +1148,7 @@
         alCambiarCarrito();
 
         if (volverAlBuscador) {
-            ui.buscar?.focus();
+            enfocarBuscador();
         }
     }
 
@@ -1205,7 +1228,7 @@
         estado.seleccion = pendiente.item.id;
         estado.destello = pendiente.item.id;
         alCambiarCarrito();
-        ui.buscar?.focus();
+        enfocarBuscador();
     }
 
     function seleccionar(id) {
@@ -1235,7 +1258,7 @@
 
     function enfocarCantidadSeleccionada() {
         if (!estado.carrito.length) {
-            ui.buscar?.focus();
+            enfocarBuscador();
             return;
         }
 
@@ -1303,7 +1326,7 @@
                 }
 
                 // El foco vuelve al buscador: el lector de códigos sigue funcionando.
-                ui.buscar?.focus();
+                enfocarBuscador();
                 return;
             }
 
@@ -1349,7 +1372,7 @@
                 evento.stopPropagation();
                 const item = buscarItem(id);
                 input.value = item ? cantidadTexto(item.cantidad) : input.value;
-                ui.buscar?.focus();
+                enfocarBuscador();
             } else if (evento.key === 'ArrowUp' || evento.key === 'ArrowDown') {
                 // Flechas: suben o bajan de a uno sin salir del campo (no quitan la línea).
                 evento.preventDefault();
@@ -1392,7 +1415,7 @@
         ui.tabla?.addEventListener('scroll', actualizarIndicadorArriba, { passive: true });
         ui.arriba?.addEventListener('click', function () {
             ui.tabla.scrollTo({ top: 0, behavior: 'smooth' });
-            ui.buscar?.focus();
+            enfocarBuscador();
         });
     }
 
@@ -1683,7 +1706,7 @@
                 dibujarTodo();
             }
 
-            ui.buscar?.focus();
+            enfocarBuscador();
         });
 
         ui.pendiente?.addEventListener('click', dejarPendiente);
@@ -1857,7 +1880,7 @@
         cerrarPago(false);
         dibujarTodo();
         aviso('Venta en espera. Retómala desde "Pendientes".', 'ok');
-        ui.buscar?.focus();
+        enfocarBuscador();
     }
 
     function dibujarPendientes() {
@@ -1948,7 +1971,7 @@
             aviso('Venta retomada.', 'ok');
         }
 
-        ui.buscar?.focus();
+        enfocarBuscador();
     }
 
     async function descartarPendiente(id) {
@@ -1966,7 +1989,7 @@
             return item.id !== id;
         }));
         dibujarPendientes();
-        ui.buscar?.focus();
+        enfocarBuscador();
     }
 
     /* ---------------------------------------------------------------
@@ -2078,9 +2101,9 @@
         guardarVentaEnCurso();
 
         if (estado.vista === 'pago') {
-            ui.monto?.focus();
+            enfocarMonto();
         } else {
-            ui.buscar?.focus();
+            enfocarBuscador();
         }
     }
 
@@ -2221,7 +2244,7 @@
             if (propinaActual() > 0 && !estado.mesero) {
                 abrirPanelMesero();
             } else {
-                ui.monto?.focus();
+                enfocarMonto();
             }
         });
 
@@ -2258,7 +2281,7 @@
                 abrirPanelCliente();
             } else {
                 cerrarPanelCliente();
-                ui.buscar?.focus();
+                enfocarBuscador();
             }
         });
 
@@ -2399,7 +2422,7 @@
         dibujarCliente();
         cerrarPanelCliente();
         guardarVentaEnCurso();
-        ui.buscar?.focus();
+        enfocarBuscador();
     }
 
     /* ---------------------------------------------------------------
@@ -2460,7 +2483,7 @@
     function cerrarModalClienteRapido() {
         ui.modalClienteRapido.hidden = true;
         document.body.classList.remove('ventas-modal-open');
-        ui.buscar?.focus();
+        enfocarBuscador();
     }
 
     function actualizarTipoDocumentoClienteRapido() {
@@ -2601,7 +2624,7 @@
             const plegado = leerAlmacen(CLAVES.plegados) === '1';
             guardarAlmacen(CLAVES.plegados, plegado ? null : '1');
             dibujarFrecuentes();
-            ui.buscar?.focus();
+            enfocarBuscador();
         });
 
         ui.editarFrecuentes?.addEventListener('click', function () {
@@ -2644,7 +2667,7 @@
                 agregarProducto(producto);
             }
 
-            ui.buscar?.focus();
+            enfocarBuscador();
         });
     }
 
@@ -3059,7 +3082,7 @@
             }
 
             dibujarPago();
-            ui.monto?.focus();
+            enfocarMonto();
         });
 
         ui.teclado?.addEventListener('mousedown', function (evento) {
@@ -3103,7 +3126,7 @@
         ui.lateralVenta.hidden = true;
         ui.pago.hidden = false;
         dibujarPago();
-        ui.monto?.focus();
+        enfocarMonto();
     }
 
     function cerrarPago(volverAlBuscador) {
@@ -3118,7 +3141,7 @@
         }
 
         if (volverAlBuscador) {
-            ui.buscar?.focus();
+            enfocarBuscador();
         }
     }
 
@@ -3131,7 +3154,7 @@
         }
 
         if (borrador && borrador.idMedio === idMedio) {
-            ui.monto?.focus();
+            enfocarMonto();
             return;
         }
 
@@ -3151,7 +3174,7 @@
         if (medio.requiereReferencia) {
             ui.referencia?.focus();
         } else {
-            ui.monto?.focus();
+            enfocarMonto();
         }
     }
 
@@ -3172,7 +3195,7 @@
         borrador.tocado = true;
         sincronizarMonto();
         actualizarEstadoPago();
-        ui.monto?.focus();
+        enfocarMonto();
     }
 
     function pulsarTecla(tecla) {
@@ -3461,7 +3484,7 @@
         cerrarPago(false);
         mostrarExito();
         dibujarTodo();
-        ui.buscar?.focus();
+        enfocarBuscador();
     }
 
     function siguienteNumeroFactura(json) {
@@ -3486,12 +3509,12 @@
     function iniciarExito() {
         ui.exitoOcultar?.addEventListener('click', function () {
             ocultarExito();
-            ui.buscar?.focus();
+            enfocarBuscador();
         });
 
         ui.exitoImprimir?.addEventListener('click', function () {
             window.setTimeout(function () {
-                ui.buscar?.focus();
+                enfocarBuscador();
             }, 0);
         });
     }
@@ -3560,7 +3583,7 @@
                     abrirPanelMesero();
                 } else {
                     cerrarPanelMesero();
-                    ui.buscar?.focus();
+                    enfocarBuscador();
                 }
                 return;
             }
@@ -3571,7 +3594,7 @@
                     abrirPanelCliente();
                 } else {
                     cerrarPanelCliente();
-                    ui.buscar?.focus();
+                    enfocarBuscador();
                 }
                 return;
             }
@@ -3643,7 +3666,7 @@
                 if (estado.seleccion !== null && buscarItem(estado.seleccion)) {
                     evento.preventDefault();
                     quitarLinea(estado.seleccion);
-                    ui.buscar?.focus();
+                    enfocarBuscador();
                 }
                 return;
             }
@@ -3671,19 +3694,19 @@
 
         if (ui.panelMesero && !ui.panelMesero.hidden) {
             cerrarPanelMesero();
-            ui.buscar?.focus();
+            enfocarBuscador();
             return;
         }
 
         if (ui.panelCliente && !ui.panelCliente.hidden) {
             cerrarPanelCliente();
-            ui.buscar?.focus();
+            enfocarBuscador();
             return;
         }
 
         if (ui.panelPendientes && !ui.panelPendientes.hidden) {
             cerrarPanelPendientes();
-            ui.buscar?.focus();
+            enfocarBuscador();
             return;
         }
 
@@ -3705,7 +3728,7 @@
 
         if (ui.exito && !ui.exito.hidden) {
             ocultarExito();
-            ui.buscar?.focus();
+            enfocarBuscador();
             return;
         }
 
@@ -3728,7 +3751,7 @@
             estado.ultimoEscape = ahora;
         }
 
-        ui.buscar?.focus();
+        enfocarBuscador();
     }
 
     function iniciarClicFuera() {

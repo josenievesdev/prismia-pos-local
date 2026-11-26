@@ -1,10 +1,11 @@
 /**
- * Creador de productos: calculadora de precio y vista previa en vivo.
+ * Creador de productos: vista previa en vivo.
  *
- * Como en Siigo: costo + ganancia + IVA = precio de venta. El precio de venta
- * es el precio final (IVA incluido) y es lo único que se guarda; la ganancia
- * es una ayuda para calcularlo. Las cuentas usan dinero-exacto, las mismas
- * del POS y del servidor: lo que se ve aquí es lo que sale en el ticket.
+ * Cada negocio calcula su precio a su manera; aquí solo se registra el precio
+ * final (el que paga el cliente, con el IVA incluido si el negocio cobra IVA).
+ * Esta pantalla informa, sin imponer un método: cuánto del precio es IVA,
+ * cuánto se gana por unidad (como margen y sobre el costo) y si se vende a
+ * pérdida. Las cuentas usan dinero-exacto, las mismas del POS y del servidor.
  */
 (function () {
     const formulario = document.querySelector('.producto-creador');
@@ -20,7 +21,6 @@
     const costo = campo('precio_costo');
     const precio = campo('precio_venta');
     const iva = campo('porcentaje_iva_visual');
-    const ganancia = campo('gananciaProducto');
     const nombre = campo('nombre');
     const unidad = campo('id_unidad_medida');
     const foto = campo('imagen_producto');
@@ -31,9 +31,7 @@
     const formato = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 });
     const formatoPorcentaje = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 1 });
     const pesos = (valor) => (valor < 0 ? '− ' : '') + '$ ' + formato.format(Math.abs(valor));
-
-    // Quién manda: si el usuario escribió la ganancia, el precio la sigue; si escribió el precio, se respeta
-    let manda = Number(precio.value) > 0 ? 'precio' : 'ganancia';
+    const porcentaje = (valor) => formatoPorcentaje.format(valor) + ' %';
 
     function entero(entrada) {
         return Math.max(0, Math.round(Number(entrada && entrada.value) || 0));
@@ -41,18 +39,6 @@
 
     function tarifa() {
         return cobraIva && iva ? Math.max(0, Math.round(Number(iva.value) || 0)) : 0;
-    }
-
-    // costo + ganancia = base; base + IVA = precio de venta
-    function precioDesdeGanancia() {
-        const porcentaje = Number(ganancia.value);
-
-        if (ganancia.value === '' || !Number.isFinite(porcentaje) || porcentaje < 0 || entero(costo) <= 0) {
-            return null;
-        }
-
-        const base = Math.round(entero(costo) * (100 + porcentaje) / 100);
-        return base + dinero.calcularIva(base, tarifa());
     }
 
     function desglose() {
@@ -91,33 +77,34 @@
 
     function dibujar() {
         const cuenta = desglose();
-        const porcentajeGanancia = cuenta.costo > 0 ? cuenta.ganancia / cuenta.costo * 100 : null;
 
-        poner('costo', pesos(cuenta.costo));
-        poner('ganancia', pesos(cuenta.ganancia)
-            + (porcentajeGanancia !== null && cuenta.total > 0
-                ? ' · ' + (porcentajeGanancia < 0 ? '−' : '') + formatoPorcentaje.format(Math.abs(porcentajeGanancia)) + ' %'
-                : ''));
+        // Cuánto del precio es IVA (solo si el negocio cobra IVA)
+        poner('base', pesos(cuenta.base));
         poner('iva-etiqueta', cuenta.tarifa > 0 ? '+ IVA ' + cuenta.tarifa + ' %' : '+ IVA (sin IVA)');
         poner('iva', pesos(cuenta.iva));
         poner('precio', pesos(cuenta.total));
 
-        // La ganancia refleja el precio escrito (sin pisar lo que el usuario está escribiendo)
-        if (manda === 'precio' && document.activeElement !== ganancia) {
-            ganancia.value = porcentajeGanancia !== null && cuenta.total > 0
-                ? String(Math.round(porcentajeGanancia * 10) / 10)
+        // Ganancia: solo información, en las dos formas en que la piensan los negocios
+        const lineaGanancia = ver('ganancia');
+        const alerta = ver('alerta');
+        const hayCuenta = cuenta.total > 0 && cuenta.costo > 0;
+
+        if (lineaGanancia) {
+            lineaGanancia.hidden = !hayCuenta || cuenta.ganancia < 0;
+            lineaGanancia.textContent = hayCuenta && cuenta.ganancia >= 0
+                ? 'Ganancia por unidad: ' + pesos(cuenta.ganancia)
+                    + (cuenta.base > 0 ? ' · margen ' + porcentaje(cuenta.ganancia / cuenta.base * 100) : '')
+                    + ' · ' + porcentaje(cuenta.ganancia / cuenta.costo * 100) + ' sobre el costo'
                 : '';
         }
 
-        const alerta = ver('alerta');
-
         if (alerta) {
-            const pierde = cuenta.total > 0 && cuenta.costo > 0 && cuenta.ganancia < 0;
+            const pierde = hayCuenta && cuenta.ganancia < 0;
             alerta.hidden = !pierde;
             alerta.textContent = pierde ? 'Ojo: con este precio pierdes ' + pesos(-cuenta.ganancia) + ' por unidad.' : '';
         }
 
-        // Vista previa
+        // Vista previa: así se ve en el POS y en el ticket
         poner('nombre', nombre.value.trim() || 'Nombre del producto');
         poner('precio-pos', pesos(cuenta.total));
         poner('unidad', abreviaturaUnidad());
@@ -136,50 +123,16 @@
         }
     }
 
-    function recalcularPrecio() {
-        const nuevo = precioDesdeGanancia();
-
-        if (nuevo !== null) {
-            precio.value = String(nuevo);
-        }
-    }
-
-    ganancia.addEventListener('input', function () {
-        manda = 'ganancia';
-        recalcularPrecio();
-        dibujar();
+    [precio, costo, nombre].forEach(function (entrada) {
+        entrada?.addEventListener('input', dibujar);
     });
-
-    precio.addEventListener('input', function () {
-        manda = 'precio';
-        dibujar();
-    });
-
-    costo.addEventListener('input', function () {
-        if (manda === 'ganancia') {
-            recalcularPrecio();
-        }
-
-        dibujar();
-    });
-
-    if (iva) {
-        iva.addEventListener('change', function () {
-            if (manda === 'ganancia') {
-                recalcularPrecio();
-            }
-
-            dibujar();
-        });
-    }
-
-    nombre.addEventListener('input', dibujar);
+    iva?.addEventListener('change', dibujar);
     unidad?.addEventListener('change', dibujar);
 
     // "Usar el costo promedio" (edición): copia el costo real de las compras
     formulario.querySelector('[data-usar-costo]')?.addEventListener('click', function (evento) {
         costo.value = evento.currentTarget.dataset.usarCosto;
-        costo.dispatchEvent(new Event('input', { bubbles: true }));
+        dibujar();
         costo.focus();
     });
 

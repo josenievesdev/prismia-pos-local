@@ -90,40 +90,28 @@
                 </div>
             </section>
 
-            <%# ---------- 2. Precio: costo + ganancia + IVA = precio de venta ---------- %>
+            <%# ---------- 2. Precio: el que paga el cliente (cada negocio lo calcula a su manera) ---------- %>
             <section class="producto-paso" aria-labelledby="pasoPrecio">
                 <header class="producto-paso-cabecera">
                     <span class="producto-paso-numero" aria-hidden="true">2</span>
                     <div>
                         <h3 id="pasoPrecio">Precio</h3>
                         <p>
-                            <% if (iva.cobraIva) { %>
-                                El precio de venta ya lleva el IVA: es lo que paga el cliente y no cambia al cobrar.
-                            <% } else { %>
-                                Tu negocio no cobra IVA: el precio de venta es lo que paga el cliente.
-                            <% } %>
+                            Pon el precio final, el que paga el cliente<%= iva.cobraIva ? ', con el IVA incluido' : '' %>.
+                            Cada negocio lo calcula a su manera: aquí solo se registra.
                         </p>
                     </div>
                 </header>
 
                 <div class="producto-campos">
                     <div class="form-group">
-                        <label for="precio_costo"><%= iva.cobraIva ? 'Costo de compra (antes de IVA)' : 'Costo de compra' %></label>
-                        <div class="producto-dinero">
+                        <label for="precio_venta">Precio de venta *</label>
+                        <div class="producto-dinero producto-dinero-principal">
                             <span aria-hidden="true">$</span>
-                            <input type="number" id="precio_costo" name="precio_costo" min="0" step="1" inputmode="numeric"
-                                value="<%= producto.precio_costo || 0 %>">
+                            <input type="number" id="precio_venta" name="precio_venta" min="0" step="1" inputmode="numeric"
+                                value="<%= producto.precio_venta || 0 %>" required>
                         </div>
-                        <small class="producto-ayuda">
-                            <% if (esNuevo) { %>
-                                Lo que te cuesta cada unidad<%= iva.cobraIva ? ', sin el IVA del proveedor (ese IVA se descuenta)' : ', con el IVA que te cobre el proveedor' %>.
-                            <% } else { %>
-                                Costo de referencia. Las compras actualizan el costo promedio<%= costoPromedio > 0 ? ': hoy ' + pesos(costoPromedio) : '' %>.
-                                <% if (costoPromedio > 0) { %>
-                                    <button type="button" class="producto-enlace" data-usar-costo="<%= costoPromedio %>">Usar el costo promedio</button>
-                                <% } %>
-                            <% } %>
-                        </small>
+                        <small class="producto-ayuda">Es el precio del POS y del ticket. No cambia al cobrar.</small>
                     </div>
 
                     <% if (iva.cobraIva) { %>
@@ -147,33 +135,33 @@
                     <% } %>
 
                     <div class="form-group">
-                        <label for="gananciaProducto">Ganancia que quieres</label>
+                        <label for="precio_costo"><%= iva.cobraIva ? 'Costo de compra, sin IVA (opcional)' : 'Costo de compra (opcional)' %></label>
                         <div class="producto-dinero">
-                            <input type="number" id="gananciaProducto" min="0" step="0.1" inputmode="decimal" placeholder="Ej.: 30">
-                            <span aria-hidden="true">%</span>
-                        </div>
-                        <small class="producto-ayuda">Sobre el costo. Escríbela y el precio se calcula solo.</small>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="precio_venta">Precio de venta *</label>
-                        <div class="producto-dinero producto-dinero-principal">
                             <span aria-hidden="true">$</span>
-                            <input type="number" id="precio_venta" name="precio_venta" min="0" step="1" inputmode="numeric"
-                                value="<%= producto.precio_venta || 0 %>" required>
+                            <input type="number" id="precio_costo" name="precio_costo" min="0" step="1" inputmode="numeric"
+                                value="<%= producto.precio_costo || 0 %>">
                         </div>
-                        <small class="producto-ayuda">Lo que paga el cliente por unidad<%= iva.cobraIva ? ', con el IVA incluido' : '' %>.</small>
+                        <small class="producto-ayuda">
+                            <% if (esNuevo) { %>
+                                Lo que te cuesta cada unidad<%= iva.cobraIva ? ', sin el IVA del proveedor (ese IVA se descuenta)' : ', con el IVA que te cobre el proveedor' %>. Sirve para ver tu ganancia.
+                            <% } else { %>
+                                Costo de referencia. Las compras actualizan el costo promedio<%= costoPromedio > 0 ? ': hoy ' + pesos(costoPromedio) : '' %>.
+                                <% if (costoPromedio > 0) { %>
+                                    <button type="button" class="producto-enlace" data-usar-costo="<%= costoPromedio %>">Usar el costo promedio</button>
+                                <% } %>
+                            <% } %>
+                        </small>
                     </div>
                 </div>
 
-                <div class="producto-desglose" aria-live="polite">
-                    <div><span>Costo</span><strong data-ver="costo">$ 0</strong></div>
-                    <div><span>+ Ganancia</span><strong data-ver="ganancia">$ 0</strong></div>
-                    <% if (iva.cobraIva) { %>
+                <% if (iva.cobraIva) { %>
+                    <div class="producto-desglose" aria-live="polite">
+                        <div><span>Precio sin IVA</span><strong data-ver="base">$ 0</strong></div>
                         <div><span data-ver="iva-etiqueta">+ IVA</span><strong data-ver="iva">$ 0</strong></div>
-                    <% } %>
-                    <div class="producto-desglose-total"><span>= Precio de venta</span><strong data-ver="precio">$ 0</strong></div>
-                </div>
+                        <div class="producto-desglose-total"><span>= Precio de venta</span><strong data-ver="precio">$ 0</strong></div>
+                    </div>
+                <% } %>
+                <p class="producto-ganancia" data-ver="ganancia" aria-live="polite" hidden></p>
                 <p class="producto-alerta" data-ver="alerta" role="status" hidden></p>
 
                 <% if (!iva.definido) { %>

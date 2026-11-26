@@ -1763,7 +1763,8 @@ html.ruta-pos[data-pos-enfoque="1"]:not([data-menu-estado="movil"]) .app-sidebar
     gap: 8px;
 }
 
-html[data-pos-mode="tactil"] .pos-teclado {
+html[data-pos-mode="tactil"] .pos-teclado,
+html.pos-pantalla-tactil .pos-teclado {
     display: grid;
 }
 
